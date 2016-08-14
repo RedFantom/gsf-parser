@@ -5,4 +5,4 @@ This is the public repository for stable releases of the Galactic StarFighter pa
 
 DISCLAIMER: I do not own Star Wars, Star Wars - The Old Republic or Galactic StarFighter or any related trademarks. These trademarks are property of their respective owners, and only referenced here for the clarity of the users. This program is intended for educational uses only, as the user can learn how to  play GSF better by using it. Therefore, I claim fair-use for all mentioned trade-marks.
 
-(c) Copyright 2016 RedFantom, to the extent possible limited by the license, as written in LICENSE, for all files in this repository
+For the license under which all of the files in this repository are available, see LICENSE
