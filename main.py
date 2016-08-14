@@ -1,10 +1,13 @@
 # Written by RedFantom, WingCommander of Thranta Squadron, thrantasquadron.tk
-# (c) by RedFantom, for license see LICENSE
+# For license see LICENSE
+
+# TODO: Up next is splitting the matches into spawns and identifying the ship for each spawn.
+# TODO: And then there's also adding a GUI for convenient use, of course.
+# TODO: Check why there are * in some CombatLogs. See the issues list in the repository.
 
 import os
 import re
 from datetime import datetime
-
 
 def splitter(lines):
     # No match has yet started
@@ -48,14 +51,16 @@ def splitter(lines):
 
 
 # Function that reads the file supplied by the user and parses them accordingly
-def readFile(fileName):
+def parseMatches(matches, timings):
 
     # Declare the values that are needed for parsing
-    playersOccurrences = {}
-    abilitiesOccurences = {}
+    playersOccurrences = []
+    abilitiesOccurrences = []
     copilotCooldown = 60
-    damageReceived = 0
-    damageDealt = 0
+    damageTaken = [0 for match in matches]
+    damageDealt = [0 for match in matches]
+    healingReceived = [0 for match in matches]
+    abilities = {}
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
@@ -68,44 +73,17 @@ def readFile(fileName):
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
-    # Open the file specified by the user.
-    try:
-        fileObject = open(fileName, "r")
-    except IOError:
-        print "File '" + fileName + "' does not exists."
-        return
-
-    if fileObject is None:
-        print "File '" + fileName + "' does not exists."
-        print "Null pointer exception"
-        return
-
-    # Read the lines into a variable
-    lines = fileObject.readlines()
-    # Determine the player's name by passing the lines to special function
-    playerName = determinePlayerName(lines)
-    # Determine the player's ID numbers by passing the lines to a special function
-    player = determinePlayer(lines)
-    # Retrieve the match and timings for those matches from splitter()
-    try:
-        matches, timings = splitter(lines)
-    except:
-        # TODO: handle exception
-        pass
-
+    
     # Create a list of datetime variables from the timings list returned by the splitter()
     datetimes = []
     for time in timings:
         time = time[:-4]
         datetimes.append(datetime.strptime(time, '%H:%M:%S'))
 
-    # Specify variables for damage and healing
-    damageDealt = 0
-    damageTaken = 0
-    healingReceived = 0
-
     # Here parsing starts, loop through the matches. Individual matchDamage must be possible by using more lists.
     # For now, all matches in a file are parsed.
+    currentMatch = 0
+
     for match in matches:
         for event in match:
             # Split the event string into other strings containing the information we want.
@@ -117,6 +95,15 @@ def readFile(fileName):
             ability = elements[7]
             effect = elements[9]
             damagestring = elements[10]
+
+            # The ability always has an ID number behind it between {}, it must be removed
+            ability = ability[:-18]
+            ability.strip()
+            # Put the ability in the dictionary
+            if ability not in abilities:
+                abilities[ability] = 1
+            else:
+                abilities[ability] += 1
             # If "kinetic" is in the event, it is a line where damage is the effect of an ability
             if "kinetic" in event:
                 # Remove any unwanted characters from the string
@@ -137,10 +124,10 @@ def readFile(fileName):
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
-                    damageDealt = damage + damageDealt
+                    damageDealt[currentMatch] += damage
                 # If this is not the case, the damage is inflicted TO the player
                 else:
-                    damageTaken = damage + damageTaken
+                    damageTaken[currentMatch] += damage
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
             # brackets: (35) for Hydro Spanner
             elif "Heal" in event:
@@ -148,14 +135,15 @@ def readFile(fileName):
                 healstring = re.sub("[^0-9]", "", damagestring)
                 # Turn it into an integer and add it to the total
                 heal = int(healstring)
-                healingReceived += heal
-
-    # Print the totals on the screen for the user's convenience and debugging purposes
-    print "\n\n", "You dealt", damageDealt, "damage"
-    print "You took", damageTaken, "damage"
-    print "You received", healingReceived, "healing"
-    print "Your playerName is", playerName
-    print "Your numbers were:", player
+                healingReceived[currentMatch] += heal
+        # Up the index by one to get to the next match
+        currentMatch += 1
+        # Append the abilities-dictionary to the list of dictionaries
+        abilitiesOccurrences.append(abilities)
+        # Make the abilities-dictionary empty
+        abilities = {}
+    # Return the values calculated
+    return damageDealt, damageTaken, healingReceived, abilitiesOccurrences, datetimes
 
 
 def determinePlayer(lines):
@@ -208,7 +196,6 @@ if __name__ == "__main__":
     # Ask the user for a working directory so the user does not have to enter a long filepath for every new file
     print "Please enter a working directory to continue"
     print "Format: C:\Users\...\..."
-    print "\n\n"
 
     # DEBUG: use this for debug purpose
     # fileName = 'CombatLog.txt'
@@ -231,7 +218,47 @@ if __name__ == "__main__":
             break
         # If this is not the case, continue reading the file in another function
         else:
-            readFile(fileName)
+                # Open the file specified by the user.
+                try:
+                    fileObject = open(fileName, "r")
+                except IOError:
+                    print "File '" + fileName + "' does not exists."
+                    break
+                
+                if fileObject is None:
+                    print "File '" + fileName + "' does not exists."
+                    print "Null pointer exception"
+                else:
+                    # Read the lines into a variable
+                    lines = fileObject.readlines()
+                    # Determine the player's name by passing the lines to special function
+                    playerName = determinePlayerName(lines)
+                    # Determine the player's ID numbers by passing the lines to a special function
+                    player = determinePlayer(lines)
+                    print "The name of your character is ", playerName
+                    # Retrieve the match and timings for those matches from splitter()
+                    try:
+                        matches, timings = splitter(lines)
+                    except:
+                        print "splitter(lines) failed"
+                        break
+                    # Pass these variables on to parseMatches() to parse them
+                    try:
+                        damageDealt, damageTaken, healingReceived, abilitiesUsed, datetimes = parseMatches(matches, timings)
+                    except:
+                        print "parseMatches(matches, timings) failed"
+                        break
+                    # Then print these variables for every match separately to give more of an overview for the user
+                    index = 0
+                    for match in matches:
+                        print "In match number ", index + 1, " that started at ", datetimes[index].time(), " you achieved the follwing statistics:"
+                        print "You dealt ", damageDealt[index], " damage"
+                        print "You took ", damageTaken[index], " damage"
+                        print "You received ", healingReceived[index], " healing"
+                        print "You used the following abilities:\n"
+                        print abilitiesUsed[index], "\n"
+                        index += 1
+
     # When the user wants to quit and the loop breaks, then the function continues
     print "Thank you for using the Thranta Squadron GSF CombatLog Parser"
     # Wait for the user to press enter to exit
