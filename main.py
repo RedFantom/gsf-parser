@@ -197,14 +197,12 @@ if __name__ == "__main__":
     print "Please enter a working directory to continue"
     print "Format: C:\Users\...\..."
 
-    # DEBUG: use this for debug purpose
-    # fileName = 'CombatLog.txt'
-    # readFile(fileName=fileName)
 
 
-    # DEBUG: Uncomment if not debugging
     # Comment out this part on Linux
     workingDir = raw_input()
+    # DEBUG: use for debugging purpose
+    # workingDir = os.getcwd()  # gets the current directory
     # Change the working directory to this specified the directory
     os.chdir(workingDir)
 
@@ -213,51 +211,56 @@ if __name__ == "__main__":
         print "Please enter a filename to continue. The file must be a valid SWTOR CombatLog."
         print "Do not forget to include the file extension. Type q to quit."
         fileName = raw_input()
+        # DEBUG: use this for debug purpose
+        # fileName = 'CombatLog.txt'
+
         # If 'q' is entered, break the loop and quit the program
         if fileName == "q":
             break
         # If this is not the case, continue reading the file in another function
         else:
-                # Open the file specified by the user.
+            # Open the file specified by the user.
+            try:
+                fileObject = open(fileName, "r")
+            except IOError:
+                print "File '" + fileName + "' does not exists."
+                break
+
+            if fileObject is None:
+                print "File '" + fileName + "' does not exists."
+                print "Null pointer exception"
+            else:
+                # Read the lines into a variable
+                lines = fileObject.readlines()
+                # Determine the player's name by passing the lines to special function
+                playerName = determinePlayerName(lines)
+                # Determine the player's ID numbers by passing the lines to a special function
+                player = determinePlayer(lines)
+                print "The name of your character is ", playerName
+                # Retrieve the match and timings for those matches from splitter()
                 try:
-                    fileObject = open(fileName, "r")
-                except IOError:
-                    print "File '" + fileName + "' does not exists."
+                    matches, timings = splitter(lines)
+                except:
+                    print "splitter(lines) failed"
                     break
-                
-                if fileObject is None:
-                    print "File '" + fileName + "' does not exists."
-                    print "Null pointer exception"
-                else:
-                    # Read the lines into a variable
-                    lines = fileObject.readlines()
-                    # Determine the player's name by passing the lines to special function
-                    playerName = determinePlayerName(lines)
-                    # Determine the player's ID numbers by passing the lines to a special function
-                    player = determinePlayer(lines)
-                    print "The name of your character is ", playerName
-                    # Retrieve the match and timings for those matches from splitter()
-                    try:
-                        matches, timings = splitter(lines)
-                    except:
-                        print "splitter(lines) failed"
-                        break
-                    # Pass these variables on to parseMatches() to parse them
-                    try:
-                        damageDealt, damageTaken, healingReceived, abilitiesUsed, datetimes = parseMatches(matches, timings)
-                    except:
-                        print "parseMatches(matches, timings) failed"
-                        break
-                    # Then print these variables for every match separately to give more of an overview for the user
-                    index = 0
-                    for match in matches:
-                        print "In match number ", index + 1, " that started at ", datetimes[index].time(), " you achieved the follwing statistics:"
-                        print "You dealt ", damageDealt[index], " damage"
-                        print "You took ", damageTaken[index], " damage"
-                        print "You received ", healingReceived[index], " healing"
-                        print "You used the following abilities:\n"
-                        print abilitiesUsed[index], "\n"
-                        index += 1
+                # Pass these variables on to parseMatches() to parse them
+                try:
+                    damageDealt, damageTaken, healingReceived, abilitiesUsed, datetimes = parseMatches(matches, timings)
+                except:
+                    print "parseMatches(matches, timings) failed"
+                    break
+                # Then print these variables for every match separately to give more of an overview for the user
+                index = 0
+                for match in matches:
+                    print "In match number ", index + 1, " that started at ", datetimes[index].time(), " you achieved the follwing statistics:"
+                    print "You dealt ", damageDealt[index], " damage"
+                    print "You took ", damageTaken[index], " damage"
+                    print "You received ", healingReceived[index], " healing"
+                    print "You used the following abilities:\n"
+                    print abilitiesUsed[index], "\n"
+                    index += 1
+
+            fileObject.close()
 
     # When the user wants to quit and the loop breaks, then the function continues
     print "Thank you for using the Thranta Squadron GSF CombatLog Parser"
