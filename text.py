@@ -1,9 +1,6 @@
 # Written by RedFantom, WingCommander of Thranta Squadron, thrantasquadron.tk
+# Contributed to by Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
-
-# TODO: Up next is splitting the matches into spawns and identifying the ship for each spawn.
-# TODO: And then there's also adding a GUI for convenient use, of course.
-# TODO: Check why there are * in some CombatLogs. See the issues list in the repository.
 
 import os
 import re
