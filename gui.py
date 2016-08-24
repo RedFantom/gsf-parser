@@ -1,4 +1,4 @@
-# Written by RedFantom, WingCommander of Thranta Squadron, thrantasquadron.tk
+# Written by RedFantom, Wing Commander of Thranta Squadron, thrantasquadron.tk
 # Contributed to by Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
 
@@ -206,7 +206,6 @@ def openCombatLog():
         fileObject = open(fileName, "r")
         lines = fileObject.readlines()
     except IOError:
-        print "File could not be opened"
         return -1
     vars.matches, vars.timings = splitter(lines)
     vars.playerName = determinePlayerName(lines)
@@ -262,7 +261,7 @@ def openStatisticsFile():
     try:
         fileObject = open(fileName, "r")
     except IOError:
-        tkMessageBox.showerror("Error", "This file could not be opened")
+        return -1
     indexFile = 0
     vars.damageDealt = []
     vars.damageTaken = []
