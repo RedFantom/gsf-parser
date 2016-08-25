@@ -5,13 +5,13 @@
 import Tkinter
 import tkMessageBox
 import tkFileDialog
-import os
 import re
 import vars
 from datetime import datetime
-import parser
 
-# Function that splits the lines it gets into new lists of lines according to the matches and returns the timings of these matches along with them
+
+# Function that splits the lines it gets into new lists of lines according
+#  to the matches and returns the timings of these matches along with them
 def splitter(lines):
     # No match has yet started
     matchStarted = False
@@ -55,7 +55,6 @@ def splitter(lines):
 
 # Function that reads the file supplied by the user and parses them accordingly
 def parseMatches(matches, timings, player):
-
     # Declare the values that are needed for parsing
     playersOccurrences = []
     abilitiesOccurrences = []
@@ -76,7 +75,6 @@ def parseMatches(matches, timings, player):
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
-    
     # Create a list of datetime variables from the timings list returned by the splitter()
     datetimes = []
     for time in timings:
@@ -122,7 +120,8 @@ def parseMatches(matches, timings, player):
                     damage = int(damagestring)
                 except:
                     print "damagestring also contains non-numeric characters. Cannot convert to int."
-                    print "This often occurs with * in the string. Counting these would lead to abnormal high amounts of damage"
+                    print "This often occurs with * in the string. Counting these would lead to abnormal high amounts" \
+                          " of damage"
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
@@ -200,7 +199,7 @@ def openCombatLog():
     except:
         print "\"Matches\" can't be destroyed"
     types = [("SWTOR CombatLog", "*.txt"), ("All files", "*")]
-    openDialog = tkFileDialog.Open(filetypes = types)
+    openDialog = tkFileDialog.Open(filetypes=types)
     fileName = openDialog.show()
     try:
         fileObject = open(fileName, "r")
@@ -210,37 +209,38 @@ def openCombatLog():
     vars.matches, vars.timings = splitter(lines)
     vars.playerName = determinePlayerName(lines)
     vars.playerNumbers = determinePlayer(lines)
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.abilitiesOccurrences, vars.datetimes = parseMatches(vars.matches, vars.timings, vars.playerNumbers)
-    logMenu = Tkinter.Menu(menuBar, tearoff = 0)
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.abilitiesOccurrences, vars.datetimes = parseMatches(
+        vars.matches, vars.timings, vars.playerNumbers)
+    logMenu = Tkinter.Menu(menuBar, tearoff=0)
     index = 0
     for match in vars.matches:
         if index == 0:
-            logMenu.add_command(label = "One", command = lambda : setStatistics(0))
+            logMenu.add_command(label="One", command=lambda: setStatistics(0))
         elif index == 1:
-            logMenu.add_command(label = "Two", command = lambda : setStatistics(1))
+            logMenu.add_command(label="Two", command=lambda: setStatistics(1))
         elif index == 2:
-            logMenu.add_command(label = "Three", command = lambda : setStatistics(2))
+            logMenu.add_command(label="Three", command=lambda: setStatistics(2))
         elif index == 3:
-            logMenu.add_command(label = "Four", command = lambda : setStatistics(3))
+            logMenu.add_command(label="Four", command=lambda: setStatistics(3))
         elif index == 4:
-            logMenu.add_command(label = "Five", command = lambda : setStatistics(4))
+            logMenu.add_command(label="Five", command=lambda: setStatistics(4))
         elif index == 5:
-            logMenu.add_command(label = "Six", command = lambda : setStatistics(5))
+            logMenu.add_command(label="Six", command=lambda: setStatistics(5))
         elif index == 6:
-            logMenu.add_command(label = "Seven", command = lambda : setStatistics(6))
+            logMenu.add_command(label="Seven", command=lambda: setStatistics(6))
         elif index == 7:
-            logMenu.add_command(label = "Eight", command = lambda : setStatistics(7))
+            logMenu.add_command(label="Eight", command=lambda: setStatistics(7))
         elif index == 8:
-            logMenu.add_command(label = "Nine", command = lambda : setStatistics(8))
+            logMenu.add_command(label="Nine", command=lambda: setStatistics(8))
         elif index == 9:
-            logMenu.add_command(label = "Ten", command = lambda : setStatistics(9))
+            logMenu.add_command(label="Ten", command=lambda: setStatistics(9))
         else:
             print "More than ten matches are not supported. Break here"
             break
         print "Added"
-        index = index + 1
-    menuBar.add_cascade(label = "Matches", menu = logMenu)
-    
+        index += 1
+    menuBar.add_cascade(label="Matches", menu=logMenu)
+
 
 def setStatistics(index):
     print index
@@ -254,9 +254,10 @@ def setStatistics(index):
     except:
         print "Is this a statistics file? If yes, then everything is OK."
 
+
 def openStatisticsFile():
     types = [("GSF Stastics file", "*.gsf"), ("All files", "*")]
-    openDialog = tkFileDialog.Open(filetypes = types)
+    openDialog = tkFileDialog.Open(filetypes=types)
     fileName = openDialog.show()
     try:
         fileObject = open(fileName, "r")
@@ -280,7 +281,7 @@ def openStatisticsFile():
             break
         else:
             vars.damageDealt.append(int(line))
-            indexFile +=1
+            indexFile += 1
     for line in lines[indexFile:]:
         if line == "":
             print "Next section reached. Break"
@@ -310,40 +311,42 @@ def openStatisticsFile():
         menuBar.delete("Matches")
     except:
         print "\"Matches\" can't be destroyed"
-    logMenu = Tkinter.Menu(menuBar, tearoff = 0)
+    logMenu = Tkinter.Menu(menuBar, tearoff=0)
     index = 0
     for damage in vars.damageDealt:
         if index == 0:
-            logMenu.add_command(label = "One", command = lambda : setStatistics(0))
+            logMenu.add_command(label="One", command=lambda: setStatistics(0))
         elif index == 1:
-            logMenu.add_command(label = "Two", command = lambda : setStatistics(1))
+            logMenu.add_command(label="Two", command=lambda: setStatistics(1))
         elif index == 2:
-            logMenu.add_command(label = "Three", command = lambda : setStatistics(2))
+            logMenu.add_command(label="Three", command=lambda: setStatistics(2))
         elif index == 3:
-            logMenu.add_command(label = "Four", command = lambda : setStatistics(3))
+            logMenu.add_command(label="Four", command=lambda: setStatistics(3))
         elif index == 4:
-            logMenu.add_command(label = "Five", command = lambda : setStatistics(4))
+            logMenu.add_command(label="Five", command=lambda: setStatistics(4))
         elif index == 5:
-            logMenu.add_command(label = "Six", command = lambda : setStatistics(5))
+            logMenu.add_command(label="Six", command=lambda: setStatistics(5))
         elif index == 6:
-            logMenu.add_command(label = "Seven", command = lambda : setStatistics(6))
+            logMenu.add_command(label="Seven", command=lambda: setStatistics(6))
         elif index == 7:
-            logMenu.add_command(label = "Eight", command = lambda : setStatistics(7))
+            logMenu.add_command(label="Eight", command=lambda: setStatistics(7))
         elif index == 8:
-            logMenu.add_command(label = "Nine", command = lambda : setStatistics(8))
+            logMenu.add_command(label="Nine", command=lambda: setStatistics(8))
         elif index == 9:
-            logMenu.add_command(label = "Ten", command = lambda : setStatistics(9))
+            logMenu.add_command(label="Ten", command=lambda: setStatistics(9))
         else:
             print "More than ten matches are not supported. Break here"
             break
         print "Added"
-        index = index + 1
-    menuBar.add_cascade(label = "Matches", menu = logMenu)
+        index += 1
+    menuBar.add_cascade(label="Matches", menu=logMenu)
+
 
 def saveStatisticsFile():
     types = [("GSF Stastics file", "*.gsf"), ("All files", "*")]
-    saveDialog = tkFileDialog.SaveAs(filetypes = types)
+    saveDialog = tkFileDialog.SaveAs(filetypes=types)
     fileName = saveDialog.show()
+    fileObject = None
     try:
         fileObject = open(fileName, "w")
     except IOError:
@@ -359,41 +362,44 @@ def saveStatisticsFile():
     fileObject.write("\n")
     fileObject.write(vars.playerName)
 
+
 def quitApplication():
     try:
         mainWindow.quit()
     except:
         print "Exiting the application failed"
 
+
 def about():
     tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom, version 1.0")
+
 
 if __name__ == "__main__":
     # Create the mainWindow and set it's parameters before adding any widgets
     mainWindow = Tkinter.Tk()
     mainWindow.geometry('{}x{}'.format(500, 300))
-    mainWindow.resizable(width = False, height = False)
+    mainWindow.resizable(width=False, height=False)
     mainWindow.wm_title("Thranta Squadron GSF CombatLog Parser")
 
     # Create a menu bar for mainWindow
     menuBar = Tkinter.Menu(mainWindow)
-    
+
     # Add a File menu to the menu bar
-    fileMenu = Tkinter.Menu(menuBar, tearoff = 0)
+    fileMenu = Tkinter.Menu(menuBar, tearoff=0)
     # Add the commands to the fileMenu
-    fileMenu.add_command(label = "Open CombatLog", command = openCombatLog)
-    fileMenu.add_command(label = "Open Statistics file", command = openStatisticsFile)
-    fileMenu.add_command(label = "Save Statistics file", command = saveStatisticsFile)
+    fileMenu.add_command(label="Open CombatLog", command=openCombatLog)
+    fileMenu.add_command(label="Open Statistics file", command=openStatisticsFile)
+    fileMenu.add_command(label="Save Statistics file", command=saveStatisticsFile)
     fileMenu.add_separator()
-    fileMenu.add_command(label = "Exit", command = quitApplication)
+    fileMenu.add_command(label="Exit", command=quitApplication)
     # Add the fileMenu to the menuBar
-    menuBar.add_cascade(label = "File", menu = fileMenu)
+    menuBar.add_cascade(label="File", menu=fileMenu)
 
     # Add an about button to the menuBar
-    menuBar.add_command(label = "About", command = about)
+    menuBar.add_command(label="About", command=about)
 
     # Configure mainWindow with this menuBar
-    mainWindow.config(menu = menuBar)
+    mainWindow.config(menu=menuBar)
 
     # Add the Labels to show the statistics
     damageDealtLabelVar = Tkinter.StringVar()
@@ -402,29 +408,30 @@ if __name__ == "__main__":
     playerNameLabelVar = Tkinter.StringVar()
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
 
-    damageDealtLabel = Tkinter.Label(mainWindow, textvariable = damageDealtLabelVar)
-    damageTakenLabel = Tkinter.Label(mainWindow, textvariable = damageTakenLabelVar)
-    healingReceivedLabel = Tkinter.Label(mainWindow, textvariable = healingReceivedLabelVar)
-    playerNameLabel = Tkinter.Label(mainWindow, textvariable = playerNameLabelVar)
-    abilitiesOccurrencesLabel = Tkinter.Label(mainWindow, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
+    damageDealtLabel = Tkinter.Label(mainWindow, textvariable=damageDealtLabelVar)
+    damageTakenLabel = Tkinter.Label(mainWindow, textvariable=damageTakenLabelVar)
+    healingReceivedLabel = Tkinter.Label(mainWindow, textvariable=healingReceivedLabelVar)
+    playerNameLabel = Tkinter.Label(mainWindow, textvariable=playerNameLabelVar)
+    abilitiesOccurrencesLabel = Tkinter.Label(mainWindow, textvariable=abilitiesOccurrencesLabelVar,
+                                              justify=Tkinter.LEFT, wraplength=450)
 
-    damageDealtTextLabel = Tkinter.Label(mainWindow, text = "Damage dealt: ")
-    damageTakenTextLabel = Tkinter.Label(mainWindow, text = "Damage taken: ")
-    healingReceivedTextLabel = Tkinter.Label(mainWindow, text = "Healing received: ")                                        
-    abilitiesLabel = Tkinter.Label(mainWindow, text = "Abilities used: ")
-    playerLabel = Tkinter.Label(mainWindow, text = "Character name: ")
-    
-    playerLabel.grid(column = 0, row = 0, sticky = Tkinter.W)
-    playerNameLabel.grid(column = 1, row = 0, sticky = Tkinter.W)
-    damageDealtTextLabel.grid(column = 0, row = 1, sticky = Tkinter.W)
-    damageTakenTextLabel.grid(column = 0, row = 2, sticky = Tkinter.W)
-    healingReceivedTextLabel.grid(column = 0, row = 3, sticky = Tkinter.W)
-    damageDealtLabel.grid(column = 1, row = 1, sticky = Tkinter.W)
-    damageTakenLabel.grid(column = 1, row = 2, sticky = Tkinter.W)
-    healingReceivedLabel.grid(column = 1, row = 3, sticky = Tkinter.W)
+    damageDealtTextLabel = Tkinter.Label(mainWindow, text="Damage dealt: ")
+    damageTakenTextLabel = Tkinter.Label(mainWindow, text="Damage taken: ")
+    healingReceivedTextLabel = Tkinter.Label(mainWindow, text="Healing received: ")
+    abilitiesLabel = Tkinter.Label(mainWindow, text="Abilities used: ")
+    playerLabel = Tkinter.Label(mainWindow, text="Character name: ")
 
-    abilitiesLabel.grid(column = 0, columnspan = 2, row = 4, rowspan = 1, sticky = Tkinter.W)
-    abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 5, rowspan = 6, sticky = Tkinter.W)
+    playerLabel.grid(column=0, row=0, sticky=Tkinter.W)
+    playerNameLabel.grid(column=1, row=0, sticky=Tkinter.W)
+    damageDealtTextLabel.grid(column=0, row=1, sticky=Tkinter.W)
+    damageTakenTextLabel.grid(column=0, row=2, sticky=Tkinter.W)
+    healingReceivedTextLabel.grid(column=0, row=3, sticky=Tkinter.W)
+    damageDealtLabel.grid(column=1, row=1, sticky=Tkinter.W)
+    damageTakenLabel.grid(column=1, row=2, sticky=Tkinter.W)
+    healingReceivedLabel.grid(column=1, row=3, sticky=Tkinter.W)
+
+    abilitiesLabel.grid(column=0, columnspan=2, row=4, rowspan=1, sticky=Tkinter.W)
+    abilitiesOccurrencesLabel.grid(column=0, columnspan=2, row=5, rowspan=6, sticky=Tkinter.W)
 
     # Start the loop
     mainWindow.mainloop()
