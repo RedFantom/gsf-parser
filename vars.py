@@ -13,3 +13,4 @@ timings = []
 matches = []
 
 matchTimings = []
+statisticsFile = False
