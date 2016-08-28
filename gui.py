@@ -7,218 +7,49 @@ import tkMessageBox
 import tkFileDialog
 import re
 import vars
-from datetime import datetime
-
-
-# Function that splits the lines it gets into new lists of lines according 
-# to the matches and returns the timings of these matches along with them
-def splitter(lines):
-    # No match has yet started
-    matchStarted = False
-    # The matchNumber starts at 0. 0 is the first match.
-    matchNumber = 0
-    matches = []
-    match = []
-    timings = []
-    # Loop through the lines supplied to identify the matches and split them.
-    for line in lines:
-        elements = re.split(r"[\[\]]", line)
-        timestring = elements[1]
-        # If @ is not in the line, it is a GSF ability
-        if "@" not in line:
-            # If a match had not started, then it has now started
-            if matchStarted == False:
-                matchStarted = True
-                added = False
-                timings.append(timestring)
-                match.append(line)
-            elif matchStarted == True:
-                match.append(line)
-                added = False
-            else:
-                raise ValueError("matchStarted is neither True nor False")
-        # If @ is in the line, then it is a normal ability
-        elif "@" in line:
-            # If a match had started, then the match has now ended and the next lines must be appended to the second
-            # match list.
-            if matchStarted == True:
-                matchStarted = False
-                matches.append(match)
-                timings.append(timestring)
-                match = []
-        # If @ is neither in the line nor not in the line, then an error has occurred
-        else:
-            raise ValueError("@ not in line and @ not not in line")
-    # Return the list of lists of matches
-    return matches, timings
-
-
-# Function that reads the file supplied by the user and parses them accordingly
-def parseMatches(matches, timings, player):
-
-    # Declare the values that are needed for parsing
-    playersOccurrences = []
-    abilitiesOccurrences = []
-    copilotCooldown = 60
-    damageTaken = [0 for match in matches]
-    damageDealt = [0 for match in matches]
-    healingReceived = [0 for match in matches]
-    abilities = {}
-
-    # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
-    engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
-                       'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
-                       'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
-    shieldCooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
-                       'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
-                       'Fortress Shield': 30}
-    systemCooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
-                       'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
-                       'Blaster Overcharge': 60, 'EMP Field': 60}
-
-
-    # Create a list of datetime variables from the timings list returned by the splitter()
-    datetimes = []
-    for time in timings:
-        time = time[:-4]
-        datetimes.append(datetime.strptime(time, '%H:%M:%S'))
-
-    # Here parsing starts, loop through the matches. Individual matchDamage must be possible by using more lists.
-    # For now, all matches in a file are parsed.
-    currentMatch = 0
-
-    for match in matches:
-        for event in match:
-            # Split the event string into other strings containing the information we want.
-            elements = re.split(r"[\[\]]", event)
-            # Assign those elements to individual variables to keep things clear.
-            timestring = elements[1]
-            source = elements[3]
-            target = elements[5]
-            ability = elements[7]
-            effect = elements[9]
-            damagestring = elements[10]
-
-            # The ability always has an ID number behind it between {}, it must be removed
-            ability = ability[:-18]
-            ability.strip()
-            # Put the ability in the dictionary
-            if ability not in abilities:
-                abilities[ability] = 1
-            else:
-                abilities[ability] += 1
-            # If "kinetic" is in the event, it is a line where damage is the effect of an ability
-            if "kinetic" in event:
-                # Remove any unwanted characters from the string
-                ability = ability[:-18]
-                ability.strip()
-                damagestring = damagestring[2:-27]
-                re.sub("[^0-9]", "", damagestring)
-                # Sometimes the string is empty, even while there is "kinetic" in the line. Then 0 damage is added.
-                if damagestring == "":
-                    damagestring = "0"
-                # Get an integer from the damagestring, which now only contains a number
-                try:
-                    damage = int(damagestring)
-                except:
-                    pass
-                # If the source is in the player list, which contains all the player's ID numbers, the damage is
-                # inflicted BY the player
-                if source in player:
-                    damageDealt[currentMatch] += damage
-                # If this is not the case, the damage is inflicted TO the player
-                else:
-                    damageTaken[currentMatch] += damage
-            # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
-            # brackets: (35) for Hydro Spanner
-            elif "Heal" in event:
-                # Remove the brackets
-                healstring = re.sub("[^0-9]", "", damagestring)
-                # Turn it into an integer and add it to the total
-                heal = int(healstring)
-                healingReceived[currentMatch] += heal
-        # Up the index by one to get to the next match
-        currentMatch += 1
-        # Append the abilities-dictionary to the list of dictionaries
-        abilitiesOccurrences.append(abilities)
-        # Make the abilities-dictionary empty
-        abilities = {}
-    # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, abilitiesOccurrences, datetimes
-
-
-# Returns the player's ID numbers
-def determinePlayer(lines):
-    """
-    Takes a list of strings (lines of a combat log) and extract all player engaged into battle. Save those in a
-    dictionary with player ID as key and its occurrence as value.
-
-    :param lines: lines of a combat log, as a list of string
-    :return: dictionary of player ID and its occurrence
-    """
-    # Create dictionary to store the players in
-    playerOccurrences = {}
-    # Start a for loop to loop through the lines
-    for action in lines:
-        # Split the elements, just as in ReadFile()
-        elements = re.split(r"[\[\]]", action)
-        # Only source and target are important here
-        source = elements[3]
-        target = elements[5]
-        # If the target is also the source, then it's a self-targeted ability
-        if target == source:
-            # Only if @ is not in the source it is a GSF ability
-            if "@" not in source:
-                # If the ID is not yet in the dictionary, add it and set the amount of occurrences to 1
-                if source not in playerOccurrences:
-                    playerOccurrences[source] = 1
-                # If the ID is already in the dictionary, add 1 to the amount of occurrences for this ID
-                else:
-                    playerOccurrences[source] += 1
-    # Return the playerOccurrences dictionary with the ID's and their respective occurrences
-    return playerOccurrences
-
-
-# Returns the player name
-def determinePlayerName(lines):
-    """
-    Takes the first line of the combat log, which always contains the safe-login ability, which is a self-targeted
-    ability. The 4th element of the line is the player name with the form: '@Name'. Return the name without '@'
-
-    :param lines: List of strings, each elements are a line of the combat log
-    :return: Player name, string
-    """
-    # In an unmodified file, lines[0] will always have this format
-    elements = re.split(r"[\[\]]", lines[0])  # Split line
-    return elements[3][1:]
-    
+import parse
+from datetime import datetime 
 
 # Call back fuction for the Open CombatLog menu item
 # Parses the file and places the results in the variables in vars.py
 # Then adds a new menu cascade, of which all items call the setStatistics() function with lambda
 def openCombatLog():
-    # First try to delete the pervious menu cascad. Will fail if it doesn't yet exist.
+    # First try to delete the pervious menu cascade. Will fail if it doesn't yet exist.
     try:
         menuBar.delete("Matches")
     except:
         pass
+    # Create file-opening dialog and show it.
     types = [("SWTOR CombatLog", "*.txt"), ("All files", "*")]
     openDialog = tkFileDialog.Open(filetypes = types)
     fileName = openDialog.show()
+    # Try to create a fileObject with this file
     try:
         fileObject = open(fileName, "r")
         lines = fileObject.readlines()
+    # Since the user has to choose an existing file, the IOError will only occur when the dialog was canceled, and the program must end.
     except IOError:
         return
+
+    # -- Parsing starts --
+
+    # This is not a statistics file, and setStatistics() must be able to determine that
     vars.statisticsFile = False
-    vars.matches, vars.timings = splitter(lines)
-    vars.playerName = determinePlayerName(lines)
-    vars.playerNumbers = determinePlayer(lines)
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.abilitiesOccurrences, vars.datetimes = parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    # First split the lines of the file into matches
+    vars.matches, vars.timings = parse.splitter(lines)
+    # Then determine the playerName
+    vars.playerName = parse.determinePlayerName(lines)
+    # Determine the player's ID numbers
+    vars.playerNumbers = parse.determinePlayer(lines)
+    # Then get the useful information out of the matches
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.abilitiesOccurrences, vars.datetimes = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    # Add a new menu cascade for the matches
     logMenu = Tkinter.Menu(menuBar, tearoff = 0)
+    # Start iterating through the matches and add items to the menu cascade
     index = 0
     amountOfMatches = 0
     for match in vars.matches:
+        # This can only be done with a lambda function with a static argument for setStatistics()
         if index == 0:
             logMenu.add_command(label = vars.timings[0], command = lambda : setStatistics(0))
         elif index == 1:
@@ -260,38 +91,45 @@ def openCombatLog():
         elif index == 19:
             logMenu.add_command(label = vars.timings[38], command = lambda : setStatistics(19))
         else:
+            # If the user has more than twenty matches in one combatLog, there are not enough menu items. Display a warning.
             tkMessageBox.showinfo("Notice", "More than twenty matches in a single CombatLog are not suppuported. Only your first twenty matches have been added.")
             break
         amountOfMatches += 1
         index += 1
+    # Show the user how many matches were added
     tkMessageBox.showinfo("Notice", str(amountOfMatches) + " matches were added.")
     menuBar.add_cascade(label = "Matches", menu = logMenu)
 
 
 # Function that displays the statistics for each match
 def setStatistics(index):
+    # Set the labels to display the data from the variables
     playerNameLabelVar.set(vars.playerName)
     damageDealtLabelVar.set(vars.damageDealt[index])
     damageTakenLabelVar.set(vars.damageTaken[index])
     healingReceivedLabelVar.set(vars.healingReceived[index])
+    # If there are no abilities, it must be a statistics file and the abilities must be empty. Otherwise, display an error message.
     try:
         abilitiesOccurrencesLabelVar.set(vars.abilitiesOccurrences[index])
     except:
         if vars.statisticsFile == True:
-            pass
+            abilitiesOccurrencesLabelVar.set("Unavailable for a statistics file.")
         else:
             tkMessageBox.showerror("Error", "The abilities are missing.")
 
 
 # Function that opens a saved statistics file
 def openStatisticsFile():
+    # Open a dialog to open a statistics file.
     types = [("GSF Stastics file", "*.gsf"), ("All files", "*")]
     openDialog = tkFileDialog.Open(filetypes = types)
     fileName = openDialog.show()
+    # Try to create a fileObject with this file. If the dialog is cancelled, the method must exit.
     try:
         fileObject = open(fileName, "r")
     except IOError:
         return
+    # Clear the variables.
     indexFile = 0
     vars.damageDealt = []
     vars.damageTaken = []
@@ -299,8 +137,26 @@ def openStatisticsFile():
     vars.playerName = None
     vars.abilitiesOccurrences = {}
     vars.statisticsFile = True
+    # Read the lines from the file
     lines = fileObject.readlines()
+    # Iterate over the lines and put them in the right variables
+    '''
+    The statistics file is layed-out as follows:
+    
+    Damage dealt in the first match
+    Damage dealt in the second match
+    Damage dealt in the third match
+    ...
+    \n
+    Damage taken in the first match
+    Damage taken in the second match
+    ...
+    \n
+    And so on for the other variables. 
+    Backwards compatibility for future versions with extra data by adding new information to the end of the file.
+    '''
     for line in lines:
+        # If a line is empty or contains a newline-character, the section has ended.
         if line == "":
             indexFile += 1
             break
@@ -331,6 +187,7 @@ def openStatisticsFile():
             vars.healingReceived.append(int(line))
             indexFile += 1
     vars.playerName = lines[indexFile]
+    # Works the same as in openCombatLog()
     try:
         menuBar.delete("Matches")
     except:
@@ -389,14 +246,18 @@ def openStatisticsFile():
     
 # Function to save a statistics file containing only the statistics of a CombatLog and the name of the player
 def saveStatisticsFile():
+    # Open a dialog to save with .gsf as the default file type
     types = [("GSF Stastics file", "*.gsf"), ("All files", "*")]
-    saveDialog = tkFileDialog.SaveAs(filetypes = types)
+    saveDialog = tkFileDialog.SaveAs(defaultextension = ".gsf", filetypes = types)
     fileName = saveDialog.show()
+    # Create the fileObject before reference
     fileObject = None
+    # Try to save the file and display a warning if not possible
     try:
         fileObject = open(fileName, "w")
     except IOError:
         tkMessageBox.showerror("Error", "This file could not be saved")
+    # Create the statisticsFile according to the description in openStatisticsFile()
     for damage in vars.damageDealt:
         fileObject.write(str(damage) + "\n")
     fileObject.write("\n")
@@ -418,7 +279,7 @@ def quitApplication():
 
 # Function to open a messagebox that displays the information about the parser
 def about():
-    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom, version 1.1")
+    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom, version 1.1.2")
 
 
 # Main function to start the GUI and add most of the items in it
@@ -449,25 +310,28 @@ if __name__ == "__main__":
     # Configure mainWindow with this menuBar
     mainWindow.config(menu = menuBar)
 
-    # Add the Labels to show the statistics
+    # Add the variables to show the statistics
     damageDealtLabelVar = Tkinter.StringVar()
     damageTakenLabelVar = Tkinter.StringVar()
     healingReceivedLabelVar = Tkinter.StringVar()
     playerNameLabelVar = Tkinter.StringVar()
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
-
+    
+    # Add the labels to show the variables that were just created
     damageDealtLabel = Tkinter.Label(mainWindow, textvariable = damageDealtLabelVar)
     damageTakenLabel = Tkinter.Label(mainWindow, textvariable = damageTakenLabelVar)
     healingReceivedLabel = Tkinter.Label(mainWindow, textvariable = healingReceivedLabelVar)
     playerNameLabel = Tkinter.Label(mainWindow, textvariable = playerNameLabelVar)
     abilitiesOccurrencesLabel = Tkinter.Label(mainWindow, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
 
+    # Add the labels to show what is displayed in each label with a variable
     damageDealtTextLabel = Tkinter.Label(mainWindow, text = "Damage dealt: ")
     damageTakenTextLabel = Tkinter.Label(mainWindow, text = "Damage taken: ")
     healingReceivedTextLabel = Tkinter.Label(mainWindow, text = "Healing received: ")
     abilitiesLabel = Tkinter.Label(mainWindow, text = "Abilities used: ")
     playerLabel = Tkinter.Label(mainWindow, text = "Character name: ")
 
+    # Lay out the labels in a grid
     playerLabel.grid(column = 0, row = 0, sticky = Tkinter.W)
     playerNameLabel.grid(column = 1, row = 0, sticky = Tkinter.W)
     damageDealtTextLabel.grid(column = 0, row = 1, sticky = Tkinter.W)
@@ -477,6 +341,7 @@ if __name__ == "__main__":
     damageTakenLabel.grid(column = 1, row = 2, sticky = Tkinter.W)
     healingReceivedLabel.grid(column = 1, row = 3, sticky = Tkinter.W)
 
+    # The abilities are in the grid, but take up two columns
     abilitiesLabel.grid(column = 0, columnspan = 2, row = 4, rowspan = 1, sticky = Tkinter.W)
     abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 5, rowspan = 6, sticky = Tkinter.W)
 
