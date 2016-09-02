@@ -1,5 +1,4 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron, thrantasquadron.tk
-# Contributed to by Daethyra, Squadron Leader of Thranta Squadron
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
 
 import re
@@ -97,11 +96,12 @@ def parseMatches(matches, timings, player):
             # The ability always has an ID number behind it between {}, it must be removed
             ability = ability[:-18]
             ability.strip()
-            # Put the ability in the dictionary
-            if ability not in abilities:
-                abilities[ability] = 1
-            else:
-                abilities[ability] += 1
+            # Put the ability in the dictionary if the ability was used by the player
+            if source in player:
+                if ability not in abilities:
+                    abilities[ability] = 1
+                else:
+                    abilities[ability] += 1
             # If "kinetic" is in the event, it is a line where damage is the effect of an ability
             if "kinetic" in event:
                 # Remove any unwanted characters from the string

@@ -1,14 +1,26 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron, thrantasquadron.tk
-# Contributed to by Daethyra, Squadron Leader of Thranta Squadron
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
 
 import Tkinter
+import ttk
 import tkMessageBox
 import tkFileDialog
 import re
 import vars
 import parse
+import client
 from datetime import datetime 
+
+def sendCombatLog():
+    if vars.statisticsFile == True:
+        tkMessageBox.showinfo("Notice", "A statistics file can not be shared.")
+        return
+    if vars.fileName == None:
+        tkMessageBox.showinfo("Notice", "No file has been selected yet.")
+        return
+    client.send(vars.fileName)
+    return
+
 
 # Call back fuction for the Open CombatLog menu item
 # Parses the file and places the results in the variables in vars.py
@@ -22,10 +34,10 @@ def openCombatLog():
     # Create file-opening dialog and show it.
     types = [("SWTOR CombatLog", "*.txt"), ("All files", "*")]
     openDialog = tkFileDialog.Open(filetypes = types)
-    fileName = openDialog.show()
+    vars.fileName = openDialog.show()
     # Try to create a fileObject with this file
     try:
-        fileObject = open(fileName, "r")
+        fileObject = open(vars.fileName, "r")
         lines = fileObject.readlines()
     # Since the user has to choose an existing file, the IOError will only occur when the dialog was canceled, and the program must end.
     except IOError:
@@ -123,10 +135,10 @@ def openStatisticsFile():
     # Open a dialog to open a statistics file.
     types = [("GSF Stastics file", "*.gsf"), ("All files", "*")]
     openDialog = tkFileDialog.Open(filetypes = types)
-    fileName = openDialog.show()
+    vars.fileName = openDialog.show()
     # Try to create a fileObject with this file. If the dialog is cancelled, the method must exit.
     try:
-        fileObject = open(fileName, "r")
+        fileObject = open(vars.fileName, "r")
     except IOError:
         return
     # Clear the variables.
@@ -279,8 +291,13 @@ def quitApplication():
 
 # Function to open a messagebox that displays the information about the parser
 def about():
-    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom, version 1.1.2")
+    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.2.0")
+    return
 
+def info():
+    tkMessageBox.showinfo("Server info", "The server for sending CombatLog is currently set to: " + vars.serverAddress + " over port " + str(vars.serverPort))
+    return
+                         
 
 # Main function to start the GUI and add most of the items in it
 if __name__ == "__main__":
@@ -300,15 +317,27 @@ if __name__ == "__main__":
     fileMenu.add_command(label = "Open Statistics file", command = openStatisticsFile)
     fileMenu.add_command(label = "Save Statistics file", command = saveStatisticsFile)
     fileMenu.add_separator()
+    fileMenu.add_command(label = "About", command = about)
+    fileMenu.add_command(label = "Server info", command = info)
+    fileMenu.add_separator()
     fileMenu.add_command(label = "Exit", command = quitApplication)
     # Add the fileMenu to the menuBar
     menuBar.add_cascade(label = "File", menu = fileMenu)
 
-    # Add an about button to the menuBar
-    menuBar.add_command(label = "About", command = about)
-
     # Configure mainWindow with this menuBar
     mainWindow.config(menu = menuBar)
+
+    # Add a notebook widget to the mainWindow and add its tabs
+    notebook = ttk.Notebook(mainWindow, height = 275, width = 498)
+    statisticsTab = ttk.Frame(notebook)
+    abilitiesTab = ttk.Frame(notebook)
+    playersTab = ttk.Frame(notebook)
+    shareTab = ttk.Frame(notebook)
+    notebook.add(statisticsTab, text = "Statistics") 
+    notebook.add(abilitiesTab, text = "Abilities")
+    # notebook.add(playersTab, text = "Players")
+    notebook.add(shareTab, text = "Share")
+    notebook.grid(column = 0, row = 0)
 
     # Add the variables to show the statistics
     damageDealtLabelVar = Tkinter.StringVar()
@@ -318,18 +347,40 @@ if __name__ == "__main__":
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
     
     # Add the labels to show the variables that were just created
-    damageDealtLabel = Tkinter.Label(mainWindow, textvariable = damageDealtLabelVar)
-    damageTakenLabel = Tkinter.Label(mainWindow, textvariable = damageTakenLabelVar)
-    healingReceivedLabel = Tkinter.Label(mainWindow, textvariable = healingReceivedLabelVar)
-    playerNameLabel = Tkinter.Label(mainWindow, textvariable = playerNameLabelVar)
-    abilitiesOccurrencesLabel = Tkinter.Label(mainWindow, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
+    damageDealtLabel = Tkinter.Label(statisticsTab, textvariable = damageDealtLabelVar)
+    damageTakenLabel = Tkinter.Label(statisticsTab, textvariable = damageTakenLabelVar)
+    healingReceivedLabel = Tkinter.Label(statisticsTab, textvariable = healingReceivedLabelVar)
+    playerNameLabel = Tkinter.Label(statisticsTab, textvariable = playerNameLabelVar)
+    abilitiesOccurrencesLabel = Tkinter.Label(abilitiesTab, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
 
     # Add the labels to show what is displayed in each label with a variable
-    damageDealtTextLabel = Tkinter.Label(mainWindow, text = "Damage dealt: ")
-    damageTakenTextLabel = Tkinter.Label(mainWindow, text = "Damage taken: ")
-    healingReceivedTextLabel = Tkinter.Label(mainWindow, text = "Healing received: ")
-    abilitiesLabel = Tkinter.Label(mainWindow, text = "Abilities used: ")
-    playerLabel = Tkinter.Label(mainWindow, text = "Character name: ")
+    damageDealtTextLabel = Tkinter.Label(statisticsTab, text = "Damage dealt: ")
+    damageTakenTextLabel = Tkinter.Label(statisticsTab, text = "Damage taken: ")
+    healingReceivedTextLabel = Tkinter.Label(statisticsTab, text = "Healing received: ")
+    abilitiesLabel = Tkinter.Label(abilitiesTab, text = "Abilities used: ")
+    playerLabel = Tkinter.Label(statisticsTab, text = "Character name: ")
+
+    # Add a label to show a description in the Share tab
+    descriptionLabel = Tkinter.Label(shareTab, text = """You can send your CombatLog to the Thranta Squadron database server for analysis. This would help the developers and you could earn a spot in the Holocron Vault with your CombatLog. This functionality is still in beta.""",
+                                     justify = Tkinter.LEFT, wraplength = 450)
+    descriptionLabel.grid(column = 0, row = 0, columnspan = 2)
+
+    # Add a progress bar and a button to the Share tab that is accessible for client.py
+    vars.progressBar = ttk.Progressbar(shareTab, orient = "horizontal", length = 350, mode = "determinate")
+    vars.progressBar.grid(column = 0, row = 1, columnspan = 1)
+    
+    # Add a button to start sending the file
+    sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog)
+    sendButton.grid(column = 1, row = 1)
+
+    # Add a label to show a warning
+    warningLabelText = Tkinter.StringVar()
+    warningLabel = Tkinter.Label(shareTab, textvariable = warningLabelText, justify = Tkinter.LEFT, wraplength = 450)
+    if client.checkConnection() == True:
+        warningLabelText.set("The server is available for receiving files.")
+    else:
+        warningLabelText.set("The server is not available. Files cannot be sent at this time. Please try again later.")
+    warningLabel.grid(column = 0, row = 2, columnspan = 2)
 
     # Lay out the labels in a grid
     playerLabel.grid(column = 0, row = 0, sticky = Tkinter.W)
@@ -342,8 +393,8 @@ if __name__ == "__main__":
     healingReceivedLabel.grid(column = 1, row = 3, sticky = Tkinter.W)
 
     # The abilities are in the grid, but take up two columns
-    abilitiesLabel.grid(column = 0, columnspan = 2, row = 4, rowspan = 1, sticky = Tkinter.W)
-    abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 5, rowspan = 6, sticky = Tkinter.W)
+    abilitiesLabel.grid(column = 0, columnspan = 2, row = 0, rowspan = 1, sticky = Tkinter.W)
+    abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 1, rowspan = 6, sticky = Tkinter.W)
 
     # Start the loop
     mainWindow.mainloop()

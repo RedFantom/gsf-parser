@@ -1,5 +1,4 @@
-# Written by RedFantom, WingCommander of Thranta Squadron, thrantasquadron.tk
-# Contributed to by Daethyra, Squadron Leader of Thranta Squadron
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
 
 damageDealt = []
@@ -11,6 +10,11 @@ playerName = None
 playerNumbers = []
 timings = []
 matches = []
+
+progressBar = None
+fileName = None
+
+serverAddress = ('www.thrantasquadron.tk', 83)
 
 matchTimings = []
 statisticsFile = False
