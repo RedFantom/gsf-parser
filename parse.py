@@ -222,7 +222,12 @@ if __name__ == "__main__":
     # DEBUG: use for debugging purpose
     # workingDir = os.getcwd()  # gets the current directory
     # Change the working directory to this specified the directory
-    os.chdir(workingDir)
+    try:
+        os.chdir(workingDir)
+    except OSError as e:
+        print "Error changing directory"
+        print e
+        exit(0)
 
     while True:
         print ""
