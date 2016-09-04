@@ -9,9 +9,6 @@ import re
 import vars
 import parse
 import client
-import signal
-import thread
-import time
 from datetime import datetime 
 
 def sendCombatLog():
