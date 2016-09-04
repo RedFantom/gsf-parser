@@ -2,9 +2,10 @@
 # For license see LICENSE
 
 import re
-from datetime import datetime 
+import os
+from datetime import datetime
 
-# Function that splits the lines it gets into new lists of lines according 
+# Function that splits the lines it gets into new lists of lines according
 # to the matches and returns the timings of these matches along with them
 def splitter(lines):
     # No match has yet started
@@ -56,6 +57,7 @@ def parseMatches(matches, timings, player):
     copilotCooldown = 60
     damageTaken = [0 for match in matches]
     damageDealt = [0 for match in matches]
+    selfdamage = [0 for match in matches]
     healingReceived = [0 for match in matches]
     abilities = {}
 
@@ -96,19 +98,32 @@ def parseMatches(matches, timings, player):
             # The ability always has an ID number behind it between {}, it must be removed
             ability = ability[:-18]
             ability.strip()
+
+            # Put the ability in the dictionary
+            if ability not in abilities:
+                abilities[ability] = 1
+            else:
+                abilities[ability] += 1
             # Put the ability in the dictionary if the ability was used by the player
             if source in player:
                 if ability not in abilities:
                     abilities[ability] = 1
                 else:
                     abilities[ability] += 1
+
             # If "kinetic" is in the event, it is a line where damage is the effect of an ability
             if "kinetic" in event:
                 # Remove any unwanted characters from the string
                 ability = ability[:-18]
                 ability.strip()
-                damagestring = damagestring[2:-27]
-                re.sub("[^0-9]", "", damagestring)
+
+                # Takes damagestring and split after the pattern (stuff in here) and take the second element
+                # containing the "stuff in here"
+                # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}']
+                damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+                # now split it and take only the number
+                damagestring = damagestring.split(None, 1)[0]
+
                 # Sometimes the string is empty, even while there is "kinetic" in the line. Then 0 damage is added.
                 if damagestring == "":
                     damagestring = "0"
@@ -116,7 +131,7 @@ def parseMatches(matches, timings, player):
                 try:
                     damage = int(damagestring)
                 except:
-                    pass
+                    damage = 0
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
@@ -132,6 +147,11 @@ def parseMatches(matches, timings, player):
                 # Turn it into an integer and add it to the total
                 heal = int(healstring)
                 healingReceived[currentMatch] += heal
+            elif "Selfdamage" in event:
+                damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+                damagestring = damagestring.split(None, 1)[0]
+                damage = int(damagestring)
+                selfdamage[currentMatch] += damage
         # Up the index by one to get to the next match
         currentMatch += 1
         # Append the abilities-dictionary to the list of dictionaries
@@ -139,7 +159,7 @@ def parseMatches(matches, timings, player):
         # Make the abilities-dictionary empty
         abilities = {}
     # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, abilitiesOccurrences, datetimes
+    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes
 
 
 # Returns the player's ID numbers
@@ -238,22 +258,25 @@ if __name__ == "__main__":
                 # Retrieve the match and timings for those matches from splitter()
                 try:
                     matches, timings = splitter(lines)
-                except:
+                except Exception as e:
                     print "splitter(lines) failed"
+                    print e
                     break
                 # Pass these variables on to parseMatches() to parse them
                 try:
-                    damageDealt, damageTaken, healingReceived, abilitiesUsed, datetimes = parseMatches(matches, timings)
-                except:
+                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes = parseMatches(matches, timings, player)
+                except Exception as e:
                     print "parseMatches(matches, timings) failed"
+                    print e
                     break
                 # Then print these variables for every match separately to give more of an overview for the user
                 index = 0
                 for match in matches:
-                    print "In match number ", index + 1, " that started at ", datetimes[index].time(), " you achieved the follwing statistics:"
-                    print "You dealt ", damageDealt[index], " damage"
-                    print "You took ", damageTaken[index], " damage"
-                    print "You received ", healingReceived[index], " healing"
+                    print "In match number", index + 1, "that started at", datetimes[index].time(), "you achieved the follwing statistics:"
+                    print "You dealt", damageDealt[index], "damage"
+                    print "You took", damageTaken[index], "damage"
+                    print "You received", healingReceived[index], "healing"
+                    print "You did", selfdamage[index], "damage to yourself"
                     print "You used the following abilities:\n"
                     print abilitiesUsed[index], "\n"
                     index += 1
