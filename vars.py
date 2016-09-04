@@ -10,6 +10,7 @@ playerName = None
 playerNumbers = []
 timings = []
 matches = []
+selfdamage = []
 
 progressBar = None
 fileName = None

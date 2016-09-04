@@ -9,6 +9,9 @@ import re
 import vars
 import parse
 import client
+import signal
+import thread
+import time
 from datetime import datetime 
 
 def sendCombatLog():
@@ -20,7 +23,6 @@ def sendCombatLog():
         return
     client.send(vars.fileName)
     return
-
 
 # Call back fuction for the Open CombatLog menu item
 # Parses the file and places the results in the variables in vars.py
@@ -54,7 +56,7 @@ def openCombatLog():
     # Determine the player's ID numbers
     vars.playerNumbers = parse.determinePlayer(lines)
     # Then get the useful information out of the matches
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.abilitiesOccurrences, vars.datetimes = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
     # Add a new menu cascade for the matches
     logMenu = Tkinter.Menu(menuBar, tearoff = 0)
     # Start iterating through the matches and add items to the menu cascade
@@ -120,6 +122,13 @@ def setStatistics(index):
     damageDealtLabelVar.set(vars.damageDealt[index])
     damageTakenLabelVar.set(vars.damageTaken[index])
     healingReceivedLabelVar.set(vars.healingReceived[index])
+    try:
+        selfdamageLabelVar.set(vars.selfdamage[index])
+    except:
+        if vars.statisticsFile == True:
+            selfdamageLabelVar.set("Unavailable for a statistics file.")
+        else:
+            tkMessageBox.showerror("Error", "The selfdamage is missing.")
     # If there are no abilities, it must be a statistics file and the abilities must be empty. Otherwise, display an error message.
     try:
         abilitiesOccurrencesLabelVar.set(vars.abilitiesOccurrences[index])
@@ -345,6 +354,7 @@ if __name__ == "__main__":
     healingReceivedLabelVar = Tkinter.StringVar()
     playerNameLabelVar = Tkinter.StringVar()
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
+    selfdamageLabelVar = Tkinter.StringVar()
     
     # Add the labels to show the variables that were just created
     damageDealtLabel = Tkinter.Label(statisticsTab, textvariable = damageDealtLabelVar)
@@ -352,6 +362,7 @@ if __name__ == "__main__":
     healingReceivedLabel = Tkinter.Label(statisticsTab, textvariable = healingReceivedLabelVar)
     playerNameLabel = Tkinter.Label(statisticsTab, textvariable = playerNameLabelVar)
     abilitiesOccurrencesLabel = Tkinter.Label(abilitiesTab, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
+    selfdamageLabel = Tkinter.Label(statisticsTab, textvariable = selfdamageLabelVar)
 
     # Add the labels to show what is displayed in each label with a variable
     damageDealtTextLabel = Tkinter.Label(statisticsTab, text = "Damage dealt: ")
@@ -359,6 +370,7 @@ if __name__ == "__main__":
     healingReceivedTextLabel = Tkinter.Label(statisticsTab, text = "Healing received: ")
     abilitiesLabel = Tkinter.Label(abilitiesTab, text = "Abilities used: ")
     playerLabel = Tkinter.Label(statisticsTab, text = "Character name: ")
+    selfdamageTextLabel = Tkinter.Label(statisticsTab, text = "Selfdamage: ")
 
     # Add a label to show a description in the Share tab
     descriptionLabel = Tkinter.Label(shareTab, text = """You can send your CombatLog to the Thranta Squadron database server for analysis. This would help the developers and you could earn a spot in the Holocron Vault with your CombatLog. This functionality is still in beta.""",
@@ -370,16 +382,12 @@ if __name__ == "__main__":
     vars.progressBar.grid(column = 0, row = 1, columnspan = 1)
     
     # Add a button to start sending the file
-    sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog)
+    sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog, state = Tkinter.DISABLED)
     sendButton.grid(column = 1, row = 1)
 
     # Add a label to show a warning
     warningLabelText = Tkinter.StringVar()
     warningLabel = Tkinter.Label(shareTab, textvariable = warningLabelText, justify = Tkinter.LEFT, wraplength = 450)
-    if client.checkConnection() == True:
-        warningLabelText.set("The server is available for receiving files.")
-    else:
-        warningLabelText.set("The server is not available. Files cannot be sent at this time. Please try again later.")
     warningLabel.grid(column = 0, row = 2, columnspan = 2)
 
     # Lay out the labels in a grid
@@ -391,6 +399,8 @@ if __name__ == "__main__":
     damageDealtLabel.grid(column = 1, row = 1, sticky = Tkinter.W)
     damageTakenLabel.grid(column = 1, row = 2, sticky = Tkinter.W)
     healingReceivedLabel.grid(column = 1, row = 3, sticky = Tkinter.W)
+    selfdamageTextLabel.grid(column = 0, row = 4, sticky = Tkinter.W)
+    selfdamageLabel.grid(column = 1, row = 4, sticky = Tkinter.W)
 
     # The abilities are in the grid, but take up two columns
     abilitiesLabel.grid(column = 0, columnspan = 2, row = 0, rowspan = 1, sticky = Tkinter.W)
