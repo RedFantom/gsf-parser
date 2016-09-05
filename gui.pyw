@@ -58,7 +58,7 @@ def openCombatLog():
     # Determine the player's ID numbers
     vars.playerNumbers = parse.determinePlayer(lines)
     # Then get the useful information out of the matches
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken, vars.amountOfCriticals = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
     # Add a new menu cascade for the matches
     logMenu = Tkinter.Menu(menuBar, tearoff = 0)
     # Start iterating through the matches and add items to the menu cascade
@@ -124,6 +124,13 @@ def setStatistics(index):
     damageDealtLabelVar.set(vars.damageDealt[index])
     damageTakenLabelVar.set(vars.damageTaken[index])
     healingReceivedLabelVar.set(vars.healingReceived[index])
+    try:
+        amountOfCritsLabelVar.set(vars.amountOfCriticals[index])
+    except:
+        if vars.statisticsFile == True:
+            amountOfCritsLabelVar.set("Unavailable for a statistics file.")
+        else:
+            tkMessageBox.showerror("Error", "The critical count is missing")
     try:
         selfdamageLabelVar.set(vars.selfdamage[index])
     except:
@@ -375,6 +382,7 @@ if __name__ == "__main__":
     playerNameLabelVar = Tkinter.StringVar()
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
     selfdamageLabelVar = Tkinter.StringVar()
+    amountOfCritsLabelVar = Tkinter.StringVar()
 
     # Add the labels to show the variables that were just created
     damageDealtLabel = Tkinter.Label(statisticsTab, textvariable = damageDealtLabelVar)
@@ -383,6 +391,7 @@ if __name__ == "__main__":
     playerNameLabel = Tkinter.Label(statisticsTab, textvariable = playerNameLabelVar)
     abilitiesOccurrencesLabel = Tkinter.Label(abilitiesTab, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
     selfdamageLabel = Tkinter.Label(statisticsTab, textvariable = selfdamageLabelVar)
+    amountOfCritsLabel = Tkinter.Label(statisticsTab, textvariable = amountOfCritsLabelVar)
 
     # Add the labels to show what is displayed in each label with a variable
     damageDealtTextLabel = Tkinter.Label(statisticsTab, text = "Damage dealt: ")
@@ -391,6 +400,7 @@ if __name__ == "__main__":
     abilitiesLabel = Tkinter.Label(abilitiesTab, text = "Abilities used: ")
     playerLabel = Tkinter.Label(statisticsTab, text = "Character name: ")
     selfdamageTextLabel = Tkinter.Label(statisticsTab, text = "Selfdamage: ")
+    amountOfCritsTextLabel = Tkinter.Label(statisticsTab, text = "Critical count: ")
 
     # Add a label to show a description in the Share tab
     descriptionLabel = Tkinter.Label(shareTab, text = """You can send your CombatLog to the Thranta Squadron database server for analysis. This would help the developers and you could earn a spot in the Holocron Vault with your CombatLog. This functionality is still in beta.""",
@@ -429,14 +439,16 @@ if __name__ == "__main__":
     healingReceivedLabel.grid(column = 1, row = 3, sticky = Tkinter.W)
     selfdamageTextLabel.grid(column = 0, row = 4, sticky = Tkinter.W)
     selfdamageLabel.grid(column = 1, row = 4, sticky = Tkinter.W)
+    amountOfCritsTextLabel.grid(column = 0, row = 5, sticky = Tkinter.W)
+    amountOfCritsLabel.grid(column = 1, row = 5, sticky = Tkinter.W)
 
     # The abilities are in the grid, but take up two columns
     abilitiesLabel.grid(column = 0, columnspan = 2, row = 0, rowspan = 1, sticky = Tkinter.W)
     abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 1, rowspan = 6, sticky = Tkinter.W)
 
     # Add an Entry-bar to let the user enter his/her name for sending with the CombatLog
-    nameEntry = Tkinter.Entry(shareTab, width = 60)
-    nameEntry.grid(column = 0, row = 2, columnspan = 2)
+    nameEntry = Tkinter.Entry(shareTab, width = 80)
+    nameEntry.grid(column = 0, row = 2, columnspan = 2, sticky = Tkinter.W)
     nameEntry.insert(0, "Enter your name for sending here")
 
     # Add the elements for the enemiesTab

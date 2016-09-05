@@ -64,6 +64,8 @@ def parseMatches(matches, timings, player):
     enemies = []
     enemyDamageDealt = {}
     enemyDamageTaken = {}
+    amountOfCriticals = []
+    criticals = 0
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
@@ -130,11 +132,15 @@ def parseMatches(matches, timings, player):
                 # Sometimes the string is empty, even while there is "kinetic" in the line. Then 0 damage is added.
                 if damagestring == "":
                     damagestring = "0"
+                if "*" in damagestring:
+                    criticals += 1
                 # Get an integer from the damagestring, which now only contains a number
                 try:
+                    damagestring = damagestring.translate(None, "*")
                     damage = int(damagestring)
-                except:
+                except Exception as e:
                     damage = 0
+                    print e
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
@@ -163,8 +169,14 @@ def parseMatches(matches, timings, player):
             elif "Heal" in event:
                 # Remove the brackets
                 healstring = re.sub("[^0-9]", "", damagestring)
+                if "*" in healstring:
+                    criticals += 1
                 # Turn it into an integer and add it to the total
-                heal = int(healstring)
+                try:
+                    damagestring = damagestring.translate(None, "*")
+                    heal = int(healstring)
+                except Exception as e:
+                    print e
                 healingReceived[currentMatch] += heal
             elif "Selfdamage" in event:
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
@@ -177,11 +189,12 @@ def parseMatches(matches, timings, player):
         abilitiesOccurrences.append(abilities)
         # Make the abilities-dictionary empty
         abilities = {}
-
+        amountOfCriticals.append(criticals)
+        criticals = 0
         enemyMatrix.append(enemies)
         enemies = []
     # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken
+    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals
 
 
 # Returns the player's ID numbers
@@ -302,7 +315,7 @@ if __name__ == "__main__":
                     break
                 # Pass these variables on to parseMatches() to parse them
                 try:
-                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken = parseMatches(matches, timings, player)
+                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals = parseMatches(matches, timings, player)
                 except Exception as e:
                     print "parseMatches(matches, timings) failed"
                     print e
