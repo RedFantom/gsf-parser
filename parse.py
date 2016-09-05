@@ -60,6 +60,10 @@ def parseMatches(matches, timings, player):
     selfdamage = [0 for match in matches]
     healingReceived = [0 for match in matches]
     abilities = {}
+    enemyMatrix = []
+    enemies = []
+    enemyDamageDealt = {}
+    enemyDamageTaken = {}
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
@@ -71,7 +75,6 @@ def parseMatches(matches, timings, player):
     systemCooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
-
 
     # Create a list of datetime variables from the timings list returned by the splitter()
     datetimes = []
@@ -136,9 +139,25 @@ def parseMatches(matches, timings, player):
                 # inflicted BY the player
                 if source in player:
                     damageDealt[currentMatch] += damage
+                    if target not in enemies:
+                        enemies.append(target)
+                    if target not in enemyDamageTaken:
+                        enemyDamageTaken[target] = damage
+                    else:
+                        enemyDamageTaken[target] += damage
+                    if target not in enemyDamageDealt:
+                        enemyDamageDealt[target] = 0
                 # If this is not the case, the damage is inflicted TO the player
                 else:
                     damageTaken[currentMatch] += damage
+                    if source not in enemies:
+                        enemies.append(source)
+                    if source not in enemyDamageDealt:
+                        enemyDamageDealt[source] = damage
+                    else:
+                        enemyDamageDealt[source] += damage
+                    if source not in enemyDamageTaken:
+                        enemyDamageTaken[source] = 0
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
             # brackets: (35) for Hydro Spanner
             elif "Heal" in event:
@@ -158,8 +177,11 @@ def parseMatches(matches, timings, player):
         abilitiesOccurrences.append(abilities)
         # Make the abilities-dictionary empty
         abilities = {}
+
+        enemyMatrix.append(enemies)
+        enemies = []
     # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes
+    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken
 
 
 # Returns the player's ID numbers
@@ -213,21 +235,32 @@ if __name__ == "__main__":
     print "Welcome to the Thranta Squadron GSF CombatLog parser"
     # Ask the user for a working directory so the user does not have to enter a long filepath for every new file
     print "Please enter a working directory to continue"
-    print "Format: C:\Users\...\..."
-
-
+    print "Format: C:\Users\...\... on Windows"
+    print "Format: /home/.../... on Linux/Unix"
+    print "Enter q to quit."
 
     # Comment out this part on Linux
-    workingDir = raw_input()
     # DEBUG: use for debugging purpose
     # workingDir = os.getcwd()  # gets the current directory
     # Change the working directory to this specified the directory
-    try:
-        os.chdir(workingDir)
-    except OSError as e:
-        print "Error changing directory"
-        print e
-        exit(0)
+
+    # Open an infinite loop
+    while True:
+        # Ask the user for a directory and try to change it
+        try:
+            workingDir = raw_input()
+            # If "q" is entered, then quit the application
+            if workingDir == "q":
+                exit(0)
+            else:
+                os.chdir(workingDir)
+        # If an error occurs while changing the directory, print the error and try again
+        except OSError as e:
+            print "Error changing directory"
+            print e
+            print "\nEnter a new directory..."
+            continue
+        break
 
     while True:
         print ""
@@ -269,7 +302,7 @@ if __name__ == "__main__":
                     break
                 # Pass these variables on to parseMatches() to parse them
                 try:
-                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes = parseMatches(matches, timings, player)
+                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken = parseMatches(matches, timings, player)
                 except Exception as e:
                     print "parseMatches(matches, timings) failed"
                     print e
@@ -277,7 +310,7 @@ if __name__ == "__main__":
                 # Then print these variables for every match separately to give more of an overview for the user
                 index = 0
                 for match in matches:
-                    print "In match number", index + 1, "that started at", datetimes[index].time(), "you achieved the follwing statistics:"
+                    print "In match number", index + 1, "that started at", datetimes[index * 2].time(), "you achieved the follwing statistics:"
                     print "You dealt", damageDealt[index], "damage"
                     print "You took", damageTaken[index], "damage"
                     print "You received", healingReceived[index], "healing"

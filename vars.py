@@ -1,16 +1,20 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # For license see LICENSE
 
-damageDealt = []
-damageTaken = []
-healingReceived = []
-abilitiesOccurrences = {}
-datetimes = []
-playerName = None
-playerNumbers = []
-timings = []
-matches = []
-selfdamage = []
+damageDealt         = None
+damageTaken         = None
+healingReceived     = None
+abilitiesOccurrences= None
+datetimes           = None
+playerName          = None
+playerNumbers       = None
+timings             = None
+matches             = None
+selfdamage          = None
+
+enemyMatrix         = None
+enemyDamageDealt    = None
+enemyDamageTaken    = None
 
 progressBar = None
 fileName = None

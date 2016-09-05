@@ -58,7 +58,7 @@ def openCombatLog():
     # Determine the player's ID numbers
     vars.playerNumbers = parse.determinePlayer(lines)
     # Then get the useful information out of the matches
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
     # Add a new menu cascade for the matches
     logMenu = Tkinter.Menu(menuBar, tearoff = 0)
     # Start iterating through the matches and add items to the menu cascade
@@ -139,6 +139,22 @@ def setStatistics(index):
             abilitiesOccurrencesLabelVar.set("Unavailable for a statistics file.")
         else:
             tkMessageBox.showerror("Error", "The abilities are missing.")
+    if vars.statisticsFile == True:
+        enemyListLabelText.set("Unavailable for a statistics file.")
+    else:
+        tempTextList = ""
+        tempTextDealt = ""
+        tempTextTaken = ""
+        enemyList = vars.enemyMatrix[index]
+        for enemy in enemyList:
+            tempTextList = tempTextList + enemy + "\n"
+            tempTextDealt = tempTextDealt + str(vars.enemyDamageDealt[enemy]) + "\n"
+            tempTextTaken = tempTextTaken + str(vars.enemyDamageTaken[enemy]) + "\n"
+        enemyListLabelText.set(tempTextList)
+        enemyDealtLabelText.set(tempTextDealt)
+        enemyTakenLabelText.set(tempTextTaken)
+    return
+
 
 
 # Function that opens a saved statistics file
@@ -302,7 +318,7 @@ def quitApplication():
 
 # Function to open a messagebox that displays the information about the parser
 def about():
-    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.2.4")
+    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.3.0")
     return
 
 def info():
@@ -314,7 +330,7 @@ def info():
 if __name__ == "__main__":
     # Create the mainWindow and set it's parameters before adding any widgets
     mainWindow = Tkinter.Tk()
-    mainWindow.geometry('{}x{}'.format(500, 300))
+    mainWindow.geometry('{}x{}'.format(500, 600))
     mainWindow.resizable(width = False, height = False)
     mainWindow.wm_title("Thranta Squadron GSF CombatLog Parser")
 
@@ -339,14 +355,16 @@ if __name__ == "__main__":
     mainWindow.config(menu = menuBar)
 
     # Add a notebook widget to the mainWindow and add its tabs
-    notebook = ttk.Notebook(mainWindow, height = 275, width = 498)
+    notebook = ttk.Notebook(mainWindow, height = 575, width = 498)
     statisticsTab = ttk.Frame(notebook)
     abilitiesTab = ttk.Frame(notebook)
-    playersTab = ttk.Frame(notebook)
+    enemiesTab = ttk.Frame(notebook)
+    alliesTab = ttk.Frame(notebook)
     shareTab = ttk.Frame(notebook)
     notebook.add(statisticsTab, text = "Statistics")
     notebook.add(abilitiesTab, text = "Abilities")
-    # notebook.add(playersTab, text = "Players")
+    notebook.add(enemiesTab, text = "Enemies")
+    # notebook.add(alliesTab, text = "Allies")
     notebook.add(shareTab, text = "Share")
     notebook.grid(column = 0, row = 0)
 
@@ -420,6 +438,24 @@ if __name__ == "__main__":
     nameEntry = Tkinter.Entry(shareTab, width = 60)
     nameEntry.grid(column = 0, row = 2, columnspan = 2)
     nameEntry.insert(0, "Enter your name for sending here")
+
+    # Add the elements for the enemiesTab
+    topLabelOne = Tkinter.Label(enemiesTab, text = "Enemy ID number   ")
+    topLabelTwo = Tkinter.Label(enemiesTab, text = "Damage dealt to you   ")
+    topLabelThree = Tkinter.Label(enemiesTab, text = "Damage taken from you   ")
+    topLabelOne.grid(column = 0, row = 0)
+    topLabelTwo.grid(column = 1, row = 0)
+    topLabelThree.grid(column = 2, row = 0)
+    enemyListLabelText = Tkinter.StringVar()
+    enemyListLabel = Tkinter.Label(enemiesTab, textvariable = enemyListLabelText, justify = Tkinter.LEFT)
+    enemyListLabel.grid(column = 0, row = 1, columnspan = 1, rowspan = 20, sticky = Tkinter.W)
+    enemyDealtLabelText = Tkinter.StringVar()
+    enemyDealtLabel = Tkinter.Label(enemiesTab, textvariable = enemyDealtLabelText, justify = Tkinter.LEFT)
+    enemyDealtLabel.grid(column = 1, row = 1, columnspan = 1, rowspan =20, sticky = Tkinter.W)
+    enemyTakenLabelText = Tkinter.StringVar()
+    enemyTakenLabel = Tkinter.Label(enemiesTab, textvariable = enemyTakenLabelText, justify = Tkinter.LEFT)
+    enemyTakenLabel.grid(column = 2, row = 1, columnspan = 1, rowspan = 20, sticky = Tkinter.W)
+
 
     # Start the loop
     mainWindow.mainloop()
