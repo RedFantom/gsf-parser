@@ -14,6 +14,7 @@ selfdamage = []
 
 progressBar = None
 fileName = None
+userName = None
 
 serverAddress = ('www.thrantasquadron.tk', 83)
 

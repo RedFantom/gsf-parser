@@ -16,9 +16,8 @@ Return values:
 -3: The server did not answer as expected
 -4: The server did not answer at all
 -5: The packet could not be sent
--6: The server is down for scheduled maintenance
 '''
-def sendFile(fileName, connectionObject):
+def sendFile(fileName, userName, connectionObject):
     # Create received, a variable to store responses from the server
     received = None
     # Open the file as read-only
@@ -30,10 +29,10 @@ def sendFile(fileName, connectionObject):
 
     # Try to get a response from the server to check the connection
     connectionObject.send("Connection initialized by")
-    # TODO show a query box to have the user enter his/her name
+    connectionObject.send(userName)
     # Sleep for a very short time to wait for a response
     # time.sleep(0.01)
-    # Try to read the server's response, with error-handling
+    # Read the server's response
     received = connectionObject.recv(64)
 
     # If the expected response was not given, stop the function
@@ -78,7 +77,7 @@ def sendFile(fileName, connectionObject):
                  server, but it did not register as an error: %c""" % received)
         index += 1
         vars.progressBar["value"] = index
-    # When the end of the file is reached, the server must be notified            
+    # When the end of the file is reached, the server must be notified
     try:
         connectionObject.send("End of file")
     except:
@@ -92,7 +91,7 @@ def sendFile(fileName, connectionObject):
         received = connectionObject.recv(64)
         if received != "File received":
             connectionObject.close()
-            fileObject.close()            
+            fileObject.close()
             return -3
     except:
         connectionObject.close()
@@ -106,6 +105,7 @@ def sendFile(fileName, connectionObject):
 # This function opens a connection to the server
 def initConnection():
     try:
+        socket.settimeout(100)
         connectionObject = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         connectionObject.connect(vars.serverAddress)
     except:
@@ -116,24 +116,8 @@ def initConnection():
         return None
     return connectionObject
 
-def checkConnection():
-    connectionObject = initConnection()
-    if connectionObject == None:
-        return False
-    connectionObject.send("Checking connectivity")
-    try:
-        received = connectionObject.recv(64)
-    except:
-        return False
-    if received == "":
-        return False
-    elif received == "Available":
-        return True
-    else:
-        return False
-
 # This function takes a file to send it to the server and does the user-interaction.
-def send(fileName):
+def send(fileName, userName):
     connectionObject = initConnection()
     if connectionObject == None:
         tkMessageBox.showerror("Error", "Connecting to the server over TCP/IP failed.")
@@ -145,28 +129,33 @@ def send(fileName):
             return -2
         else:
             fileObject = open(fileName, "r")
-            returned = sendFile(fileName, connectionObject)
+            returned = sendFile(fileName, userName, connectionObject)
             if returned == 0:
                 tkMessageBox.showinfo("Notice", "The file was send successfully.")
                 return
             elif returned == -1:
-                tkMessageBox.showerror("Error", "The connection was lost during transfer")
-                return
+                 if tkMessageBox.askretrycancel("Error", "The connection was lost during transfer."):
+                     send(fileName, userName)
+                 else:
+                    return
             elif returned == -2:
                 tkMessageBox.showerror("Error", "A line in your file was unparsable for the server.")
                 return
             elif returned == -3:
-                tkMessageBox.showerror("Error", "The server did not return the expected response.")
-                return
+                if tkMessageBox.askretrycancel("Error", "The server did not return the expected response."):
+                    send(fileName, userName)
+                else:
+                    return
             elif returned == -4:
-                tkMessageBox.showerror("Error", "The server did not return a response.")
-                return
+                if tkMessageBox.askretrycancel("Error", "The server did not return a response."):
+                    send(filename, userName)
+                else:
+                    return
             elif returned == -5:
-                tkMessageBox.showerror("Error", "Could not send packet to the server.")
-                return
-            elif returned == -6:
-                tkMessageBox.showerror("Error", "The server is down for maintenance")
-                return
+                if tkMessageBox.askretrycancel("Error", "Could not send packet to the server."):
+                    send(fileName, userName)
+                else:
+                    return
             else:
                 tkMessageBox.showerror("Error", "An unknown error occurred.")
                 return

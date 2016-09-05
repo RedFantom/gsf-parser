@@ -9,16 +9,21 @@ import re
 import vars
 import parse
 import client
-from datetime import datetime 
+from datetime import datetime
 
 def sendCombatLog():
+    vars.userName = nameEntry.get()
     if vars.statisticsFile == True:
         tkMessageBox.showinfo("Notice", "A statistics file can not be shared.")
         return
     if vars.fileName == None:
         tkMessageBox.showinfo("Notice", "No file has been selected yet.")
         return
-    client.send(vars.fileName)
+    if(vars.userName == "" or vars.userName == "Enter your name for sending here"
+        or vars.userName == " "):
+        tkMessageBox.showinfo("Notice", "No user name has been entered yet.")
+        return
+    client.send(vars.fileName, vars.userName)
     return
 
 # Call back fuction for the Open CombatLog menu item
@@ -160,7 +165,7 @@ def openStatisticsFile():
     # Iterate over the lines and put them in the right variables
     '''
     The statistics file is layed-out as follows:
-    
+
     Damage dealt in the first match
     Damage dealt in the second match
     Damage dealt in the third match
@@ -170,7 +175,7 @@ def openStatisticsFile():
     Damage taken in the second match
     ...
     \n
-    And so on for the other variables. 
+    And so on for the other variables.
     Backwards compatibility for future versions with extra data by adding new information to the end of the file.
     '''
     for line in lines:
@@ -261,7 +266,7 @@ def openStatisticsFile():
         index += 1
     tkMessageBox.showinfo("Notice", str(amountOfMatches) + " matches were added.")
     menuBar.add_cascade(label = "Matches", menu = logMenu)
-    
+
 # Function to save a statistics file containing only the statistics of a CombatLog and the name of the player
 def saveStatisticsFile():
     # Open a dialog to save with .gsf as the default file type
@@ -297,13 +302,13 @@ def quitApplication():
 
 # Function to open a messagebox that displays the information about the parser
 def about():
-    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.2.0")
+    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.2.4")
     return
 
 def info():
     tkMessageBox.showinfo("Server info", "The server for sending CombatLog is currently set to: " + vars.serverAddress + " over port " + str(vars.serverPort))
     return
-                         
+
 
 # Main function to start the GUI and add most of the items in it
 if __name__ == "__main__":
@@ -339,7 +344,7 @@ if __name__ == "__main__":
     abilitiesTab = ttk.Frame(notebook)
     playersTab = ttk.Frame(notebook)
     shareTab = ttk.Frame(notebook)
-    notebook.add(statisticsTab, text = "Statistics") 
+    notebook.add(statisticsTab, text = "Statistics")
     notebook.add(abilitiesTab, text = "Abilities")
     # notebook.add(playersTab, text = "Players")
     notebook.add(shareTab, text = "Share")
@@ -352,7 +357,7 @@ if __name__ == "__main__":
     playerNameLabelVar = Tkinter.StringVar()
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
     selfdamageLabelVar = Tkinter.StringVar()
-    
+
     # Add the labels to show the variables that were just created
     damageDealtLabel = Tkinter.Label(statisticsTab, textvariable = damageDealtLabelVar)
     damageTakenLabel = Tkinter.Label(statisticsTab, textvariable = damageTakenLabelVar)
@@ -376,16 +381,24 @@ if __name__ == "__main__":
 
     # Add a progress bar and a button to the Share tab that is accessible for client.py
     vars.progressBar = ttk.Progressbar(shareTab, orient = "horizontal", length = 350, mode = "determinate")
-    vars.progressBar.grid(column = 0, row = 1, columnspan = 1)
-    
-    # Add a button to start sending the file
-    sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog, state = Tkinter.DISABLED)
-    sendButton.grid(column = 1, row = 1)
+    vars.progressBar.grid(column = 0, row = 3, columnspan = 1)
 
     # Add a label to show a warning
     warningLabelText = Tkinter.StringVar()
     warningLabel = Tkinter.Label(shareTab, textvariable = warningLabelText, justify = Tkinter.LEFT, wraplength = 450)
-    warningLabel.grid(column = 0, row = 2, columnspan = 2)
+    warningLabel.grid(column = 0, row = 4, columnspan = 2)
+    checkConnectionObject = client.initConnection()
+    if checkConnectionObject == None:
+        warningLabelText.set("The server for sending is not available. Sending CombatLogs has been disabled.")
+        # Add a button to start sending the file but disable it
+        sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog, state = Tkinter.DISABLED)
+        sendButton.grid(column = 1, row = 3)
+    else:
+        checkConnectionObject.close()
+        warningLabelText.set("The server is available.")
+        # Add a button to start sending the file
+        sendButton = Tkinter.Button(shareTab, text = "Send CombatLog", command = sendCombatLog)
+        sendButton.grid(column = 1, row = 3)
 
     # Lay out the labels in a grid
     playerLabel.grid(column = 0, row = 0, sticky = Tkinter.W)
@@ -402,6 +415,11 @@ if __name__ == "__main__":
     # The abilities are in the grid, but take up two columns
     abilitiesLabel.grid(column = 0, columnspan = 2, row = 0, rowspan = 1, sticky = Tkinter.W)
     abilitiesOccurrencesLabel.grid(column = 0, columnspan = 2, row = 1, rowspan = 6, sticky = Tkinter.W)
+
+    # Add an Entry-bar to let the user enter his/her name for sending with the CombatLog
+    nameEntry = Tkinter.Entry(shareTab, width = 60)
+    nameEntry.grid(column = 0, row = 2, columnspan = 2)
+    nameEntry.insert(0, "Enter your name for sending here")
 
     # Start the loop
     mainWindow.mainloop()
