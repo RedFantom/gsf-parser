@@ -16,6 +16,7 @@ enemyMatrix         = None
 enemyDamageDealt    = None
 enemyDamageTaken    = None
 criticalLuck        = None
+deaths              = None
 
 progressBar = None
 fileName = None

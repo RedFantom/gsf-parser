@@ -258,6 +258,23 @@ def determinePlayer(lines):
     # Return the playerOccurrences dictionary with the ID's and their respective occurrences
     return playerOccurrences
 
+def determineDeaths(matches):
+    playerIDs = []
+    deaths = []
+    for match in matches:
+        for event in match:
+            elements = re.split(r"[\[\]]", event)
+            source = elements[3]
+            target = elements[5]
+            if target == source:
+                if "@" not in source:
+                    if source not in playerIDs:
+                        playerIDs.append(source)
+        tempDeaths = len(playerIDs) - 1
+        playerIDs = []
+        deaths.append(tempDeaths)
+        tempDeaths = []
+    return deaths
 
 # Returns the player name
 def determinePlayerName(lines):
