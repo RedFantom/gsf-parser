@@ -34,8 +34,8 @@ def splitter(lines):
                 raise ValueError("matchStarted is neither True nor False")
         # If @ is in the line, then it is a normal ability
         elif "@" in line:
-            # If a match had started, then the match has now ended and the next lines must be appended to the second
-            # match list.
+            # If a match had started, then the match has now ended and the next
+            # lines must be appended to the second match list.
             if matchStarted == True:
                 matchStarted = False
                 matches.append(match)
@@ -81,6 +81,8 @@ def parseMatches(matches, timings, player):
     # Create a list of datetime variables from the timings list returned by the splitter()
     datetimes = []
     for time in timings:
+        # The last part of each item of the list contains .xxx, with the x's meaning
+        # thousands of a second. These can not be stored in datetime variables.
         time = time[:-4]
         datetimes.append(datetime.strptime(time, '%H:%M:%S'))
 
@@ -88,9 +90,12 @@ def parseMatches(matches, timings, player):
     # For now, all matches in a file are parsed.
     currentMatch = 0
 
+    # Start looping through the matches to be able to return separate results for each match
+    # matches is a matrix, match becomes a list
     for match in matches:
+        # match is a list, event becomes a string
         for event in match:
-            # Split the event string into other strings containing the information we want.
+            # Split the event string into smaller strings containing the information we want.
             elements = re.split(r"[\[\]]", event)
             # Assign those elements to individual variables to keep things clear.
             timestring = elements[1]
@@ -101,27 +106,28 @@ def parseMatches(matches, timings, player):
             damagestring = elements[10]
 
             # The ability always has an ID number behind it between {}, it must be removed
+            # This ID number is for recognition between languages. The ID number is always the same,
+            # even where the ability name is not. Only English is supported at this time.
             ability = ability[:-18]
+            # Remove empty space at the beginning and end of the string
             ability.strip()
 
-            # Put the ability in the dictionary
-            if ability not in abilities:
-                abilities[ability] = 1
-            else:
-                abilities[ability] += 1
-            # Put the ability in the dictionary if the ability was used by the player
+            # Put the ability in the dictionary if it was used by the player and is not in it.
+            # Otherwise, add one to the abilities count.
+            # The abilities count is not accurate, because different abilities have periodic
+            # effects and appear multiple times after activation.
             if source in player:
+                ability.strip()
                 if ability not in abilities:
                     abilities[ability] = 1
                 else:
                     abilities[ability] += 1
 
-            # If "kinetic" is in the event, it is a line where damage is the effect of an ability
+            # If Damage is in the effect string, damage was dealt
             if "kinetic" in event:
                 # Remove any unwanted characters from the string
                 ability = ability[:-18]
                 ability.strip()
-
                 # Takes damagestring and split after the pattern (stuff in here) and take the second element
                 # containing the "stuff in here"
                 # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}']
@@ -129,39 +135,58 @@ def parseMatches(matches, timings, player):
                 # now split it and take only the number
                 damagestring = damagestring.split(None, 1)[0]
 
-                # Sometimes the string is empty, even while there is "kinetic" in the line. Then 0 damage is added.
+                # Sometimes the string is empty, even while there is "Damage" in the line. Then 0 damage is added.
                 if damagestring == "":
                     damagestring = "0"
+                # If a * is in the line, then it was a critical hit
                 if "*" in damagestring:
                     criticals += 1
                 # Get an integer from the damagestring, which now only contains a number
                 try:
+                    # If there was a *, it must be removed. If there was no *, nothing happens.
                     damagestring = damagestring.translate(None, "*")
+                    # Turn it into an integer and add it to the damage total
                     damage = int(damagestring)
+                # If this fails, the damagestring contained more than just numbers,
+                # and an error or bug has occurred. Print the error so the user can report it.
                 except Exception as e:
                     damage = 0
                     print e
-                # If the source is in the player list, which contains all the player's ID numbers, the damage is
-                # inflicted BY the player
+                # If the source is in the player list, which contains all the player's ID numbers,
+                # the damage is inflicted by the player
                 if source in player:
+                    # The damage is added to the total damage in the list
                     damageDealt[currentMatch] += damage
-                    if target not in enemies:
+                    # If the target of the damage was not yet in enemies, it must be added,
+                    # unless the target was the player and it was selfdamage.
+                    if(target not in enemies and target not in player):
                         enemies.append(target)
-                    if target not in enemyDamageTaken:
+                    # if the target of the damage was not yet in the enemyDamageTaken dictionary,
+                    # it must be added, unless it's selfdamage
+                    if(target not in enemyDamageTaken and target not in player):
                         enemyDamageTaken[target] = damage
+                    # Otherwise, the damage must be added to the total of this enemy, unless it was selfdamage
                     else:
-                        enemyDamageTaken[target] += damage
-                    if target not in enemyDamageDealt:
+                        if target not in player:
+                            enemyDamageTaken[target] += damage
+                    # If the target was not yet in the enemyDamageDealt dictionary, add it,
+                    # but do not assign damage, as none has been done yet.
+                    if(target not in enemyDamageDealt and target not in player):
                         enemyDamageDealt[target] = 0
-                # If this is not the case, the damage is inflicted TO the player
+                # If this is not the case, the damage is inflicted to the player
                 else:
+                    # Add the damage to the total of damage taken
                     damageTaken[currentMatch] += damage
+                    # Add the damage to the account of the enemies, just like previously with the damageTaken
+                    # Because the statement before else was if source in player: , the source can not be in
+                    # player and the "unless" is not necessary here.
                     if source not in enemies:
                         enemies.append(source)
                     if source not in enemyDamageDealt:
                         enemyDamageDealt[source] = damage
                     else:
                         enemyDamageDealt[source] += damage
+                    # If the enemy was not yet in enemyDamageTaken, add the ID to the list anyway
                     if source not in enemyDamageTaken:
                         enemyDamageTaken[source] = 0
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
@@ -178,6 +203,8 @@ def parseMatches(matches, timings, player):
                 except Exception as e:
                     print e
                 healingReceived[currentMatch] += heal
+            # If "Selfdamage" is in the line, then the user crashed into something
+            # The damagestring does in this case not contain "kinetic"
             elif "Selfdamage" in event:
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                 damagestring = damagestring.split(None, 1)[0]
@@ -189,9 +216,13 @@ def parseMatches(matches, timings, player):
         abilitiesOccurrences.append(abilities)
         # Make the abilities-dictionary empty
         abilities = {}
+        # Add the amount of criticals to the list
         amountOfCriticals.append(criticals)
+        # Clear the amount of criticals as not to continue counting
         criticals = 0
+        # Add the list of enemies to the enemies matrix
         enemyMatrix.append(enemies)
+        # And then clear the list of enemies
         enemies = []
     # Return the values calculated
     return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals
