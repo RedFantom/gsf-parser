@@ -15,7 +15,7 @@ selfdamage          = None
 enemyMatrix         = None
 enemyDamageDealt    = None
 enemyDamageTaken    = None
-amountOfCriticals   = None
+criticalLuck        = None
 
 progressBar = None
 fileName = None

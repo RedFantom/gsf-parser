@@ -58,7 +58,7 @@ def openCombatLog():
     # Determine the player's ID numbers
     vars.playerNumbers = parse.determinePlayer(lines)
     # Then get the useful information out of the matches
-    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken, vars.amountOfCriticals = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
+    vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken, vars.criticalLuck = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
     # Add a new menu cascade for the matches
     logMenu = Tkinter.Menu(menuBar, tearoff = 0)
     # Start iterating through the matches and add items to the menu cascade
@@ -124,11 +124,14 @@ def setStatistics(index):
     damageDealtLabelVar.set(vars.damageDealt[index])
     damageTakenLabelVar.set(vars.damageTaken[index])
     healingReceivedLabelVar.set(vars.healingReceived[index])
+    (absolute, percent) = vars.criticalLuck[index]
     try:
-        amountOfCritsLabelVar.set(vars.amountOfCriticals[index])
+        amountOfCritsLabelVar.set(absolute)
+        percentOfCritsLabelVar.set(str(percent) + "%")
     except:
         if vars.statisticsFile == True:
             amountOfCritsLabelVar.set("Unavailable for a statistics file.")
+            percentOfCritsLabelVar.set("Unavailable for a statistics file.")
         else:
             tkMessageBox.showerror("Error", "The critical count is missing")
     try:
@@ -383,6 +386,7 @@ if __name__ == "__main__":
     abilitiesOccurrencesLabelVar = Tkinter.StringVar()
     selfdamageLabelVar = Tkinter.StringVar()
     amountOfCritsLabelVar = Tkinter.StringVar()
+    percentOfCritsLabelVar = Tkinter.StringVar()
 
     # Add the labels to show the variables that were just created
     damageDealtLabel = Tkinter.Label(statisticsTab, textvariable = damageDealtLabelVar)
@@ -392,6 +396,7 @@ if __name__ == "__main__":
     abilitiesOccurrencesLabel = Tkinter.Label(abilitiesTab, textvariable = abilitiesOccurrencesLabelVar, justify = Tkinter.LEFT, wraplength = 450)
     selfdamageLabel = Tkinter.Label(statisticsTab, textvariable = selfdamageLabelVar)
     amountOfCritsLabel = Tkinter.Label(statisticsTab, textvariable = amountOfCritsLabelVar)
+    percentOfCritsLabel = Tkinter.Label(statisticsTab, textvariable = percentOfCritsLabelVar)
 
     # Add the labels to show what is displayed in each label with a variable
     damageDealtTextLabel = Tkinter.Label(statisticsTab, text = "Damage dealt: ")
@@ -401,6 +406,7 @@ if __name__ == "__main__":
     playerLabel = Tkinter.Label(statisticsTab, text = "Character name: ")
     selfdamageTextLabel = Tkinter.Label(statisticsTab, text = "Selfdamage: ")
     amountOfCritsTextLabel = Tkinter.Label(statisticsTab, text = "Critical count: ")
+    percentOfCritsTextLabel = Tkinter.Label(statisticsTab, text = "Critical percentage: ")
 
     # Add a label to show a description in the Share tab
     descriptionLabel = Tkinter.Label(shareTab, text = """You can send your CombatLog to the Thranta Squadron database server for analysis. This would help the developers and you could earn a spot in the Holocron Vault with your CombatLog. This functionality is still in beta.""",
@@ -441,6 +447,8 @@ if __name__ == "__main__":
     selfdamageLabel.grid(column = 1, row = 4, sticky = Tkinter.W)
     amountOfCritsTextLabel.grid(column = 0, row = 5, sticky = Tkinter.W)
     amountOfCritsLabel.grid(column = 1, row = 5, sticky = Tkinter.W)
+    percentOfCritsTextLabel.grid(column = 0, row = 6, sticky = Tkinter.W)
+    percentOfCritsLabel.grid(column = 1, row = 6, sticky = Tkinter.W)
 
     # The abilities are in the grid, but take up two columns
     abilitiesLabel.grid(column = 0, columnspan = 2, row = 0, rowspan = 1, sticky = Tkinter.W)

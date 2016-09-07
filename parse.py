@@ -137,31 +137,48 @@ def parseMatches(matches, timings, player):
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
-
+                    # If "*" is in the damgegestring, then the hit was a critical hit
                     if '*' in damagestring:
                         criticals += 1
-
+                    # Remove the "*" from the damagestring, as it has no use anymore and will generate an error
+                    # when using int() and then add the damage to the total
                     damageDealt[currentMatch] += int(damagestring.replace('*', ''))
                     hits += 1
-
-                    if target not in enemies:
+                    # If the target was not yet in the enemies list, and the target is not in the player list,
+                    # which would mean the damage is selfdamage, then add the target to the list
+                    if(target not in enemies and target not in player):
                         enemies.append(target)
-                    if target not in enemyDamageTaken:
+                    # The same goes here, but here the damage is also assigned to the enemy in the dictionary
+                    if(target not in enemyDamageTaken and target not in player):
                         enemyDamageTaken[target] = int(damagestring.replace('*', ''))
+                    # If the target was already in the dictionary, then it should still be added,
+                    # and the damage must be added to its total, but again only if the ID number was not in
+                    # the player list
                     else:
-                        enemyDamageTaken[target] += int(damagestring.replace('*', ''))
-                    if target not in enemyDamageDealt:
+                        if target not in player:
+                            enemyDamageTaken[target] += int(damagestring.replace('*', ''))
+                    # If the target was not yet in the damage dealt dictionary, then it should be added anyway,
+                    # so as not to produce errors when looping through it for display.
+                    if(target not in enemyDamageDealt and target not in player):
                         enemyDamageDealt[target] = 0
                 # If this is not the case, the damage is inflicted to the player
                 else:
+                    # The damage must be added to the total of damage taken during the match
                     damageTaken[currentMatch] += int(damagestring.replace('*', ''))
-
+                    # If the source of the damage was not yet in enemies, then the ID number must be added
+                    # to the list. No checking for whether the ID is an ID in the player list is necessary,
+                    # because it can't be selfdamage because the else statement concludes that source is not
+                    # in the player list anyway.
                     if source not in enemies:
                         enemies.append(source)
+                    # If the source ID was not yet in enemyDamageDealt, it must be added with the damage
                     if source not in enemyDamageDealt:
                         enemyDamageDealt[source] = int(damagestring.replace('*', ''))
+                    # If it was, then the damage must be added to the total
                     else:
                         enemyDamageDealt[source] += int(damagestring.replace('*', ''))
+                    # If the source ID was not yet in enemyDamageTaken, then it must be added to prevent anyway
+                    # errors while looping through the variables when displaying the results.
                     if source not in enemyDamageTaken:
                         enemyDamageTaken[source] = 0
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
@@ -171,6 +188,7 @@ def parseMatches(matches, timings, player):
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                 damagestring = damagestring.split(None, 1)[0]
                 healingReceived[currentMatch] += int(damagestring.replace('*', ''))
+            # Selfdamage occurs when a player crashes into something, or self-destructs.
             elif "Selfdamage" in event:
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                 damagestring = damagestring.split(None, 1)[0]
@@ -181,24 +199,32 @@ def parseMatches(matches, timings, player):
         # Append the abilities-dictionary to the list of dictionaries
         abilitiesOccurrences.append(abilities)
 
-        # Compute crit-luck
+        # Calculate the percentage of the hits that was a critical hit
         try:
-            crits = Decimal(float(criticals) / hits)
+            criticalPercentage = Decimal(float(criticals) / hits)
+        # If hits = 0, then there is an error. If hits = 0, crits = 0 too.
         except ZeroDivisionError:
-            crits = 0
+            criticalPercentage = 0
 
-        crits = round(crits*100, 1)
-        criticalLuck.append((criticals, crits))
-
+        # Round the critical percentage of to one decimal
+        criticalPercentage = round(criticalPercentage * 100, 1)
+        # Add both the absolute amount of criticals and the percentage to the list as a tuple
+        criticalLuck.append((criticals, criticalPercentage))
         # Make the abilities-dictionary empty
         abilities = {}
+        # Clear the criticals and the thits
         criticals, hits = 0, 0
+        # Add the enemies list to the enemies matrix
         enemyMatrix.append(enemies)
         # And then clear the list of enemies
         enemies = []
 
+        # The enemyDamageDealt and enemyDamageTaken dictionaries contain all the ID numbers of all the CombatLog,
+        # instead of having them in separate dictionaries contained in a list. This is because the player ID
+        # numbers are at least unique within a CombatLog.
+
     # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals
+    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, criticalLuck
 
 
 # Returns the player's ID numbers
@@ -336,7 +362,7 @@ if __name__ == "__main__":
                     print "You took", damageTaken[index], "damage"
                     print "You received", healingReceived[index], "healing"
                     print "You did", selfdamage[index], "damage to yourself"
-                    print "You had", amountOfCriticals[index], "crits"
+                    print "You had", amountOfCriticals[index], "criticalPercentage"
                     print "You used the following abilities:\n"
                     print abilitiesUsed[index], "\n"
                     index += 1
