@@ -64,8 +64,8 @@ def parseMatches(matches, timings, player):
     enemies = []
     enemyDamageDealt = {}
     enemyDamageTaken = {}
-    amountOfCriticals = []
-    criticals = 0
+    criticalLuck = []
+    criticals, hits = 0, 0
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
