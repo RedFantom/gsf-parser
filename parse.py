@@ -4,6 +4,7 @@
 import re
 import os
 from datetime import datetime
+from decimal import Decimal
 
 # Function that splits the lines it gets into new lists of lines according
 # to the matches and returns the timings of these matches along with them
@@ -50,7 +51,6 @@ def splitter(lines):
 
 # Function that reads the file supplied by the user and parses them accordingly
 def parseMatches(matches, timings, player):
-
     # Declare the values that are needed for parsing
     playersOccurrences = []
     abilitiesOccurrences = []
@@ -64,8 +64,8 @@ def parseMatches(matches, timings, player):
     enemies = []
     enemyDamageDealt = {}
     enemyDamageTaken = {}
-    amountOfCriticals = []
-    criticals = 0
+    criticalLuck = []
+    criticals, hits = 0, 0
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
@@ -101,8 +101,7 @@ def parseMatches(matches, timings, player):
             damagestring = elements[10]
 
             # The ability always has an ID number behind it between {}, it must be removed
-            ability = ability[:-18]
-            ability.strip()
+            ability = ability.split(' {', 1)[0]
 
             # Put the ability in the dictionary
             if ability not in abilities:
@@ -118,13 +117,9 @@ def parseMatches(matches, timings, player):
 
             # If "kinetic" is in the event, it is a line where damage is the effect of an ability
             if "kinetic" in event:
-                # Remove any unwanted characters from the string
-                ability = ability[:-18]
-                ability.strip()
-
                 # Takes damagestring and split after the pattern (stuff in here) and take the second element
                 # containing the "stuff in here"
-                # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}']
+                # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}', '']
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                 # now split it and take only the number
                 damagestring = damagestring.split(None, 1)[0]
@@ -132,69 +127,72 @@ def parseMatches(matches, timings, player):
                 # Sometimes the string is empty, even while there is "kinetic" in the line. Then 0 damage is added.
                 if damagestring == "":
                     damagestring = "0"
-                if "*" in damagestring:
-                    criticals += 1
-                # Get an integer from the damagestring, which now only contains a number
-                try:
-                    damagestring = damagestring.translate(None, "*")
-                    damage = int(damagestring)
-                except Exception as e:
-                    damage = 0
-                    print e
+
                 # If the source is in the player list, which contains all the player's ID numbers, the damage is
                 # inflicted BY the player
                 if source in player:
-                    damageDealt[currentMatch] += damage
+
+                    if '*' in damagestring:
+                        criticals += 1
+
+                    damageDealt[currentMatch] += int(damagestring.replace('*', ''))
+                    hits += 1
+
                     if target not in enemies:
                         enemies.append(target)
                     if target not in enemyDamageTaken:
-                        enemyDamageTaken[target] = damage
+                        enemyDamageTaken[target] = int(damagestring.replace('*', ''))
                     else:
-                        enemyDamageTaken[target] += damage
+                        enemyDamageTaken[target] += int(damagestring.replace('*', ''))
                     if target not in enemyDamageDealt:
                         enemyDamageDealt[target] = 0
                 # If this is not the case, the damage is inflicted TO the player
                 else:
-                    damageTaken[currentMatch] += damage
+                    damageTaken[currentMatch] += int(damagestring.replace('*', ''))
+
                     if source not in enemies:
                         enemies.append(source)
                     if source not in enemyDamageDealt:
-                        enemyDamageDealt[source] = damage
+                        enemyDamageDealt[source] = int(damagestring.replace('*', ''))
                     else:
-                        enemyDamageDealt[source] += damage
+                        enemyDamageDealt[source] += int(damagestring.replace('*', ''))
                     if source not in enemyDamageTaken:
                         enemyDamageTaken[source] = 0
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
             # brackets: (35) for Hydro Spanner
             elif "Heal" in event:
-                # Remove the brackets
-                healstring = re.sub("[^0-9]", "", damagestring)
-                if "*" in healstring:
-                    criticals += 1
                 # Turn it into an integer and add it to the total
-                try:
-                    damagestring = damagestring.translate(None, "*")
-                    heal = int(healstring)
-                except Exception as e:
-                    print e
-                healingReceived[currentMatch] += heal
+                damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+                damagestring = damagestring.split(None, 1)[0]
+                healingReceived[currentMatch] += int(damagestring.replace('*', ''))
             elif "Selfdamage" in event:
                 damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                 damagestring = damagestring.split(None, 1)[0]
-                damage = int(damagestring)
-                selfdamage[currentMatch] += damage
+                selfdamage[currentMatch] += int(damagestring.replace('*', ''))
+
         # Up the index by one to get to the next match
         currentMatch += 1
         # Append the abilities-dictionary to the list of dictionaries
         abilitiesOccurrences.append(abilities)
+
+        # Compute crit-luck
+        try:
+            crits = Decimal(float(criticals) / hits)
+        except ZeroDivisionError:
+            crits = 0
+
+        crits = round(crits*100, 1)
+        criticalLuck.append((criticals, crits))
+
         # Make the abilities-dictionary empty
         abilities = {}
-        amountOfCriticals.append(criticals)
-        criticals = 0
+        criticals, hits = 0, 0
         enemyMatrix.append(enemies)
         enemies = []
+
     # Return the values calculated
-    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals
+    return damageDealt, damageTaken, healingReceived, selfdamage, abilitiesOccurrences, datetimes, enemyMatrix, \
+           enemyDamageDealt, enemyDamageTaken, criticalLuck
 
 
 # Returns the player's ID numbers
@@ -253,8 +251,7 @@ if __name__ == "__main__":
     print "Enter q to quit."
 
     # Comment out this part on Linux
-    # DEBUG: use for debugging purpose
-    # workingDir = os.getcwd()  # gets the current directory
+
     # Change the working directory to this specified the directory
 
     # Open an infinite loop
@@ -262,6 +259,8 @@ if __name__ == "__main__":
         # Ask the user for a directory and try to change it
         try:
             workingDir = raw_input()
+            # DEBUG: use for debugging purpose
+            workingDir = os.getcwd()  # gets the current directory
             # If "q" is entered, then quit the application
             if workingDir == "q":
                 exit(0)
@@ -281,7 +280,7 @@ if __name__ == "__main__":
         print "Do not forget to include the file extension. Type q to quit."
         fileName = raw_input()
         # DEBUG: use this for debug purpose
-        # fileName = 'CombatLog.txt'
+        fileName = 'CombatLog.txt'
 
         # If 'q' is entered, break the loop and quit the program
         if fileName == "q":
@@ -315,7 +314,8 @@ if __name__ == "__main__":
                     break
                 # Pass these variables on to parseMatches() to parse them
                 try:
-                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes, enemyMatrix, enemyDamageDealt, enemyDamageTaken, amountOfCriticals = parseMatches(matches, timings, player)
+                    damageDealt, damageTaken, healingReceived, selfdamage,  abilitiesUsed, datetimes, enemyMatrix, \
+                    enemyDamageDealt, enemyDamageTaken, amountOfCriticals = parseMatches(matches, timings, player)
                 except Exception as e:
                     print "parseMatches(matches, timings) failed"
                     print e
@@ -323,13 +323,17 @@ if __name__ == "__main__":
                 # Then print these variables for every match separately to give more of an overview for the user
                 index = 0
                 for match in matches:
-                    print "In match number", index + 1, "that started at", datetimes[index * 2].time(), "you achieved the follwing statistics:"
-                    print "You dealt", damageDealt[index], "damage"
-                    print "You took", damageTaken[index], "damage"
-                    print "You received", healingReceived[index], "healing"
-                    print "You did", selfdamage[index], "damage to yourself"
-                    print "You used the following abilities:\n"
-                    print abilitiesUsed[index], "\n"
+                    print index, damageDealt[index], damageTaken[index], healingReceived[index], selfdamage[index], \
+                        amountOfCriticals[index]
+                    # print "In match number", index + 1, "that started at", datetimes[index * 2].time(), \
+                    #     "you achieved the follwing statistics:"
+                    # print "You dealt", damageDealt[index], "damage"
+                    # print "You took", damageTaken[index], "damage"
+                    # print "You received", healingReceived[index], "healing"
+                    # print "You did", selfdamage[index], "damage to yourself"
+                    # print "You had", amountOfCriticals[index], "crits"
+                    # print "You used the following abilities:\n"
+                    # print abilitiesUsed[index], "\n"
                     index += 1
 
             fileObject.close()
