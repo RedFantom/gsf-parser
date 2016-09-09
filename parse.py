@@ -115,11 +115,20 @@ def parseMatches(matches, timings, player):
             # Otherwise, add one to the abilities count.
             # The abilities count is not accurate, because different abilities have periodic
             # effects and appear multiple times after activation.
+            # Ion Railgun effect Reactor Disruption is activated by the player
             if source in player:
-                if ability not in abilities:
-                    abilities[ability] = 1
+                
+                if "Ion Railgun" in ability:
+                    if source != target:
+                        if ability not in abilities:
+                            abilities[ability] = 1
+                        else:
+                            abilities[ability] += 1
                 else:
-                    abilities[ability] += 1
+                    if ability not in abilities:
+                        abilities[ability] = 1
+                    else:
+                        abilities[ability] += 1
 
             # If Damage is in the effect string, damage was dealt
             if "kinetic" in event:
