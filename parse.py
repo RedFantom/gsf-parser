@@ -10,6 +10,7 @@ from decimal import Decimal
 # Function that splits the lines it gets into new lists of lines according
 # to the matches and returns the timings of these matches along with them
 def splitter(lines, playerList):
+    # Create empty lists for appending
     file = []
     match = []
     spawn = []
@@ -18,51 +19,99 @@ def splitter(lines, playerList):
     matchTimingsList = []
     matchStarted = False
     currentPlayer = None
+    # Start looping through the lines
     for line in lines:
+        # Split the line into elements
         elements = re.split(r"[\[\]]", line)
+        # Take the relevant information from these elements
         timestring = elements[1]
         source = elements[3]
         target = elements[5]
+        # If "@" is not in source, then the ability is an in-match ability
         if "@" not in source:
+            # If the match hadn't started, it has now started and the the spawn
+            # must be saved. The time of the spawn and the time the match has
+            # started are also saved.
             if matchStarted == False:
                 matchStarted = True
+                # Set the currentPlayer to be either the source or the target,
+                # if the player is in the list of player ID numbers
                 if source in playerList:
                     currentPlayer = source
                 elif target in playerList:
                     currentPlayer = target
+                # Add the line to the current spawn listdir
                 spawn.append(line)
+                # Add the spawntime and the matchtime to the lists
                 spawnTimingsList.append(timestring)
                 matchTimingsList.append(timestring)
+            # If the match had started, then the match continues
             else:
+                # If the source is in the playerlist, but the source is not the
+                # same as the current player, then the player has respawned and
+                # the currentPlayer must change to the new value. The current
+                # spawn list must be appended to the match matrix and emptied to
+                # hold a new spawn.
                 if source in playerList:
+                    # If currentPlayer != source, the player has respawned
                     if currentPlayer != source:
+                        # Add the spawn list to the match matrix
                         match.append(spawn)
+                        # Empty the spawn list
                         spawn = []
+                        # Add the current line to the now empty list
                         spawn.append(line)
+                        # Add the time of the spawn to the list
                         spawnTimingsList.append(timestring)
+                        # Set the new currentPlayer to the new ID number
                         currentPlayer = source
+                    # Else, the match and spawn continue
                     else:
+                        # Add the line to the list and continue
                         spawn.append(line)
+                # If the target is in the playerList, but the target is not the
+                # same as the current player, then the player has respawned and
+                # the currentPlayer must change to the new value. The current
+                # spawn list must be appended to the match matrix and emptied to
+                # hold a new spawn.
                 elif target in playerList:
+                    # If currentPlayer != target, the player has respawned
                     if currentPlayer != target:
+                        # Add the spawn list to the match matrix
                         match.append(spawn)
+                        # Empty the spawn list
                         spawn = []
+                        # Add the current line to the now empty list
                         spawn.append(line)
+                        # Add the time of the spawn to the list
                         spawnTimingsList.append(timestring)
+                        # Set the new currentPlayer to the new ID number
                         currentPlayer = target
+                    # Else, the match and spawn continue
                     else:
+                        # Add the line to the list and continue
                         spawn.append(line)
+        # "@" is in the line, then it is a normal ability
         else:
+            # If a match had started, then now it has ended
             if matchStarted == True:
+                # End of the match
                 matchStarted = False
+                # Add the match matrix to the file Cube
                 file.append(match)
+                # Add the endtime of the match to the list
                 matchTimingsList.append(timestring)
+                # Add the spawnTimingsList to the matrix with [match][spawn]
                 spawnTimingsMatrix.append(spawnTimingsList)
+                # Clear the lists
                 spawnTimingsList = []
                 spawn = []
                 match = []
+                # Clear the currentPlayer
                 currentPlayer = None
-
+    # Return a 3D-matrix/cube of the lines of the file with [match][spawn][line]
+    # and a timingslist for the matches and a timings matrix for the spawns with
+    # [match][spawn]. For the spawns, only the start times are recorded.
     return file, matchTimingsList, spawnTimingsMatrix
 
 
@@ -153,7 +202,7 @@ def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
                 # effects and appear multiple times after activation.
                 # Ion Railgun effect Reactor Disruption is activated by the player
                 if source in player:
-                
+
                     if "Ion Railgun" in ability:
                         if source != target:
                             if ability not in abilities:
@@ -304,11 +353,12 @@ def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
 
     return
 
+# Function to determine the ship of the player with a dictionary from the
+# abilitiesOccurrencesMatrix from parseFile()
 def determineShip(spawn):
     print "determineShip(spawn)"
 
 # Returns the player's ID numbers
-
 def determinePlayer(lines):
     """
     Takes a list of strings (lines of a combat log) and extract all player engaged into battle. Save those in a
@@ -369,5 +419,3 @@ def determinePlayerName(lines):
     # In an unmodified file, lines[0] will always have this format
     elements = re.split(r"[\[\]]", lines[0])  # Split line
     return elements[3][1:]
-
-
