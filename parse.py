@@ -14,9 +14,9 @@ def splitter(lines, playerList):
     file = []
     match = []
     spawn = []
-    spawnTimingsMatrix = []
-    spawnTimingsList = []
-    matchTimingsList = []
+    spawn_timingsMatrix = []
+    spawn_timingsList = []
+    match_timingsList = []
     matchStarted = False
     currentPlayer = None
     # Start looping through the lines
@@ -43,8 +43,8 @@ def splitter(lines, playerList):
                 # Add the line to the current spawn listdir
                 spawn.append(line)
                 # Add the spawntime and the matchtime to the lists
-                spawnTimingsList.append(timestring)
-                matchTimingsList.append(timestring)
+                spawn_timingsList.append(timestring)
+                match_timingsList.append(timestring)
             # If the match had started, then the match continues
             else:
                 # If the source is in the playerlist, but the source is not the
@@ -62,7 +62,7 @@ def splitter(lines, playerList):
                         # Add the current line to the now empty list
                         spawn.append(line)
                         # Add the time of the spawn to the list
-                        spawnTimingsList.append(timestring)
+                        spawn_timingsList.append(timestring)
                         # Set the new currentPlayer to the new ID number
                         currentPlayer = source
                     # Else, the match and spawn continue
@@ -84,7 +84,7 @@ def splitter(lines, playerList):
                         # Add the current line to the now empty list
                         spawn.append(line)
                         # Add the time of the spawn to the list
-                        spawnTimingsList.append(timestring)
+                        spawn_timingsList.append(timestring)
                         # Set the new currentPlayer to the new ID number
                         currentPlayer = target
                     # Else, the match and spawn continue
@@ -100,84 +100,90 @@ def splitter(lines, playerList):
                 # Add the match matrix to the file Cube
                 file.append(match)
                 # Add the endtime of the match to the list
-                matchTimingsList.append(timestring)
-                # Add the spawnTimingsList to the matrix with [match][spawn]
-                spawnTimingsMatrix.append(spawnTimingsList)
+                match_timingsList.append(timestring)
+                # Add the spawn_timingsList to the matrix with [match][spawn]
+                spawn_timingsMatrix.append(spawn_timingsList)
                 # Clear the lists
-                spawnTimingsList = []
+                spawn_timingsList = []
                 spawn = []
                 match = []
                 # Clear the currentPlayer
                 currentPlayer = None
+
     # Return a 3D-matrix/cube of the lines of the file with [match][spawn][line]
     # and a timingslist for the matches and a timings matrix for the spawns with
     # [match][spawn]. For the spawns, only the start times are recorded.
-    return file, matchTimingsList, spawnTimingsMatrix
+    return file, match_timingsList, spawn_timingsMatrix
 
+def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
-# Function that reads the file supplied by the user and parses them accordingly
-def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
-    # Declare the values that are needed for parsing
-    abilitiesOccurrences = []
-    copilotCooldown = 60
-    damageTaken = [0 for match in matches]
-    damageDealt = [0 for match in matches]
-    selfdamage = [0 for match in matches]
-    healingReceived = [0 for match in matches]
-    abilities = {}
-    enemyMatrix = []
+    # Per spawn variables
+    abilities_spawn = {}
+    damagetaken_spawn = 0
+    damagedealt_spawn = 0
+    selfdamage_spawn = 0
+    healingreceived_spawn = 0
+    enemies_spawn = []
+    criticalcount_spawn = 0
+    criticalluck_spawn = 0
+    hitcount_spawn = 0
+
+    # Per match variables, enemiesMatch is a matrix
+    abilities_match = []
+    damagetaken_match = []
+    damagedealt_match = []
+    selfdamage_match = []
+    healingreceived_match = []
+    enemies_match = []
+    criticalcount_match = []
+    criticalluck_match = []
+    hitcount_match = []
+
+    # Per file variables
+    abilities = []
+    damagetaken = []
+    damagedealt = []
+    selfdamage = []
+    healingreceived = []
     enemies = []
-    enemyDamageDealt = {}
-    enemyDamageTaken = {}
-    criticalLuck = []
-    criticals, hits = 0, 0
+    criticalcount = []
+    criticalluck = []
+    hitcount = []
 
-    abilitiesOccurrencesMatrix = []
-    damageTakenMatrix = []
-    damageDealtMatrix = []
-    selfdamageMatrix = []
-    healingReceivedMatrix = []
-    enemyCube = []
-    enemyDamageDealtList = []
-    enemyDamageTakenList = []
-    criticalLuckMatrix = []
+    # File-wide dictionaries
+    enemydamaged = {}
+    enemydamaget = {}
+
+    match_timings = []
+    spawn_timings = []
+    spawn_timingstemp = []
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
-    engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
+    engine_cooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
                        'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
                        'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
-    shieldCooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
+    shield_cooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
                        'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
                        'Fortress Shield': 30}
-    systemCooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
+    system_cooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
     # Create a list of datetime variables from the timings list returned by the splitter()
-    matchTimings = []
-    for time in matchTimingsList:
+    for time in match_timingsList:
         # The last part of each item of the list contains .xxx, with the x's meaning
         # thousands of a second. These can not be stored in datetime variables.
         time = time[:-4]
-        matchTimings.append(datetime.strptime(time, '%H:%M:%S'))
-    spawnTimings = []
-    spawnTimingsTemp = []
-    for list in spawnTimingsMatrix:
+        match_timings.append(datetime.strptime(time, '%H:%M:%S'))
+    for list in spawn_timingsMatrix:
         for time in list:
             time = time[:-4]
-            spawnTimingsTemp.append(datetime.strptime(time, '%H:%M:%S'))
-        spawnTimings.append(spawnTimingsTemp)
-        spawnTimingsTemp = []
+            spawn_timingstemp.append(datetime.strptime(time, '%H:%M:%S'))
 
-
-    # Here parsing starts, loop through the matches. Individual matchDamage must be possible by using more lists.
-    # For now, all matches in a file are parsed.
-    currentMatch = 0
-
-    # Start looping through the matches to be able to return separate results for each match
-    # matches is a matrix, match becomes a list
+        spawn_timings.append(spawn_timingstemp)
+        spawn_timingstemp = []
+    
     for match in file:
-        # match is a list, event becomes a string
         for spawn in match:
             for event in spawn:
                 # Split the event string into smaller strings containing the information we want.
@@ -195,27 +201,25 @@ def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
                 # even where the ability name is not. Only English is supported at this time.
                 ability = ability.split(' {', 1)[0]
 
-
-                # Put the ability in the dictionary if it was used by the player and is not in it.
-                # Otherwise, add one to the abilities count.
-                # The abilities count is not accurate, because different abilities have periodic
-                # effects and appear multiple times after activation.
-                # Ion Railgun effect Reactor Disruption is activated by the player
                 if source in player:
-
                     if "Ion Railgun" in ability:
                         if source != target:
-                            if ability not in abilities:
-                                abilities[ability] = 1
+                            if ability not in abilities_spawn:
+                                abilities_spawn[ability] = 1
                             else:
-                                abilities[ability] += 1
-                    else:
-                        if ability not in abilities:
-                            abilities[ability] = 1
+                                abilities_spawn[ability] += 1
+                    elif "Hull Cutter" in ability:
+                        if source != target:
+                            if ability not in abilities_spawn:
+                                abilities_spawn[ability] = 1
+                            else:
+                                abilities_spawn[ability] += 1
+                    elif ability != "":       
+                        if ability not in abilities_spawn:
+                           abilities_spawn[ability] = 1
                         else:
-                            abilities[ability] += 1
+                           abilities_spawn[ability] += 1
 
-                # If Damage is in the effect string, damage was dealt
                 if "kinetic" in event:
                     # Takes damagestring and split after the pattern (stuff in here) and take the second element
                     # containing the "stuff in here"
@@ -227,131 +231,116 @@ def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
                     # Sometimes the string is empty, even while there is "Damage" in the line. Then 0 damage is added.
                     if damagestring == "":
                         damagestring = "0"
-
-                    # If the source is in the player list, which contains all the player's ID numbers, the damage is
-                    # inflicted BY the player
+                    
                     if source in player:
-                        # If "*" is in the damgegestring, then the hit was a critical hit
-                        if '*' in damagestring:
-                            criticals += 1
-                        # Remove the "*" from the damagestring, as it has no use anymore and will generate an error
-                        # when using int() and then add the damage to the total
-                        damageDealt[currentMatch] += int(damagestring.replace('*', ''))
-                        hits += 1
-                        # If the target was not yet in the enemies list, and the target is not in the player list,
-                        # which would mean the damage is selfdamage, then add the target to the list
+                        if "*" in damagestring:
+                            criticalcount_spawn += 1
+                        damagedealt_spawn += int(damagestring.replace("*", ""))
+                        hitcount_spawn += 1
+
                         if(target not in enemies and target not in player):
-                            enemies.append(target)
-                        # The same goes here, but here the damage is also assigned to the enemy in the dictionary
-                        if(target not in enemyDamageTaken and target not in player):
-                            enemyDamageTaken[target] = int(damagestring.replace('*', ''))
-                        # If the target was already in the dictionary, then it should still be added,
-                        # and the damage must be added to its total, but again only if the ID number was not in
-                        # the player list
-                        else:
-                            if target not in player:
-                                enemyDamageTaken[target] += int(damagestring.replace('*', ''))
-                        # If the target was not yet in the damage dealt dictionary, then it should be added anyway,
-                        # so as not to produce errors when looping through it for display.
-                        if(target not in enemyDamageDealt and target not in player):
-                            enemyDamageDealt[target] = 0
-                    # If this is not the case, the damage is inflicted to the player
+                            enemies_spawn.append(target)
+                        if(target not in enemydamaget and target not in player):
+                            enemydamaget[target] = int(damagestring.replace("*", ""))
+                        elif(target in enemydamaget and target not in player):
+                            enemydamaget[target] += int(damagestring.replace("*", ""))
+                        if(target not in enemydamaged and target not in player):
+                            enemydamaged[target] = 0
                     else:
-                        # The damage must be added to the total of damage taken during the match
-                        damageTaken[currentMatch] += int(damagestring.replace('*', ''))
-                        # If the source of the damage was not yet in enemies, then the ID number must be added
-                        # to the list. No checking for whether the ID is an ID in the player list is necessary,
-                        # because it can't be selfdamage because the else statement concludes that source is not
-                        # in the player list anyway.
-                        if source not in enemies:
-                            enemies.append(source)
-                        # If the source ID was not yet in enemyDamageDealt, it must be added with the damage
-                        if source not in enemyDamageDealt:
-                            enemyDamageDealt[source] = int(damagestring.replace('*', ''))
-                        # If it was, then the damage must be added to the total
+                        damagetaken_spawn += int(damagestring.replace("*", ""))
+                        if source not in enemies_spawn:
+                            enemies_spawn.append(source)
+                        if source not in enemydamaged:
+                            enemydamaged[source] = int(damagestring.replace("*", ""))
                         else:
-                            enemyDamageDealt[source] += int(damagestring.replace('*', ''))
-                        # If the source ID was not yet in enemyDamageTaken, then it must be added to prevent anyway
-                        # errors while looping through the variables when displaying the results.
-                        if source not in enemyDamageTaken:
-                            enemyDamageTaken[source] = 0
-                # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
-                # brackets: (35) for Hydro Spanner
+                            enemydamaged[source] += int(damagestring.replace("*", ""))
+                        if source not in enemydamaget:
+                            enemydamaget[source] = 0
                 elif "Heal" in event:
-                    # Turn it into an integer and add it to the total
                     damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                     damagestring = damagestring.split(None, 1)[0]
-                    healingReceived[currentMatch] += int(damagestring.replace('*', ''))
-                # Selfdamage occurs when a player crashes into something, or self-destructs.
+                    healingreceived_spawn += int(damagestring.replace("*", ""))
                 elif "Selfdamage" in event:
                     damagestring = re.split(r"\((.*?)\)", damagestring)[1]
                     damagestring = damagestring.split(None, 1)[0]
-                    selfdamage[currentMatch] += int(damagestring.replace('*', ''))
+                    selfdamage_spawn += int(damagestring.replace("*", ""))
 
-            # Up the index by one to get to the next match
-            currentMatch += 1
-            # Append the abilities-dictionary to the list of dictionaries
-            abilitiesOccurrences.append(abilities)
-
-            # Calculate the percentage of the hits that was a critical hit
             try:
-                criticalPercentage = Decimal(float(criticals) / hits)
-            # If hits = 0, then there is an error. If hits = 0, crits = 0 too.
+                criticalluck_spawn = Decimal(float(criticalcount_spawn / hitcount_spawn))
             except ZeroDivisionError:
-                criticalPercentage = 0
+                criticalluck_spawn = 0
+            criticalluck_spawn = round(criticalluck_spawn * 100, 1)
+            
+            abilities_match.append(abilities_spawn)
+            damagetaken_match.append(damagetaken_spawn)
+            damagedealt_match.append(damagedealt_spawn)
+            selfdamage_match.append(selfdamage_spawn)
+            healingreceived_match.append(healingreceived_spawn)
+            enemies_match.append(enemies_spawn)
+            criticalcount_match.append(criticalcount_spawn)
+            criticalluck_match.append(criticalluck_spawn)
+            hitcount_match.append(hitcount_spawn)
+            
+            abilities_spawn = {}
+            damagetaken_spawn = 0
+            damagedealt_spawn = 0
+            selfdamage_spawn = 0
+            healingreceived_spawn = 0
+            enemies_spawn = []
+            criticalcount_spawn = 0
+            criticalluck_spawn = 0
+            hitcount_spawn = 0
 
-            # Round the critical percentage of to one decimal
-            criticalPercentage = round(criticalPercentage * 100, 1)
-            # Add both the absolute amount of criticals and the percentage to the list as a tuple
-            criticalLuck.append((criticals, criticalPercentage))
-            # Make the abilities-dictionary empty
-            abilities = {}
-            # Clear the criticals and the thits
-            criticals, hits = 0, 0
-            # Add the enemies list to the enemies matrix
-            enemyMatrix.append(enemies)
-            # And then clear the list of enemies
-            enemies = []
+        abilities.append(abilities_match)
+        damagetaken.append(damagetaken_match)
+        damagedealt.append(damagedealt_match)
+        selfdamage.append(selfdamage_match)
+        healingreceived.append(healingreceived_match)
+        enemies.append(enemies_match)
+        criticalcount.append(criticalcount_match)
+        criticalluck.append(criticalluck_match)
+        hitcount.append(hitcount_match)
+        abilities_match = []
+        
+        damagetaken_match = []
+        damagedealt_match = []
+        selfdamage_match = []
+        healingreceived_match = []
+        enemies_match = []
+        criticalcount_match = []
+        criticalluck_match = []
+        hitcount_match = []
 
-            # The enemyDamageDealt and enemyDamageTaken dictionaries contain all the ID numbers of all the CombatLog,
-            # instead of having them in separate dictionaries contained in a list. This is because the player ID
-            # numbers are at least unique within a CombatLog.
+    # abilities is a matrix of dictionaries
+    # damagetaken is a matrix of numbers
+    # damagedealt is a matrix of numbers
+    # selfdamage is a matrix of numbers
+    # healingreceived is a matrix of numbers
+    # enemies is a cube of strings
+    # criticalcount is matrix of numbers
+    # criticalluck is a matrix of numbers
+    # hitcount is matrix of numbers
+    # enemydamaged is a dictionary
+    # enemydamaget is a dictionary
+    # match_timings is a list of datetimes
+    # spawn_timings is a matrix of datetimes
+    return (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
+           criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings)        
 
-        abilitiesOccurrencesMatrix.append(abilitiesOccurrences)
-        damageDealtMatrix.append(damageDealt)
-        damageTakenMatrix.append(damageTaken)
-        selfdamageMatrix.append(selfdamage)
-        healingReceivedMatrix.append(healingReceived)
-        enemyCube.append(enemyMatrix)
-        enemyDamageDealtList.append(enemyDamageDealt)
-        enemyDamageTakenList.append(enemyDamageTaken)
-        criticalLuckMatrix.append(criticalLuck)
+def abilityUsage(abilitiesOccurrences, match_timingsList, spawn_timingsMatrix):
+    # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
+    engineCooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
+                       'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
+                       'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
+    shieldCooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
+                       'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
+                       'Fortress Shield': 30}
+    systemCooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
+                       'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
+                       'Blaster Overcharge': 60, 'EMP Field': 60}
+    print "Ability usage: "
+    # return a dictionary with abilities and percentage of the possible usage
 
-        abilitiesOccurrences = []
-        damageDealt = []
-        damageTaken = []
-        selfdamage = []
-        healingReceived = []
-        enemyMatrix = []
-        enemyDamageDealt = {}
-        enemyDamageTaken = {}
-        criticalLuck = []
-
-    # Matrix with [match][spawn]
-    vars.damageDealt = damageDealtMatrix
-    vars.damageTaken = damageTakenMatrix
-    vars.healingReceived = healingReceivedMatrix
-    vars.selfdamage = selfdamageMatrix
-    vars.criticalLuck = criticalLuckMatrix
-    # Lists of dictionaries with [match]['ID number']
-    vars.enemyDamageDealt = enemyDamageDealtList
-    vars.enemyDamageTaken = enemyDamageTakenList
-    # Cube with [match][spawn][enemy]
-    vars.enemyCube = enemyCube
-    # Matrix of dictionaries with [match][spawn]['Ability']
-    vars.abilities = abilitiesOccurrencesMatrix
-
-    return
 
 # Function to determine the ship of the player with a dictionary from the
 # abilitiesOccurrencesMatrix from parseFile()
@@ -368,11 +357,11 @@ def determineShip(abilitiesDictionary):
                           "Interdiction Mine", "Concussion Mine", "Ion Mine",
                           "Charged Plating", "Overcharged Shield", "Shield Projector"]
     decimusAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
-                        "Cluster Missile", "Concussion Missile", "Proton Torpedoe"
+                        "Cluster Missiles", "Concussion Missile", "Proton Torpedoe"
                         "Shield Power Converter", "Power Dive", "Interdiction Drive",
                         "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone"]
     jurgoranAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Laser Cannon",
-                         "Cluster Missile", "Slug Railgun", "Interdiction Missile", "EMP Missile"
+                         "Cluster Missiles", "Slug Railgun", "Interdiction Missile", "EMP Missile"
                          "Koiogran Turn", "Retro Thrusters", "Power Dive", "Interdiction Drive",
                          "Directional Shield", "Feedback Shield", "Distortion Field", "Fortress Shield"]
     dustmakerAbilities = ["Laser Cannon", "Heavy Laser Cannon",
@@ -394,7 +383,7 @@ def determineShip(abilitiesDictionary):
                           "Targeting Telemetry", "EMP Field", "Booster Recharge", "Sensor Beacon",
                           "Distortion Field", "Quick-charge Shield", "Engine Power Converter"]
     stingAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon",
-                      "Rocket Pod", "Cluster Missile", "Sabotage Probe"
+                      "Rocket Pod", "Cluster Missiles", "Sabotage Probe"
                       "Koiogran Turn", "Retro Thrusters", "Power Dive", "Barrel Roll",
                       "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
                       "Distortion Field", "Quick-charge Shield", "Directional Shield"]
@@ -403,64 +392,63 @@ def determineShip(abilitiesDictionary):
                          "Koiogran Turn", "Shield Power Converter", "Power Dive", "Interdiction Drive",
                          "Combat Command", "Remote Slicing", "Repair Probes",\
                          "Charged Plating", "Directional Shield", "Shield Projector"]
-    rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon",
-                      "Concussion Missile", "Cluster Missile", "Proton Torpedoe",
-                      "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn"
+    rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon", "Laser Cannon",
+                      "Concussion Missile", "Cluster Missiles", "Proton Torpedoe",
+                      "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn",
                       "Charged Plating", "Quick-charge Shield", "Directional Shield"]
     quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon",
-                      "Cluster Missile", "Ion Missile", "Proton Torpedoe", "Concussion Missile", "EMP Missile",
+                      "Cluster Missiles", "Ion Missile", "Proton Torpedoe", "Concussion Missile", "EMP Missile",
                       "Weapon Power Converter", "Shield Power Converter", "Koiogran Turn", "Barrel Roll",
                       "Quick-charge Shield", "Directional Shield", "Charged Plating"]
     shipsList = ["Legion", "Razorwire", "Decimus",
                  "Mangler", "Dustmaker", "Jurgoran",
                  "Bloodmark", "Blackbolt", "Sting",
                  "Imperium", "Quell", "Rycer"]
-    for key, value in abilitiesDictionary:
-        if "Legion" in shipsList:
-            if key not in legionAbilities:
-                shipsList.remove("Legion")
-        if "Razorwire" in shipsList:
-            if key not in razorwireAbilities:
-                shipsList.remove("Razorwire")
-        if "Decimus" in shipsList:
-            if key not in decimusAbilities:
-                shipsList.remove("Decimus")
-        if "Mangler" in shipsList:
-            if key not in manglerAbilities:
-                shipsList.remove("Mangler")
-        if "Jurgoran" in shipsList:
-            if key not in jurgoranAbilities:
-                shipsList.remove("Jurgoran")
-        if "Dustmaker" in shipsList:
-            if key not in dustmakerAbilities:
-                shipsList.remove("Dustmaker")
-        if "Bloodmark" in shipsList:
-            if key not in bloodmarkAbilities:
-                shipsList.remove("Bloodmark")
-        if "Blackbolt" in shipsList:
-            if key not in blackboltAbilities:
-                shipsList.remove("Blackbolt")
-        if "Sting" in shipsList:
-            if key not in stingAbilities:
-                shipsList.remove("Sting")
-        if "Imperium" in shipsList:
-            if key not in imperiumAbilities:
-                shipsList.remove("Imperium")
-        if "Quell" in shipsList:
-            if key not in quellAbilities:
-                shipsList.remove("Quell")
-        if "Rycer" in shipsList:
-            if key not in rycerAbilities:
-                shipsList.remove("Rycer")
-    amountOfShips = 0
-    shipFlown = None
-    for ship in shipsList:
-        shipFlown = ship
-        amountOfShips += 1
-    if amountOfShips != 1:
-        return None
-    else:
-        return shipFlown
+    excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
+                         "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
+                         "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
+                         "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe"]
+
+    for key in abilitiesDictionary:
+        if key not in excluded_abilities:
+            if "Legion" in shipsList:
+                if key not in legionAbilities:
+                    shipsList.remove("Legion")
+            if "Razorwire" in shipsList:
+                if key not in razorwireAbilities:
+                    shipsList.remove("Razorwire")
+            if "Decimus" in shipsList:
+                if key not in decimusAbilities:
+                    shipsList.remove("Decimus")
+            if "Mangler" in shipsList:
+                if key not in manglerAbilities:
+                    shipsList.remove("Mangler")
+            if "Jurgoran" in shipsList:
+                if key not in jurgoranAbilities:
+                    shipsList.remove("Jurgoran")
+            if "Dustmaker" in shipsList:
+                if key not in dustmakerAbilities:
+                    shipsList.remove("Dustmaker")
+            if "Bloodmark" in shipsList:
+                if key not in bloodmarkAbilities:
+                    shipsList.remove("Bloodmark")
+            if "Blackbolt" in shipsList:
+                if key not in blackboltAbilities:
+                    shipsList.remove("Blackbolt")
+            if "Sting" in shipsList:
+                if key not in stingAbilities:
+                    shipsList.remove("Sting")
+            if "Imperium" in shipsList:
+                if key not in imperiumAbilities:
+                    shipsList.remove("Imperium")
+            if "Quell" in shipsList:
+                if key not in quellAbilities:
+                    shipsList.remove("Quell")
+            if "Rycer" in shipsList:
+                if key not in rycerAbilities:
+                    shipsList.remove("Rycer")
+
+    return shipsList
 
 # Returns the player's ID numbers
 def determinePlayer(lines):
@@ -523,3 +511,17 @@ def determinePlayerName(lines):
     # In an unmodified file, lines[0] will always have this format
     elements = re.split(r"[\[\]]", lines[0])  # Split line
     return elements[3][1:]
+
+# Debugging purposes
+if __name__ == "__main__":
+
+    fileObject = open("CombatLog.txt", "r")
+    lines = fileObject.readlines()
+    player = determinePlayer(lines)
+    file, match_timingsList, spawn_timingsMatrix = splitter(lines, player)
+    (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
+    criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse_file(file, player, match_timingsList, spawn_timingsMatrix)
+        
+    for list in abilities:
+        for dict in list:
+            print determineShip(dict)
