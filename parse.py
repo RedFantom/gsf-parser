@@ -355,8 +355,112 @@ def parseFile(file, matchTimingsList, spawnTimingsMatrix, player):
 
 # Function to determine the ship of the player with a dictionary from the
 # abilitiesOccurrencesMatrix from parseFile()
-def determineShip(spawn):
-    print "determineShip(spawn)"
+def determineShip(abilitiesDictionary):
+    # These lists were made with the help of Yellowbird
+    legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
+                       "Proton Torpedoe", "Concussion Missile", "Seeker Mine",
+                       "Shield Power Converter", "Interdiction Drive",
+                       "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone",
+                       "Shield Projector", "Repair Drone", "Overcharged Shield"]
+    razorwireAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
+                          "Seismic Mine", "Proton Torpedoe", "Seeker Mine",
+                          "Shield Power Converter", "Interdiction Drive", "Hyperspace Beacon",
+                          "Interdiction Mine", "Concussion Mine", "Ion Mine",
+                          "Charged Plating", "Overcharged Shield", "Shield Projector"]
+    decimusAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
+                        "Cluster Missile", "Concussion Missile", "Proton Torpedoe"
+                        "Shield Power Converter", "Power Dive", "Interdiction Drive",
+                        "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone"]
+    jurgoranAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Laser Cannon",
+                         "Cluster Missile", "Slug Railgun", "Interdiction Missile", "EMP Missile"
+                         "Koiogran Turn", "Retro Thrusters", "Power Dive", "Interdiction Drive",
+                         "Directional Shield", "Feedback Shield", "Distortion Field", "Fortress Shield"]
+    dustmakerAbilities = ["Laser Cannon", "Heavy Laser Cannon",
+                          "Proton Torpedoe", "Thermite Torpedoe", "Plasma Railgun", "Slug Railgun",
+                          "Weapon Power Converter", "Rotational Thrusters", "Interdiction Drive", "Barrel Roll",
+                          "Fortress Shield", "Directional Shield", "Feedback Shield"]
+    manglerAbilities = ["Light Laser Cannon", "Burst Laser Cannon",
+                        "Plasma Railgun", "Slug Railgun", "Ion Railgun",
+                        "Rotational Thrusters", "Barrel Roll", "Interdiction Drive", "Weapon Power Converter",
+                        "Feedback Shield", "Fortress Shield", "Distortion Field"]
+    bloodmarkAbilities = ["Light Laser Cannon", "Laser Cannon", "Rapid-fire Laser Cannon",
+                          "Ion Missile", "EMP Missile", "Thermite Torpedoe",
+                          "Snap Turn", "Power Dive", "Interdiction Drive", "Koiogran Turn"
+                          "Combat Command", "Tensor Field", "Sensor Beacon", "Targeting Telemetry",
+                          "Shield Projector", "Repair Drone", "Distortion Field"]
+    blackboltAbilities = ["Rapid-fire Laser Cannon", "Light Laser Cannon", "Laser Cannon",
+                          "Rocket Pod", "Thermite Torpedoe", "Sabotage Probe",
+                          "Power Dive", "Snap Turn", "Barrel Roll", "Koiogran Turn",
+                          "Targeting Telemetry", "EMP Field", "Booster Recharge", "Sensor Beacon",
+                          "Distortion Field", "Quick-charge Shield", "Engine Power Converter"]
+    stingAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon",
+                      "Rocket Pod", "Cluster Missile", "Sabotage Probe"
+                      "Koiogran Turn", "Retro Thrusters", "Power Dive", "Barrel Roll",
+                      "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
+                      "Distortion Field", "Quick-charge Shield", "Directional Shield"]
+    imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Laser Cannon",
+                         "Thermite Torpedoe", "EMP Missile", "Proton Torpedoe", "Ion Missile",
+                         "Koiogran Turn", "Shield Power Converter", "Power Dive", "Interdiction Drive",
+                         "Combat Command", "Remote Slicing", "Repair Probes",\
+                         "Charged Plating", "Directional Shield", "Shield Projector"]
+    rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon",
+                      "Concussion Missile", "Cluster Missile", "Proton Torpedoe",
+                      "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn"
+                      "Charged Plating", "Quick-charge Shield", "Directional Shield"]
+    quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon",
+                      "Cluster Missile", "Ion Missile", "Proton Torpedoe", "Concussion Missile", "EMP Missile",
+                      "Weapon Power Converter", "Shield Power Converter", "Koiogran Turn", "Barrel Roll",
+                      "Quick-charge Shield", "Directional Shield", "Charged Plating"]
+    shipsList = ["Legion", "Razorwire", "Decimus",
+                 "Mangler", "Dustmaker", "Jurgoran",
+                 "Bloodmark", "Blackbolt", "Sting",
+                 "Imperium", "Quell", "Rycer"]
+    for key, value in abilitiesDictionary:
+        if "Legion" in shipsList:
+            if key not in legionAbilities:
+                shipsList.remove("Legion")
+        if "Razorwire" in shipsList:
+            if key not in razorwireAbilities:
+                shipsList.remove("Razorwire")
+        if "Decimus" in shipsList:
+            if key not in decimusAbilities:
+                shipsList.remove("Decimus")
+        if "Mangler" in shipsList:
+            if key not in manglerAbilities:
+                shipsList.remove("Mangler")
+        if "Jurgoran" in shipsList:
+            if key not in jurgoranAbilities:
+                shipsList.remove("Jurgoran")
+        if "Dustmaker" in shipsList:
+            if key not in dustmakerAbilities:
+                shipsList.remove("Dustmaker")
+        if "Bloodmark" in shipsList:
+            if key not in bloodmarkAbilities:
+                shipsList.remove("Bloodmark")
+        if "Blackbolt" in shipsList:
+            if key not in blackboltAbilities:
+                shipsList.remove("Blackbolt")
+        if "Sting" in shipsList:
+            if key not in stingAbilities:
+                shipsList.remove("Sting")
+        if "Imperium" in shipsList:
+            if key not in imperiumAbilities:
+                shipsList.remove("Imperium")
+        if "Quell" in shipsList:
+            if key not in quellAbilities:
+                shipsList.remove("Quell")
+        if "Rycer" in shipsList:
+            if key not in rycerAbilities:
+                shipsList.remove("Rycer")
+    amountOfShips = 0
+    shipFlown = None
+    for ship in shipsList:
+        shipFlown = ship
+        amountOfShips += 1
+    if amountOfShips != 1:
+        return None
+    else:
+        return shipFlown
 
 # Returns the player's ID numbers
 def determinePlayer(lines):
