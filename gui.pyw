@@ -28,7 +28,7 @@ if __name__ == "__main__":
     shareTabFrame = ttk.Frame(notebook)
     settingsTabFrame = ttk.Frame(notebook)
     fileFrame = frames.fileFrame(fileTabFrame)
-    fileFrame.gridWidgets()
+    fileFrame.grid_widgets()
     eventsFrame = frames.eventsFrame(fileTabFrame)
     eventsFrame.gridWidgets()
     fileFrame.grid(column = 0, row = 0, columnspan = 2, rowspan = 24)
@@ -42,17 +42,15 @@ if __name__ == "__main__":
     fileObject = open("CombatLog.txt", "r")
     lines = fileObject.readlines()
     # This is not a statistics file, and setStatistics() must be able to determine that
-    vars.statisticsFile = False
-    # First split the lines of the file into matches
-    vars.matches, vars.timings = parse.splitter(lines)
-    # Then determine the playerName
-    vars.playerName = parse.determinePlayerName(lines)
-    # Determine the player's ID numbers
-    vars.playerNumbers = parse.determinePlayer(lines)
+    vars.statisticsfile_cube= False
+    vars.player_numbers = parse.determinePlayer(lines)
+    vars.player_name = parse.determinePlayerName(lines)
+    vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, vars.player_numbers)
     # Then get the useful information out of the matches
-    (vars.damageDealt, vars.damageTaken, vars.healingReceived, vars.selfdamage, vars.abilitiesOccurrences, vars.datetimes, 
-     vars.enemyMatrix, vars.enemyDamageDealt, vars.enemyDamageTaken, vars.criticalLuck) = parse.parseMatches(vars.matches, vars.timings, vars.playerNumbers)
-    # Get the amount of deaths from another function
-    vars.deaths = parse.determineDeaths(vars.matches)
-    eventsFrame.updateAbilities(1)
+    (vars.abilities, vars.damagetaken, vars.damagedealt, vars.selfdamage, vars.healingreceived, vars.enemies,
+     vars.criticalcount, vars.criticalluck, vars.hitcount, vars.enemydamaged, vars.enemydamaget, vars.match_timings, 
+     vars.spawn_timings) = parse.parse_file(vars.file_cube, vars.player_numbers, vars.match_timings, vars.spawn_timings)
+    fileFrame.add_files()
+    fileFrame.add_matches()
+    fileFrame.add_spawns()
     mainWindow.mainloop()

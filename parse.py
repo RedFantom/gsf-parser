@@ -11,7 +11,7 @@ from decimal import Decimal
 # to the matches and returns the timings of these matches along with them
 def splitter(lines, playerList):
     # Create empty lists for appending
-    file = []
+    file_cube= []
     match = []
     spawn = []
     spawn_timingsMatrix = []
@@ -97,8 +97,8 @@ def splitter(lines, playerList):
             if matchStarted == True:
                 # End of the match
                 matchStarted = False
-                # Add the match matrix to the file Cube
-                file.append(match)
+                # Add the match matrix to the file_cubeCube
+                file_cube.append(match)
                 # Add the endtime of the match to the list
                 match_timingsList.append(timestring)
                 # Add the spawn_timingsList to the matrix with [match][spawn]
@@ -110,10 +110,10 @@ def splitter(lines, playerList):
                 # Clear the currentPlayer
                 currentPlayer = None
 
-    # Return a 3D-matrix/cube of the lines of the file with [match][spawn][line]
+    # Return a 3D-matrix/cube of the lines of the file_cubewith [match][spawn][line]
     # and a timingslist for the matches and a timings matrix for the spawns with
     # [match][spawn]. For the spawns, only the start times are recorded.
-    return file, match_timingsList, spawn_timingsMatrix
+    return file_cube, match_timingsList, spawn_timingsMatrix
 
 def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
@@ -139,7 +139,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
     criticalluck_match = []
     hitcount_match = []
 
-    # Per file variables
+    # Per file_cubevariables
     abilities = []
     damagetaken = []
     damagedealt = []
@@ -481,6 +481,7 @@ def determinePlayer(lines):
     # Return the playerOccurrences dictionary with the ID's and their respective occurrences
     return playerOccurrences
 
+# TODO: make ready for file_cube
 def determineDeaths(matches):
     playerIDs = []
     deaths = []

@@ -18,40 +18,67 @@ class fileFrame(ttk.Frame):
     # __init__ creates all widgets
     def __init__(self, rootFrame):
         ttk.Frame.__init__(self, rootFrame)
-        self.fileBox = tk.Listbox(self, font = ("Arial", 11))
-        self.fileBoxScroll = tk.Scrollbar(self, orient = tk.VERTICAL)
-        self.fileBoxScroll.config(command = self.fileBox.yview)
-        self.fileBox.config(yscrollcommand = self.fileBoxScroll.set)
-        self.fileBox.insert(tk.END, "All CombatLogs")
-        for file in os.listdir(os.getcwd()):
-            if file.endswith(".txt") == True:
-                self.fileBox.insert(tk.END, str(file))
-        self.matchBox = tk.Listbox(self, font = ("Arial", 11))
-        self.matchBoxScroll = tk.Scrollbar(self, orient = tk.VERTICAL)
-        self.matchBoxScroll.config(command = self.matchBox.yview)
-        self.matchBox.config(yscrollcommand = self.matchBoxScroll.set)
-        self.matchBox.insert(tk.END, "All matches")
-        index = 0
-        for match in vars.matches:
-            self.matchBox.insert(tk.END, vars.timings(index))
-            index += 2
-        self.spawnBox = tk.Listbox(self, font = ("Arial", 11))
-        self.spawnBoxScroll = tk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawnBox.yview)
-        self.spawnBox.config(yscrollcommand = self.spawnBoxScroll.set)
-        self.spawnBox.insert(tk.END, "All spawns")
-        indexMatrix = 0
-        indexList = 0
-        for spawn in vars.spawns:
-            self.spawnBox.insert(tk.END, vars.shipsUsed[indexMatrix][indexList])
-        
+        self.file_box = tk.Listbox(self, font = ("Arial", 11))
+        self.file_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL)
+        self.file_box_scroll.config(command = self.file_box.yview)
+        self.file_box.config(yscrollcommand = self.file_box_scroll.set)
+        self.match_box = tk.Listbox(self, font = ("Arial", 11))
+        self.match_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL)
+        self.match_box_scroll.config(command = self.match_box.yview)
+        self.match_box.config(yscrollcommand = self.match_box_scroll.set)
+        self.spawn_box = tk.Listbox(self, font = ("Arial", 11))
+        self.spawn_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawn_box.yview)
+        self.spawn_box.config(yscrollcommand = self.spawn_box_scroll.set)
+     
 
-    def gridWidgets(self):
-        self.fileBox.grid(column = 0, row = 0, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
-        self.fileBoxScroll.grid(column = 2, row = 0, rowspan =8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.matchBox.grid(column = 0, row =8, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
-        self.matchBoxScroll.grid(column = 2, row = 8, columnspan = 1, rowspan = 8, sticky = tk.N + tk.S, pady = 5)
-        self.spawnBox.grid(column = 0, row = 16, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
-        self.spawnBoxScroll.grid(column = 2, row = 16, columnspan = 1, rowspan = 8, sticky = tk.N + tk.S, pady = 5)
+    def grid_widgets(self):
+        self.file_box.grid(column = 0, row = 0, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
+        self.file_box_scroll.grid(column = 2, row = 0, rowspan =8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
+        self.match_box.grid(column = 0, row =8, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
+        self.match_box_scroll.grid(column = 2, row = 8, columnspan = 1, rowspan = 8, sticky = tk.N + tk.S, pady = 5)
+        self.spawn_box.grid(column = 0, row = 16, columnspan = 2, rowspan = 8, padx = 5, pady = 5)
+        self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, rowspan = 8, sticky = tk.N + tk.S, pady = 5)
+
+    def add_matches(self):
+        self.match_timing_strings = [time.time() for time in vars.match_timings]
+        read_next = True
+        self.spawn_box.delete(0, tk.END)
+        self.spawn_box.insert(tk.END, "All matches")
+        for time in self.match_timing_strings:
+            if not read_next:
+                read_next = True
+            else:
+                self.match_box.insert(tk.END, time)
+                read_next = False
+
+    def add_spawns(self):
+        self.spawn_timing_strings = []
+        for match in vars.spawn_timings:
+            for time in match:
+                self.spawn_timing_strings.append(time.time())
+        self.spawn_box.delete(0, tk.END)
+        self.spawn_box.insert(tk.END, "All spawns")
+        for time in self.spawn_timing_strings:
+            self.spawn_box.insert(tk.END, time)
+
+    def add_files(self):
+        self.file_strings = []
+        for file in os.listdir(os.getcwd()):
+            if file.endswith(".txt"):
+                self.file_strings.append(file)
+        self.file_box.delete(0, tk.END)
+        self.file_box.insert(tk.END, "All CombatLogs")
+        for file in self.file_strings:
+            self.file_box.insert(tk.END, file)
+    
+    def get_file(self):
+        return self.file_box.curselection()
+
+    def get_match(self):
+        return self.match_box.curselection()
+
+    def get_spawn(self):
+        return self.spawn_box.curselection()
 
 class alliesFrame(ttk.Frame):
     def __init__(self, rootFrame):
