@@ -6,6 +6,7 @@ import os
 import vars
 from datetime import datetime
 from decimal import Decimal
+from abilities import *
 
 # Function that splits the lines it gets into new lists of lines according
 # to the matches and returns the timings of these matches along with them
@@ -28,7 +29,7 @@ def splitter(lines, playerList):
         source = elements[3]
         target = elements[5]
         # If "@" is not in source, then the ability is an in-match ability
-        if "@" not in source:
+        if "@" not in line:
             # If the match hadn't started, it has now started and the the spawn
             # must be saved. The time of the spawn and the time the match has
             # started are also saved.
@@ -97,7 +98,7 @@ def splitter(lines, playerList):
             if matchStarted == True:
                 # End of the match
                 matchStarted = False
-                # Add the match matrix to the file_cubeCube
+                # Add the match matrix to the file_cube
                 file_cube.append(match)
                 # Add the endtime of the match to the list
                 match_timingsList.append(timestring)
@@ -109,11 +110,162 @@ def splitter(lines, playerList):
                 match = []
                 # Clear the currentPlayer
                 currentPlayer = None
+    match_timings = []
+    spawn_timings = []
+    spawn_timingstemp = []
+    # Create a list of datetime variables from the timings list returned by the splitter()
+    for time in match_timingsList:
+        # The last part of each item of the list contains .xxx, with the x's meaning
+        # thousands of a second. These can not be stored in datetime variables.
+        time = time[:-4]
+        match_timings.append(datetime.strptime(time, '%H:%M:%S'))
+    for list in spawn_timingsMatrix:
+        for time in list:
+            time = time[:-4]
+            spawn_timingstemp.append(datetime.strptime(time, '%H:%M:%S'))
 
-    # Return a 3D-matrix/cube of the lines of the file_cubewith [match][spawn][line]
+        spawn_timings.append(spawn_timingstemp)
+        spawn_timingstemp = []
+
+    # Return a 3D-matrix/cube of the lines of the file_cube with [match][spawn][line]
     # and a timingslist for the matches and a timings matrix for the spawns with
     # [match][spawn]. For the spawns, only the start times are recorded.
-    return file_cube, match_timingsList, spawn_timingsMatrix
+    return file_cube, match_timings, spawn_timings
+
+def parse_spawn(spawn, player):
+    abilities = {}
+    damagetaken = 0
+    damagedealt = 0
+    healingreceived = 0
+    selfdamage = 0
+    enemies = []
+    criticalcount = 0
+    criticalluck = 0
+    hitcount = 0
+
+    for event in spawn:
+        # Split the event string into smaller strings containing the information we want.
+        elements = re.split(r"[\[\]]", event)
+        # sign those elements to individual variables to keep things clear.
+        timestring = elements[1]
+        source = elements[3]
+        target = elements[5]
+        ability = elements[7]
+        effect = elements[9]
+        damagestring = elements[10]
+        # The ability always has an ID number behind it between {}, it must be removed
+        # This ID number is for recognition between languages. The ID number is always the same,
+        # even where the ability name is not. Only English is supported at this time.
+        ability = ability.split(' {', 1)[0]
+        if source in player:
+            if "Ion Railgun" in ability:
+                if source != target:
+                    if ability not in abilities:
+                        abilities[ability] = 1
+                    else:
+                        abilities[ability] += 1
+            elif "Hull Cutter" in ability:
+                if source != target:
+                    if ability not in abilities:
+                        abilities[ability] = 1
+                    else:
+                        abilities[ability] += 1
+            elif ability != "":
+                if ability not in abilities:
+                   abilities[ability] = 1
+                else:
+                   abilities[ability] += 1
+        if "kinetic" in event:
+            # Takes damagestring and split after the pattern (stuff in here) and take the second element
+            # containing the "stuff in here"
+            # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}', '']
+            damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+            # now split it and take only the number
+            damagestring = damagestring.split(None, 1)[0]
+            # Sometimes the string is empty, even while there is "Damage" in the line. Then 0 damage is added.
+            if damagestring == "":
+                damagestring = "0"
+            if source in player:
+                if "*" in damagestring:
+                    criticalcount += 1
+                damagedealt += int(damagestring.replace("*", ""))
+                hitcount += 1
+                if(target not in enemies and target not in player):
+                    enemies.append(target)
+                if(target not in enemydamaget and target not in player):
+                    enemydamaget[target] = int(damagestring.replace("*", ""))
+                elif(target in enemydamaget and target not in player):
+                    enemydamaget[target] += int(damagestring.replace("*", ""))
+                if(target not in enemydamaged and target not in player):
+                    enemydamaged[target] = 0
+            else:
+                damagetaken += int(damagestring.replace("*", ""))
+                if source not in enemies:
+                    enemies.append(source)
+                if source not in enemydamaged:
+                    enemydamaged[source] = int(damagestring.replace("*", ""))
+                else:
+                    enemydamaged[source] += int(damagestring.replace("*", ""))
+                if source not in enemydamaget:
+                    enemydamaget[source] = 0
+        elif "Heal" in event:
+            damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+            damagestring = damagestring.split(None, 1)[0]
+            healingreceived += int(damagestring.replace("*", ""))
+        elif "Selfdamage" in event:
+            damagestring = re.split(r"\((.*?)\)", damagestring)[1]
+            damagestring = damagestring.split(None, 1)[0]
+            selfdamage += int(damagestring.replace("*", ""))
+    ships_list = ["Legion", "Razorwire", "Decimus",
+                 "Mangler", "Dustmaker", "Jurgoran",
+                 "Bloodmark", "Blackbolt", "Sting",
+                 "Imperium", "Quell", "Rycer"]
+    for key in abilitiesDictionary:
+        if key not in excluded_abilities:
+            if "Legion" in ships_list:
+                if key not in legionAbilities:
+                    ships_list.remove("Legion")
+            if "Razorwire" in ships_list:
+                if key not in razorwireAbilities:
+                    ships_list.remove("Razorwire")
+            if "Decimus" in ships_list:
+                if key not in decimusAbilities:
+                    ships_list.remove("Decimus")
+            if "Mangler" in ships_list:
+                if key not in manglerAbilities:
+                    ships_list.remove("Mangler")
+            if "Jurgoran" in ships_list:
+                if key not in jurgoranAbilities:
+                    ships_list.remove("Jurgoran")
+            if "Dustmaker" in ships_list:
+                if key not in dustmakerAbilities:
+                    ships_list.remove("Dustmaker")
+            if "Bloodmark" in ships_list:
+                if key not in bloodmarkAbilities:
+                    ships_list.remove("Bloodmark")
+            if "Blackbolt" in ships_list:
+                if key not in blackboltAbilities:
+                    ships_list.remove("Blackbolt")
+            if "Sting" in ships_list:
+                if key not in stingAbilities:
+                    ships_list.remove("Sting")
+            if "Imperium" in ships_list:
+                if key not in imperiumAbilities:
+                    ships_list.remove("Imperium")
+            if "Quell" in ships_list:
+                if key not in quellAbilities:
+                    ships_list.remove("Quell")
+            if "Rycer" in ships_list:
+                if key not in rycerAbilities:
+                    ships_list.remove("Rycer")
+
+    try:
+        criticalluck = Decimal(float(criticalcount / hitcount))
+    except ZeroDivisionError:
+        criticalluck = 0
+    criticalluck = round(criticalluck * 100, 1)
+    return (abilities, damagetaken, damagedealt, healingreceived, selfdamage,
+            enemies, criticalcount, criticalluck, hitcount, ships_list)
 
 def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
@@ -139,7 +291,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
     criticalluck_match = []
     hitcount_match = []
 
-    # Per file_cubevariables
+    # Per file variables
     abilities = []
     damagetaken = []
     damagedealt = []
@@ -169,20 +321,6 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
-    # Create a list of datetime variables from the timings list returned by the splitter()
-    for time in match_timingsList:
-        # The last part of each item of the list contains .xxx, with the x's meaning
-        # thousands of a second. These can not be stored in datetime variables.
-        time = time[:-4]
-        match_timings.append(datetime.strptime(time, '%H:%M:%S'))
-    for list in spawn_timingsMatrix:
-        for time in list:
-            time = time[:-4]
-            spawn_timingstemp.append(datetime.strptime(time, '%H:%M:%S'))
-
-        spawn_timings.append(spawn_timingstemp)
-        spawn_timingstemp = []
-    
     for match in file:
         for spawn in match:
             for event in spawn:
@@ -345,70 +483,10 @@ def abilityUsage(abilitiesOccurrences, match_timingsList, spawn_timingsMatrix):
 # Function to determine the ship of the player with a dictionary from the
 # abilitiesOccurrencesMatrix from parseFile()
 def determineShip(abilitiesDictionary):
-    # These lists were made with the help of Yellowbird
-    legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
-                       "Proton Torpedoe", "Concussion Missile", "Seeker Mine",
-                       "Shield Power Converter", "Interdiction Drive",
-                       "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone",
-                       "Shield Projector", "Repair Drone", "Overcharged Shield"]
-    razorwireAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
-                          "Seismic Mine", "Proton Torpedoe", "Seeker Mine",
-                          "Shield Power Converter", "Interdiction Drive", "Hyperspace Beacon",
-                          "Interdiction Mine", "Concussion Mine", "Ion Mine",
-                          "Charged Plating", "Overcharged Shield", "Shield Projector"]
-    decimusAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
-                        "Cluster Missiles", "Concussion Missile", "Proton Torpedoe"
-                        "Shield Power Converter", "Power Dive", "Interdiction Drive",
-                        "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone"]
-    jurgoranAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Laser Cannon",
-                         "Cluster Missiles", "Slug Railgun", "Interdiction Missile", "EMP Missile"
-                         "Koiogran Turn", "Retro Thrusters", "Power Dive", "Interdiction Drive",
-                         "Directional Shield", "Feedback Shield", "Distortion Field", "Fortress Shield"]
-    dustmakerAbilities = ["Laser Cannon", "Heavy Laser Cannon",
-                          "Proton Torpedoe", "Thermite Torpedoe", "Plasma Railgun", "Slug Railgun",
-                          "Weapon Power Converter", "Rotational Thrusters", "Interdiction Drive", "Barrel Roll",
-                          "Fortress Shield", "Directional Shield", "Feedback Shield"]
-    manglerAbilities = ["Light Laser Cannon", "Burst Laser Cannon",
-                        "Plasma Railgun", "Slug Railgun", "Ion Railgun",
-                        "Rotational Thrusters", "Barrel Roll", "Interdiction Drive", "Weapon Power Converter",
-                        "Feedback Shield", "Fortress Shield", "Distortion Field"]
-    bloodmarkAbilities = ["Light Laser Cannon", "Laser Cannon", "Rapid-fire Laser Cannon",
-                          "Ion Missile", "EMP Missile", "Thermite Torpedoe",
-                          "Snap Turn", "Power Dive", "Interdiction Drive", "Koiogran Turn"
-                          "Combat Command", "Tensor Field", "Sensor Beacon", "Targeting Telemetry",
-                          "Shield Projector", "Repair Drone", "Distortion Field"]
-    blackboltAbilities = ["Rapid-fire Laser Cannon", "Light Laser Cannon", "Laser Cannon",
-                          "Rocket Pod", "Thermite Torpedoe", "Sabotage Probe",
-                          "Power Dive", "Snap Turn", "Barrel Roll", "Koiogran Turn",
-                          "Targeting Telemetry", "EMP Field", "Booster Recharge", "Sensor Beacon",
-                          "Distortion Field", "Quick-charge Shield", "Engine Power Converter"]
-    stingAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon",
-                      "Rocket Pod", "Cluster Missiles", "Sabotage Probe"
-                      "Koiogran Turn", "Retro Thrusters", "Power Dive", "Barrel Roll",
-                      "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
-                      "Distortion Field", "Quick-charge Shield", "Directional Shield"]
-    imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Laser Cannon",
-                         "Thermite Torpedoe", "EMP Missile", "Proton Torpedoe", "Ion Missile",
-                         "Koiogran Turn", "Shield Power Converter", "Power Dive", "Interdiction Drive",
-                         "Combat Command", "Remote Slicing", "Repair Probes",\
-                         "Charged Plating", "Directional Shield", "Shield Projector"]
-    rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon", "Laser Cannon",
-                      "Concussion Missile", "Cluster Missiles", "Proton Torpedoe",
-                      "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn",
-                      "Charged Plating", "Quick-charge Shield", "Directional Shield"]
-    quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon",
-                      "Cluster Missiles", "Ion Missile", "Proton Torpedoe", "Concussion Missile", "EMP Missile",
-                      "Weapon Power Converter", "Shield Power Converter", "Koiogran Turn", "Barrel Roll",
-                      "Quick-charge Shield", "Directional Shield", "Charged Plating"]
     shipsList = ["Legion", "Razorwire", "Decimus",
                  "Mangler", "Dustmaker", "Jurgoran",
                  "Bloodmark", "Blackbolt", "Sting",
                  "Imperium", "Quell", "Rycer"]
-    excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
-                         "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
-                         "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
-                         "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe"]
-
     for key in abilitiesDictionary:
         if key not in excluded_abilities:
             if "Legion" in shipsList:

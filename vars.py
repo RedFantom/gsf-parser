@@ -36,6 +36,7 @@ player_numbers     = None
 player_name        = None
 
 file_name = None
+match_timing = None
 user_name = None
 
-server_address = ('www.thrantasquadron.tk', 83)
+server_address = ('www.thrantasquadron.tk', 83)statisticsfile = False
