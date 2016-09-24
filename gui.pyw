@@ -152,8 +152,11 @@ def setStatistics(index):
         else:
             tkMessageBox.showerror("Error", "The selfdamage is missing.")
     # If there are no abilities, it must be a statistics file and the abilities must be empty. Otherwise, display an error message.
+    abilities_string = ""
+    for key, value in vars.abilitiesOccurrences[index].iteritems():
+        abilities_string += key + "  :  " + str(value) + "\n"
     try:
-        abilitiesOccurrencesLabelVar.set(vars.abilitiesOccurrences[index])
+        abilitiesOccurrencesLabelVar.set(abilities_string)
     except:
         if vars.statisticsFile == True:
             abilitiesOccurrencesLabelVar.set("Unavailable for a statistics file.")
@@ -338,7 +341,7 @@ def quitApplication():
 
 # Function to open a messagebox that displays the information about the parser
 def about():
-    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.3.0")
+    tkMessageBox.showinfo("About", "Thranta Squadron GSF CombatLog Parser by RedFantom and Daethyra, version 1.4.0")
     return
 
 def info():
@@ -350,8 +353,7 @@ def info():
 if __name__ == "__main__":
     # Create the mainWindow and set it's parameters before adding any widgets
     mainWindow = Tkinter.Tk()
-    mainWindow.geometry('{}x{}'.format(500, 600))
-    mainWindow.resizable(width = False, height = False)
+    mainWindow.geometry('{}x{}'.format(500, 300))
     mainWindow.wm_title("Thranta Squadron GSF CombatLog Parser")
 
     # Create a menu bar for mainWindow
