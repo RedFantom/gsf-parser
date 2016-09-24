@@ -117,7 +117,7 @@ def parseMatches(matches, timings, player):
             # effects and appear multiple times after activation.
             # Ion Railgun effect Reactor Disruption is activated by the player
             if source in player:
-                
+
                 if "Ion Railgun" in ability:
                     if source != target:
                         if ability not in abilities:
@@ -178,18 +178,28 @@ def parseMatches(matches, timings, player):
                     # to the list. No checking for whether the ID is an ID in the player list is necessary,
                     # because it can't be selfdamage because the else statement concludes that source is not
                     # in the player list anyway.
-                    if source not in enemies:
-                        enemies.append(source)
-                    # If the source ID was not yet in enemyDamageDealt, it must be added with the damage
-                    if source not in enemyDamageDealt:
-                        enemyDamageDealt[source] = int(damagestring.replace('*', ''))
-                    # If it was, then the damage must be added to the total
+                    if source != "":
+                        if source not in enemies:
+                            enemies.append(source)
+                            # If the source ID was not yet in enemyDamageDealt, it must be added with the damage
+                            if source not in enemyDamageDealt:
+                                enemyDamageDealt[source] = int(damagestring.replace('*', ''))
+                            # If it was, then the damage must be added to the total
+                            else:
+                                enemyDamageDealt[source] += int(damagestring.replace('*', ''))
+                            # If the source ID was not yet in enemyDamageTaken, then it must be added to prevent anyway
+                            # errors while looping through the variables when displaying the results.
+                            if source not in enemyDamageTaken:
+                                enemyDamageTaken[source] = 0
                     else:
-                        enemyDamageDealt[source] += int(damagestring.replace('*', ''))
-                    # If the source ID was not yet in enemyDamageTaken, then it must be added to prevent anyway
-                    # errors while looping through the variables when displaying the results.
-                    if source not in enemyDamageTaken:
-                        enemyDamageTaken[source] = 0
+                        if ability not in enemies:
+                            enemies.append(ability)
+                            if ability not in enemyDamageDealt:
+                                enemyDamageDealt[ability] = int(damagestring.replace("*", ""))
+                            else:
+                                enemyDamageDealt[ability] += int(damagestring.replace("*", ""))
+                            if ability not in enemyDamageTaken:
+                                enemyDamageTaken[ability] = 0
             # If Heal is in the event, then the player is healed for a certain amount. This number is plainly between
             # brackets: (35) for Hydro Spanner
             elif "Heal" in event:
