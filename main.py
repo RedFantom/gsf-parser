@@ -1,21 +1,6 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
-
-# UI imports
-import Tkinter as tk
-import ttk
-import tkMessageBox
-import tkFileDialog
-# General imports
-import re
-import os
-from datetime import datetime
-# Own modules
-import vars
-import parse
-import client
-import frames
-import statistics
 import gui
 
 if __name__ == "__main__":

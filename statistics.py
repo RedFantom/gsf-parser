@@ -1,4 +1,5 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
 # UI imports
@@ -14,6 +15,7 @@ import os
 import vars
 import parse
 import client
+import abilities
 
 class statistics:
     def folder_statistics(self):
@@ -86,7 +88,7 @@ class statistics:
                         elif ships_possible[0] == "Rycer":
                             rycer_count += 1
             # Then get the useful information out of the matches
-            (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
+            (abilitiesdict, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
              criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings,
              spawn_timings) = parse.parse_file(file_cube, player_numbers, match_timings, spawn_timings)
             for list in damagetaken:
@@ -120,11 +122,71 @@ class statistics:
         return total_ddealt, total_dtaken, total_hrecvd, total_selfdmg, total_timeplayed_minutes
 
 
-    def match_statistics(match):
+    def match_statistics(self, match):
         # match needs to be a matrix containing strings with each list being a spawn
         total_ddealt = 0
         total_dtaken = 0
 
         for spawn in match:
             print "Something"
+
+    def spawn_statistics(self, spawn):
+        (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
+         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
+        abilities_string = ""
+        events_string = ""
+        enemies_string = ""
+        allies_string = ""
+        statistics_string = ""
+        ship_components = []
+        comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
+        for key in abilitiesdict:
+            abilities_string += key + "\n"
+            if key in abilities.components:
+                ship_components.append(key)
+        for component in ship_components:
+            if component in abilities.primaries:
+                if "Rycer" in ships_list:
+                    if comps[0] == "Primary":
+                        comps[0] = component
+                    else:
+                        comps[0] += "/" + component
+                else:
+                    comps[0] = component
+            elif component in abilities.secondaries:
+                if "Quell" in ships_list:
+                    if comps[1] == "Secondary":
+                        comps[1] = component
+                    else:
+                        comps[1] += "/" + component
+                else:
+                    comps[1] = component
+            elif component in abilities.engines:
+                comps[2] = component
+            elif component in abilities.shields:
+                comps[3] = component
+            elif component in abilities.systems:
+                comps[4] = component
+            else:
+                tkMessageBox.showinfo("WHAT?!", "DID GSF GET AN UPDATE?!")
+        if "Primary" in comps:
+            del comps[comps.index("Primary")]
+        if "Secondary" in comps:
+            del comps[comps.index("Secondary")]
+        if "Engine" in comps:
+            del comps[comps.index("Engine")]
+        if "Shield" in comps:
+            del comps[comps.index("Shield")]
+        if "System" in comps:
+            del comps[comps.index("System")]
+
+        statistics_string = (str(damagedealt) + "\n" + str(damagetaken) + "\n" +
+                             str(selfdamage) + "\n" + str(healingreceived) + "\n" + 
+                             str(hitcount) + "\n" + str(criticalcount) + "\n" +
+                             str(criticalluck) + "%" + "\n")
+        enemies_string = "Enemy \tDamage dealt to you\tDamage taken\n\n"
+        for enemy in enemies:
+            enemies_string += enemy[8:] + "\t\t" + str(enemydamaged[enemy]) + "\t\t" + str(enemydamaget[enemy]) + "\n"
+        return abilities_string, events_string, enemies_string, allies_string, statistics_string, ships_list, comps
+        
 

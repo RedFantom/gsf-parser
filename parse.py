@@ -1,6 +1,8 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
+from __future__ import division
 import re
 import os
 import vars
@@ -98,6 +100,7 @@ def splitter(lines, playerList):
             if matchStarted == True:
                 # End of the match
                 matchStarted = False
+                match.append(spawn)
                 # Add the match matrix to the file_cube
                 file_cube.append(match)
                 # Add the endtime of the match to the list
@@ -110,6 +113,22 @@ def splitter(lines, playerList):
                 match = []
                 # Clear the currentPlayer
                 currentPlayer = None
+    if matchStarted == True:
+        # End of the file
+        matchStarted = False
+        match.append(spawn)
+        # Add the match matrix to the file_cube
+        file_cube.append(match)
+        # Add the endtime of the match to the list
+        match_timingsList.append(timestring)
+        # Add the spawn_timingsList to the matrix with [match][spawn]
+        spawn_timingsMatrix.append(spawn_timingsList)
+        # Clear the lists
+        spawn_timingsList = []
+        spawn = []
+        match = []
+        # Clear the currentPlayer
+        currentPlayer = None
     match_timings = []
     spawn_timings = []
     spawn_timingstemp = []
@@ -123,7 +142,6 @@ def splitter(lines, playerList):
         for time in list:
             time = time[:-4]
             spawn_timingstemp.append(datetime.strptime(time, '%H:%M:%S'))
-
         spawn_timings.append(spawn_timingstemp)
         spawn_timingstemp = []
 
@@ -140,9 +158,11 @@ def parse_spawn(spawn, player):
     selfdamage = 0
     enemies = []
     criticalcount = 0
-    criticalluck = 0
+    criticalluck = 0.0000
     hitcount = 0
 
+    enemydamaget = {}
+    enemydamaged = {}
     for event in spawn:
         # Split the event string into smaller strings containing the information we want.
         elements = re.split(r"[\[\]]", event)
@@ -220,7 +240,7 @@ def parse_spawn(spawn, player):
                  "Mangler", "Dustmaker", "Jurgoran",
                  "Bloodmark", "Blackbolt", "Sting",
                  "Imperium", "Quell", "Rycer"]
-    for key in abilitiesDictionary:
+    for key in abilities:
         if key not in excluded_abilities:
             if "Legion" in ships_list:
                 if key not in legionAbilities:
@@ -259,13 +279,13 @@ def parse_spawn(spawn, player):
                 if key not in rycerAbilities:
                     ships_list.remove("Rycer")
 
-    try:
-        criticalluck = Decimal(float(criticalcount / hitcount))
-    except ZeroDivisionError:
+    if hitcount != 0:
+        criticalluck = float(criticalcount / hitcount)
+    else:
         criticalluck = 0
     criticalluck = round(criticalluck * 100, 1)
     return (abilities, damagetaken, damagedealt, healingreceived, selfdamage,
-            enemies, criticalcount, criticalluck, hitcount, ships_list)
+            enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged, enemydamaget)
 
 def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
@@ -352,7 +372,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                                 abilities_spawn[ability] = 1
                             else:
                                 abilities_spawn[ability] += 1
-                    elif ability != "":       
+                    elif ability != "":
                         if ability not in abilities_spawn:
                            abilities_spawn[ability] = 1
                         else:
@@ -369,7 +389,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                     # Sometimes the string is empty, even while there is "Damage" in the line. Then 0 damage is added.
                     if damagestring == "":
                         damagestring = "0"
-                    
+
                     if source in player:
                         if "*" in damagestring:
                             criticalcount_spawn += 1
@@ -408,7 +428,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
             except ZeroDivisionError:
                 criticalluck_spawn = 0
             criticalluck_spawn = round(criticalluck_spawn * 100, 1)
-            
+
             abilities_match.append(abilities_spawn)
             damagetaken_match.append(damagetaken_spawn)
             damagedealt_match.append(damagedealt_spawn)
@@ -418,7 +438,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
             criticalcount_match.append(criticalcount_spawn)
             criticalluck_match.append(criticalluck_spawn)
             hitcount_match.append(hitcount_spawn)
-            
+
             abilities_spawn = {}
             damagetaken_spawn = 0
             damagedealt_spawn = 0
@@ -439,7 +459,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
         criticalluck.append(criticalluck_match)
         hitcount.append(hitcount_match)
         abilities_match = []
-        
+
         damagetaken_match = []
         damagedealt_match = []
         selfdamage_match = []
@@ -463,7 +483,8 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
     # match_timings is a list of datetimes
     # spawn_timings is a matrix of datetimes
     return (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
-           criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings)        
+           criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings)
+
 
 def abilityUsage(abilitiesOccurrences, match_timingsList, spawn_timingsMatrix):
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
@@ -600,7 +621,7 @@ if __name__ == "__main__":
     file, match_timingsList, spawn_timingsMatrix = splitter(lines, player)
     (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
     criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse_file(file, player, match_timingsList, spawn_timingsMatrix)
-        
+
     for list in abilities:
         for dict in list:
             print determineShip(dict)
