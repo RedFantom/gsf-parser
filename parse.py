@@ -124,7 +124,7 @@ def parseMatches(matches, timings, player):
                             abilities[ability] = 1
                         else:
                             abilities[ability] += 1
-                else:
+                elif ability != "":
                     if ability not in abilities:
                         abilities[ability] = 1
                     else:
