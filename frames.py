@@ -121,11 +121,10 @@ class file_frame(ttk.Frame):
             match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
             spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
             vars.player_numbers = parse.determinePlayer(spawn)
-            vars.abilities_string, vars.events_string, vars.enemies_string, vars.allies_string, vars.statistics_string, vars.ships_list, vars.ships_comps = self.statistics_object.spawn_statistics(spawn)
-            self.main_window.middle_frame.events_frame.abilities_label_var.set(vars.abilities_string)
-            self.main_window.middle_frame.events_frame.events_label_var.set(vars.events_string)
-            self.main_window.middle_frame.statistics_frame.statistics_numbers_var.set(vars.statistics_string)
-            self.main_window.middle_frame.grid_widgets()
+            vars.abilities_string, vars.events_string, vars.enemies_string, vars.statistics_string, vars.ships_list, vars.ships_comps = self.statistics_object.spawn_statistics(spawn)
+            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
+            self.main_window.middle_frame.events_label_var.set(vars.events_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Possible ships used:\n"
             for ship in vars.ships_list:
                 ships_string += str(ship) + "\n"
@@ -133,8 +132,7 @@ class file_frame(ttk.Frame):
             for component in vars.ships_comps:
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            self.main_window.middle_frame.statistics_frame.enemies_label_var.set(vars.enemies_string)
-            self.main_window.middle_frame.statistics_frame.allies_label_var.set(vars.allies_string)
+            self.main_window.middle_frame.enemies_label_var.set(vars.enemies_string)
             
 class ship_frame(ttk.Frame):
     def __init__(self, root_frame):
@@ -145,26 +143,11 @@ class ship_frame(ttk.Frame):
 
 class middle_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
-        ttk.Frame.__init__(self, root_frame, width = 300, height = 600)
-        self.main_window = main_window
-        self.statistics_frame = statistics_frame(self, self.main_window)
-        self.events_frame = events_frame(self, self.main_window)
-
-    def grid_widgets(self):
-        self.statistics_frame.grid_widgets()
-        self.events_frame.grid_widgets()
-        self.statistics_frame.pack(side = tk.TOP)
-        self.events_frame.pack(side = tk.BOTTOM)
-
-class statistics_frame(ttk.Frame):
-    def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.notebook = ttk.Notebook(self, width = 300, height = 270)
+        self.notebook = ttk.Notebook(self, width = 300, height = 575)
         self.stats_frame = ttk.Frame(self.notebook)
-        self.allies_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.stats_frame, text = "Statistics")
-        self.notebook.add(self.allies_frame, text = "Allies")
         self.notebook.add(self.enemies_frame, text = "Enemies")
         self.statistics_label_var = tk.StringVar()
         string = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\n"
@@ -173,22 +156,8 @@ class statistics_frame(ttk.Frame):
         self.statistics_numbers_var = tk.StringVar()
         self.statistics_label.setvar()
         self.statistics_numbers = tk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
-        self.allies_label_var = tk.StringVar()
-        self.allies_label = tk.Label(self.allies_frame, textvariable = self.allies_label_var, justify = tk.LEFT, wraplength = 295)
         self.enemies_label_var = tk.StringVar()
         self.enemies_label = tk.Label(self.enemies_frame, textvariable = self.enemies_label_var, justify = tk.LEFT, wraplength = 295)
-
-    def grid_widgets(self):
-        self.notebook.grid(column = 0, row = 0, columnspan = 4, rowspan = 12, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.statistics_label.grid(column = 0, row = 2, columnspan = 2, rowspan = 10, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, rowspan = 10, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.allies_label.grid(column = 0, row = 1, columnspan = 4, rowspan = 11, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_label.grid(column = 0, row = 1, columnspan = 4, rowspan = 11, sticky = tk.N + tk.S + tk.W + tk.E)
-
-class events_frame(ttk.Frame):
-    def __init__(self, root_frame, main_window):
-        ttk.Frame.__init__(self, root_frame)
-        self.notebook = ttk.Notebook(self, width = 300, height = 270)
         self.events_frame = ttk.Frame(self.notebook)
         self.abilities_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.abilities_frame, text = "Abilities")
@@ -199,14 +168,15 @@ class events_frame(ttk.Frame):
         self.events_label = tk.Label(self.events_frame, textvariable = self.events_label_var, justify = tk.LEFT, wraplength = 295)
 
     def grid_widgets(self):
-        self.abilities_label.grid(column = 0, row = 2, columnspan = 4, rowspan = 11, sticky = tk.N + tk.W)
-        self.events_label.grid(column = 0, row = 2, columnspan = 4, rowspan = 11, sticky = tk.N + tk.W)
-        self.notebook.grid(column = 0, row = 0, columnspan = 4, rowspan = 12, sticky = tk.N + tk.W)
-        self.grid(column = 0, row = 0, columnspan = 4, rowspan = 12, sticky = tk.N + tk.W, padx = 5, pady = 5)
+        self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
+        self.events_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
+        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.W)
+        self.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.W, padx = 5, pady = 5)
+        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.enemies_label.grid(column = 0, row = 1, columnspan = 4, sticky = tk.N + tk.S + tk.W + tk.E)
 
-    def update_abilities(self, indexMatrix, indexList):
-        for key in vars.abilitiesOccurrences[index]:
-            self.abilities_label['text'] = self.abilities_label['text'] + str(key) +  "\n"
 
 class realtime_frame(ttk.Frame):
     def __init__(self, root_frame):

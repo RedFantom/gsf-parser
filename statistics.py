@@ -136,7 +136,6 @@ class statistics:
         abilities_string = ""
         events_string = ""
         enemies_string = ""
-        allies_string = ""
         statistics_string = ""
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
@@ -187,6 +186,6 @@ class statistics:
         enemies_string = "Enemy \tDamage dealt to you\tDamage taken\n\n"
         for enemy in enemies:
             enemies_string += enemy[8:] + "\t\t" + str(enemydamaged[enemy]) + "\t\t" + str(enemydamaget[enemy]) + "\n"
-        return abilities_string, events_string, enemies_string, allies_string, statistics_string, ships_list, comps
+        return abilities_string, events_string, enemies_string, statistics_string, ships_list, comps
         
 
