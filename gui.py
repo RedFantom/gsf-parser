@@ -50,7 +50,7 @@ class main_window:
         self.notebook.add(self.settings_tab_frame, text = "Settings")
         # self.notebook.add(alliesTab, text = "Allies")
         self.notebook.grid(column = 0, row = 0)
-
+        '''
         # DEBUG
         self.fileObject = open("CombatLog.txt", "r")
         self.lines = self.fileObject.readlines()
@@ -63,7 +63,7 @@ class main_window:
         (vars.abilities, vars.damagetaken, vars.damagedealt, vars.selfdamage, vars.healingreceived, vars.enemies,
         vars.criticalcount, vars.criticalluck, vars.hitcount, vars.enemydamaged, vars.enemydamaget, vars.match_timings,
         vars.spawn_timings) = parse.parse_file(vars.file_cube, vars.player_numbers, vars.match_timings, vars.spawn_timings)
-
         # DEBUG END
+        '''
         self.file_select_frame.add_files()
         self.window.mainloop()
