@@ -16,8 +16,8 @@ from datetime import datetime
 import vars
 import parse
 import client
-import frames
 import statistics
+import frames
 
 class main_window:
     def __init__(self):
@@ -25,9 +25,9 @@ class main_window:
         self.window.resizable(width = False, height = False)
         self.window.geometry("{}x{}".format(1000, 625))
         self.window.wm_title("Thranta Squadron GSF Parser")
-        default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
-        os.chdir(default_path)
-        # Add a self.notebook widget to the self.window and add its tabsw
+        self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
+        self.install_path = os.getcwd()
+        # Add a self.notebook widget to the self.window and add its tabs
         self.notebook = ttk.Notebook(self.window, height = 600, width = 1000)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
@@ -48,6 +48,8 @@ class main_window:
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
         self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
         self.notebook.add(self.settings_tab_frame, text = "Settings")
+        self.settings_frame = frames.settings_frame(self.settings_tab_frame, self)
+        self.settings_frame.grid_widgets()
         # self.notebook.add(alliesTab, text = "Allies")
         self.notebook.grid(column = 0, row = 0)
         '''

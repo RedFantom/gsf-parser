@@ -52,3 +52,9 @@ allies_string = None
 enemies_string = None
 ships_list = None
 ships_comps = None
+
+user_path = None
+privacy = None
+server_address = None
+server_port = None
+auto_upload = None

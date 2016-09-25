@@ -187,5 +187,137 @@ class share_frame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame)
 
 class settings_frame(ttk.Frame):
-    def __init__(self, root_frame):
+    def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
+        self.entry_frame = ttk.Frame(root_frame)
+        self.privacy_frame = ttk.Frame(root_frame)
+        self.server_frame = ttk.Frame(root_frame)
+        self.upload_frame = ttk.Frame(root_frame)
+        self.save_frame = ttk.Frame(root_frame)
+        self.license_frame = ttk.Frame(root_frame)
+        self.main_window = main_window
+        self.parsing_label = tk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
+        self.path_entry = tk.Entry(self.entry_frame, width=75)
+        self.path_entry_label = tk.Label(self.entry_frame, text = "\tCombatLogs folder:")
+        self.path_entry.insert(0, self.main_window.default_path)
+        self.privacy_label = tk.Label(self.privacy_frame, text = "\tConnect to server for player identification:")
+        self.privacy_var = tk.BooleanVar()
+        self.privacy_select_true = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
+        self.privacy_select_false = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False, text = "No")
+        self.sharing_label = tk.Label(root_frame, text = "Share settings", justify=tk.LEFT)
+        self.server_label = tk.Label(self.server_frame, text = "\tServer for sharing:")
+        self.server_address_entry = tk.Entry(self.server_frame, width=20)
+        self.server_colon_label = tk.Label(self.server_frame, text = ":")
+        self.server_port_entry = tk.Entry(self.server_frame, width=4)
+        self.auto_upload_label = tk.Label(self.upload_frame, text="\tAuto-upload CombatLogs to the server:")
+        self.auto_upload_var = tk.BooleanVar()
+        self.auto_upload_true = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True, text="Yes")
+        self.auto_upload_false = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False, text="No")
+        self.save_settings_button = tk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
+        self.discard_settings_button = tk.Button(self.save_frame, text="Discard", command=self.discard_settings)
+        self.default_settings_button = tk.Button(self.save_frame, text="Defaults", command = self.default_settings)
+        self.license_button = tk.Button(self.license_frame, text="License", command=self.show_license)
+        self.version_label = tk.Label(self.license_frame, text="Version 2.0")
+        self.update_label_var = tk.StringVar()
+        self.update_label = tk.Label(self.license_frame, textvariable=self.update_label_var) 
+        self.copyright_label = tk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
+        self.thanks_label = tk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
+        
+    def read_settings(self):
+        os.chdir(main_window.install_path)
+        try:
+            settings_object = open("settings.ini", "r")
+        except IOError:
+            return -1
+        try:
+            settings = settings_object.readlines()
+            settings_object.close()
+            split_settings = []
+            for setting in settings:
+                setting.split("=")
+                split_settings.append(setting)
+            vars.user_path = split_settings[0][1]
+            vars.privacy = bool(split_settings[1][1])
+            vars.server_address = split_settings[2][1]
+            vars.server_port = int(split_settings[3][1])
+            vars.auto_upload = bool(split_settings[4][1])
+            os.chdir(user_path)
+            return 0
+        except IOError:
+            tkMessageBox.showerror("Error", "Error reading settings file")
+            settings_object.close()
+            return -1
+        except:
+            tkMessageBox.showerror("Error", "Error in settings.ini, file exists")
+            if not settings_object.closed:
+                settings_object.close()
+            return -1
+
+    def write_settings(self, path, privacy, address, port, upload):
+        os.chdir(self.main_window.install_path)
+        try:
+            settings_object = open("settings.ini", "w")
+        except IOError:
+            tkMessageBox.showerror("Error", "Error opening settings file for writing")
+            return
+        try:
+            settings_object.seek(0)
+            settings_object.truncate()
+        except IOError:
+            tkMessageBox.showerror("Error", "Error deleting contents of settings file")
+            settings_object.close()
+            return
+        settings_object.write("user_path=" + path + "\n")
+        settings_object.write("privacy=" + privacy + "\n")
+        settings_object.write("server_address=" + address + "\n")
+        settings_object.write("server_port=" + port + "\n")
+        settings_object.write("auto_upload=" + upload + "\n")
+        settings_object.close()
+
+    def grid_widgets(self):
+        self.parsing_label.grid(column=0, row=0, sticky=tk.W)
+        self.path_entry_label.grid(column=0, row=0, sticky=tk.W)
+        self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.entry_frame.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.privacy_label.grid(column=0, row=0,sticky=tk.W)
+        self.privacy_select_true.grid(column=1, row=0)
+        self.privacy_select_false.grid(column=2, row=0)
+        self.privacy_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.sharing_label.grid(column=0, row=3, sticky=tk.W)
+        self.server_label.grid(column=0, row=0, sticky=tk.W)
+        self.server_address_entry.grid(column=1,row=0)
+        self.server_colon_label.grid(column=2,row=0)
+        self.server_port_entry.grid(column=3,row=0)
+        self.server_frame.grid(column=0, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.auto_upload_label.grid(column=0, row=0)
+        self.auto_upload_true.grid(column=1,row=0)
+        self.auto_upload_false.grid(column=2,row=0)
+        self.upload_frame.grid(column=0,row=5,sticky=tk.N+tk.S+tk.W+tk.E)
+        self.save_settings_button.grid(column=0, row=0, padx=2)
+        self.discard_settings_button.grid(column=1, row=0, padx=2)
+        self.default_settings_button.grid(column=2, row=0, padx=2)
+        self.save_frame.grid(column=0, row=6, sticky=tk.W)
+        self.license_button.grid(column=1,row=0,sticky=tk.W, padx=5)
+        self.copyright_label.grid(column=0, row=0, sticky=tk.W)
+        self.update_label.grid(column=0, row=2, sticky=tk.W)
+        self.thanks_label.grid(column=0,row=1, sticky=tk.W)
+        self.license_frame.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
+
+    def update_settings(self):
+        pass
+
+    def save_settings(self):
+        pass
+
+    def discard_settings(self):
+        pass
+
+    def default_settings(self):
+        pass
+
+    def show_license(self):
+        pass
+
+    def show_privacy(self):
+        pass
+
