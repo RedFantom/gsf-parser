@@ -23,12 +23,12 @@ class main_window:
     def __init__(self):
         self.window = tk.Tk()
         self.window.resizable(width = False, height = False)
-        self.window.geometry("{}x{}".format(1000, 625))
+        self.window.geometry("{}x{}".format(800, 425))
         self.window.wm_title("Thranta Squadron GSF Parser")
         self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
         self.install_path = os.getcwd()
         # Add a self.notebook widget to the self.window and add its tabs
-        self.notebook = ttk.Notebook(self.window, height = 600, width = 1000)
+        self.notebook = ttk.Notebook(self.window, height = 400, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = ttk.Frame(self.notebook)
@@ -39,7 +39,7 @@ class main_window:
         self.middle_frame.grid_widgets()
         self.file_select_frame.grid_widgets()
         self.middle_frame.pack(side = tk.LEFT, padx = 5)
-        self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 500, height = 600)
+        self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 300, height = 400)
         self.ship_containment_frame.pack(side = tk.RIGHT)
         self.ship_frame = frames.ship_frame(self.ship_containment_frame)
         self.ship_frame.grid(column = 0, row = 0, sticky = tk.N + tk.S + tk.W + tk.E)
@@ -52,20 +52,7 @@ class main_window:
         self.settings_frame.grid_widgets()
         # self.notebook.add(alliesTab, text = "Allies")
         self.notebook.grid(column = 0, row = 0)
-        '''
-        # DEBUG
-        self.fileObject = open("CombatLog.txt", "r")
-        self.lines = self.fileObject.readlines()
-        # This is not a statistics file, and setStatistics() must be able to determine that
-        vars.statisticsfile = False
-        vars.player_numbers = parse.determinePlayer(self.lines)
-        vars.player_name = parse.determinePlayerName(self.lines)
-        vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(self.lines, vars.player_numbers)
-        # Then get the useful information out of the matches
-        (vars.abilities, vars.damagetaken, vars.damagedealt, vars.selfdamage, vars.healingreceived, vars.enemies,
-        vars.criticalcount, vars.criticalluck, vars.hitcount, vars.enemydamaged, vars.enemydamaget, vars.match_timings,
-        vars.spawn_timings) = parse.parse_file(vars.file_cube, vars.player_numbers, vars.match_timings, vars.spawn_timings)
-        # DEBUG END
-        '''
+        
+        
         self.file_select_frame.add_files()
         self.window.mainloop()
