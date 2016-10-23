@@ -71,6 +71,7 @@ class statistics:
         for name in self.file_list:
             file_object = open(name, "r")
             lines = file_object.readlines()
+            file_object.close()
             player_numbers = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_numbers)
             for matrix in file_cube:
