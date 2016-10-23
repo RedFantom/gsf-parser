@@ -170,6 +170,7 @@ class middle_frame(ttk.Frame):
         self.statistics_numbers_var = tk.StringVar()
         self.statistics_label.setvar()
         self.statistics_numbers = tk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
+        self.enemies_label = tk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
         self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 20)
@@ -200,10 +201,11 @@ class middle_frame(ttk.Frame):
         self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_listbox.grid(column = 0, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaged.grid(column = 1, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaget.grid(column = 2, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_scroll.grid(column = 3, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.enemies_label.grid(column = 0, row = 0, columnspan = 3)
+        self.enemies_listbox.grid(column = 0, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.enemies_damaged.grid(column = 1, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.enemies_damaget.grid(column = 2, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.enemies_scroll.grid(column = 3, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
 
 
 class realtime_frame(ttk.Frame):
