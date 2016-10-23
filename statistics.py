@@ -16,6 +16,21 @@ import vars
 import parse
 import client
 import abilities
+import parse
+
+def check_gsf(file_name):
+    file_obj = open(file_name, "r")
+    for line in file_obj:
+        if "@" not in line:
+            print "[DEBUG] Checked file: GSF matches found!"
+            file_obj.close()
+            return True
+        else:
+            continue
+    print "[DEBUG] Checked file: no GSF matches found!"
+    file_obj.close()
+    return False
+
 
 class statistics:
     def folder_statistics(self):
@@ -186,6 +201,6 @@ class statistics:
         enemies_string = "Enemy \tDamage dealt to you\tDamage taken\n\n"
         for enemy in enemies:
             enemies_string += enemy[8:] + "\t\t" + str(enemydamaged[enemy]) + "\t\t" + str(enemydamaget[enemy]) + "\n"
-        return abilities_string, events_string, enemies_string, statistics_string, ships_list, comps
+        return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
         
 
