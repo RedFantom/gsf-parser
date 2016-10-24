@@ -104,12 +104,16 @@ class file_frame(ttk.Frame):
         else:
             numbers = self.file_box.curselection()
             vars.file_name = self.file_strings[numbers[0] - 1]
-            file_object = open(vars.file_name, "r")
-            lines = file_object.readlines()
+            clicked_file = open(vars.file_name, "rU")
+            lines = clicked_file.readlines()
+            for line in lines:
+                print "[DEBUG] ", line.replace("\n", "")
+            print "[DEBUG] len(lines) = ", len(lines)
             player = parse.determinePlayer(lines)
+            print "[DEBUG] len(lines) = ", len(lines), "\n"
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
-            file_object.close()
-            self.add_matches()          
+            clicked_file.close()
+            self.add_matches()
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
@@ -256,7 +260,7 @@ class settings_frame(ttk.Frame):
     def read_settings(self):
         os.chdir(main_window.install_path)
         try:
-            settings_object = open("settings.ini", "r")
+            settings_object = open("settings.ini", "rU")
         except IOError:
             return -1
         try:
