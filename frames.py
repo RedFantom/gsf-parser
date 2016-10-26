@@ -102,17 +102,28 @@ class file_frame(ttk.Frame):
         if self.file_box.curselection() == (0,):
             print "[DEBUG] All CombatLogs selected"
         else:
+            # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
             vars.file_name = self.file_strings[numbers[0] - 1]
+            # Open that file in read-Universal mode. normal read and read-binary have the same results (Issue #7)
             clicked_file = open(vars.file_name, "rU")
+            # Read all the lines from the selected file
             lines = clicked_file.readlines()
             for line in lines:
+                # Print all the lines in the file for debugging purposes
                 print "[DEBUG] ", line.replace("\n", "")
+            # Print the amount of lines read for debugging purposes
             print "[DEBUG] len(lines) = ", len(lines)
+            # PARSING STARTS
+            # Get the player ID numbers from the list of lines
             player = parse.determinePlayer(lines)
+            # Print the amount of lines again to check whether it is the same for debugging purposes
             print "[DEBUG] len(lines) = ", len(lines), "\n"
+            # Parse the lines with the acquired player ID numbers
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
+            # Close the file object
             clicked_file.close()
+            # Start adding the matches from the file to the listbox
             self.add_matches()
 
     def match_update(self, instance):
