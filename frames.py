@@ -91,12 +91,12 @@ class file_frame(ttk.Frame):
         os.chdir(self.main_window.default_path)
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
-                self.file_strings.append(file)
+                if statistics.check_gsf(file) == True:
+                    self.file_strings.append(file)
         self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
-            if statistics.check_gsf(file) == True:
-                self.file_box.insert(tk.END, file[7:-14])
+            self.file_box.insert(tk.END, file[7:-14])
 
     def file_update(self, instance):
         if self.file_box.curselection() == (0,):
@@ -109,9 +109,7 @@ class file_frame(ttk.Frame):
             clicked_file = open(vars.file_name, "rU")
             # Read all the lines from the selected file
             lines = clicked_file.readlines()
-            for line in lines:
-                # Print all the lines in the file for debugging purposes
-                print "[DEBUG] ", line.replace("\n", "")
+            print "[DEBUG] ", vars.file_name
             # Print the amount of lines read for debugging purposes
             print "[DEBUG] len(lines) = ", len(lines)
             # PARSING STARTS
