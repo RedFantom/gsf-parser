@@ -88,7 +88,11 @@ class file_frame(ttk.Frame):
 
     def add_files(self):
         self.file_strings = []
-        os.chdir(self.main_window.default_path)
+        try:
+            os.chdir(self.main_window.default_path)
+        except:
+            print "[DEBUG] Error changing directory. Unix support to be added."
+            return
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file) == True:
@@ -130,8 +134,8 @@ class file_frame(ttk.Frame):
         else:
              numbers = self.match_box.curselection()
              vars.match_timing = self.match_timing_strings[numbers[0] - 1]
-             self.add_spawns()    
-            
+             self.add_spawns()
+
     def spawn_update(self, instance):
         if self.spawn_box.curselection() == (0,):
             print "[DEBUG] All spawns selected"
@@ -160,7 +164,7 @@ class file_frame(ttk.Frame):
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
 
-            
+
 class ship_frame(ttk.Frame):
     def __init__(self, root_frame):
         ttk.Frame.__init__(self, root_frame, width = 300, height = 400)
@@ -209,8 +213,6 @@ class middle_frame(ttk.Frame):
     def grid_widgets(self):
         self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
         self.events_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
-        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.W)
-        self.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.W, padx = 5, pady = 5)
         self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
@@ -262,10 +264,10 @@ class settings_frame(ttk.Frame):
         self.license_button = tk.Button(self.license_frame, text="License", command=self.show_license)
         self.version_label = tk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
-        self.update_label = tk.Label(self.license_frame, textvariable=self.update_label_var) 
+        self.update_label = tk.Label(self.license_frame, textvariable=self.update_label_var)
         self.copyright_label = tk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
         self.thanks_label = tk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
-        
+
     def read_settings(self):
         os.chdir(main_window.install_path)
         try:
@@ -370,4 +372,3 @@ class settings_frame(ttk.Frame):
 
     def show_privacy(self):
         pass
-

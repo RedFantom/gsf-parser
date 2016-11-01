@@ -42,7 +42,6 @@ class main_window:
         self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 300, height = 400)
         self.ship_containment_frame.pack(side = tk.RIGHT)
         self.ship_frame = frames.ship_frame(self.ship_containment_frame)
-        self.ship_frame.grid(column = 0, row = 0, sticky = tk.N + tk.S + tk.W + tk.E)
         self.ship_frame.pack(side = tk.RIGHT)
         self.notebook.add(self.file_tab_frame, text = "File parsing")
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
@@ -52,7 +51,7 @@ class main_window:
         self.settings_frame.grid_widgets()
         # self.notebook.add(alliesTab, text = "Allies")
         self.notebook.grid(column = 0, row = 0)
-        
-        
+
+
         self.file_select_frame.add_files()
         self.window.mainloop()
