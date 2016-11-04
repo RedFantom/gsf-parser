@@ -2,7 +2,6 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
-from __future__ import division
 import re
 import os
 import vars
@@ -288,11 +287,11 @@ def parse_spawn(spawn, player):
         for ship in ships_list:
             if ship != "Quell" and ship != "Mangler" and ship != "Dustmaker" and ship != "Jurgoran":
                 ships_list.remove(ship)
-    if hitcount != 0:
-        criticalluck = float(criticalcount / hitcount)
-    else:
-        criticalluck = 0
-    criticalluck = round(criticalluck * 100, 1)
+    try:
+        criticalluck = Decimal(float(criticalcount) / float(hitcount))
+        criticalluck = round(criticalluck * 100, 2)
+    except ZeroDivisionError:
+        criticalluck = float(0)
     return (abilities, damagetaken, damagedealt, healingreceived, selfdamage,
             enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged, enemydamaget)
 
