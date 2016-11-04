@@ -91,12 +91,15 @@ class file_frame(ttk.Frame):
         try:
             os.chdir(self.main_window.default_path)
         except:
-            print "[DEBUG] Error changing directory. Unix support to be added."
+            print("[DEBUG] Error changing directory. Unix support to be added.")
             return
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file) == True:
                     self.file_strings.append(file)
+                vars.files_done += 1
+                print "[DEBUG] File scanned"
+                self.main_window.splash.update_progress()
         self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
@@ -104,7 +107,7 @@ class file_frame(ttk.Frame):
 
     def file_update(self, instance):
         if self.file_box.curselection() == (0,):
-            print "[DEBUG] All CombatLogs selected"
+            print("[DEBUG] All CombatLogs selected")
         else:
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
@@ -113,14 +116,14 @@ class file_frame(ttk.Frame):
             clicked_file = open(vars.file_name, "rU")
             # Read all the lines from the selected file
             lines = clicked_file.readlines()
-            print "[DEBUG] ", vars.file_name
+            print("[DEBUG] ", vars.file_name)
             # Print the amount of lines read for debugging purposes
             print "[DEBUG] len(lines) = ", len(lines)
             # PARSING STARTS
             # Get the player ID numbers from the list of lines
             player = parse.determinePlayer(lines)
             # Print the amount of lines again to check whether it is the same for debugging purposes
-            print "[DEBUG] len(lines) = ", len(lines), "\n"
+            print("[DEBUG] len(lines) = ", len(lines), "\n")
             # Parse the lines with the acquired player ID numbers
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
             # Close the file object
@@ -130,7 +133,7 @@ class file_frame(ttk.Frame):
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
-            print "[DEBUG] All matches selected"
+            print("[DEBUG] All matches selected")
         else:
              numbers = self.match_box.curselection()
              vars.match_timing = self.match_timing_strings[numbers[0] - 1]
@@ -393,3 +396,32 @@ class settings_frame(ttk.Frame):
 
     def show_privacy(self):
         pass
+
+class splash_screen(tk.Toplevel):
+    def __init__(self, window, main_window):
+        tk.Toplevel.__init__(self, window)
+        self.label = tk.Label(self, text = "Working...")
+        self.label.pack()
+        print "[DEBUG] One"
+        self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
+        self.progress_bar.pack()
+        list = os.listdir(main_window.default_path)
+        files = []
+        for file in list:
+            if file.endswith(".txt"):
+                files.append(file)               
+        self.amount_files = len(files)
+        print "[DEBUG] Two"
+        self.progress_bar["maximum"] = self.amount_files
+        print(self.amount_files)
+        self.progress_bar["value"] = 0
+        self.main_window = main_window
+        print "[DEBUG] Three"
+        self.update()
+
+    def update_progress(self):
+        self.progress_bar["value"] = vars.files_done
+        self.update()
+        print "\n[DEBUG] Looped"
+
+            

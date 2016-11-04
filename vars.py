@@ -18,6 +18,7 @@
 
 import gui
 
+files_done              = 0
 abilities               = None
 damagetaken             = None
 damagedealt             = None

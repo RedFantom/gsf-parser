@@ -23,12 +23,10 @@ def check_gsf(file_name):
     file_obj = open(file_name, "r")
     for line in file_obj:
         if "@" not in line:
-            print "[DEBUG] Checked file: GSF matches found!"
             file_obj.close()
             return True
         else:
             continue
-    print "[DEBUG] Checked file: no GSF matches found!"
     file_obj.close()
     return False
 

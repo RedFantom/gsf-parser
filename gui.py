@@ -21,17 +21,23 @@ import frames
 
 class main_window:
     def __init__(self):
-        self.window = tk.Tk()
-        self.window.resizable(width = False, height = False)
-        self.window.geometry("{}x{}".format(800, 425))
-        self.window.wm_title("Thranta Squadron GSF Parser")
         self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
         self.install_path = os.getcwd()
+        self.window = tk.Tk()
+        self.window.resizable(width = False, height = False)
+        self.splash = frames.splash_screen(self.window, self)
+        print "Thread started"
+        self.window.withdraw()
+        self.window.geometry("{}x{}".format(800, 425))
+        print "[DEBUG] main_window geometry"
+        self.window.wm_title("Thranta Squadron GSF Parser")
+        print "[DEBUG] main_window title"
         # Add a self.notebook widget to the self.window and add its tabs
         self.notebook = ttk.Notebook(self.window, height = 400, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = ttk.Frame(self.notebook)
+        print "[DEBUG] main_window tabs"
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.file_select_frame = frames.file_frame(self.file_tab_frame, self)
         self.file_select_frame.pack(side = tk.LEFT)
@@ -42,7 +48,9 @@ class main_window:
         self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 300, height = 400)
         self.ship_containment_frame.pack(side = tk.RIGHT)
         self.ship_frame = frames.ship_frame(self.ship_containment_frame)
+        self.ship_frame.grid(column = 0, row = 0, sticky = tk.N + tk.S + tk.W + tk.E)
         self.ship_frame.pack(side = tk.RIGHT)
+        print "[DEBUG] main_window frames"
         self.notebook.add(self.file_tab_frame, text = "File parsing")
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
         self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
@@ -50,8 +58,8 @@ class main_window:
         self.settings_frame = frames.settings_frame(self.settings_tab_frame, self)
         self.settings_frame.grid_widgets()
         # self.notebook.add(alliesTab, text = "Allies")
-        self.notebook.grid(column = 0, row = 0)
-
-
+        self.notebook.grid(column = 0, row = 0)        
         self.file_select_frame.add_files()
+        self.splash.destroy()
+        self.window.deiconify()
         self.window.mainloop()
