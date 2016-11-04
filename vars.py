@@ -32,11 +32,13 @@ enemydamaget            = None
 match_timings           = None
 spawn_timings           = None
 
+enemies_names           = None
+
 deaths                  = None
 
 file_cube              = None
-player_numbers     = None
-player_name        = None
+player_numbers         = {}
+player_name            = None
 
 file_name = None
 match_timing = None

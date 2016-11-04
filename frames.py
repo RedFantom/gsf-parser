@@ -18,7 +18,7 @@ import vars
 import parse
 import client
 import statistics
-import getpass
+import abilities
 
 
 # Class for the _frame in the fileTab of the parser
@@ -138,7 +138,28 @@ class file_frame(ttk.Frame):
 
     def spawn_update(self, instance):
         if self.spawn_box.curselection() == (0,):
-            print "[DEBUG] All spawns selected"
+            match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+            for spawn in match:
+                vars.player_numbers.update(parse.determinePlayer(spawn))
+            vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.match_statistics(match)
+            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
+            self.main_window.middle_frame.events_label_var.set(vars.events_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
+            ships_string = "Ships used:\t\tCount:\n"
+            for ship in abilities.ships_strings:
+                try:
+                    ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                except KeyError:
+                    ships_string += ship + "\t\t0\n"
+            self.main_window.ship_frame.ship_label_var.set(ships_string)
+            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            index = 0
+            for enemy in vars.enemies:
+                self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
         else:
             numbers = self.spawn_box.curselection()
             vars.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
@@ -152,7 +173,7 @@ class file_frame(ttk.Frame):
             ships_string = "Possible ships used:\n"
             for ship in vars.ships_list:
                 ships_string += str(ship) + "\n"
-            ships_string += "\nWith the components:\n"
+            ships_string += "\t\t\t\t\t\t\nWith the components:\n"
             for component in vars.ships_comps:
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
@@ -181,7 +202,7 @@ class middle_frame(ttk.Frame):
         self.notebook.add(self.stats_frame, text = "Statistics")
         self.notebook.add(self.enemies_frame, text = "Enemies")
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\n"
+        string = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\n"
         self.statistics_label_var.set(string)
         self.statistics_label = tk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()
@@ -192,7 +213,7 @@ class middle_frame(ttk.Frame):
         self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_scroll = tk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
-        self.enemies_scroll.config(command = self.yview)
+        self.enemies_scroll.config(command = self.enemies_scroll_yview)
         self.enemies_listbox.config(yscrollcommand = self.enemies_scroll.set)
         self.enemies_damaget.config(yscrollcommand = self.enemies_scroll.set)
         self.enemies_damaged.config(yscrollcommand = self.enemies_scroll.set)
@@ -205,7 +226,7 @@ class middle_frame(ttk.Frame):
         self.events_label_var = tk.StringVar()
         self.events_label = tk.Label(self.events_frame, textvariable = self.events_label_var, justify = tk.LEFT, wraplength = 295)
 
-    def yview(self, *args):
+    def enemies_scroll_yview(self, *args):
         self.enemies_listbox.yview(*args)
         self.enemies_damaged.yview(*args)
         self.enemies_damaget.yview(*args)

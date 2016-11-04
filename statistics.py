@@ -11,6 +11,7 @@ import tkFileDialog
 import re
 import glob
 import os
+import decimal
 # Own modules
 import vars
 import parse
@@ -143,8 +144,66 @@ class statistics:
         total_ddealt = 0
         total_dtaken = 0
 
+        total_abilitiesdict = {}
+        total_damagetaken = 0
+        total_damagedealt = 0
+        total_healingrecv = 0
+        total_selfdamage = 0
+        total_enemies = []
+        total_criticalcount = 0
+        total_hitcount = 0
+        total_shipsdict = {}
+        total_enemydamaged = {}
+        total_enemydamaget = {}
+
+        ships_uncounted = 0
+
         for spawn in match:
-            print "Something"
+            (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
+             criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
+            total_abilitiesdict.update(abilitiesdict)
+            total_damagetaken += damagetaken
+            total_damagedealt += damagedealt
+            total_healingrecv += healingreceived
+            total_selfdamage += selfdamage
+            for enemy in enemies:
+                total_enemies.append(enemy)
+            total_criticalcount += criticalcount
+            total_hitcount += hitcount
+            for key, value in enemydamaged.iteritems():
+                if key in total_enemydamaged:
+                    total_enemydamaged[key] += value
+                else:
+                    total_enemydamaged[key] = value
+            for key, value in enemydamaget.iteritems():
+                if key in total_enemydamaget:
+                    total_enemydamaget[key] += value
+                else:
+                    total_enemydamaget[key] = value
+            abilities_string = ""
+            statistics_string = "" 
+            events_string = "Events is not available for a whole match"
+            if len(ships_list) != 1:
+                ships_uncounted += 1
+            for ship in ships_list:
+                if ship in total_shipsdict:
+                    total_shipsdict[ship] += 1
+                else:
+                    total_shipsdict[ship] = 1
+        for (ability, count) in total_abilitiesdict.iteritems():
+            abilities_string = abilities_string + ability.strip() + "\n"
+        try:
+            total_criticalluck = decimal.Decimal(float(total_criticalcount) / float(total_hitcount))
+            total_criticalluck = round(total_criticalluck * 100, 2)
+        except ZeroDivisionError:
+            total_criticalluck = 0
+        statistics_string = (str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
+                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" + 
+                             str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
+                             str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n")
+        for enemy in total_enemies:
+            print "[DEBUG] " + enemy + "\t" + str(total_enemydamaged[enemy])
+        return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
 
     def spawn_statistics(self, spawn):
         (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
@@ -155,6 +214,7 @@ class statistics:
         statistics_string = ""
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
+        events = []
         for key in abilitiesdict:
             abilities_string += key + "\n"
             if key in abilities.components:
@@ -198,10 +258,8 @@ class statistics:
         statistics_string = (str(damagedealt) + "\n" + str(damagetaken) + "\n" +
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" + 
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
-                             str(criticalluck) + "%" + "\n")
-        enemies_string = "Enemy \tDamage dealt to you\tDamage taken\n\n"
-        for enemy in enemies:
-            enemies_string += enemy[8:] + "\t\t" + str(enemydamaged[enemy]) + "\t\t" + str(enemydamaget[enemy]) + "\n"
+                             str(criticalluck) + "%" + "\n" + "-\n")
         return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+
         
 
