@@ -1,7 +1,6 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
-
 components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon",
               "Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile",
@@ -11,6 +10,54 @@ components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad 
                     "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine", "Ion Mine", "Concussion Mine", "Tensor Field", 
               "Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
                     "Directional Shield", "Distortion Field", "Quick-charge Shield"]
+
+components_english = {'3330936116609024': 'Hyperspace Beacon', 
+                      '3300630827368448': 'Shield Power Converter', 
+                      '3294609283219456': 'Distortion Field', 
+                      '3295356607528960': 'Retro Thrusters', 
+                      '3294897046028288': 'Laser Cannon', 
+                      '3320048374513664': 'Snap Turn', 
+                      '3362078924472320': 'EMP Field', 
+                      '3295768924389637': 'Booster Recharge', 
+                      '3302232850169856': 'Repair Drone', 
+                      '3290932791214080': 'Light Laser Cannon', 
+                      '3290958561017856': 'Burst Laser Cannon', 
+                      '3298831236071424': 'Cluster Missiles', 
+                      '3301777583636480': 'Slug Railgun', 
+                      '3323312549658624': 'Concussion Mine', 
+                      '3397954786295808': 'Interdiction Missile', 
+                      '3292272821010432': 'Quad Laser Cannon', 
+                      '3295305067921408': 'Rocket Pod', 
+                      '3298985854894080': 'Proton Torpedo', 
+                      '3301949382328320': 'Feedback Shield', 
+                      '3298981559926784': 'Ion Missile', 
+                      '3296133996609536': 'Sabotage Probe', 
+                      '3321744886595584': 'Remote Slicing', 
+                      '3300639417303040': 'Overcharged Shield', 
+                      '3295313657856000': 'Barrel Roll', 
+                      '3292320065650688': 'Targeting Telemetry', 
+                      '811980747177984': 'Charged Plating', 
+                      '3321878030581760': 'Interdiction Drive', 
+                      '3325030536577024': 'Seismic Mine', 
+                      '3328019833815040': 'Railgun Sentry Drone', 
+                      '3300759676387328': 'Combat Command', 
+                      '3357483309465600': 'EMP Missile', 
+                      '3302542087815168': 'Interdiction Sentry Drone', 
+                      '3295193398771712': 'Directional Shield', 
+                      '3324609629782016': 'Seeker Mine', 
+                      '3300751086452736': 'Repair Probes', 
+                      '3301786173571072': 'Ion Railgun', 
+                      '3295317952823296': 'Power Dive', 
+                      '3295309362888704': 'Koiogran Turn', 
+                      '3295425327005696': 'Tensor Field', 
+                      '3290962855985152': 'Heavy Laser Cannon', 
+                      '3298960085090304': 'Concussion Missile', 
+                      '3325073486249984': 'Thermite Torpedo', 
+                      '3301794763505664': 'Plasma Railgun', 
+                      '3311600173842432': 'Fortress Shield', 
+                      '3300703841812480': 'Shield Projector', 
+                      '3327289689374720': 'Interdiction Mine', 
+                      '3326061328728064': 'Ion Mine'}
 
 primaries = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon"]
 secondaries = ["Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
@@ -82,7 +129,9 @@ excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Lo
                      "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
                      "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe"]
 
-# DEBUG
-ships_components = [legionAbilities, razorwireAbilities, decimusAbilities, manglerAbilities, dustmakerAbilities, jurgoranAbilities,
-                    bloodmarkAbilities, blackboltAbilities, stingAbilities, imperiumAbilities, quellAbilities, rycerAbilities]
-# DEBUG END
+ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
+ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : "Rampart Mark Four",
+             "Jurgoran" : "Condor", "Dustmaker" : "Comet Breaker", "Mangler" : "Quarrel",
+             "Bloodmark" : "Spearpoint", "Blackbolt" : "Novadive", "Sting" : "Flashfire",
+             "Imperium" : "Clarion", "Rycer" : "Star Guard", "Quell" : "Pike"}
+ships_strings = ["Legion\t", "Decimus\t", "Razorwire", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark", "Blackbolt", "Sting\t", "Imperium", "Rycer\t", "Quell\t"]
