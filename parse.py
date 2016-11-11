@@ -48,7 +48,6 @@ def splitter(lines, playerList):
                 # Add the spawntime and the matchtime to the lists
                 spawn_timingsList.append(timestring)
                 match_timingsList.append(timestring)
-                print "[DEBUG] timestring appended, match start"
             # If the match had started, then the match continues
             else:
                 # If the source is in the playerlist, but the source is not the
@@ -106,7 +105,6 @@ def splitter(lines, playerList):
                 file_cube.append(match)
                 # Add the endtime of the match to the list
                 match_timingsList.append(timestring)
-                print "[DEBUG] timestring appended, match end"
                 # Add the spawn_timingsList to the matrix with [match][spawn]
                 spawn_timingsMatrix.append(spawn_timingsList)
                 # Clear the lists
@@ -293,7 +291,8 @@ def parse_spawn(spawn, player):
     except ZeroDivisionError:
         criticalluck = float(0)
     return (abilities, damagetaken, damagedealt, healingreceived, selfdamage,
-            enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged, enemydamaget)
+            enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged, 
+            enemydamaget)
 
 def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
