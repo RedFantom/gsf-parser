@@ -98,7 +98,6 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file) == True:
                     self.file_strings.append(file)
                 vars.files_done += 1
-                print "[DEBUG] File scanned"
                 self.main_window.splash.update_progress()
         self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
@@ -116,14 +115,9 @@ class file_frame(ttk.Frame):
             clicked_file = open(vars.file_name, "rU")
             # Read all the lines from the selected file
             lines = clicked_file.readlines()
-            print("[DEBUG] ", vars.file_name)
-            # Print the amount of lines read for debugging purposes
-            print "[DEBUG] len(lines) = ", len(lines)
             # PARSING STARTS
             # Get the player ID numbers from the list of lines
             player = parse.determinePlayer(lines)
-            # Print the amount of lines again to check whether it is the same for debugging purposes
-            print("[DEBUG] len(lines) = ", len(lines), "\n")
             # Parse the lines with the acquired player ID numbers
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
             # Close the file object
@@ -205,7 +199,7 @@ class middle_frame(ttk.Frame):
         self.notebook.add(self.stats_frame, text = "Statistics")
         self.notebook.add(self.enemies_frame, text = "Enemies")
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\n"
+        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\n"
         self.statistics_label_var.set(string)
         self.statistics_label = tk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()
@@ -217,9 +211,9 @@ class middle_frame(ttk.Frame):
         self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_scroll = tk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
         self.enemies_scroll.config(command = self.enemies_scroll_yview)
-        self.enemies_listbox.config(yscrollcommand = self.enemies_scroll.set)
-        self.enemies_damaget.config(yscrollcommand = self.enemies_scroll.set)
-        self.enemies_damaged.config(yscrollcommand = self.enemies_scroll.set)
+        self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
+        self.enemies_damaget.config(yscrollcommand = self.enemies_damaget_scroll)
+        self.enemies_damaged.config(yscrollcommand = self.enemies_damaged_scroll)
         self.events_frame = ttk.Frame(self.notebook)
         self.abilities_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.abilities_frame, text = "Abilities")
@@ -234,6 +228,28 @@ class middle_frame(ttk.Frame):
         self.enemies_damaged.yview(*args)
         self.enemies_damaget.yview(*args)
 
+    def enemies_listbox_scroll(self, *args):
+        if self.enemies_damaged.yview() != self.enemies_listbox.yview():
+            self.enemies_damaged.yview_moveto(args[0])
+        if self.enemies_damaget.yview() != self.enemies_listbox.yview():
+            self.enemies_damaget.yview_moveto(args[0])
+        self.enemies_scroll.set(*args)
+
+    def enemies_damaged_scroll(self, *args):
+        if self.enemies_listbox.yview() != self.enemies_damaged.yview():
+            self.enemies_listbox.yview_moveto(args[0])
+        if self.enemies_damaget.yview() != self.enemies_damaged.yview():
+            self.enemies_damaget.yview_moveto(args[0])
+        self.enemies_scroll.set(*args)
+
+    def enemies_damaget_scroll(self, *args):
+        if self.enemies_listbox.yview() != self.enemies_damaget.yview():
+            self.enemies_listbox.yview_moveto(args[0])
+        if self.enemies_damaged.yview() != self.enemies_damaget.yview():
+            self.enemies_damaged.yview_moveto(args[0])
+        self.enemies_scroll.set(*args)
+
+    
     def grid_widgets(self):
         self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
         self.events_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
@@ -402,7 +418,6 @@ class splash_screen(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.label = tk.Label(self, text = "Working...")
         self.label.pack()
-        print "[DEBUG] One"
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
         self.progress_bar.pack()
         list = os.listdir(main_window.default_path)
@@ -411,17 +426,13 @@ class splash_screen(tk.Toplevel):
             if file.endswith(".txt"):
                 files.append(file)               
         self.amount_files = len(files)
-        print "[DEBUG] Two"
         self.progress_bar["maximum"] = self.amount_files
-        print(self.amount_files)
         self.progress_bar["value"] = 0
         self.main_window = main_window
-        print "[DEBUG] Three"
         self.update()
 
     def update_progress(self):
         self.progress_bar["value"] = vars.files_done
         self.update()
-        print "\n[DEBUG] Looped"
 
             
