@@ -127,7 +127,8 @@ quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon
 excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
                      "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
                      "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
-                     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe"]
+                     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
+                     "Plasma Burn"]
 
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
 ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : "Rampart Mark Four",
