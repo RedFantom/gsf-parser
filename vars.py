@@ -17,6 +17,7 @@
 # spawn_timings is a matrix of datetimes
 
 import gui
+import getpass
 
 files_done              = 0
 abilities               = None
@@ -61,3 +62,5 @@ privacy = None
 server_address = None
 server_port = None
 auto_upload = None
+parse = []
+path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"

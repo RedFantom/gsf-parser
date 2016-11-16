@@ -12,6 +12,8 @@ import re
 import glob
 import os
 import getpass
+import threading
+import time
 from datetime import datetime
 # Own modules
 import vars
@@ -19,7 +21,8 @@ import parse
 import client
 import statistics
 import abilities
-
+import realtime
+import stalking
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -264,9 +267,119 @@ class middle_frame(ttk.Frame):
 
 
 class realtime_frame(ttk.Frame):
-    def __init__(self, root_frame):
+    def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
+        self.main_window = main_window
+        self.listbox = tk.Listbox(self, width = 130, height = 15)
+        self.statistics_list_label_one = tk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:")
+        self.statistics_list_label_two = tk.Label(self, justify = tk.LEFT, text = "Abilities:")
+        self.statistics_label_one_text = tk.StringVar()
+        self.statistics_label_one = tk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
+        self.statistics_label_two_text = tk.StringVar()
+        self.statistics_label_two = tk.Label(self, textvariable=self.statistics_label_two_text, justify = tk.LEFT)
+        self.start_parsing_button = tk.Button(self, text = "Parse real-time", command=self.start_parsing)
+        self.upload_results_button = tk.Button(self, text = "Upload events", command= self.upload_events)
+        self.server = tk.StringVar()
+        self.server_list = tk.OptionMenu(self, self.server,
+                                         "The Bastion",
+                                         "Begeren Colony",
+                                         "The Harbinger",
+                                         "The Shadowlands",
+                                         "Jung Ma",
+                                         "The Ebon Hawk",
+                                         "Prophecy of the Five",
+                                         "Jedi Covenant",
+                                         "T3-M4",
+                                         "Darth Nihilus",
+                                         "The Tomb of Freedon Nadd",
+                                         "Jar'kai Sword",
+                                         "The Progenitor",
+                                         "Vanjervalis Chain",
+                                         "Battle Meditation",
+                                         "Mantle of the Force",
+                                         "The Red Eclipse")
+        self.parsing = False
+        self.parse = []
 
+    def start_parsing(self):
+        if not self.parsing:
+            self.start_parsing_button.config(relief=tk.SUNKEN)
+            self.parsing = True
+            self.stalker_obj = stalking.LogStalker(self.callback)
+            self.stalker_obj.start()
+        elif self.parsing:
+            self.start_parsing_button.config(relief=tk.RAISED)
+            self.parsing = False
+            self.stalker_obj.__del__()
+
+    def upload_events(self):
+        pass
+
+    def grid_widgets(self):
+        self.start_parsing_button.grid(column = 1, row = 1, padx = 5, pady = 5)
+        self.upload_results_button.grid(column = 2, row = 1, padx = 5, pady = 5)
+        self.server_list.grid(column = 3, row = 1, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.server_list.config(width = 40, justify = tk.LEFT)
+        self.statistics_label_one.grid(column = 2, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
+        self.statistics_label_two.grid(column = 4, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
+        self.statistics_list_label_one.grid(column = 1, row = 2, padx = 5, pady =5, sticky = tk.N + tk.W)
+        self.statistics_list_label_two.grid(column = 3, row = 2, padx = 5, pady =5, sticky = tk.N + tk.W)
+        self.listbox.grid(column = 1, row = 3, columnspan = 3, padx = 5, pady =5)
+        self.statistics_label_one_text.set("")
+        self.statistics_label_one_text.set("")
+    
+    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities):
+        damage_done = 0
+        damage_taken = 0
+        selfdamage = 0
+        healing = 0
+        for dmg in dmg_done:
+            damage_done += dmg
+        for dmg in dmg_taken:
+            damage_taken += dmg
+        for dmg in self_dmg:
+            selfdamage += dmg
+        for heal in heals:
+            healing += heal
+        self.statistics_label_one_text.set(str(damage_done) + "\n" +
+                                           str(damage_taken) + "\n" +
+                                           str(selfdamage) + "\n" +
+                                           str(healing) + "\n")
+        self.statistics_label_two_text.set(str(abilities))
+
+    def callback(self, filename, lines):
+        if not self.parsing:
+            return
+        print "[DEBUG] callback called"
+        for elem in self.parse:
+            if elem.fname is filename:
+                parser = elem
+        if not self.parse:
+            self.parser = realtime.Parser(filename)
+            try: 
+                self.parse.append(self.parser)            
+            except UnboundLocalError: 
+                print "[DEBUG] Parser referenced before assignment"
+                return
+        for line in lines:
+            process = realtime.line_to_dictionary(line)
+            self.parser.parse(process)
+            self.dmg_done = self.parser.spawn_dmg_done
+            self.dmg_taken = self.parser.spawn_dmg_taken
+            self.selfdamage = self.parser.spawn_selfdmg
+            self.healing = self.parser.spawn_healing_rcvd
+            self.abilities = self.parser.tmp_abilities
+            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities)
+           
+class stalking_process(threading.Thread):
+    def __init__(self, realtime_frame):
+        threading.Thread.__init__(self)
+        self.frame = realtime_frame
+        self.stalker_obj = stalking.LogStalker(callback=self.frame.callback)
+    
+    def run(self):
+        self.stalker_obj.loop()
+            
 class share_frame(ttk.Frame):
     def __init__(self, root_frame):
         ttk.Frame.__init__(self, root_frame)
