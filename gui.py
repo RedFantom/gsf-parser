@@ -18,19 +18,20 @@ import parse
 import client
 import statistics
 import frames
+import overlay
 
-class main_window:
+class main_window(tk.Tk):
     def __init__(self):
+        tk.Tk.__init__(self)
         self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
         self.install_path = os.getcwd()
-        self.window = tk.Tk()
-        self.window.resizable(width = False, height = False)
-        self.splash = frames.splash_screen(self.window, self)
-        self.window.withdraw()
-        self.window.geometry("{}x{}".format(800, 425))
-        self.window.wm_title("Thranta Squadron GSF Parser")
+        self.resizable(width = False, height = False)
+        self.splash = overlay.splash_screen(self)
+        self.withdraw()
+        self.geometry("{}x{}".format(800, 425))
+        self.wm_title("Thranta Squadron GSF Parser")
         # Add a self.notebook widget to the self.window and add its tabs
-        self.notebook = ttk.Notebook(self.window, height = 400, width = 800)
+        self.notebook = ttk.Notebook(self, height = 400, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = ttk.Frame(self.notebook)
@@ -59,5 +60,5 @@ class main_window:
         self.notebook.grid(column = 0, row = 0)        
         self.file_select_frame.add_files()
         self.splash.destroy()
-        self.window.deiconify()
-        self.window.mainloop()
+        self.deiconify()
+        self.mainloop()
