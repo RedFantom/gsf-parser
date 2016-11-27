@@ -393,14 +393,17 @@ class share_frame(ttk.Frame):
 
 class settings_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
+        ### LAY-OUT ###
         ttk.Frame.__init__(self, root_frame)
         self.entry_frame = ttk.Frame(root_frame)
         self.privacy_frame = ttk.Frame(root_frame)
         self.server_frame = ttk.Frame(root_frame)
         self.upload_frame = ttk.Frame(root_frame)
+        self.realtime_frame = ttk.Frame(root_frame)
         self.save_frame = ttk.Frame(root_frame)
         self.license_frame = ttk.Frame(root_frame)
         self.main_window = main_window
+        ### PARSING SETTINGS ###
         self.parsing_label = tk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = tk.Entry(self.entry_frame, width=75)
         self.path_entry_label = tk.Label(self.entry_frame, text = "\tCombatLogs folder:")
@@ -409,6 +412,7 @@ class settings_frame(ttk.Frame):
         self.privacy_var = tk.BooleanVar()
         self.privacy_select_true = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
         self.privacy_select_false = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False, text = "No")
+        ### SHARING SETTINGS ###
         self.sharing_label = tk.Label(root_frame, text = "Share settings", justify=tk.LEFT)
         self.server_label = tk.Label(self.server_frame, text = "\tServer for sharing:")
         self.server_address_entry = tk.Entry(self.server_frame, width=20)
@@ -418,6 +422,15 @@ class settings_frame(ttk.Frame):
         self.auto_upload_var = tk.BooleanVar()
         self.auto_upload_true = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True, text="Yes")
         self.auto_upload_false = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False, text="No")
+        ### REAL-TIME SETTINGS ###
+        self.realtime_settings_label = tk.Label(self.realtime_frame, text = "Real-time parsing settings")
+        self.overlay_enable_label = tk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
+        self.overlay_enable_radio_var = tk.BooleanVar()
+        self.overlay_enable_radio_yes = tk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=True, text="Yes")
+        self.overlay_enable_radio_no = tk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=False, text="No")
+        self.overlay_opacity_label = tk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
+        self.overlay_opacity_input = tk.Entry(self.realtime_frame, width = 3)
+        ### MISC ###
         self.save_settings_button = tk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
         self.discard_settings_button = tk.Button(self.save_frame, text="Discard", command=self.discard_settings)
         self.default_settings_button = tk.Button(self.save_frame, text="Defaults", command = self.default_settings)
@@ -480,6 +493,7 @@ class settings_frame(ttk.Frame):
         settings_object.close()
 
     def grid_widgets(self):
+        ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=0, sticky=tk.W)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.W)
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -488,6 +502,7 @@ class settings_frame(ttk.Frame):
         self.privacy_select_true.grid(column=1, row=0)
         self.privacy_select_false.grid(column=2, row=0)
         self.privacy_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        ### SHARING SETTINGS ###
         self.sharing_label.grid(column=0, row=3, sticky=tk.W)
         self.server_label.grid(column=0, row=0, sticky=tk.W)
         self.server_address_entry.grid(column=1,row=0)
@@ -498,15 +513,24 @@ class settings_frame(ttk.Frame):
         self.auto_upload_true.grid(column=1,row=0)
         self.auto_upload_false.grid(column=2,row=0)
         self.upload_frame.grid(column=0,row=5,sticky=tk.N+tk.S+tk.W+tk.E)
+        ### REALTIME SETTINGS ###
+        self.overlay_enable_label.grid(column = 0, row =1, sticky=tk.W)
+        self.overlay_enable_radio_yes.grid(column = 1, row = 1, sticky=tk.W)
+        self.overlay_enable_radio_no.grid(column = 2, row = 1, sticky=tk.W)
+        self.overlay_opacity_label.grid(column = 0, row = 2, sticky=tk.W)
+        self.overlay_opacity_input.grid(column = 1, row = 2, sticky=tk.W)
+        self.realtime_settings_label.grid(column = 0, row = 0, sticky=tk.W)
+        self.realtime_frame.grid(column = 0, row = 6, sticky=tk.N+tk.S+tk.W+tk.E)
+        ### MISC ###
         self.save_settings_button.grid(column=0, row=0, padx=2)
         self.discard_settings_button.grid(column=1, row=0, padx=2)
         self.default_settings_button.grid(column=2, row=0, padx=2)
-        self.save_frame.grid(column=0, row=6, sticky=tk.W)
+        self.save_frame.grid(column=0, row=7, sticky=tk.W)
         self.license_button.grid(column=1,row=0,sticky=tk.W, padx=5)
         self.copyright_label.grid(column=0, row=0, sticky=tk.W)
         self.update_label.grid(column=0, row=2, sticky=tk.W)
         self.thanks_label.grid(column=0,row=1, sticky=tk.W)
-        self.license_frame.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.license_frame.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
 
     def update_settings(self):
         pass
