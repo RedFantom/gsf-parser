@@ -23,6 +23,7 @@ import statistics
 import abilities
 import realtime
 import stalking
+import overlay
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -307,10 +308,12 @@ class realtime_frame(ttk.Frame):
             self.parsing = True
             self.stalker_obj = stalking.LogStalker(self.callback)
             self.stalker_obj.start()
+            self.overlay = overlay.overlay(self.main_window)
         elif self.parsing:
             self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
             self.stalker_obj.__del__()
+            self.overlay.destroy()
 
     def upload_events(self):
         pass
@@ -346,6 +349,10 @@ class realtime_frame(ttk.Frame):
                                            str(selfdamage) + "\n" +
                                            str(healing) + "\n")
         self.statistics_label_two_text.set(str(abilities))
+        self.overlay.stats_var.set(str(damage_done) + "\n" +
+                                   str(damage_taken) + "\n" +
+                                   str(selfdamage) + "\n" +
+                                   str(healing) + "\n")
 
     def callback(self, filename, lines):
         if not self.parsing:
@@ -526,26 +533,5 @@ class settings_frame(ttk.Frame):
     def show_privacy(self):
         pass
 
-class splash_screen(tk.Toplevel):
-    def __init__(self, window, main_window):
-        tk.Toplevel.__init__(self, window)
-        self.label = tk.Label(self, text = "Working...")
-        self.label.pack()
-        self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
-        self.progress_bar.pack()
-        list = os.listdir(main_window.default_path)
-        files = []
-        for file in list:
-            if file.endswith(".txt"):
-                files.append(file)               
-        self.amount_files = len(files)
-        self.progress_bar["maximum"] = self.amount_files
-        self.progress_bar["value"] = 0
-        self.main_window = main_window
-        self.update()
-
-    def update_progress(self):
-        self.progress_bar["value"] = vars.files_done
-        self.update()
 
             
