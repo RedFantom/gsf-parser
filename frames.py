@@ -90,8 +90,10 @@ class file_frame(ttk.Frame):
             for spawn in self.spawn_timing_strings:
                 self.spawn_box.insert(tk.END, spawn)
 
-    def add_files(self):
+    def add_files(self, silent=False):
         self.file_strings = []
+        if not silent:
+            self.splash = overlay.splash_screen(self.main_window)
         try:
             os.chdir(self.main_window.default_path)
         except:
@@ -102,11 +104,14 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file) == True:
                     self.file_strings.append(file)
                 vars.files_done += 1
-                self.main_window.splash.update_progress()
+                self.splash.update_progress()
         self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
             self.file_box.insert(tk.END, file[7:-14])
+        if not silent:
+            self.splash.destroy()
+        return
 
     def file_update(self, instance):
         if self.file_box.curselection() == (0,):
@@ -131,7 +136,29 @@ class file_frame(ttk.Frame):
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
-            print("[DEBUG] All matches selected")
+            numbers = self.match_box.curselection()
+            vars.match_timing = self.match_timing_strings[numbers[0] - 1]
+            file_cube = vars.file_cube
+            vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget, vars.uncounted = self.statistics_object.file_statistics(file_cube)
+            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
+            self.main_window.middle_frame.events_label_var.set(vars.events_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
+            ships_string = "Ships used:\t\tCount:\n"
+            for ship in abilities.ships_strings:
+                try:
+                    ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                except KeyError:
+                    ships_string += ship + "\t\t0\n"
+            ships_string += "Uncounted\t\t" + str(vars.uncounted)
+            self.main_window.ship_frame.ship_label_var.set(ships_string)
+            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            index = 0
+            for enemy in vars.enemies:
+                self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
         else:
              numbers = self.match_box.curselection()
              vars.match_timing = self.match_timing_strings[numbers[0] - 1]
@@ -152,6 +179,7 @@ class file_frame(ttk.Frame):
                     ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
+            
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
@@ -253,13 +281,12 @@ class middle_frame(ttk.Frame):
             self.enemies_damaged.yview_moveto(args[0])
         self.enemies_scroll.set(*args)
 
-    
     def grid_widgets(self):
         self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
         self.events_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
-        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N  + tk.W + tk.E)
         self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.W + tk.E)
         self.enemies_label.grid(column = 0, row = 0, columnspan = 3)
         self.enemies_listbox.grid(column = 0, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
         self.enemies_damaged.grid(column = 1, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
@@ -304,12 +331,14 @@ class realtime_frame(ttk.Frame):
 
     def start_parsing(self):
         if not self.parsing:
+            self.main_window.file_select_frame.add_files()
             self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.stalker_obj = stalking.LogStalker(self.callback)
             self.stalker_obj.start()
             self.overlay = overlay.overlay(self.main_window)
         elif self.parsing:
+            self.main_window.file_select_frame.add_files()
             self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
             self.stalker_obj.__del__()
@@ -363,11 +392,7 @@ class realtime_frame(ttk.Frame):
                 parser = elem
         if not self.parse:
             self.parser = realtime.Parser(filename)
-            try: 
-                self.parse.append(self.parser)            
-            except UnboundLocalError: 
-                print "[DEBUG] Parser referenced before assignment"
-                return
+            self.parse.append(self.parser)            
         for line in lines:
             process = realtime.line_to_dictionary(line)
             self.parser.parse(process)
@@ -377,15 +402,6 @@ class realtime_frame(ttk.Frame):
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
             self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities)
-           
-class stalking_process(threading.Thread):
-    def __init__(self, realtime_frame):
-        threading.Thread.__init__(self)
-        self.frame = realtime_frame
-        self.stalker_obj = stalking.LogStalker(callback=self.frame.callback)
-    
-    def run(self):
-        self.stalker_obj.loop()
             
 class share_frame(ttk.Frame):
     def __init__(self, root_frame):
@@ -430,6 +446,16 @@ class settings_frame(ttk.Frame):
         self.overlay_enable_radio_no = tk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=False, text="No")
         self.overlay_opacity_label = tk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
         self.overlay_opacity_input = tk.Entry(self.realtime_frame, width = 3)
+        self.overlay_size_label = tk.Label(self.realtime_frame, text = "\tOverlay window size: ")
+        self.overlay_size_var = tk.BooleanVar()
+        self.overlay_size_radio_big = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = True, text = "Big")
+        self.overlay_size_radio_small = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = False, text = "Small")
+        self.overlay_position_label = tk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
+        self.overlay_position_var = tk.StringVar()
+        self.overlay_position_radio_tl = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TL", text =  "Top left")
+        self.overlay_position_radio_bl = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BL", text = "Bottom left")
+        self.overlay_position_radio_tr = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
+        self.overlay_position_radio_br = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BR", text = "Bottom right")
         ### MISC ###
         self.save_settings_button = tk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
         self.discard_settings_button = tk.Button(self.save_frame, text="Discard", command=self.discard_settings)
@@ -520,6 +546,14 @@ class settings_frame(ttk.Frame):
         self.overlay_opacity_label.grid(column = 0, row = 2, sticky=tk.W)
         self.overlay_opacity_input.grid(column = 1, row = 2, sticky=tk.W)
         self.realtime_settings_label.grid(column = 0, row = 0, sticky=tk.W)
+        self.overlay_size_label.grid(column = 0, row = 3, sticky = tk.W)
+        self.overlay_size_radio_big.grid(column = 1, row = 3, sticky = tk.W)
+        self.overlay_size_radio_small.grid(column = 2, row = 3, sticky = tk.W)
+        self.overlay_position_label.grid(column = 0, row = 4, sticky = tk.W)
+        self.overlay_position_radio_tl.grid(column = 1, row = 4, sticky = tk.W) 
+        self.overlay_position_radio_bl.grid(column = 2, row = 4, sticky = tk.W) 
+        self.overlay_position_radio_tr.grid(column = 3, row = 4, sticky = tk.W) 
+        self.overlay_position_radio_br.grid(column = 4, row = 4, sticky = tk.W) 
         self.realtime_frame.grid(column = 0, row = 6, sticky=tk.N+tk.S+tk.W+tk.E)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=0, padx=2)

@@ -1,4 +1,4 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
@@ -22,7 +22,8 @@ class splash_screen(tk.Toplevel):
         files = []
         for file in list:
             if file.endswith(".txt"):
-                files.append(file)               
+                files.append(file)    
+        vars.files_done = 0           
         self.amount_files = len(files)
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
@@ -45,3 +46,11 @@ class overlay(tk.Toplevel):
         # self.stats_label.config(font=("Courier", 44))
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
+
+    def set_position(self, pos):
+        pass
+
+class privacy(tk.Toplevel):
+    def __init__(self, window):
+        tk.Toplevel.__init__(self, window)
+        

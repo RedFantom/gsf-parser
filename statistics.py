@@ -136,6 +136,121 @@ class statistics:
         (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed, 60)
         return total_ddealt, total_dtaken, total_hrecvd, total_selfdmg, total_timeplayed_minutes
 
+    def file_statistics(self, file_cube):
+        for match in file_cube:
+            print "[DEBUG] match!"
+            for spawn in match:
+                print "[DEBUG] spawn!"
+        player_list = []
+        for match in file_cube:
+            for spawn in match:
+                player = parse.determinePlayer(spawn)
+                for id in player:
+                    player_list.append(id)
+        
+        (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck, 
+         hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
+        total_abilities = []
+        total_damagetaken = 0
+        total_damagedealt = 0
+        total_selfdamage = 0
+        total_healingrecv = 0
+        total_enemies = []
+        total_criticalcount = 0
+        total_criticalluck = 0
+        total_hitcount = 0
+        total_enemydamaged = {}
+        total_enemydamaget = {}
+        total_match_timings = None
+        total_spawn_timings = None
+
+        for mat in abs:
+            for lst in mat:
+                for item in lst:
+                    if item not in total_abilities:
+                        total_abilities.append(item)
+        for lst in damagetaken:
+            for amount in lst:
+                total_damagetaken += amount
+        for lst in damagedealt:
+            for amount in lst: 
+                total_damagedealt += amount
+        for lst in selfdamage:
+            for amount in lst:
+                total_selfdamage += amount
+        for lst in healingreceived:
+            for amount in lst:
+                total_healingrecv += amount
+        for matrix in enemies:
+            for lst in matrix:
+                for enemy in lst:
+                    total_enemies.append(enemy)
+        for lst in criticalcount:
+            for amount in lst:
+                total_criticalcount += amount
+        for lst in hitcount:
+            for amount in lst:
+                total_hitcount += amount
+        try:
+            total_criticalluck = decimal.Decimal(float(total_criticalcount / total_hitcount))
+        except:
+            total_criticalluck = 0
+        total_enemydamaged = enemydamaged
+        total_enemydamaget = enemydamaget
+
+        abilities_string = ""
+        statistics_string = ""
+        events_string = "Events is not available for a whole file" 
+        total_shipsdict = {}
+        uncounted = 0
+        for ship in abilities.ships:
+            total_shipsdict[ship] = 0
+        for match in file_cube:
+            for spawn in match:
+                ships_possible = parse.parse_spawn(spawn, player_list)[9]
+                if len(ships_possible) == 1:
+                    if ships_possible[0] == "Razorwire":
+                        total_shipsdict["Razorwire"] += 1
+                    elif ships_possible[0] == "Legion":
+                        total_shipsdict["Legion"] += 1
+                    elif ships_possible[0] == "Decimus":
+                        total_shipsdict["Decimus"] += 1
+                    elif ships_possible[0] == "Bloodmark":
+                        total_shipsdict["Bloodmark"] += 1
+                    elif ships_possible[0] == "Sting":
+                        total_shipsdict["Sting"] += 1
+                    elif ships_possible[0] == "Blackbolt":
+                        total_shipsdict["Blackbolt"] += 1
+                    elif ships_possible[0] == "Mangler":
+                        total_shipsdict["Mangler"] += 1
+                    elif ships_possible[0] == "Dustmaker":
+                        total_shipsdict["Dustmaker"] += 1
+                    elif ships_possible[0] == "Jurgoran":
+                        total_shipsdict["Jurgoran"] += 1
+                    elif ships_possible[0] == "Imperium":
+                        total_shipsdict["Imperium"] += 1
+                    elif ships_possible[0] == "Quell":
+                        total_shipsdict["Quell"] += 1
+                    elif ships_possible[0] == "Rycer":
+                        total_shipsdict["Rycer"] += 1
+                else:
+                    uncounted += 1
+        total_killsassists = 0
+        for ability in total_abilities:
+            abilities_string = abilities_string + ability.strip() + "\n"
+        for enemy in total_enemies:
+            if total_enemydamaget[enemy] > 0:
+                 total_killsassists += 1
+        total_criticalluck = round(total_criticalluck * 100, 2)
+        deaths = 0
+        for match in file_cube:
+            deaths += len(match)
+        statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
+                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" + 
+                             str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
+                             str(total_criticalluck) + "%" + "\n" + str(deaths))
+
+        return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
 
     def match_statistics(self, match):
         # match needs to be a matrix containing strings with each list being a spawn
@@ -219,6 +334,8 @@ class statistics:
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
         events = []
+        for event in reversed(spawn):
+            pass
         for key in abilitiesdict:
             abilities_string += key + "\n"
             if key in abilities.components:
@@ -263,7 +380,10 @@ class statistics:
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" + 
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n")
+
         return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
-        
+def pretty_event(event):
+    pass
+    # return pretty
 
