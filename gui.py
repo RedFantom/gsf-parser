@@ -64,9 +64,8 @@ class main_window(tk.Tk):
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
         self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
         self.notebook.add(self.settings_tab_frame, text = "Settings")
-        # self.notebook.add(alliesTab, text = "Allies")
-        self.notebook.grid(column = 0, row = 0)        
         # Update the files in the file_select frame
+        self.notebook.grid(column = 0, row = 0)
         self.file_select_frame.add_files()
         self.splash.destroy()
         # Give focus to the main window
