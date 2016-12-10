@@ -80,6 +80,8 @@ class Parser(object):
         self.hold = 0
         self.hold_list = []
 
+        self.spawns = 0
+
     def __enter__(self):
         return self
 
@@ -106,6 +108,7 @@ class Parser(object):
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
             print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
                   sum(self.spawn_selfdmg))
+            self.spawns += 1
             self.active_id = ''
             self.dprint("[DEBUG] resetting active id")
             self.dprint("[DEBUG] updating tmp_* and resetting spawn_*", self.spawn_dmg_done, sum(self.spawn_dmg_done))
@@ -173,6 +176,7 @@ class Parser(object):
                 self.tmp_selfdmg = []
                 self.tmp_abilities = {}
                 self.active_id = ''
+                self.spawns = 0
                 return
 
             # Start parsing
