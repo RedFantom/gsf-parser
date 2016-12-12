@@ -33,7 +33,7 @@ class main_window(tk.Tk):
         vars.install_path = self.install_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
-        self.splash = overlay.splash_screen(self)
+        self.splash = overlay.splash_screen(self, boot=True)
         self.withdraw()
         self.geometry("{}x{}".format(800, 425))
         self.wm_title("Thranta Squadron GSF Parser")
@@ -66,7 +66,7 @@ class main_window(tk.Tk):
         self.notebook.add(self.settings_tab_frame, text = "Settings")
         # Update the files in the file_select frame
         self.notebook.grid(column = 0, row = 0)
-        self.file_select_frame.add_files()
+        self.file_select_frame.add_files(silent = True)
         self.splash.destroy()
         # Give focus to the main window
         self.deiconify()

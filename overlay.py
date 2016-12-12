@@ -4,6 +4,7 @@
 
 # UI imports
 import Tkinter as tk
+import tkMessageBox
 import ttk
 # General imports
 import os
@@ -12,7 +13,7 @@ import vars
 import frames
 
 class splash_screen(tk.Toplevel):
-    def __init__(self, window):
+    def __init__(self, window, boot=False):
         tk.Toplevel.__init__(self, window)
         self.label = tk.Label(self, text = "Working...")
         self.label.pack()
@@ -25,6 +26,8 @@ class splash_screen(tk.Toplevel):
                 files.append(file)    
         vars.files_done = 0           
         self.amount_files = len(files)
+        if(self.amount_files >= 50 and boot):
+            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombatLogs folder. You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the startup times." % self.amount_files)
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()
