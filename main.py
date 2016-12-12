@@ -4,6 +4,10 @@
 import gui
 import sys
 import tkMessageBox
+import settings
+
+set_obj = settings.settings()
+set_obj.read_set()
 
 if __name__ == "__main__":
     if sys.platform == "win32":
