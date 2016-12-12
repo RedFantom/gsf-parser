@@ -19,6 +19,7 @@ import client
 import statistics
 import frames
 import overlay
+import main
 
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
@@ -27,13 +28,14 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
+        # Get the screen properties
+        vars.screen_w = self.winfo_screenwidth()
+        vars.screen_h = self.winfo_screenheight()
         # Get the default path for CombatLogs and the Installation path
         self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
-        self.install_path = os.getcwd()
-        vars.install_path = self.install_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
-        self.splash = overlay.splash_screen(self, boot=True)
+        self.splash = overlay.splash_screen(self, boot = True)
         self.withdraw()
         self.geometry("{}x{}".format(800, 425))
         self.wm_title("Thranta Squadron GSF Parser")
