@@ -27,16 +27,21 @@ class settings:
         vars.install_path = os.getcwd()
         if self.file_name not in os.listdir(vars.install_path):
             print "[DEBUG] Settings file could not be found. Creating a new file with default settings"
+            self.settings_file_object = open(self.file_name, "w")
             self.write_def()
+            self.settings_file_object.close()
 
     def read_set(self):
-        self.file = open("settings.ini", "r")
-        for line in self.file:
+        settings_file_object = open(self.file_name, "r")
+        for line in settings_file_object:
             if "#" not in line:
                 items = line.replace("\n", "").split("=")
                 print items
+                if line == "":
+                    continue
                 if len(items) != 2:
                     print "[DEBUG] Fatal error while reading settings file!"
+                    settings_file_object.close()
                     return
                 if items[0] == "version":
                     self.version = items[1]
@@ -61,6 +66,7 @@ class settings:
                         except:
                             print "[DEBUG] Fatal error: port cannnot be converter to int."
                             tkMessageBox.showerror("Fatal error", "The port value of the server in the settings file is not an integer.")
+                            settings_file_object.close()
                             return
                 elif items[0] == "auto_upl":
                     try:
@@ -100,60 +106,68 @@ class settings:
                 else:
                     print "[DEBUG] Invalid setting found! Fatal error."
                     tkMessageBox.showerror("Fatal error", "An invalid setting was found in the settings file.")
+                    settings_file_object.close()
                     return
-        self.file.close()
+        settings_file_object.close()
         return
 
     def write_def(self):
-        self.file = open(self.file_name, "w")
-        self.file.write("# MUST be first setting\n")
-        self.file.write("version=" + defaults.version + "\n")
-        self.file.write("# Default path for the CombatLogs\n")
-        self.file.write("cl_path=" + defaults.cl_path + "\n")
-        self.file.write("# Automatically upload your player ID's to the specified server\n")
-        self.file.write("# And identify players in the parser\n")
-        self.file.write("auto_ident=" + defaults.auto_ident + "\n")
-        self.file.write("# Server address and port\n")
-        self.file.write("server=" + defaults.server[0] + ":" + str(defaults.server[1]) + "\n")
-        self.file.write("# Auto-upload parsed CombatLogs to the server\n")
-        self.file.write("auto_upl=" + defaults.auto_upl + "\n")
-        self.file.write("# Enable the overlay for parsing\n")
-        self.file.write("overlay=" + defaults.overlay + "\n")
-        self.file.write("# Set the overlay opacity\n")
-        self.file.write("opacity=" + defaults.opacity + "\n")
-        self.file.write("# Set the overlay size\n")
-        self.file.write("size=" + defaults.size + "\n")
-        self.file.write("# Set the overlay position on the screen\n")
-        self.file.write("pos=" + defaults.pos + "\n")
-        self.file.close()
-        return
+        self.settings_file_object = open(self.file_name, "w")
+        self.settings_file_object.truncate()
+        self.settings_file_object.write("# MUST be first setting\n")
+        self.settings_file_object.write("version=" + defaults.version + "\n")
+        self.settings_file_object.write("# Default path for the CombatLogs\n")
+        self.settings_file_object.write("cl_path=" + defaults.cl_path + "\n")
+        self.settings_file_object.write("# Automatically upload your player ID's to the specified server\n")
+        self.settings_file_object.write("# And identify players in the parser\n")
+        self.settings_file_object.write("auto_ident=" + defaults.auto_ident + "\n")
+        self.settings_file_object.write("# Server address and port\n")
+        self.settings_file_object.write("server=" + defaults.server[0] + ":" + str(defaults.server[1]) + "\n")
+        self.settings_file_object.write("# Auto-upload parsed CombatLogs to the server\n")
+        self.settings_file_object.write("auto_upl=" + defaults.auto_upl + "\n")
+        self.settings_file_object.write("# Enable the overlay for parsing\n")
+        self.settings_file_object.write("overlay=" + defaults.overlay + "\n")
+        self.settings_file_object.write("# Set the overlay opacity\n")
+        self.settings_file_object.write("opacity=" + defaults.opacity + "\n")
+        self.settings_file_object.write("# Set the overlay size\n")
+        self.settings_file_object.write("size=" + defaults.size + "\n")
+        self.settings_file_object.write("# Set the overlay position on the screen\n")
+        self.settings_file_object.write("pos=" + defaults.pos + "\n")
+        self.settings_file_object.close()
 
     def write_set(self, version=defaults.version, cl_path=defaults.cl_path,
                   auto_ident=defaults.auto_ident, server=defaults.server,
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos):
-        self.file.seek(0)
-        print "[DEBUG] Writing defaults"
-        self.file.write("# MUST be first setting")
-        self.file.write("version=" + version + "")
-        self.file.write("# Default path for the CombatLogs")
-        self.file.write("cl_path=" + cl_path + "")
-        self.file.write("# Automatically upload your player ID's to the specified server")
-        self.file.write("auto_ident=" + auto_ident + "")
-        self.file.write("# Server address and port")
-        self.file.write("server=" + server + "")
-        self.file.write("# Auto-upload parsed CombagLogs to the server")
-        self.file.write("auto_upl=" + auto_upl + "")
-        self.file.write("# Enable the overlay for parsing")
-        self.file.write("overlay=" + overlay + "")
-        self.file.write("# Set the overlay opacity")
-        self.file.write("opacity=" + opacity + "")
-        self.file.write("# Set the overlay size")
-        self.file.write("size=" + size + "")
-        self.file.write("# Set the overlay position on the screen")
-        self.file.write("pos=" + pos + "")
-        self.file.close()
+        settings_file_object = open(self.file_name, "w")
+        settings_file_object.truncate()
+        settings_file_object.write("# MUST be first setting\n")
+        settings_file_object.write("version=" + version + "\n")
+        settings_file_object.write("# Default path for the CombatLogs\n")
+        settings_file_object.write("cl_path=" + cl_path + "\n")
+        settings_file_object.write("# Automatically upload your player ID's to the specified server\n")
+        settings_file_object.write("auto_ident=" + str(auto_ident) + "\n")
+        settings_file_object.write("# Server address and port\n")
+        settings_file_object.write("server=" + server + "\n")
+        settings_file_object.write("# Auto-upload parsed CombagLogs to the server\n")
+        settings_file_object.write("auto_upl=" + str(auto_upl) + "\n")
+        settings_file_object.write("# Enable the overlay for parsing\n")
+        settings_file_object.write("overlay=" + str(overlay) + "\n")
+        settings_file_object.write("# Set the overlay opacity\n")
+        settings_file_object.write("opacity=" + opacity + "\n")
+        settings_file_object.write("# Set the overlay size\n")
+        if size == True:
+            settings_file_object.write("size=big\n")
+        else:
+            settings_file_object.write("size=small\n")
+        settings_file_object.write("# Set the overlay position on the screen\n")
+        settings_file_object.write("pos=" + pos + "\n")
+        settings_file_object.close()
         self.read_set()
 
+
     def __exit__(self):
-        self.file.close()
+        try:
+            self.settings_file_object.close()
+        except:
+            pass

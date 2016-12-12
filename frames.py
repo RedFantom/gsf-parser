@@ -16,6 +16,7 @@ import threading
 import time
 from datetime import datetime
 # Own modules
+import main
 import vars
 import parse
 import client
@@ -337,13 +338,15 @@ class realtime_frame(ttk.Frame):
             self.parsing = True
             self.stalker_obj = stalking.LogStalker(self.callback)
             self.stalker_obj.start()
-            self.overlay = overlay.overlay(self.main_window)
+            if main.set_obj.overlay:
+                self.overlay = overlay.overlay(self.main_window)
         elif self.parsing:
             self.main_window.file_select_frame.add_files()
             self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
             self.stalker_obj.__del__()
-            self.overlay.destroy()
+            if main.set_obj.overlay:
+                self.overlay.destroy()
 
     def upload_events(self):
         pass
@@ -424,7 +427,6 @@ class settings_frame(ttk.Frame):
         self.parsing_label = tk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = tk.Entry(self.entry_frame, width=75)
         self.path_entry_label = tk.Label(self.entry_frame, text = "\tCombatLogs folder:")
-        self.path_entry.insert(0, self.main_window.default_path)
         self.privacy_label = tk.Label(self.privacy_frame, text = "\tConnect to server for player identification:")
         self.privacy_var = tk.BooleanVar()
         self.privacy_select_true = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
@@ -467,57 +469,7 @@ class settings_frame(ttk.Frame):
         self.update_label = tk.Label(self.license_frame, textvariable=self.update_label_var)
         self.copyright_label = tk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
         self.thanks_label = tk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
-
-    def read_settings(self):
-        os.chdir(main_window.install_path)
-        try:
-            settings_object = open("settings.ini", "rU")
-        except IOError:
-            return -1
-        try:
-            settings = settings_object.readlines()
-            settings_object.close()
-            split_settings = []
-            for setting in settings:
-                setting.split("=")
-                split_settings.append(setting)
-            vars.user_path = split_settings[0][1]
-            vars.privacy = bool(split_settings[1][1])
-            vars.server_address = split_settings[2][1]
-            vars.server_port = int(split_settings[3][1])
-            vars.auto_upload = bool(split_settings[4][1])
-            os.chdir(user_path)
-            return 0
-        except IOError:
-            tkMessageBox.showerror("Error", "Error reading settings file")
-            settings_object.close()
-            return -1
-        except:
-            tkMessageBox.showerror("Error", "Error in settings.ini, file exists")
-            if not settings_object.closed:
-                settings_object.close()
-            return -1
-
-    def write_settings(self, path, privacy, address, port, upload):
-        os.chdir(self.main_window.install_path)
-        try:
-            settings_object = open("settings.ini", "w")
-        except IOError:
-            tkMessageBox.showerror("Error", "Error opening settings file for writing")
-            return
-        try:
-            settings_object.seek(0)
-            settings_object.truncate()
-        except IOError:
-            tkMessageBox.showerror("Error", "Error deleting contents of settings file")
-            settings_object.close()
-            return
-        settings_object.write("user_path=" + path + "\n")
-        settings_object.write("privacy=" + privacy + "\n")
-        settings_object.write("server_address=" + address + "\n")
-        settings_object.write("server_port=" + port + "\n")
-        settings_object.write("auto_upload=" + upload + "\n")
-        settings_object.close()
+        self.update_settings()
 
     def grid_widgets(self):
         ### PARSING SETTINGS ###
@@ -568,23 +520,36 @@ class settings_frame(ttk.Frame):
         self.license_frame.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
 
     def update_settings(self):
-        pass
+        self.path_entry.delete(0, tk.END)
+        self.path_entry.insert(0, main.set_obj.cl_path)
+        self.privacy_var.set(bool(main.set_obj.auto_ident))
+        self.server_address_entry.delete(0, tk.END)
+        self.server_address_entry.insert(0, main.set_obj.server[0])
+        self.server_port_entry.delete(0, tk.END)
+        self.server_port_entry.insert(0, main.set_obj.server[1])
+        self.auto_upload_var.set(bool(main.set_obj.auto_upl))
+        self.overlay_enable_radio_var.set(bool(main.set_obj.overlay))
+        self.overlay_opacity_input.delete(0, tk.END)
+        self.overlay_opacity_input.insert(0, main.set_obj.opacity)
+        if main.set_obj.size == "big":
+            self.overlay_size_var.set(True)
+        else:
+            self.overlay_size_var.set(False)
+        self.overlay_position_var.set(bool(main.set_obj.pos))
 
     def save_settings(self):
-        pass
+        main.set_obj.write_set(cl_path=self.path_entry.get(), auto_ident=self.privacy_var.get(),
+                               server=self.server_address_entry.get() + ":" + self.server_port_entry.get(),
+                               auto_upl=self.auto_upload_var.get(), overlay=self.overlay_enable_radio_var.get(),
+                               opacity=self.overlay_opacity_input.get(), size=self.overlay_size_var.get(), pos=self.overlay_position_var.get())
+        self.update_settings()
 
     def discard_settings(self):
-        pass
+        self.update_settings()
 
     def default_settings(self):
-        self.path_entry.delete(0, tk.END)
-        self.path_entry.insert(0, "C:\\Users\\" + getpass.getuser() + "\\Star Wars - The Old Republic\CombatLogs")
-        self.privacy_var.set(False)
-        self.server_address_entry.delete(0, tk.END)
-        self.server_address_entry.insert(0, "thrantasquadron.tk")
-        self.server_port_entry.delete(0, tk.END)
-        self.server_port_entry.insert(0, "83")
-        self.auto_upload_var.set(False)
+        main.set_obj.write_def()
+        self.update_settings()
 
     def show_license(self):
         tkMessageBox.showinfo("License", "This program is licensed under the General Public License Version 3, by GNU. See LICENSE in the installation directory for more details")
