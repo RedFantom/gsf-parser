@@ -104,7 +104,8 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file) == True:
                     self.file_strings.append(file)
                 vars.files_done += 1
-                self.splash.update_progress()
+                if not silent:
+                    self.splash.update_progress()
         self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
