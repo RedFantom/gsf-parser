@@ -48,9 +48,6 @@ class splash_screen(tk.Toplevel):
 class overlay(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
-        self.attributes("-topmost", True)
-        self.attributes("-alpha", main.set_obj.opacity)
-        self.overrideredirect(True)
         if main.set_obj.pos == "TL":
             pos_c = "+0+0"
         elif main.set_obj.pos == "BL":
@@ -64,13 +61,23 @@ class overlay(tk.Toplevel):
             if main.set_obj.size == "big":
                 pos_c = "+" + str(vars.screen_w - 200) + "+" + str(vars.screen_h - 75)
             elif main.set_obj.size == "small":
-                pos_c = "+" + str(vars.screen_w - 100) + "+" + str(vars.screen_h - 75)                
+                pos_c = "+" + str(vars.screen_w - 100) + "+" + str(vars.screen_h - 75)
+        else:
+            raise ValueError("main.set_obj.pos not valid")
+            self.destroy()
+            return
+        self.attributes("-topmost", True)
+        self.attributes("-alpha", main.set_obj.opacity)
+        self.overrideredirect(True)                        
         if main.set_obj.size == "big":
             self.wm_geometry("200x75" + pos_c)
             self.text_label = tk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\n", justify = tk.LEFT)
         elif main.set_obj.size == "small":
             self.wm_geometry("100x75" + pos_c)
-            self.text_label = tk.label(self, text = "DD:\nDT:\nHR:\nSD:\n", justify = tk.LEFT)
+            self.text_label = tk.Label(self, text = "DD:\nDT:\nHR:\nSD:\n", justify = tk.LEFT)
+        else:
+            raise ValueError("main.set_obj.size is neither big nor small")
+            return
         self.stats_var = tk.StringVar()
         self.stats_label = tk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
         # self.stats_label.config(font=("Courier", 44))
