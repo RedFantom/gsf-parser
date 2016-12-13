@@ -453,9 +453,9 @@ class settings_frame(ttk.Frame):
         self.overlay_opacity_label = tk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
         self.overlay_opacity_input = tk.Entry(self.realtime_frame, width = 3)
         self.overlay_size_label = tk.Label(self.realtime_frame, text = "\tOverlay window size: ")
-        self.overlay_size_var = tk.BooleanVar()
-        self.overlay_size_radio_big = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = True, text = "Big")
-        self.overlay_size_radio_small = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = False, text = "Small")
+        self.overlay_size_var = tk.StringVar()
+        self.overlay_size_radio_big = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "big", text = "Big")
+        self.overlay_size_radio_small = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "small", text = "Small")
         self.overlay_position_label = tk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
         self.overlay_position_var.set(main.set_obj.pos)
@@ -535,11 +535,8 @@ class settings_frame(ttk.Frame):
         self.overlay_enable_radio_var.set(bool(main.set_obj.overlay))
         self.overlay_opacity_input.delete(0, tk.END)
         self.overlay_opacity_input.insert(0, main.set_obj.opacity)
-        if main.set_obj.size == "big":
-            self.overlay_size_var.set(True)
-        else:
-            self.overlay_size_var.set(False)
-        self.overlay_position_var.set(bool(main.set_obj.pos))
+        self.overlay_size_var.set(main.set_obj.size)
+        self.overlay_position_var.set(main.set_obj.pos)
 
     def save_settings(self):
         main.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=bool(self.privacy_var.get()),

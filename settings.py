@@ -65,7 +65,7 @@ class settings:
                          "auto_upl":bool(auto_upl),
                          "overlay":bool(overlay),
                          "opacity":float(opacity),
-                         "size":size,
+                         "size":str(size),
                          "pos":pos
                         }
         with open(self.file_name, "w") as settings_file_object:
