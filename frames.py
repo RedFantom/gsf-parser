@@ -385,8 +385,8 @@ class realtime_frame(ttk.Frame):
         self.statistics_label_two_text.set(str(abilities))
         self.overlay.stats_var.set(str(damage_done) + "\n" +
                                    str(damage_taken) + "\n" +
-                                   str(selfdamage) + "\n" +
-                                   str(healing) + "\n")
+                                   str(healing) + "\n" +
+                                   str(selfdamage) + "\n")
 
     def callback(self, filename, lines):
         if not self.parsing:
