@@ -5,7 +5,7 @@ import vars
 import tkMessageBox
 import getpass
 import os
-import pickle
+import cPickle
 
 class defaults:
     version = "2.0.0_alpha"
@@ -29,7 +29,7 @@ class settings:
 
     def read_set(self):
         with open(self.file_name, "r") as settings_file_object:
-            settings_dict = pickle.load(settings_file_object)
+            settings_dict = cPickle.load(settings_file_object)
         self.version = settings_dict["version"]
         self.cl_path = settings_dict["cl_path"]
         self.auto_ident = settings_dict["auto_ident"]
@@ -52,7 +52,7 @@ class settings:
                          "pos":defaults.pos
                         }
         with open(self.file_name, "w") as settings_file:
-            pickle.dump(settings_dict, settings_file)
+            cPickle.dump(settings_dict, settings_file)
 
     def write_set(self, version=defaults.version, cl_path=defaults.cl_path, 
                   auto_ident=defaults.auto_ident, server=defaults.server, 
@@ -69,5 +69,5 @@ class settings:
                          "pos":pos
                         }
         with open(self.file_name, "w") as settings_file_object:
-            pickle.dump(settings_dict, settings_file_object)
+            cPickle.dump(settings_dict, settings_file_object)
         self.read_set()
