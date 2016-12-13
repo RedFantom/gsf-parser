@@ -28,9 +28,7 @@ class settings:
         vars.install_path = os.getcwd()
         if self.file_name not in os.listdir(vars.install_path):
             print "[DEBUG] Settings file could not be found. Creating a new file with default settings"
-            self.settings_file_object = open(self.file_name, "w")
             self.write_def()
-            self.settings_file_object.close()
 
     def read_set(self):
         settings_file_object = open(self.file_name, "r")
