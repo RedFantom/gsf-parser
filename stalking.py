@@ -102,7 +102,9 @@ class LogStalker(threading.Thread):
 
             if not blocking:
                 return
-
+            if not vars.FLAG:
+                self.close()
+                return
             time.sleep(interval)
 
     def log(self, line):
