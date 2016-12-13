@@ -31,8 +31,9 @@ class main_window(tk.Tk):
         # Get the screen properties
         vars.screen_w = self.winfo_screenwidth()
         vars.screen_h = self.winfo_screenheight()
+        vars.path = main.set_obj.cl_path
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
+        self.default_path = main.set_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
         self.splash = overlay.splash_screen(self, boot = True)

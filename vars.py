@@ -15,9 +15,9 @@
 # enemydamaget is a dictionary
 # match_timings is a list of datetimes
 # spawn_timings is a matrix of datetimes
+import main
 
-import gui
-import getpass
+FLAG = False
 
 files_done              = 0
 abilities               = None
@@ -33,7 +33,6 @@ enemydamaged            = None
 enemydamaget            = None
 match_timings           = None
 spawn_timings           = None
-
 enemies_names           = None
 
 deaths                  = None
@@ -63,4 +62,5 @@ server_address = None
 server_port = None
 auto_upload = None
 parse = []
-path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
+
+path = main.set_obj.cl_path

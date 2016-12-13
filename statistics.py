@@ -20,14 +20,15 @@ import abilities
 import parse
 
 def check_gsf(file_name):
-    file_obj = open(file_name, "r")
-    for line in file_obj:
-        if "@" not in line:
-            file_obj.close()
-            return True
-        else:
-            continue
-    file_obj.close()
+    with open(file_name, "r") as file_obj:
+        for line in file_obj:
+            if "@" not in line:
+                file_obj.close()
+                return True
+            else:
+                continue
+    if not file_obj.closed:
+        raise
     return False
 
 
@@ -63,14 +64,12 @@ class statistics:
 
         criticalnumber = 0
         criticaltotal = 0
-        file_object = open(self.file_list[0], "r")
-        lines = file_object.readlines()
-        player_name = parse.determinePlayerName(lines)
-        file_object.close()
-        for name in self.file_list:
-            file_object = open(name, "r")
+        with open(self.file_list[0], "r") as file_object:
             lines = file_object.readlines()
-            file_object.close()
+        player_name = parse.determinePlayerName(lines)
+        for name in self.file_list:
+            with open(name, "r") as file_object:
+                lines = file_object.readlines()
             player_numbers = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_numbers)
             for matrix in file_cube:

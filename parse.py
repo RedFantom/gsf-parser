@@ -622,13 +622,12 @@ def determinePlayerName(lines):
 # Debugging purposes
 if __name__ == "__main__":
 
-    fileObject = open("CombatLog.txt", "r")
-    lines = fileObject.readlines()
+    with open("CombatLog.txt", "r") as fileObject:
+        lines = fileObject.readlines()
     player = determinePlayer(lines)
     file, match_timingsList, spawn_timingsMatrix = splitter(lines, player)
     (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
     criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse_file(file, player, match_timingsList, spawn_timingsMatrix)
-    fileObject.close()
     for list in abilities:
         for dict in list:
             print determineShip(dict)

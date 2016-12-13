@@ -17,10 +17,9 @@ import main
 class splash_screen(tk.Toplevel):
     def __init__(self, window, boot=False):
         tk.Toplevel.__init__(self, window)
-        swtor = open('C:/Users/' + getpass.getuser() + "/AppData/Local/SWTOR/swtor/settings/client_settings.ini", "r")
-        if "D3DFullScreen = true" in swtor:
-            tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Grapichs settings.")
-        swtor.close()
+        with open('C:/Users/' + getpass.getuser() + "/AppData/Local/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
+            if "D3DFullScreen = true" in swtor:
+                tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Grapichs settings.")
         self.label = tk.Label(self, text = "Working...")
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")

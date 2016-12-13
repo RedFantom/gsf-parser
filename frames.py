@@ -93,13 +93,15 @@ class file_frame(ttk.Frame):
 
     def add_files(self, silent=False):
         self.file_strings = []
+        self.file_box.delete(0, tk.END)
         if not silent:
             self.splash = overlay.splash_screen(self.main_window)
         try:
-            os.chdir(self.main_window.default_path)
+            os.chdir(main.set_obj.cl_path)
         except:
-            print("[DEBUG] Error changing directory. Unix support to be added.")
-            return
+            tkMessageBox.showerror("Error", "Folder not valid: " + main.set_obj.cl_path)
+            if not silent:
+                self.splash.destroy()
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file) == True:
@@ -107,7 +109,6 @@ class file_frame(ttk.Frame):
                 vars.files_done += 1
                 if not silent:
                     self.splash.update_progress()
-        self.file_box.delete(0, tk.END)
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
             self.file_box.insert(tk.END, file[7:-14])
@@ -122,17 +123,14 @@ class file_frame(ttk.Frame):
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
             vars.file_name = self.file_strings[numbers[0] - 1]
-            # Open that file in read-Universal mode. normal read and read-binary have the same results (Issue #7)
-            clicked_file = open(vars.file_name, "rU")
             # Read all the lines from the selected file
-            lines = clicked_file.readlines()
+            with open(vars.file_name, "rU") as clicked_file:
+                lines = clicked_file.readlines()
             # PARSING STARTS
             # Get the player ID numbers from the list of lines
             player = parse.determinePlayer(lines)
             # Parse the lines with the acquired player ID numbers
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
-            # Close the file object
-            clicked_file.close()
             # Start adding the matches from the file to the listbox
             self.add_matches()
 
@@ -337,6 +335,7 @@ class realtime_frame(ttk.Frame):
             self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.stalker_obj = stalking.LogStalker(self.callback)
+            vars.FLAG = True
             self.stalker_obj.start()
             if main.set_obj.overlay:
                 self.overlay = overlay.overlay(self.main_window)
@@ -344,7 +343,9 @@ class realtime_frame(ttk.Frame):
             self.main_window.file_select_frame.add_files()
             self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
-            self.stalker_obj.__del__()
+            vars.FLAG = False
+            while self.stalker_obj.is_alive():
+                pass
             if main.set_obj.overlay:
                 self.overlay.destroy()
 
@@ -406,6 +407,8 @@ class realtime_frame(ttk.Frame):
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
             self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities)
+        for obj in self.parse:
+            obj.close()
             
 class share_frame(ttk.Frame):
     def __init__(self, root_frame):
@@ -455,6 +458,7 @@ class settings_frame(ttk.Frame):
         self.overlay_size_radio_small = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = False, text = "Small")
         self.overlay_position_label = tk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
+        self.overlay_position_var.set(main.set_obj.pos)
         self.overlay_position_radio_tl = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TL", text =  "Top left")
         self.overlay_position_radio_bl = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BL", text = "Bottom left")
         self.overlay_position_radio_tr = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
@@ -538,11 +542,12 @@ class settings_frame(ttk.Frame):
         self.overlay_position_var.set(bool(main.set_obj.pos))
 
     def save_settings(self):
-        main.set_obj.write_set(cl_path=self.path_entry.get(), auto_ident=self.privacy_var.get(),
-                               server=self.server_address_entry.get() + ":" + self.server_port_entry.get(),
-                               auto_upl=self.auto_upload_var.get(), overlay=self.overlay_enable_radio_var.get(),
-                               opacity=self.overlay_opacity_input.get(), size=self.overlay_size_var.get(), pos=self.overlay_position_var.get())
+        main.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=bool(self.privacy_var.get()),
+                               server=(str(self.server_address_entry.get()), int(self.server_port_entry.get())),
+                               auto_upl=bool(self.auto_upload_var.get()), overlay=bool(self.overlay_enable_radio_var.get()),
+                               opacity=float(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()))
         self.update_settings()
+        self.main_window.file_select_frame.add_files()
 
     def discard_settings(self):
         self.update_settings()
