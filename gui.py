@@ -70,6 +70,7 @@ class main_window(tk.Tk):
         # Update the files in the file_select frame
         self.notebook.grid(column = 0, row = 0)
         self.file_select_frame.add_files(silent = True)
+        self.settings_frame.update_settings()
         self.splash.destroy()
         # Give focus to the main window
         self.deiconify()
