@@ -19,6 +19,7 @@ import client
 import abilities
 import parse
 
+# Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
     with open(file_name, "r") as file_obj:
         for line in file_obj:
@@ -31,14 +32,17 @@ def check_gsf(file_name):
         raise
     return False
 
-
+# Class to calculate various statistics from files, and even folders
 class statistics:
+    # Calculate the statistics for a whole folder
     def folder_statistics(self):
+        # Add a CombatLogs in a folder with GSF matches to a list of names
         self.file_list = []
         for file_name in os.listdir(os.getcwd()):
-            if file_name.endswith(".txt"):
+            if(file_name.endswith(".txt") and check_gsf(file_name)):
                 self.file_list.append(file_name)
 
+        # Define all variables needed to store the statistics
         total_ddealt = 0
         total_dtaken = 0
         total_hrecvd = 0
@@ -64,12 +68,17 @@ class statistics:
 
         criticalnumber = 0
         criticaltotal = 0
-        with open(self.file_list[0], "r") as file_object:
-            lines = file_object.readlines()
-        player_name = parse.determinePlayerName(lines)
+
+        player_names = []
+
+        # Start looping through the files
+        # TODO add a Toplevel window to show progress
         for name in self.file_list:
             with open(name, "r") as file_object:
                 lines = file_object.readlines()
+            name = parse.determinePlayerName(lines)
+            if name not in player_names:
+                player_names.append(name)
             player_numbers = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_numbers)
             for matrix in file_cube:
@@ -133,7 +142,9 @@ class statistics:
                 previous_time = datetime
                 continue
         (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed, 60)
-        return total_ddealt, total_dtaken, total_hrecvd, total_selfdmg, total_timeplayed_minutes
+
+        # Return all statistics calculated
+        return total_ddealt, total_dtaken, total_hrecvd, total_selfdmg, total_timeplayed_minutes, player_names
 
     def file_statistics(self, file_cube):
         for match in file_cube:
@@ -146,8 +157,8 @@ class statistics:
                 player = parse.determinePlayer(spawn)
                 for id in player:
                     player_list.append(id)
-        
-        (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck, 
+
+        (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
          hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
         total_abilities = []
         total_damagetaken = 0
@@ -172,7 +183,7 @@ class statistics:
             for amount in lst:
                 total_damagetaken += amount
         for lst in damagedealt:
-            for amount in lst: 
+            for amount in lst:
                 total_damagedealt += amount
         for lst in selfdamage:
             for amount in lst:
@@ -199,7 +210,7 @@ class statistics:
 
         abilities_string = ""
         statistics_string = ""
-        events_string = "Events is not available for a whole file" 
+        events_string = "Events is not available for a whole file"
         total_shipsdict = {}
         uncounted = 0
         for ship in abilities.ships:
@@ -245,7 +256,7 @@ class statistics:
         for match in file_cube:
             deaths += len(match)
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
-                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" + 
+                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(deaths))
 
@@ -293,7 +304,7 @@ class statistics:
                 else:
                     total_enemydamaget[key] = value
             abilities_string = ""
-            statistics_string = "" 
+            statistics_string = ""
             events_string = "Events is not available for a whole match"
             if len(ships_list) != 1:
                 ships_uncounted += 1
@@ -314,7 +325,7 @@ class statistics:
         except ZeroDivisionError:
             total_criticalluck = 0
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
-                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" + 
+                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n")
         return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
@@ -376,7 +387,7 @@ class statistics:
             del comps[comps.index("System")]
 
         statistics_string = (str(killsassists) + " enemies"+ "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
-                             str(selfdamage) + "\n" + str(healingreceived) + "\n" + 
+                             str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n")
 
@@ -385,4 +396,3 @@ class statistics:
 def pretty_event(event):
     pass
     # return pretty
-
