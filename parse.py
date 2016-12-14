@@ -22,6 +22,7 @@ def splitter(lines, playerList):
     match_timingsList = []
     matchStarted = False
     currentPlayer = None
+    index = 0
     # Start looping through the lines
     for line in lines:
         # Split the line into elements
@@ -31,7 +32,7 @@ def splitter(lines, playerList):
         source = elements[3]
         target = elements[5]
         # If "@" is not in source, then the ability is an in-match ability
-        if "@" not in line:
+        if "@" not in source:
             # If the match hadn't started, it has now started and the the spawn
             # must be saved. The time of the spawn and the time the match has
             # started are also saved.
@@ -96,6 +97,12 @@ def splitter(lines, playerList):
                         spawn.append(line)
         # "@" is in the line, then it is a normal ability
         else:
+            # If the previous line was a match-line and the next line is a match line,
+            # The match continues and the line gets skipped altogether
+            if(not "@" in re.split(r"[\[\]]", lines[index -1])[3] and
+               not "@" in re.split(r"[\[\]]", lines[index + 1])[3] and
+               not "Safe Login" in re.split(r"[\[\]]", line)[7]):
+               continue
             # If a match had started, then now it has ended
             if matchStarted == True:
                 # End of the match
@@ -113,6 +120,7 @@ def splitter(lines, playerList):
                 match = []
                 # Clear the currentPlayer
                 currentPlayer = None
+        index += 1
     if matchStarted == True:
         # End of the file
         matchStarted = False
@@ -291,7 +299,7 @@ def parse_spawn(spawn, player):
     except ZeroDivisionError:
         criticalluck = float(0)
     return (abilities, damagetaken, damagedealt, healingreceived, selfdamage,
-            enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged, 
+            enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged,
             enemydamaget)
 
 def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
