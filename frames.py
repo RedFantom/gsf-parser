@@ -386,14 +386,14 @@ class realtime_frame(ttk.Frame):
         if main.set_obj.size == "big":
             self.overlay.stats_var.set(str(damage_done) + "\n" +
                                        str(damage_taken) + "\n" +
-                                       str(selfdamage) + "\n" +
                                        str(healing) + "\n" +
+                                       str(selfdamage) + "\n" +
                                        str(spawns))
         elif main.set_obj.size == "small":
             self.overlay.stats_var.set(str(damage_done) + "\n" +
                                        str(damage_taken) + "\n" +
-                                       str(selfdamage) + "\n" +
-                                       str(healing) + "\n")
+                                       str(healing) + "\n" +
+                                       str(selfdamage) + "\n")
         else:
             raise
 
