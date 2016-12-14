@@ -20,7 +20,6 @@ import time
 import stat
 import datetime
 import vars
-import getpass
 import threading
 
 

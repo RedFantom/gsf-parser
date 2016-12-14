@@ -4,6 +4,5 @@
 *.pyc
 *.gsf
 *.ini
+*.db
 Release
-
-settings.db

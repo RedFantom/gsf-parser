@@ -1,4 +1,4 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 import vars
@@ -54,9 +54,9 @@ class settings:
         with open(self.file_name, "w") as settings_file:
             cPickle.dump(settings_dict, settings_file)
 
-    def write_set(self, version=defaults.version, cl_path=defaults.cl_path, 
-                  auto_ident=defaults.auto_ident, server=defaults.server, 
-                  auto_upl=defaults.auto_upl, overlay=defaults.overlay, 
+    def write_set(self, version=defaults.version, cl_path=defaults.cl_path,
+                  auto_ident=defaults.auto_ident, server=defaults.server,
+                  auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos):
         settings_dict = {"version":version,
                          "cl_path":cl_path,

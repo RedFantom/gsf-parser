@@ -179,7 +179,7 @@ class file_frame(ttk.Frame):
                     ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
-            
+
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
@@ -364,8 +364,8 @@ class realtime_frame(ttk.Frame):
         self.listbox.grid(column = 1, row = 3, columnspan = 3, padx = 5, pady =5)
         self.statistics_label_one_text.set("")
         self.statistics_label_one_text.set("")
-    
-    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities):
+
+    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, spawns):
         damage_done = 0
         damage_taken = 0
         selfdamage = 0
@@ -383,10 +383,19 @@ class realtime_frame(ttk.Frame):
                                            str(selfdamage) + "\n" +
                                            str(healing) + "\n")
         self.statistics_label_two_text.set(str(abilities))
-        self.overlay.stats_var.set(str(damage_done) + "\n" +
-                                   str(damage_taken) + "\n" +
-                                   str(healing) + "\n" +
-                                   str(selfdamage) + "\n")
+        if main.set_obj.size == "big":
+            self.overlay.stats_var.set(str(damage_done) + "\n" +
+                                       str(damage_taken) + "\n" +
+                                       str(selfdamage) + "\n" +
+                                       str(healing) + "\n" +
+                                       str(spawns))
+        elif main.set_obj.size == "small":
+            self.overlay.stats_var.set(str(damage_done) + "\n" +
+                                       str(damage_taken) + "\n" +
+                                       str(selfdamage) + "\n" +
+                                       str(healing) + "\n")
+        else:
+            raise
 
     def callback(self, filename, lines):
         if not self.parsing:
@@ -397,7 +406,7 @@ class realtime_frame(ttk.Frame):
                 parser = elem
         if not self.parse:
             self.parser = realtime.Parser(filename)
-            self.parse.append(self.parser)            
+            self.parse.append(self.parser)
         for line in lines:
             process = realtime.line_to_dictionary(line)
             self.parser.parse(process)
@@ -406,10 +415,11 @@ class realtime_frame(ttk.Frame):
             self.selfdamage = self.parser.spawn_selfdmg
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
-            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities)
+            self.spawns = self.parser.spawns
+            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, self.spawns)
         for obj in self.parse:
             obj.close()
-            
+
 class share_frame(ttk.Frame):
     def __init__(self, root_frame):
         ttk.Frame.__init__(self, root_frame)
@@ -507,10 +517,10 @@ class settings_frame(ttk.Frame):
         self.overlay_size_radio_big.grid(column = 1, row = 3, sticky = tk.W)
         self.overlay_size_radio_small.grid(column = 2, row = 3, sticky = tk.W)
         self.overlay_position_label.grid(column = 0, row = 4, sticky = tk.W)
-        self.overlay_position_radio_tl.grid(column = 1, row = 4, sticky = tk.W) 
-        self.overlay_position_radio_bl.grid(column = 2, row = 4, sticky = tk.W) 
-        self.overlay_position_radio_tr.grid(column = 3, row = 4, sticky = tk.W) 
-        self.overlay_position_radio_br.grid(column = 4, row = 4, sticky = tk.W) 
+        self.overlay_position_radio_tl.grid(column = 1, row = 4, sticky = tk.W)
+        self.overlay_position_radio_bl.grid(column = 2, row = 4, sticky = tk.W)
+        self.overlay_position_radio_tr.grid(column = 3, row = 4, sticky = tk.W)
+        self.overlay_position_radio_br.grid(column = 4, row = 4, sticky = tk.W)
         self.realtime_frame.grid(column = 0, row = 6, sticky=tk.N+tk.S+tk.W+tk.E)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=0, padx=2)
@@ -558,6 +568,3 @@ class settings_frame(ttk.Frame):
 
     def show_privacy(self):
         pass
-
-
-            

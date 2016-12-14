@@ -57,7 +57,7 @@ class Parser(object):
     ...         damage_done = parser.tmp_dmg_done
     """
 
-    DEBUG = False
+    DEBUG = True
 
     def __init__(self, fname):
         self.fname = fname
@@ -153,6 +153,9 @@ class Parser(object):
 
         if self.is_match:
             if '@' in line['source']:
+                if not "Safe Login" in line['ability']:
+                    self.dprint("[DEBUG] Line with '@' but no end of match detected")
+                    return
                 self.dprint("[DEBUG] end of match, resetting")
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
