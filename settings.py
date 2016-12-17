@@ -40,8 +40,6 @@ class settings:
     # Set the file_name for use by other functions
     def __init__(self, file_name = "settings.ini"):
         self.file_name = file_name
-        # Set the install path in the vars module
-        vars.install_path = os.getcwd()
         self.conf = ConfigParser.RawConfigParser()
         if self.file_name in os.listdir(vars.install_path):
             self.read_set()
@@ -52,23 +50,26 @@ class settings:
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
+        os.chdir(vars.install_path)
         self.conf.read(self.file_name)
         self.version = self.conf.get("misc", "version")
         self.cl_path = self.conf.get("parsing", "cl_path")
-        self.auto_ident = self.conf.get("parsing", "auto_ident")
+        self.auto_ident = bool(self.conf.get("parsing", "auto_ident"))
         self.server_address = self.conf.get("sharing", "server_address")
-        self.server_port = self.conf.get("sharing", "server_port")
-        self.auto_upl = self.conf.get("sharing", "auto_upl")
-        self.overlay = self.conf.get("realtime", "overlay")
+        self.server_port = int(self.conf.get("sharing", "server_port"))
+        self.auto_upl = bool(self.conf.get("sharing", "auto_upl"))
+        self.overlay = bool(self.conf.get("realtime", "overlay"))
         self.opacity = self.conf.get("realtime", "opacity")
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
         self.style = self.conf.get("gui", "style")
         print "[DEBUG] self.pos: ", self.pos
         print "[DEBUG] Settings read"
+        os.chdir(self.cl_path)
 
     # Write the defaults settings found in the class defaults to a pickle in a file
     def write_def(self):
+        os.chdir(vars.install_path)
         try:
             self.conf.add_section("misc")
             self.conf.add_section("parsing")
@@ -91,6 +92,8 @@ class settings:
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
+        self.read_set()
+        os.chdir(self.cl_path)
 
         # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always written
@@ -100,6 +103,7 @@ class settings:
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
                   style=defaults.style):
+        os.chdir(vars.install_path)
         try:
             self.conf.add_section("misc")
             self.conf.add_section("parsing")
@@ -123,3 +127,4 @@ class settings:
             self.conf.write(settings_file_object)
         self.read_set()
         print "[DEBUG] Settings written"
+        os.chdir(self.cl_path)
