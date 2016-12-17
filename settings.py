@@ -7,7 +7,7 @@ import tkMessageBox
 # General imports
 import getpass
 import os
-import cPickle
+import ConfigParser
 # Own modules
 import vars
 
@@ -20,7 +20,8 @@ class defaults:
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
-    server = ("thrantasquadron.tk", 83)
+    server_address = "thrantasquadron.tk"
+    server_port = 83
     # Automatically upload CombatLogs as they are parsed to the remote server
     auto_upl = str(False)
     # Enable the overlay
@@ -30,7 +31,7 @@ class defaults:
     # Set the overlay size
     size = "big"
     # Set the corner the overlay will be displayed in
-    pos = "TL"
+    pos = "TR"
     # Set the defaults style
     style = "plastik"
 
@@ -41,68 +42,84 @@ class settings:
         self.file_name = file_name
         # Set the install path in the vars module
         vars.install_path = os.getcwd()
-        # Check for the existence of the specified settings_file
-        if self.file_name not in os.listdir(vars.install_path):
-            print "[DEBUG] Settings file could not be found. Creating a new file with default settings"
-            self.write_def()
+        self.conf = ConfigParser.RawConfigParser()
+        if self.file_name in os.listdir(vars.install_path):
             self.read_set()
         else:
-            try:
-                self.read_set()
-            except:
-                tkMessageBox.showerror("Error", "Settings file available, but it could not be read. Writing defaults.")
-                self.write_def()
+            self.write_def()
+            self.read_set()
         vars.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
-        with open(self.file_name, "r") as settings_file_object:
-            settings_dict = cPickle.load(settings_file_object)
-        self.version = settings_dict["version"]
-        self.cl_path = settings_dict["cl_path"]
-        self.auto_ident = settings_dict["auto_ident"]
-        self.server = settings_dict["server"]
-        self.auto_upl = settings_dict["auto_upl"]
-        self.overlay = settings_dict["overlay"]
-        self.opacity = settings_dict["opacity"]
-        self.size = settings_dict["size"]
-        self.pos = settings_dict["pos"]
-        self.style = settings_dict["style"]
+        self.conf.read(self.file_name)
+        self.version = self.conf.get("misc", "version")
+        self.cl_path = self.conf.get("parsing", "cl_path")
+        self.auto_ident = self.conf.get("parsing", "auto_ident")
+        self.server_address = self.conf.get("sharing", "server_address")
+        self.server_port = self.conf.get("sharing", "server_port")
+        self.auto_upl = self.conf.get("sharing", "auto_upl")
+        self.overlay = self.conf.get("realtime", "overlay")
+        self.opacity = self.conf.get("realtime", "opacity")
+        self.size = self.conf.get("realtime", "size")
+        self.pos = self.conf.get("realtime", "pos")
+        self.style = self.conf.get("gui", "style")
+        print "[DEBUG] self.pos: ", self.pos
+        print "[DEBUG] Settings read"
 
     # Write the defaults settings found in the class defaults to a pickle in a file
     def write_def(self):
-        settings_dict = {"version":defaults.version,
-                         "cl_path":defaults.cl_path,
-                         "auto_ident":bool(defaults.auto_ident),
-                         "server":defaults.server,
-                         "auto_upl":bool(defaults.auto_upl),
-                         "overlay":bool(defaults.overlay),
-                         "opacity":float(defaults.opacity),
-                         "size":defaults.size,
-                         "pos":defaults.pos,
-                         "style":defaults.style
-                        }
-        with open(self.file_name, "w") as settings_file:
-            cPickle.dump(settings_dict, settings_file)
+        try:
+            self.conf.add_section("misc")
+            self.conf.add_section("parsing")
+            self.conf.add_section("sharing")
+            self.conf.add_section("realtime")
+            self.conf.add_section("gui")
+        except:
+            pass
+        self.conf.set("misc", "version", defaults.version)
+        self.conf.set("parsing", "cl_path", defaults.cl_path)
+        self.conf.set("parsing", "auto_ident", defaults.auto_ident)
+        self.conf.set("sharing", "server_address", defaults.server_address)
+        self.conf.set("sharing", "server_port", defaults.server_port)
+        self.conf.set("sharing", "auto_upl", defaults.auto_upl)
+        self.conf.set("realtime", "overlay", defaults.overlay)
+        self.conf.set("realtime", "opacity", defaults.opacity)
+        self.conf.set("realtime", "size", defaults.size)
+        self.conf.set("realtime", "pos", defaults.pos)
+        self.conf.set("gui", "style", defaults.style)
+        with open(self.file_name, "w") as settings_file_object:
+            self.conf.write(settings_file_object)
+        print "[DEBUG] Defaults written"
 
-    # Write the settings passed as arguments to a pickle in a file
+        # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always written
     def write_set(self, version=defaults.version, cl_path=defaults.cl_path,
-                  auto_ident=defaults.auto_ident, server=defaults.server,
+                  auto_ident=defaults.auto_ident, server_address=defaults.server_address,
+                  server_port=defaults.server_port,
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
                   style=defaults.style):
-        settings_dict = {"version":version,
-                         "cl_path":cl_path,
-                         "auto_ident":bool(auto_ident),
-                         "server":server,
-                         "auto_upl":bool(auto_upl),
-                         "overlay":bool(overlay),
-                         "opacity":float(opacity),
-                         "size":str(size),
-                         "pos":pos,
-                         "style":style
-                        }
+        try:
+            self.conf.add_section("misc")
+            self.conf.add_section("parsing")
+            self.conf.add_section("sharing")
+            self.conf.add_section("realtime")
+            self.conf.add_section("gui")
+        except:
+            pass
+        self.conf.set("misc", "version", version)
+        self.conf.set("parsing", "cl_path", cl_path)
+        self.conf.set("parsing", "auto_ident", auto_ident)
+        self.conf.set("sharing", "server_address", server_address)
+        self.conf.set("sharing", "server_port", server_port)
+        self.conf.set("sharing", "auto_upl", auto_upl)
+        self.conf.set("realtime", "overlay", overlay)
+        self.conf.set("realtime", "opacity", opacity)
+        self.conf.set("realtime", "size", size)
+        self.conf.set("realtime", "pos", pos)
+        self.conf.set("gui", "style", style)
         with open(self.file_name, "w") as settings_file_object:
-            cPickle.dump(settings_dict, settings_file_object)
+            self.conf.write(settings_file_object)
         self.read_set()
+        print "[DEBUG] Settings written"
