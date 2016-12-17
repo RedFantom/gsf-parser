@@ -85,8 +85,8 @@ class overlay(tk.Toplevel):
         # self.stats_label.config(font=("Courier", 44))
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
-        self.stats_label.configure(background = "white", font = ("Arial", 12), foreground = "yellow")
-        self.text_label.configure(background = "white", font = ("Arial", 12), foreground = "yellow")
+        self.stats_label.configure(background = "white", font = ("Calibri", 10), foreground = "yellow")
+        self.text_label.configure(background = "white", font = ("Calibri", 10), foreground = "yellow")
         self.configure(background = "white")
         self.wm_attributes("-transparentcolor", "white")
 

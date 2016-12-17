@@ -14,3 +14,6 @@ if __name__ == "__main__":
         main_window = gui.main_window()
     else:
         tkMessageBox.showerror("Fatal error", "Unix is not supported")
+
+def new_window():
+    main_window = gui.main_window()

@@ -31,13 +31,9 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
-        style = ttk.Style()
-        self.tk.call('ttk::themes')
-        if sys.platform == "win32":
-            print self.tk.call('package', 'require', 'tile-themes')
-            style.theme_use("plastik")
-            style.configure('.', font=("Calibri", 10))
-            style.configure('.', foreground='#8B0000')
+        self.style = ttk.Style()
+        self.update_style(start = True)
+        self.set_icon()
         # Get the screen properties
         vars.screen_w = self.winfo_screenwidth()
         vars.screen_h = self.winfo_screenheight()
@@ -86,3 +82,29 @@ class main_window(tk.Tk):
         self.deiconify()
         # Start the main loopw
         self.mainloop()
+
+    def update_style(self, start=False):
+        if sys.platform == "win32":
+            print self.tk.call('package', 'require', 'tile-themes')
+            self.styles = list(self.tk.call("ttk::themes"))
+            try:
+                self.style.theme_use(main.set_obj.style)
+            except AttributeError:
+                try:
+                    self.style.theme_use("plastik")
+                    print "[DEBUG] Attribute Error: style set to plastik"
+                except:
+                    print "[DEBUG] Theme plastik is not available. Using default."
+                    self.style.theme_use("default")
+            self.style.configure('.', font=("Calibri", 10))
+            self.style.configure('.', foreground='#8B0000')
+            if not start:
+                self.destroy()
+                main.new_window()
+
+    def set_icon(self):
+        try:
+            print os.getcwd()
+            self.iconbitmap(default=os.getcwd()+"\\icon.ico")
+        except:
+            print "[DEBUG] No icon found, is this from the GitHub repo?"

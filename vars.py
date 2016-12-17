@@ -62,5 +62,4 @@ server_address = None
 server_port = None
 auto_upload = None
 parse = []
-
-path = main.set_obj.cl_path
+path = ""
