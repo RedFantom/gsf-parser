@@ -135,4 +135,4 @@ ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : 
              "Jurgoran" : "Condor", "Dustmaker" : "Comet Breaker", "Mangler" : "Quarrel",
              "Bloodmark" : "Spearpoint", "Blackbolt" : "Novadive", "Sting" : "Flashfire",
              "Imperium" : "Clarion", "Rycer" : "Star Guard", "Quell" : "Pike"}
-ships_strings = ["Legion\t", "Decimus\t", "Razorwire", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark", "Blackbolt", "Sting\t", "Imperium", "Rycer\t", "Quell\t"]
+ships_strings = ["Legion\t", "Decimus\t", "Razorwire\t", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark", "Blackbolt\t", "Sting\t", "Imperium\t", "Rycer\t", "Quell\t"]

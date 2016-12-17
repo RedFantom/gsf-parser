@@ -22,7 +22,7 @@ class splash_screen(tk.Toplevel):
             with open('C:/Users/' + getpass.getuser() + "/AppData/Local/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
                 if "D3DFullScreen = true" in swtor:
                     tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Grapichs settings.")
-        self.label = tk.Label(self, text = "Working...")
+        self.label = ttk.Label(self, text = "Working...")
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
         self.progress_bar.pack()
@@ -73,18 +73,23 @@ class overlay(tk.Toplevel):
         self.overrideredirect(True)
         if main.set_obj.size == "big":
             self.wm_geometry("200x75" + pos_c)
-            self.text_label = tk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT)
+            self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT)
         elif main.set_obj.size == "small":
             self.wm_geometry("80x60" + pos_c)
-            self.text_label = tk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT)
+            self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT)
         else:
             raise ValueError("main.set_obj.size is neither big nor small")
             return
         self.stats_var = tk.StringVar()
-        self.stats_label = tk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
+        self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
         # self.stats_label.config(font=("Courier", 44))
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
+        self.stats_label.configure(background = "white", font = ("Arial", 12), foreground = "yellow")
+        self.text_label.configure(background = "white", font = ("Arial", 12), foreground = "yellow")
+        self.configure(background = "white")
+        self.wm_attributes("-transparentcolor", "white")
+
 
 class privacy(tk.Toplevel):
     def __init__(self, window):

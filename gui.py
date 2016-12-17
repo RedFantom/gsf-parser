@@ -1,4 +1,6 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# -*- coding: utf-8 -*-
+
+# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
@@ -11,6 +13,7 @@ import tkFileDialog
 import re
 import os
 import getpass
+import sys
 from datetime import datetime
 # Own modules
 import vars
@@ -28,6 +31,13 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
+        style = ttk.Style()
+        self.tk.call('ttk::themes')
+        if sys.platform == "win32":
+            print self.tk.call('package', 'require', 'tile-themes')
+            style.theme_use("plastik")
+            style.configure('.', font=("Calibri", 10))
+            style.configure('.', foreground='#8B0000')
         # Get the screen properties
         vars.screen_w = self.winfo_screenwidth()
         vars.screen_h = self.winfo_screenheight()
@@ -36,8 +46,8 @@ class main_window(tk.Tk):
         self.default_path = main.set_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
-        self.splash = overlay.splash_screen(self, boot = True)
         self.withdraw()
+        self.splash = overlay.splash_screen(self, boot = True)
         self.geometry("{}x{}".format(800, 425))
         self.wm_title("Thranta Squadron GSF Parser")
         # Add a notebook widget with various tabs for the various functions

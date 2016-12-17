@@ -33,15 +33,15 @@ class file_frame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame, width = 200, height = 400)
         self.main_window = main_window
         self.file_box = tk.Listbox(self)
-        self.file_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL)
+        self.file_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL)
         self.file_box_scroll.config(command = self.file_box.yview)
         self.file_box.config(yscrollcommand = self.file_box_scroll.set)
         self.match_box = tk.Listbox(self)
-        self.match_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL)
+        self.match_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL)
         self.match_box_scroll.config(command = self.match_box.yview)
         self.match_box.config(yscrollcommand = self.match_box_scroll.set)
         self.spawn_box = tk.Listbox(self)
-        self.spawn_box_scroll = tk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawn_box.yview)
+        self.spawn_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawn_box.yview)
         self.spawn_box.config(yscrollcommand = self.spawn_box_scroll.set)
         self.file_box.bind("<Double-Button-1>", self.file_update)
         self.match_box.bind("<Double-Button-1>", self.match_update)
@@ -104,7 +104,7 @@ class file_frame(ttk.Frame):
                 self.splash.destroy()
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
-                if statistics.check_gsf(file) == True:
+                if statistics.check_gsf(file):
                     self.file_strings.append(file)
                 vars.files_done += 1
                 if not silent:
@@ -119,6 +119,7 @@ class file_frame(ttk.Frame):
     def file_update(self, instance):
         if self.file_box.curselection() == (0,):
             print("[DEBUG] All CombatLogs selected")
+            tkMessageBox.showinfo("Info", "The statistics for a whole folder aren't supported yet.")
         else:
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
@@ -219,7 +220,7 @@ class ship_frame(ttk.Frame):
     def __init__(self, root_frame):
         ttk.Frame.__init__(self, root_frame, width = 300, height = 400)
         self.ship_label_var = tk.StringVar()
-        self.ship_label = tk.Label(root_frame, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
+        self.ship_label = ttk.Label(root_frame, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
         self.ship_label.pack(side = tk.TOP)
 
 class middle_frame(ttk.Frame):
@@ -233,15 +234,15 @@ class middle_frame(ttk.Frame):
         self.statistics_label_var = tk.StringVar()
         string = "Damage dealt to\nDamage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\n"
         self.statistics_label_var.set(string)
-        self.statistics_label = tk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
+        self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()
         self.statistics_label.setvar()
-        self.statistics_numbers = tk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
-        self.enemies_label = tk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
+        self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
+        self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
         self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 20)
         self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 20)
-        self.enemies_scroll = tk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
+        self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
         self.enemies_scroll.config(command = self.enemies_scroll_yview)
         self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
         self.enemies_damaget.config(yscrollcommand = self.enemies_damaget_scroll)
@@ -251,9 +252,9 @@ class middle_frame(ttk.Frame):
         self.notebook.add(self.abilities_frame, text = "Abilities")
         self.notebook.add(self.events_frame, text = "Events")
         self.abilities_label_var = tk.StringVar()
-        self.abilities_label = tk.Label(self.abilities_frame, textvariable = self.abilities_label_var, justify = tk.LEFT, wraplength = 295)
+        self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var, justify = tk.LEFT, wraplength = 295)
         self.events_label_var = tk.StringVar()
-        self.events_label = tk.Label(self.events_frame, textvariable = self.events_label_var, justify = tk.LEFT, wraplength = 295)
+        self.events_label = ttk.Label(self.events_frame, textvariable = self.events_label_var, justify = tk.LEFT, wraplength = 295)
 
     def enemies_scroll_yview(self, *args):
         self.enemies_listbox.yview(*args)
@@ -299,16 +300,22 @@ class realtime_frame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame)
         self.main_window = main_window
         self.listbox = tk.Listbox(self, width = 130, height = 15)
-        self.statistics_list_label_one = tk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:")
-        self.statistics_list_label_two = tk.Label(self, justify = tk.LEFT, text = "Abilities:")
+        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:")
+        self.statistics_list_label_two = ttk.Label(self, justify = tk.LEFT, text = "Abilities:")
         self.statistics_label_one_text = tk.StringVar()
-        self.statistics_label_one = tk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
+        self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
         self.statistics_label_two_text = tk.StringVar()
-        self.statistics_label_two = tk.Label(self, textvariable=self.statistics_label_two_text, justify = tk.LEFT)
-        self.start_parsing_button = tk.Button(self, text = "Parse real-time", command=self.start_parsing)
-        self.upload_results_button = tk.Button(self, text = "Upload events", command= self.upload_events)
+        self.statistics_label_two = ttk.Label(self, textvariable=self.statistics_label_two_text, justify = tk.LEFT)
+        self.start_parsing_button = ttk.Button(self, text = "Parse real-time", command=self.start_parsing)
+        self.upload_results_button = ttk.Button(self, text = "Upload events", command= self.upload_events)
         self.server = tk.StringVar()
-        self.server_list = tk.OptionMenu(self, self.server,
+        self.faction = tk.StringVar()
+        self.faction_list = ttk.OptionMenu(self, self.faction,
+                                           "Select a faction",
+                                           "Imperial Faction",
+                                           "Republic Faction")
+        self.server_list = ttk.OptionMenu(self, self.server,
+                                         "Select a server",
                                          "The Bastion",
                                          "Begeren Colony",
                                          "The Harbinger",
@@ -328,40 +335,46 @@ class realtime_frame(ttk.Frame):
                                          "The Red Eclipse")
         self.parsing = False
         self.parse = []
+        self.parsing_bar = ttk.Progressbar(self, orient = "horizontal", mode = "indeterminate")
 
     def start_parsing(self):
         if not self.parsing:
             self.main_window.file_select_frame.add_files()
-            self.start_parsing_button.config(relief=tk.SUNKEN)
+            # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.stalker_obj = stalking.LogStalker(self.callback)
             vars.FLAG = True
             self.stalker_obj.start()
             if main.set_obj.overlay:
                 self.overlay = overlay.overlay(self.main_window)
+            self.parsing_bar.start(3)
         elif self.parsing:
             self.main_window.file_select_frame.add_files()
-            self.start_parsing_button.config(relief=tk.RAISED)
+            # self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
             vars.FLAG = False
             while self.stalker_obj.is_alive():
                 pass
             if main.set_obj.overlay:
                 self.overlay.destroy()
+            self.parsing_bar.stop()
 
     def upload_events(self):
         pass
 
     def grid_widgets(self):
-        self.start_parsing_button.grid(column = 1, row = 1, padx = 5, pady = 5)
-        self.upload_results_button.grid(column = 2, row = 1, padx = 5, pady = 5)
+        self.start_parsing_button.grid(column = 0, row = 1, padx = 5, pady = 5)
+        self.upload_results_button.grid(column = 1, row = 1, padx = 5, pady = 5)
+        self.server_list.config(width = 15)
+        self.faction_list.config(width = 15)
         self.server_list.grid(column = 3, row = 1, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.server_list.config(width = 40, justify = tk.LEFT)
-        self.statistics_label_one.grid(column = 2, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
+        self.faction_list.grid(column = 4, row = 1, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.parsing_bar.grid(column = 0, columnspan = 1, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.statistics_label_one.grid(column = 3, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
         self.statistics_label_two.grid(column = 4, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
         self.statistics_list_label_one.grid(column = 1, row = 2, padx = 5, pady =5, sticky = tk.N + tk.W)
         self.statistics_list_label_two.grid(column = 3, row = 2, padx = 5, pady =5, sticky = tk.N + tk.W)
-        self.listbox.grid(column = 1, row = 3, columnspan = 3, padx = 5, pady =5)
+        self.listbox.grid(column = 0, row = 3, columnspan = 5, padx = 5, pady = 5)
         self.statistics_label_one_text.set("")
         self.statistics_label_one_text.set("")
 
@@ -437,36 +450,36 @@ class settings_frame(ttk.Frame):
         self.license_frame = ttk.Frame(root_frame)
         self.main_window = main_window
         ### PARSING SETTINGS ###
-        self.parsing_label = tk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
+        self.parsing_label = ttk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = tk.Entry(self.entry_frame, width=75)
-        self.path_entry_label = tk.Label(self.entry_frame, text = "\tCombatLogs folder:")
-        self.privacy_label = tk.Label(self.privacy_frame, text = "\tConnect to server for player identification:")
+        self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder:")
+        self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification:")
         self.privacy_var = tk.BooleanVar()
         self.privacy_select_true = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
         self.privacy_select_false = tk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False, text = "No")
         ### SHARING SETTINGS ###
-        self.sharing_label = tk.Label(root_frame, text = "Share settings", justify=tk.LEFT)
-        self.server_label = tk.Label(self.server_frame, text = "\tServer for sharing:")
+        self.sharing_label = ttk.Label(root_frame, text = "Share settings", justify=tk.LEFT)
+        self.server_label = ttk.Label(self.server_frame, text = "\tServer for sharing:")
         self.server_address_entry = tk.Entry(self.server_frame, width=20)
-        self.server_colon_label = tk.Label(self.server_frame, text = ":")
+        self.server_colon_label = ttk.Label(self.server_frame, text = ":")
         self.server_port_entry = tk.Entry(self.server_frame, width=4)
-        self.auto_upload_label = tk.Label(self.upload_frame, text="\tAuto-upload CombatLogs to the server:")
+        self.auto_upload_label = ttk.Label(self.upload_frame, text="\tAuto-upload CombatLogs to the server:")
         self.auto_upload_var = tk.BooleanVar()
         self.auto_upload_true = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True, text="Yes")
         self.auto_upload_false = tk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False, text="No")
         ### REAL-TIME SETTINGS ###
-        self.realtime_settings_label = tk.Label(self.realtime_frame, text = "Real-time parsing settings")
-        self.overlay_enable_label = tk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
+        self.realtime_settings_label = ttk.Label(self.realtime_frame, text = "Real-time parsing settings")
+        self.overlay_enable_label = ttk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
         self.overlay_enable_radio_var = tk.BooleanVar()
         self.overlay_enable_radio_yes = tk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=True, text="Yes")
         self.overlay_enable_radio_no = tk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=False, text="No")
-        self.overlay_opacity_label = tk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
+        self.overlay_opacity_label = ttk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
         self.overlay_opacity_input = tk.Entry(self.realtime_frame, width = 3)
-        self.overlay_size_label = tk.Label(self.realtime_frame, text = "\tOverlay window size: ")
+        self.overlay_size_label = ttk.Label(self.realtime_frame, text = "\tOverlay window size: ")
         self.overlay_size_var = tk.StringVar()
         self.overlay_size_radio_big = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "big", text = "Big")
         self.overlay_size_radio_small = tk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "small", text = "Small")
-        self.overlay_position_label = tk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
+        self.overlay_position_label = ttk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
         self.overlay_position_var.set(main.set_obj.pos)
         self.overlay_position_radio_tl = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TL", text =  "Top left")
@@ -474,15 +487,15 @@ class settings_frame(ttk.Frame):
         self.overlay_position_radio_tr = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
         self.overlay_position_radio_br = tk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BR", text = "Bottom right")
         ### MISC ###
-        self.save_settings_button = tk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
-        self.discard_settings_button = tk.Button(self.save_frame, text="Discard", command=self.discard_settings)
-        self.default_settings_button = tk.Button(self.save_frame, text="Defaults", command = self.default_settings)
-        self.license_button = tk.Button(self.license_frame, text="License", command=self.show_license)
-        self.version_label = tk.Label(self.license_frame, text="Version 2.0")
+        self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
+        self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
+        self.default_settings_button = ttk.Button(self.save_frame, text="Defaults", command = self.default_settings)
+        self.license_button = ttk.Button(self.license_frame, text="License", command=self.show_license)
+        self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
-        self.update_label = tk.Label(self.license_frame, textvariable=self.update_label_var)
-        self.copyright_label = tk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
-        self.thanks_label = tk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
+        self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
+        self.copyright_label = ttk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
+        self.thanks_label = ttk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
         self.update_settings()
 
     def grid_widgets(self):
