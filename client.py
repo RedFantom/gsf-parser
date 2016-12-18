@@ -4,159 +4,402 @@
 
 import socket
 import vars
-import time
 import tkMessageBox
 import hashlib
+import threading
 
-# This function takes a fileName and a readily created socket-object to send a CombatLog to a server
-'''
-Return values:
- 0: File correctly sent
--1: The connection was lost while transferring the file
--2: The server could not parse one of the lines sent
--3: The server did not answer as expected
--4: The server did not answer at all
--5: The packet could not be sent
-'''
-def sendFile(fileName, userName, connectionObject):
-    # Create received, a variable to store responses from the server
-    received = None
-    # Open the file as read-only
-    fileObject = open(fileName, "r")
-    # Read all the lines from this file
-    lines = fileObject.readlines()
-    # Prepare the progressbar in the GUI's shareTab
-    vars.progressBar["maximum"] = len(lines)
+class client_conn:
+    def __init__(self):
+        self.init_conn()
 
-    # Try to get a response from the server to check the connection
-    connectionObject.send("Connection initialized by")
-    connectionObject.send(userName)
-    # Sleep for a very short time to wait for a response
-    # time.sleep(0.01)
-    # Read the server's response
-    received = connectionObject.recv(64)
-
-    # If the expected response was not given, stop the function
-    if received != "Connection initialized":
-        connectionObject.close()
-        fileObject.close()
-        return -3
-    # Try to send the player's name, the filename and a hash of the file
-    connectionObject.send(vars.playerName)
-    connectionObject.send(vars.fileName)
-
-    # Try to read the server's response
-    received = connectionObject.recv(64)
-
-    # If the expected response was not given, stop the function
-    if received != "Send file":
-        connectionObject.close()
-        fileObject.close()
-        return -3
-    index = 0
-    # Start the loop to send the lines of the file
-    for line in lines:
-        # Try to send a line
-        connectionObject.send(line)
-        # Sleep for a short amount of time
-        # time.sleep(0.01)
-        # If a response was received, the line was unparsable
-        try:
-            received = connectionObject.recv(64)
-        except:
-            pass
-        finally:
-            if received == "Line in file unparsable":
-                fileObject.close()
-                connectionObject.close()
-                return -2
-            # elif received == ""
-            else:
-                # If the server did send a response, but this response was not registered
-                #  as an error, show a notice to the user
-                tkMessageBox.showinfo("Notice", """A message was received from the
-                 server, but it did not register as an error: %c""" % received)
-        index += 1
-        vars.progressBar["value"] = index
-    # When the end of the file is reached, the server must be notified
-    try:
-        connectionObject.send("End of file")
-    except:
-        connectionObject.close()
-        fileObject.close()
-        return -5
-    # Sleep for a short amount of time again
-    time.sleep(0.01)
-    # Try to read a response again
-    try:
-        received = connectionObject.recv(64)
-        if received != "File received":
-            connectionObject.close()
-            fileObject.close()
-            return -3
-    except:
-        connectionObject.close()
-        fileObject.close()
-        return -4
-    # When the function gets to this point, the file was sent succesfully
-    fileObject.close()
-    connectionObject.close()
-    return 0
-
-# This function opens a connection to the server
-def initConnection():
-    try:
-        socket.settimeout(100)
-        connectionObject = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        connectionObject.connect(vars.serverAddress)
-    except:
-        try:
-            connectionObject.close()
-        except:
-            pass
-        return None
-    return connectionObject
-
-# This function takes a file to send it to the server and does the user-interaction.
-def send(fileName, userName):
-    connectionObject = initConnection()
-    if connectionObject == None:
-        tkMessageBox.showerror("Error", "Connecting to the server over TCP/IP failed.")
-        return
-    else:
-        if fileName == "":
-            tkMessageBox.showerror("Error", "An empty file name was entered to send to the server")
-            connectionObject.close()
-            return -2
+    def init_conn(self):
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.conn.connect(self.address)
+        if self.send("INIT") == -1: return
+        self.INIT = False
+        self.BUFF = 16
+        self.TIME_OUT = 4
+        self.conn.settimeout(self.TIME_OUT)
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message == "INIT":
+            self.INIT = True
+            return
+        elif message == "MAINTENANCE":
+            self.maintenance()
+            return
+        elif message == "UNAVAILABLE":
+            self.unavailable()
+            return
+        elif message == "BANNED":
+            self.banned()
+            return
         else:
-            fileObject = open(fileName, "r")
-            returned = sendFile(fileName, userName, connectionObject)
-            if returned == 0:
-                tkMessageBox.showinfo("Notice", "The file was send successfully.")
-                return
-            elif returned == -1:
-                 if tkMessageBox.askretrycancel("Error", "The connection was lost during transfer."):
-                     send(fileName, userName)
-                 else:
-                    return
-            elif returned == -2:
-                tkMessageBox.showerror("Error", "A line in your file was unparsable for the server.")
-                return
-            elif returned == -3:
-                if tkMessageBox.askretrycancel("Error", "The server did not return the expected response."):
-                    send(fileName, userName)
-                else:
-                    return
-            elif returned == -4:
-                if tkMessageBox.askretrycancel("Error", "The server did not return a response."):
-                    send(filename, userName)
-                else:
-                    return
-            elif returned == -5:
-                if tkMessageBox.askretrycancel("Error", "Could not send packet to the server."):
-                    send(fileName, userName)
-                else:
-                    return
-            else:
-                tkMessageBox.showerror("Error", "An unknown error occurred.")
-                return
+            self.unexpected()
+            self.close()
+
+    def get_killed(self, ID, serv, player=vars.player_numbers):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("NEWCOM") == -1: return
+        if self.send("KILLEDBY") == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        if self.send("SERVER=%s" % serv): return
+        if self.send(hashlib.sha512(ID)) == -1: return
+        message = self.recv(self.BUFF)
+        if message != "KILLEDBY":
+            self.unexpected()
+            return
+        recv_hash = self.recv(512)
+        for key, value in player.iteritems():
+            if hashlib.sha512(key) == recv_hash:
+                return True
+        return False
+
+    def get_name(self, ID, serv, fact):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("NEWCOM") == -1: return
+        if self.send("LOOKUP") == -1: return
+        if self.send("SERVER=%s" % serv) == -1: return
+        if self.send("FACT=%s" % fact) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        if self.send(hashlib.sha512(ID)) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        if self.send("RECV") == -1: return
+        return message
+
+    def logstr(self, file_name, serv, fact, player_name):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("NEWCOM") == -1: return
+        if self.send("LOGSTR") == -1: return
+        if self.send("SERVER=%s" % serv) == -1: return
+        if self.send("FACTION=%s" % fact) == -1 : return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        with open(file_name, "r") as file_obj:
+            lines = file_obj.readlines()
+        if self.send("LEN=%s" % len(lines)) == -1: return
+        if self.send(hashlib.sha512(lines)) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message == "DUPLICATE":
+            self.duplicate()
+            return
+        elif message != "ACK": return
+        for line in lines:
+            if self.send(line) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "RECV":
+            self.unexpected()
+            return
+        return 0
+
+    def name_send(self, name, ID, serv, fact):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("NAME") == -1: return
+        if self.send("SERVER=%s" % serv) == -1: return
+        if self.send("FACT=%s" % fact) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        if self.send(name) == -1: return
+        if self.send(hashlib.sha512(ID)) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "ACK":
+            self.unexpected()
+            return
+        return 0
+
+    def kill_send(self, ID_self, ID_kill, serv, fact):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("KILLEDBYS") == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        if self.send("SERVER=%s" % serv) == -1: return
+        if self.send("FACT=%s" % fact) == -1: return
+        if self.send(hashlib.sha512(ID_self)) == -1: return
+        if self.send(hashlib.sha512(ID_kill)) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "ACK":
+            self.unexpected()
+            return
+        return 0
+
+    def retry(self):
+        self.init_conn()
+
+    def send(self, message):
+        try:
+            self.conn.send(message)
+        except socket.timeout:
+            self.timeout()
+            return -1
+        except:
+            self.failed()
+            return -1
+        return 0
+
+    def recv(self, BUFF=128):
+        try:
+            message = self.conn.recv(BUFF)
+        except socket.timeout:
+            self.timeout()
+            return -1
+        except:
+            self.failed()
+            return -1
+        if message == "":
+            self.empty()
+            return -1
+        elif message == "MAINTENANCE":
+            self.maintenance()
+            self.close()
+            return -1
+        elif message == "UNAVAILABLE":
+            self.unavailable()
+            self.close()
+            return -1
+        elif message == "DEPRECATED":
+            self.deprecated()
+            self.close()
+            return -1
+        return message
+
+    def close(self):
+        if self.send("STOPCN") == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "CLOSED":
+            self.unexpected()
+            self.conn.close()
+            return
+        self.conn.close()
+        return
+
+    def __exit__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    @staticmethod
+    def timeout():
+        tkMessageBox.showerror("Error", "The connection timed out.")
+        return
+
+    @staticmethod
+    def empty():
+        tkMessageBox.showerror("Error", "The response of the server is empty.")
+        return
+
+    @staticmethod
+    def unexpected():
+        tkMessageBox.showerror("Error", "Did not get the expected response.")
+        return
+
+    @staticmethod
+    def failed():
+        tkMessageBox.showerror("Error", "Sending or receiving data from the server failed.")
+        return
+
+    @staticmethod
+    def notinit():
+        tkMessageBox.showerror("Error", "The connection was not initialized correctly.")
+        return
+
+    @staticmethod
+    def maintenance():
+        tkMessageBox.showinfo("Notice", "The server is in maintenance mode.")
+        return
+
+    @staticmethod
+    def unavailable():
+        tkMessageBox.showinfo("Notice", "The server is unavailable for an unknown reason.")
+        return
+
+    @staticmethod
+    def deprecated():
+        tkMessageBox.showinfo("Notice", "Cannot connect to the server, this parser is not up-to-date. Please update.")
+        return
+
+    @staticmethod
+    def duplicate():
+        tkMessageBox.showinfo("Notice", "This file is already present on the server.")
+        return
+
+    @staticmethod
+    def banned():
+        tkMessageBox.showerror("Error", "This IP-address is banned from this server.")
+        return
+
+class realtime_conn(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.init_conn()
+        self.lines_to_send = []
+        self.names_to_get = []
+        self.names_to_send = []
+
+    def init_conn(self):
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.conn.connect(self.address)
+        if self.send("INIT") == -1: return
+        self.INIT = False
+        self.BUFF = 16
+        self.TIME_OUT = 4
+        self.conn.settimeout(self.TIME_OUT)
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message == "INIT":
+            self.INIT = True
+            return
+        elif message == "MAINTENANCE":
+            self.maintenance()
+            return
+        elif message == "UNAVAILABLE":
+            self.unavailable()
+            return
+        elif message == "BANNED":
+            self.banned()
+            return
+        else:
+            self.unexpected()
+            self.close()
+
+    def retry(self):
+        self.init_conn()
+
+    def send(self, message):
+        try:
+            self.conn.send(message)
+        except socket.timeout:
+            self.timeout()
+            return -1
+        except:
+            self.failed()
+            return -1
+        return 0
+
+    def recv(self, BUFF=128):
+        try:
+            message = self.conn.recv(BUFF)
+        except socket.timeout:
+            self.timeout()
+            return -1
+        except:
+            self.failed()
+            return -1
+        if message == "":
+            self.empty()
+            return -1
+        elif message == "MAINTENANCE":
+            self.maintenance()
+            self.close()
+            return -1
+        elif message == "UNAVAILABLE":
+            self.unavailable()
+            self.close()
+            return -1
+        elif message == "DEPRECATED":
+            self.deprecated()
+            self.close()
+            return -1
+        return message
+
+    def close(self):
+        if self.send("STOPCN") == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "CLOSED":
+            self.unexpected()
+            self.conn.close()
+            return
+        self.conn.close()
+        return
+
+    def __exit__(self):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    @staticmethod
+    def timeout():
+        tkMessageBox.showerror("Error", "The connection timed out.")
+        return
+
+    @staticmethod
+    def empty():
+        tkMessageBox.showerror("Error", "The response of the server is empty.")
+        return
+
+    @staticmethod
+    def unexpected():
+        tkMessageBox.showerror("Error", "Did not get the expected response.")
+        return
+
+    @staticmethod
+    def failed():
+        tkMessageBox.showerror("Error", "Sending or receiving data from the server failed.")
+        return
+
+    @staticmethod
+    def notinit():
+        tkMessageBox.showerrror("Error", "The connection was not initialized correctly.")
+        return
+
+    @staticmethod
+    def maintenance():
+        tkMessageBox.showinfo("Notice", "The server is in maintenance mode.")
+        return
+
+    @staticmethod
+    def unavailable():
+        tkMessageBox.showinfo("Notice", "The server is unavailable for an unknown reason.")
+        return
+
+    @staticmethod
+    def deprecated():
+        tkMessageBox.showinfo("Notice", "Cannot connect to the server, this parser is not up-to-date. Please update.")
+        return
+
+    @staticmethod
+    def dupliate():
+        tkMessageBox.showinfo("Notice", "This file is already present on the server.")
+        return
+
+    @staticmethod
+    def banned():
+        tkMessageBox.showerror("Error", "This IP-address is banned from this server.")
+        return
