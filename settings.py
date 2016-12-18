@@ -21,7 +21,7 @@ class defaults:
     auto_ident = str(False)
     # Address and port of the remote server
     server_address = "thrantasquadron.tk"
-    server_port = 83
+    server_port = str(83)
     # Automatically upload CombatLogs as they are parsed to the remote server
     auto_upl = str(False)
     # Enable the overlay
@@ -55,16 +55,26 @@ class settings:
         self.conf.read(self.file_name)
         self.version = self.conf.get("misc", "version")
         self.cl_path = self.conf.get("parsing", "cl_path")
-        self.auto_ident = bool(self.conf.get("parsing", "auto_ident"))
+        if self.conf.get("parsing", "auto_ident") == "True":
+            self.auto_ident = True
+        else:
+            self.auto_ident = False
         self.server_address = self.conf.get("sharing", "server_address")
         self.server_port = int(self.conf.get("sharing", "server_port"))
-        self.auto_upl = bool(self.conf.get("sharing", "auto_upl"))
-        self.overlay = bool(self.conf.get("realtime", "overlay"))
-        self.opacity = self.conf.get("realtime", "opacity")
+        if self.conf.get("sharing", "auto_upl") == "True":
+            self.auto_upl = True
+        else:
+            self.auto_upl = False
+        if self.conf.get("realtime", "overlay") == "True":
+            self.overlay = True
+        else:
+            self.overlay = False
+        self.opacity = float(self.conf.get("realtime", "opacity"))
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
         self.style = self.conf.get("gui", "style")
         print "[DEBUG] self.pos: ", self.pos
+        print "[DEBUG] self.auto_upl: ", self.auto_upl
         print "[DEBUG] Settings read"
         os.chdir(self.cl_path)
 
