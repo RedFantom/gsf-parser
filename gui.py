@@ -37,9 +37,9 @@ class main_window(tk.Tk):
         # Get the screen properties
         vars.screen_w = self.winfo_screenwidth()
         vars.screen_h = self.winfo_screenheight()
-        vars.path = main.set_obj.cl_path
+        vars.path = vars.set_obj.cl_path
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = main.set_obj.cl_path
+        self.default_path = vars.set_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
         self.withdraw()
@@ -59,13 +59,13 @@ class main_window(tk.Tk):
         self.ship_frame = frames.ship_frame(self.ship_containment_frame)
         self.settings_frame = frames.settings_frame(self.settings_tab_frame, self)
         # Pack the frames and put their widgets into place
-        self.file_select_frame.pack(side = tk.LEFT)
-        self.middle_frame.grid_widgets()
+        self.file_select_frame.grid(column = 1, row = 1, rowspan = 4, columnspan = 1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
-        self.middle_frame.pack(side = tk.LEFT, padx = 5)
+        self.middle_frame.grid(column = 2, columnspan = 2, rowspan = 2, row = 1, sticky=tk.N+tk.S+tk.W+tk.E, padx = 5)
+        self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
-        self.ship_containment_frame.pack(side = tk.RIGHT)
+        self.ship_containment_frame.grid(column =  4, columnspan = 1, row = 1, rowspan = 4, sticky=tk.N+tk.S+tk.W+tk.E)
         self.ship_frame.pack(side = tk.RIGHT)
         self.settings_frame.grid_widgets()
         # Add the frames to the Notebook
@@ -88,7 +88,7 @@ class main_window(tk.Tk):
             print self.tk.call('package', 'require', 'tile-themes')
             self.styles = list(self.tk.call("ttk::themes"))
             try:
-                self.style.theme_use(main.set_obj.style)
+                self.style.theme_use(vars.set_obj.style)
             except AttributeError:
                 try:
                     self.style.theme_use("plastik")
