@@ -41,6 +41,7 @@ class settings:
     def __init__(self, file_name = "settings.ini"):
         self.file_name = file_name
         self.conf = ConfigParser.RawConfigParser()
+        vars.install_path = os.getcwd()
         if self.file_name in os.listdir(vars.install_path):
             self.read_set()
         else:

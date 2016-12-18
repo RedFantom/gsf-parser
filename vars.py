@@ -15,7 +15,8 @@
 # enemydamaget is a dictionary
 # match_timings is a list of datetimes
 # spawn_timings is a matrix of datetimes
-import main
+import settings
+import os
 
 FLAG = False
 
@@ -46,7 +47,6 @@ match_timing = None
 user_name = None
 
 statisticsfile = False
-server_address = ('www.thrantasquadron.tk', 83)
 
 abilities_string = None
 events_string = None
@@ -63,3 +63,7 @@ server_port = None
 auto_upload = None
 parse = []
 path = ""
+
+set_obj = settings.settings()
+install_path = os.getcwd()
+cl_path = None

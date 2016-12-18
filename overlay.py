@@ -12,7 +12,6 @@ import getpass
 import sys
 # Own modules
 import vars
-import frames
 import main
 
 class splash_screen(tk.Toplevel):
@@ -50,35 +49,35 @@ class splash_screen(tk.Toplevel):
 class overlay(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
-        if main.set_obj.pos == "TL":
+        if vars.set_obj.pos == "TL":
             pos_c = "+0+0"
-        elif main.set_obj.pos == "BL":
+        elif vars.set_obj.pos == "BL":
             pos_c = "+0+" + str(vars.screen_h - 60)
-        elif main.set_obj.pos == "TR":
-            if main.set_obj.size == "big":
+        elif vars.set_obj.pos == "TR":
+            if vars.set_obj.size == "big":
                 pos_c = "+" + str(vars.screen_w - 200) + "+0"
-            elif main.set_obj.size == "small":
+            elif vars.set_obj.size == "small":
                 pos_c = "+" + str(vars.screen_w - 80) + "+0"
-        elif main.set_obj.pos == "BR":
-            if main.set_obj.size == "big":
+        elif vars.set_obj.pos == "BR":
+            if vars.set_obj.size == "big":
                 pos_c = "+" + str(vars.screen_w - 200) + "+" + str(vars.screen_h - 60)
-            elif main.set_obj.size == "small":
+            elif vars.set_obj.size == "small":
                 pos_c = "+" + str(vars.screen_w - 80) + "+" + str(vars.screen_h - 60)
         else:
-            raise ValueError("main.set_obj.pos not valid")
+            raise ValueError("vars.set_obj.pos not valid")
             self.destroy()
             return
         self.attributes("-topmost", True)
-        self.attributes("-alpha", main.set_obj.opacity)
+        self.attributes("-alpha", vars.set_obj.opacity)
         self.overrideredirect(True)
-        if main.set_obj.size == "big":
+        if vars.set_obj.size == "big":
             self.wm_geometry("200x75" + pos_c)
             self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT)
-        elif main.set_obj.size == "small":
+        elif vars.set_obj.size == "small":
             self.wm_geometry("80x60" + pos_c)
             self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT)
         else:
-            raise ValueError("main.set_obj.size is neither big nor small")
+            raise ValueError("vars.set_obj.size is neither big nor small")
             return
         self.stats_var = tk.StringVar()
         self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
@@ -90,6 +89,7 @@ class overlay(tk.Toplevel):
         self.configure(background = "white")
         self.wm_attributes("-transparentcolor", "white")
 
+    colors = ["white", "blue", "black", "green", "yellow", "red"]
 
 class privacy(tk.Toplevel):
     def __init__(self, window):
