@@ -12,7 +12,6 @@ import getpass
 import sys
 # Own modules
 import vars
-import main
 
 class splash_screen(tk.Toplevel):
     def __init__(self, window, boot=False):
@@ -94,3 +93,20 @@ class overlay(tk.Toplevel):
 class privacy(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
+        privacy = vars.client_obj.get_privacy()
+        privacy_listbox = tk.Listbox(self, height = 10, width = 30)
+        privacy_listbox.pack(side=tk.LEFT)
+        privacy_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL, command = privacy_listbox.yview)
+        privacy_listbox.config(yscrollcommand=privacy_scroll.set)
+        if privacy == -1:
+            self.destroy()
+            return
+        try:
+            privacy_list = list(privacy)
+        except:
+            raise
+            return
+        index = 0
+        for line in privacy_list:
+            privacy_listbox.insert(0, line)
+            index += 1
