@@ -357,7 +357,7 @@ class realtime_frame(ttk.Frame):
             self.start_parsing_button.configure(text="Start real-time parsing")
 
     def upload_events(self):
-        pass
+        tkMessageBox.showinfo("Notice", "This button is not yet functional.")
 
     def grid_widgets(self):
         self.start_parsing_button.grid(column = 0, row = 1, padx = 5, pady = 5)
