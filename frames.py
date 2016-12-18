@@ -86,14 +86,15 @@ class file_frame(ttk.Frame):
                 self.spawn_box.insert(tk.END, spawn)
 
     def add_files(self, silent=False):
+        os.chdir(vars.path)
         self.file_strings = []
         self.file_box.delete(0, tk.END)
         if not silent:
             self.splash = overlay.splash_screen(self.main_window)
         try:
-            os.chdir(main.set_obj.cl_path)
+            os.chdir(vars.set_obj.cl_path)
         except:
-            tkMessageBox.showerror("Error", "Folder not valid: " + main.set_obj.cl_path)
+            tkMessageBox.showerror("Error", "Folder not valid: " + vars.set_obj.cl_path)
             if not silent:
                 self.splash.destroy()
         for file in os.listdir(os.getcwd()):
@@ -220,7 +221,7 @@ class ship_frame(ttk.Frame):
 class middle_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.notebook = ttk.Notebook(self, width = 300, height = 375)
+        self.notebook = ttk.Notebook(self, width = 300, height = 200)
         self.stats_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.stats_frame, text = "Statistics")
@@ -233,9 +234,9 @@ class middle_frame(ttk.Frame):
         self.statistics_label.setvar()
         self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
         self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
-        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 20)
-        self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 20)
-        self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 20)
+        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 10)
+        self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 10)
+        self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 10)
         self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
         self.enemies_scroll.config(command = self.enemies_scroll_yview)
         self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
@@ -336,10 +337,10 @@ class realtime_frame(ttk.Frame):
             self.main_window.file_select_frame.add_files()
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
-            self.stalker_obj = stalking.LogStalker(self.callback, folder=main.set_obj.cl_path)
+            self.stalker_obj = stalking.LogStalker(self.callback, folder=vars.set_obj.cl_path)
             vars.FLAG = True
             self.stalker_obj.start()
-            if main.set_obj.overlay:
+            if vars.set_obj.overlay:
                 self.overlay = overlay.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing  ")
@@ -350,7 +351,7 @@ class realtime_frame(ttk.Frame):
             vars.FLAG = False
             while self.stalker_obj.is_alive():
                 pass
-            if main.set_obj.overlay:
+            if vars.set_obj.overlay:
                 self.overlay.destroy()
             self.parsing_bar.stop()
             self.start_parsing_button.configure(text="Start real-time parsing")
@@ -392,13 +393,13 @@ class realtime_frame(ttk.Frame):
                                            str(selfdamage) + "\n" +
                                            str(healing) + "\n")
         self.statistics_label_two_text.set(str(abilities))
-        if main.set_obj.size == "big":
+        if vars.set_obj.size == "big":
             self.overlay.stats_var.set(str(damage_done) + "\n" +
                                        str(damage_taken) + "\n" +
                                        str(healing) + "\n" +
                                        str(selfdamage) + "\n" +
                                        str(spawns))
-        elif main.set_obj.size == "small":
+        elif vars.set_obj.size == "small":
             self.overlay.stats_var.set(str(damage_done) + "\n" +
                                        str(damage_taken) + "\n" +
                                        str(healing) + "\n" +
@@ -486,7 +487,7 @@ class settings_frame(ttk.Frame):
         self.overlay_size_radio_small = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "small", text = "Small")
         self.overlay_position_label = ttk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
-        self.overlay_position_var.set(main.set_obj.pos)
+        self.overlay_position_var.set(vars.set_obj.pos)
         self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TL", text =  "Top left")
         self.overlay_position_radio_bl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BL", text = "Bottom left")
         self.overlay_position_radio_tr = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
@@ -562,26 +563,27 @@ class settings_frame(ttk.Frame):
 
     def update_settings(self):
         self.path_entry.delete(0, tk.END)
-        self.path_entry.insert(0, main.set_obj.cl_path)
-        self.privacy_var.set(bool(main.set_obj.auto_ident))
+        self.path_entry.insert(0, vars.set_obj.cl_path)
+        self.privacy_var.set(bool(vars.set_obj.auto_ident))
         self.server_address_entry.delete(0, tk.END)
-        self.server_address_entry.insert(0, main.set_obj.server[0])
+        self.server_address_entry.insert(0, str(vars.set_obj.server_address))
         self.server_port_entry.delete(0, tk.END)
-        self.server_port_entry.insert(0, main.set_obj.server[1])
-        self.auto_upload_var.set(bool(main.set_obj.auto_upl))
-        self.overlay_enable_radio_var.set(bool(main.set_obj.overlay))
+        self.server_port_entry.insert(0, int(vars.set_obj.server_port))
+        self.auto_upload_var.set(bool(vars.set_obj.auto_upl))
+        self.overlay_enable_radio_var.set(bool(vars.set_obj.overlay))
         self.overlay_opacity_input.delete(0, tk.END)
-        self.overlay_opacity_input.insert(0, main.set_obj.opacity)
-        self.overlay_size_var.set(main.set_obj.size)
-        self.overlay_position_var.set(main.set_obj.pos)
+        self.overlay_opacity_input.insert(0, vars.set_obj.opacity)
+        self.overlay_size_var.set(vars.set_obj.size)
+        self.overlay_position_var.set(vars.set_obj.pos)
 
     def save_settings(self):
-        if str(self.style.get()) == main.set_obj.style:
+        print "[DEBUG] Save_settings called!"
+        if str(self.style.get()) == vars.set_obj.style:
             reboot = False
         else:
             reboot = True
-        main.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=bool(self.privacy_var.get()),
-                               server=(str(self.server_address_entry.get()), int(self.server_port_entry.get())),
+        vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=bool(self.privacy_var.get()),
+                               server_address=str(self.server_address_entry.get()), server_port=int(self.server_port_entry.get()),
                                auto_upl=bool(self.auto_upload_var.get()), overlay=bool(self.overlay_enable_radio_var.get()),
                                opacity=float(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
                                style=str(self.style.get()))
@@ -595,7 +597,7 @@ class settings_frame(ttk.Frame):
         self.update_settings()
 
     def default_settings(self):
-        main.set_obj.write_def()
+        vars.set_obj.write_def()
         self.update_settings()
 
     def show_license(self):
