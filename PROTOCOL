@@ -1,0 +1,84 @@
+# Possible servers:
+USA: BAS, BEG, HAR, SHA, JUN, EBH, PRF, JCV
+EUR: T3M, NIH, TFN, JKS, PRG, VCH, BMD, MFR, TRE
+BAS = The Bastion
+BEG = Begeren Colony
+HAR = The Harbinger
+SHA = The Shadowlands
+JUN = Jung Ma
+EBH = The Ebon Hawk
+PRF = Prophecy of the Five
+JCV = Jedi Covenant
+T3M = T3-M4
+NIH = Darth Nihilus
+TFN = The Tomb of Freedon Nadd
+JKS = Jar'Kai Sword
+PRG = The Progenitor
+VCH = Vanjervalis Chain
+BMD = Battle Meditation
+MFR = Mantle of the Force
+TRE = The Red Eclipse
+
+CLIENT: "INIT"
+SERVER: "INIT" or "BANNED" or "MAINTENANCE" or "UNAVAILABLE" or "DEPRECATED"
+CLIENT: "NEWCOM"
+
+1. CLIENT: "REALTM"
+   CLIENT: "SERVER=server"
+   CLIENT: "FACTION=fact"
+   SERVER: "READY"
+   CLIENT: "...=..."
+   1.1 CLIENT: "NAME=playername"
+       SERVER: "SAVED"
+   1.2 CLIENT: "IDNM=sha512_id"
+       SERVER: "SAVED"
+   1.3 CLIENT: "IDRQ=sha512_id"
+       SERVER: "LOOKUP"
+	   SERVER: "playername"
+	   SERVER: "READY"
+   1.4 CLIENT: "LINE=line"
+       SERVER: "ADDED"
+   1.5 CLIENT: "STOP="
+       SERVER: "NEWCOM"
+2. CLIENT: "LOGSTR"
+   CLIENT: "SERVER=server"
+   CLIENT: "FACTION=fact"
+   SERVER: "READY"
+   CLIENT: "LEN=len"
+   CLIENT: "sha512_file"
+   SERVER: "ACK"
+   CLIENT: "line, line, line"
+   SERVER: "RECV"
+3. CLIENT: "LOOKUP"
+   CLIENT: "SERVER=server"
+   CLIENT: "FACTION=fact"
+   SERVER: "READY"
+   CLIENT: "sha512_id"
+   SERVER: "LOOKUP"
+   SERVER: "playername"
+   CLIENT: "RECV"
+4. CLIENT: "KILLEDBY"
+   SERVER: "READY"
+   CLIENT: "SERVER=server"
+   CLIENT: "sha512_id"
+   SERVER: "KILLEDBY"
+   SERVER: "sha512_id"
+   CLIENT: "RECV"
+   CLIENT: "NEWCOM"
+   SERVER: "READY"
+5. CLIENT: "NAME"
+   CLIENT: "SERVER=server"
+   CLIENT: "FACT=fact"
+   SERVER: "READY"
+   CLIENT: "playername"
+   CLIENT: "sha512_id"
+   SERVER: "ACK"
+6. CLIENT: "KILLEDYS"
+   SERVER: "READY"
+   CLIENT: "SERVER=server"
+   CLIENT: "FACT=fact"
+   CLIENT: "sha512_id"
+   CLIENT: "sha512_id"
+   SERVER: "ACK"
+7. CLIENT: "STOPCN"
+   SERVER: "CLOSED"
