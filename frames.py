@@ -150,7 +150,6 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            index = 0
             for enemy in vars.enemies:
                 self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
@@ -180,7 +179,6 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            index = 0
             for enemy in vars.enemies:
                 self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
@@ -493,10 +491,12 @@ class settings_frame(ttk.Frame):
         self.overlay_position_radio_tr = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
         self.overlay_position_radio_br = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BR", text = "Bottom right")
         ### MISC ###
+        self.separator = ttk.Separator(root_frame, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
         self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
         self.default_settings_button = ttk.Button(self.save_frame, text="Defaults", command = self.default_settings)
         self.license_button = ttk.Button(self.license_frame, text="License", command=self.show_license)
+        self.privacy_button = ttk.Button(self.license_frame, text = "Privacy statement for server", command=self.show_privacy)
         self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
         self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
@@ -555,11 +555,12 @@ class settings_frame(ttk.Frame):
         self.default_settings_button.grid(column=2, row=0, padx=2)
         self.save_frame.grid(column=0, row=9, sticky=tk.W)
         self.license_button.grid(column=1,row=0,sticky=tk.W, padx=5)
+        self.privacy_button.grid(column=2,row=0,sticky=tk.W, padx=5)
         self.copyright_label.grid(column=0, row=0, sticky=tk.W)
         self.update_label.grid(column=0, row=2, sticky=tk.W)
         self.thanks_label.grid(column=0,row=1, sticky=tk.W)
-        self.license_frame.grid(column=0, row=10, sticky=tk.N+tk.S+tk.W+tk.E)
-
+        self.separator.grid(column = 0, row = 10, sticky = tk.N+tk.S+tk.W+tk.E, pady=10)
+        self.license_frame.grid(column=0, row=11, sticky=tk.N+tk.S+tk.W+tk.E)
 
     def update_settings(self):
         self.path_entry.delete(0, tk.END)
@@ -582,10 +583,10 @@ class settings_frame(ttk.Frame):
             reboot = False
         else:
             reboot = True
-        vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=bool(self.privacy_var.get()),
-                               server_address=str(self.server_address_entry.get()), server_port=int(self.server_port_entry.get()),
-                               auto_upl=bool(self.auto_upload_var.get()), overlay=bool(self.overlay_enable_radio_var.get()),
-                               opacity=float(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
+        vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=str(self.privacy_var.get()),
+                               server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
+                               auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
+                               opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
                                style=str(self.style.get()))
         print self.style.get()
         self.update_settings()
@@ -600,8 +601,9 @@ class settings_frame(ttk.Frame):
         vars.set_obj.write_def()
         self.update_settings()
 
-    def show_license(self):
+    @staticmethod
+    def show_license():
         tkMessageBox.showinfo("License", "This program is licensed under the General Public License Version 3, by GNU. See LICENSE in the installation directory for more details")
 
     def show_privacy(self):
-        pass
+        overlay.privacy(self.main_window)
