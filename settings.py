@@ -42,7 +42,7 @@ class settings:
         self.file_name = file_name
         self.conf = ConfigParser.RawConfigParser()
         vars.install_path = os.getcwd()
-        if self.file_name in os.listdir(vars.install_path):
+        if self.file_name in os.listdir(os.path.dirname(os.path.realpath(__file__))):
             self.read_set()
         else:
             self.write_def()
@@ -51,7 +51,7 @@ class settings:
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
-        os.chdir(vars.install_path)
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
         self.conf.read(self.file_name)
         self.version = self.conf.get("misc", "version")
         self.cl_path = self.conf.get("parsing", "cl_path")
@@ -80,7 +80,7 @@ class settings:
 
     # Write the defaults settings found in the class defaults to a pickle in a file
     def write_def(self):
-        os.chdir(vars.install_path)
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
             self.conf.add_section("parsing")
@@ -114,7 +114,7 @@ class settings:
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
                   style=defaults.style):
-        os.chdir(vars.install_path)
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
             self.conf.add_section("parsing")

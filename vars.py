@@ -16,7 +16,6 @@
 # match_timings is a list of datetimes
 # spawn_timings is a matrix of datetimes
 import settings
-import client
 import os
 
 FLAG = False
@@ -66,6 +65,5 @@ parse = []
 path = ""
 
 set_obj = settings.settings()
-install_path = os.getcwd()
-client_obj = client.client_conn()
+client_obj = None
 cl_path = None
