@@ -13,14 +13,17 @@ class client_conn:
         self.init_conn()
 
     def init_conn(self):
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
-        self.conn.connect(self.address)
-        if self.send("INIT") == -1: return
         self.INIT = False
-        self.BUFF = 16
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.TIME_OUT = 4
         self.conn.settimeout(self.TIME_OUT)
+        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        try:
+            self.conn.connect(self.address)
+        except socket.timeout:
+            return
+        if self.send("INIT") == -1: return
+        self.BUFF = 16
         message = self.recv(self.BUFF)
         if message == -1: return
         elif message == "INIT":
@@ -39,11 +42,10 @@ class client_conn:
             self.unexpected()
             self.close()
 
-    def get_killed(self, ID, serv, player=vars.player_numbers):
+    def get_killed(self, ID, serv, player):
         if not self.INIT:
             self.notinit()
             return
-        if self.send("NEWCOM") == -1: return
         if self.send("KILLEDBY") == -1: return
         message = self.recv(self.BUFF)
         if message == -1: return
@@ -172,6 +174,21 @@ class client_conn:
             self.unexpected()
             return
         return 0
+
+    def get_privacy(self):
+        if not self.INIT:
+            self.notinit()
+            return -1
+        if self.send("PRIVACY") == -1: return -1
+        message = self.recv(self.BUFF)
+        if message == -1: return -1
+        elements = message.split("=")
+        try:
+            length = int(elements[1])
+        except:
+            self.unexpected()
+            return -1
+        return self.recv(length)
 
     def retry(self):
         self.init_conn()
