@@ -5,7 +5,6 @@
 # UI imports
 import tkMessageBox
 # General imports
-import getpass
 import os
 import ConfigParser
 # Own modules
@@ -16,7 +15,7 @@ class defaults:
     # Version to display in settings tab
     version = "2.0.0_alpha"
     # Path to get the CombatLogs from
-    cl_path = 'C:/Users/' + getpass.getuser() + "/Documents/Star Wars - The Old Republic/CombatLogs"
+    cl_path = os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
