@@ -155,6 +155,24 @@ class client_conn:
             return
         return 0
 
+    def send_fb(self, fb):
+        if not self.INIT:
+            self.notinit()
+            return
+        if self.send("FEEDBACK") == -1: return
+        message = self.rev(self.BUFF)
+        if message == -1: return
+        elif message != "READY":
+            self.unexpected()
+            return
+        if self.send(fb) == -1: return
+        message = self.recv(self.BUFF)
+        if message == -1: return
+        elif message != "ACK":
+            self.unexpected()
+            return
+        return 0
+
     def retry(self):
         self.init_conn()
 
