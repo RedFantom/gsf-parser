@@ -122,6 +122,11 @@ class settings:
             self.conf.add_section("gui")
         except:
             pass
+        # TODO Make this setting changable without restarting
+        if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
+            tkMessageBox.showinfo("Notice", "In order to change the setting for auto uploading CombatLogs, the parser must be restarted.")
+        if str(auto_ident) != self.conf.get("parsing", "auto_ident"):
+            tkMessageBox.showinfo("Notice", "In order to change the setting for auto identifying enemies in CombatLogs, the parser must be restarted.")
         self.conf.set("misc", "version", version)
         self.conf.set("parsing", "cl_path", cl_path)
         self.conf.set("parsing", "auto_ident", auto_ident)
