@@ -5,24 +5,20 @@
 # For license see LICENSE
 
 # UI imports
-import Tkinter as tk
+import mtTkinter as tk
 import ttk
-import tkMessageBox
-import tkFileDialog
 # General imports
-import re
 import os
-import getpass
 import sys
-from datetime import datetime
 # Own modules
 import vars
-import parse
 import client
-import statistics
-import frames
 import overlay
 import main
+import threading
+import fframe
+import rtframe
+import seframe
 
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
@@ -31,6 +27,8 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.finished = False
         self.style = ttk.Style()
         self.update_style(start = True)
         self.set_icon()
@@ -42,22 +40,28 @@ class main_window(tk.Tk):
         self.default_path = vars.set_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
+        self.wm_title("GSF Parser")
         self.withdraw()
-        self.splash = overlay.splash_screen(self, boot = True)
-        self.geometry("{}x{}".format(800, 425))
-        self.wm_title("Thranta Squadron GSF Parser")
+        vars.client_obj = client.client_conn()
+        self.splash = overlay.boot_splash(self)
+        # TODO Enable connecting to the server in a later phase
+        if vars.set_obj.auto_upl or vars.set_obj.auto_ident:
+            vars.client_obj.init_conn()
+            print "[DEBUG] Connection initialized"
+        self.splash.update_progress()
+        self.geometry("800x425")
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height = 400, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = ttk.Frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
-        self.file_select_frame = frames.file_frame(self.file_tab_frame, self)
-        self.realtime_frame = frames.realtime_frame(self.realtime_tab_frame, self)
-        self.middle_frame = frames.middle_frame(self.file_tab_frame, self)
+        self.file_select_frame = fframe.file_frame(self.file_tab_frame, self)
+        self.realtime_frame = rtframe.realtime_frame(self.realtime_tab_frame, self)
+        self.middle_frame = fframe.middle_frame(self.file_tab_frame, self)
         self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 300, height = 400)
-        self.ship_frame = frames.ship_frame(self.ship_containment_frame)
-        self.settings_frame = frames.settings_frame(self.settings_tab_frame, self)
+        self.ship_frame = fframe.ship_frame(self.ship_containment_frame)
+        self.settings_frame = seframe.settings_frame(self.settings_tab_frame, self)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column = 1, row = 1, rowspan = 4, columnspan = 1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
@@ -71,17 +75,33 @@ class main_window(tk.Tk):
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text = "File parsing")
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
-        self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
+        # TODO Finish Sharing and Leaderboards tab
+        # self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
         self.notebook.add(self.settings_tab_frame, text = "Settings")
         # Update the files in the file_select frame
         self.notebook.grid(column = 0, row = 0)
         self.file_select_frame.add_files(silent = True)
         self.settings_frame.update_settings()
-        self.splash.destroy()
         # Give focus to the main window
         self.deiconify()
-        # Start the main loopw
+        print "[DEBUG] Finished"
+        self.finished = True
+        self.splash.destroy()
+        # Start the main loop
+        vars.main_window = self
         self.mainloop()
+
+    def on_close(self):
+        for obj in vars.needs_closing:
+            obj.close()
+        self.realtime_frame.parsing = False
+        try:
+            self.realtime_frame.stalker_obj.FLAG = False
+        except:
+            pass
+        self.destroy()
+        sys.exit()
+        return
 
     def update_style(self, start=False):
         if sys.platform == "win32":
@@ -104,7 +124,6 @@ class main_window(tk.Tk):
 
     def set_icon(self):
         try:
-            print os.getcwd()
-            self.iconbitmap(default=os.getcwd()+"\\icon.ico")
+            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\icon.ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"
