@@ -3,21 +3,18 @@
 # For license see LICENSE
 
 # UI imports
-import Tkinter as tk
-import ttk
 import tkMessageBox
-import tkFileDialog
 # General imports
-import re
-import glob
 import os
 import decimal
+import datetime
 # Own modules
 import vars
 import parse
 import client
 import abilities
 import parse
+import realtime
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
@@ -35,6 +32,7 @@ def check_gsf(file_name):
 # Class to calculate various statistics from files, and even folders
 class statistics:
     # Calculate the statistics for a whole folder
+    # TODO Finish folder statistics
     def folder_statistics(self):
         # Add a CombatLogs in a folder with GSF matches to a list of names
         self.file_list = []
@@ -72,7 +70,6 @@ class statistics:
         player_names = []
 
         # Start looping through the files
-        # TODO add a Toplevel window to show progress
         for name in self.file_list:
             with open(name, "r") as file_object:
                 lines = file_object.readlines()
@@ -393,6 +390,73 @@ class statistics:
 
         return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
-def pretty_event(event):
-    pass
-    # return pretty
+colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
+
+def pretty_event(line_dict, start_of_match, active_id):
+    timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
+    try:
+        delta = timing - start_of_match
+        elapsed = divmod(delta.total_seconds(), 60)
+        string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
+    except TypeError:
+        string = "ERROR" + 4*" "
+    except:
+        print "[DEBUG] An unknown error occurred while doing the delta thing"
+        return
+    if line_dict['source'] == active_id:
+        string += "You" + (11+4) * " "
+    elif line_dict['source'] == "":
+        string += "System" + (8+4) * " "
+    else:
+        string += line_dict["source"] + 4 * " "
+    if line_dict['destination'] == active_id:
+        string += "You" + (11+4) * " "
+    elif line_dict['destination'] == "":
+        string += "System" + (8 + 4) * " "
+    else:
+        string += line_dict['destination'] + "    "
+    ability = line_dict['ability'].split(' {', 1)[0].strip()
+    string += ability + (24 - len(ability)) * " "
+    if "Damage" in line_dict['effect']:
+        string += "Damage  " + line_dict['amount'].replace("\n", "")
+    elif "Heal" in line_dict['effect']:
+        string += "Heal    " + line_dict['amount'].replace("\n", "")
+    elif "AbilityActivate" in line_dict['effect']:
+        string += "AbilityActivate"
+    else:
+        return
+    vars.insert_queue.put(string)
+
+def print_event(line, start_of_match, player):
+    line_dict = realtime.line_to_dictionary(line)
+    timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
+    try:
+        delta = timing - start_of_match
+        elapsed = divmod(delta.total_seconds(), 60)
+        string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
+    except TypeError:
+        string = "ERROR" + 4*" "
+    except:
+        print "[DEBUG] An unknown error occurred while doing the delta thing"
+        return
+    if line_dict['source'] in player:
+        string += "You" + (11+4) * " "
+    elif line_dict['source'] == "":
+        string += "System" + (8+4) * " "
+    else:
+        string += line_dict["source"] + 4 * " "
+    if line_dict['destination'] in player:
+        string += "You" + (11+4) * " "
+    elif line_dict['destination'] == "":
+        string += "System" + (8 + 4) * " "
+    else:
+        string += line_dict['destination'] + "    "
+    ability = line_dict['ability'].split(' {', 1)[0].strip()
+    string += ability + (24 - len(ability)) * " "
+    if "Damage" in line_dict['effect']:
+        string += "Damage  " + line_dict['amount'].replace("\n", "")
+    elif "Heal" in line_dict['effect']:
+        string += "Heal    " + line_dict['amount'].replace("\n", "")
+    elif "AbilityActivate" in line_dict['effect']:
+        string += "AbilityActivate"
+    return string
