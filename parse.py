@@ -3,9 +3,6 @@
 # For license see LICENSE
 
 import re
-import os
-import vars
-import statistics
 from datetime import datetime
 from decimal import Decimal
 from abilities import *
@@ -36,7 +33,7 @@ def splitter(lines, playerList):
             # If the match hadn't started, it has now started and the the spawn
             # must be saved. The time of the spawn and the time the match has
             # started are also saved.
-            if matchStarted == False:
+            if not matchStarted:
                 matchStarted = True
                 # Set the currentPlayer to be either the source or the target,
                 # if the player is in the list of player ID numbers
