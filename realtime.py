@@ -6,9 +6,9 @@
 
 from decimal import Decimal
 from stalking import LogStalker
-import main
+import datetime
+import vars
 import re
-
 
 class Parser(object):
     """Parse a SWTOR combat log file. Each instance is a different
@@ -57,13 +57,18 @@ class Parser(object):
     ...         damage_done = parser.tmp_dmg_done
     """
 
-    DEBUG = True
+    DEBUG = False
 
-    def __init__(self, fname):
+
+    def __init__(self, fname, spawn_callback, match_callback, insert):
         self.fname = fname
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
+
+        self.spawn_callback = spawn_callback
+        self.match_callback = match_callback
+        self.insert = insert
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
@@ -103,11 +108,14 @@ class Parser(object):
             self.dprint("[DEBUG] out of match, skip")
             return
 
+        self.insert(line, vars.rt_timing, self.active_id)
+
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
             print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
                   sum(self.spawn_selfdmg))
+            self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
             self.spawns += 1
             self.active_id = ''
             self.dprint("[DEBUG] resetting active id")
@@ -150,6 +158,7 @@ class Parser(object):
         if not self.is_match:
             if '@' not in line['source']:
                 self.is_match = True
+                vars.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
         if self.is_match:
             if '@' in line['source']:
@@ -157,6 +166,7 @@ class Parser(object):
                     self.dprint("[DEBUG] Line with '@' but no end of match detected")
                     return
                 self.dprint("[DEBUG] end of match, resetting")
+                self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
                       sum(self.tmp_selfdmg))
@@ -179,8 +189,10 @@ class Parser(object):
                 self.tmp_selfdmg = []
                 self.tmp_abilities = {}
                 self.active_id = ''
-                self.spawns = 0
+                self.spawns = 1
                 return
+
+
 
             # Start parsing
             if 'Heal' in line['effect']:
