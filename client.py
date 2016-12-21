@@ -4,43 +4,109 @@
 
 import socket
 import vars
+import overlay
 import tkMessageBox
 import hashlib
 import threading
+import ssl
+import time
 
 class client_conn:
+    # TODO Add functionality to get leaderboards
     def __init__(self):
-        self.init_conn()
+        self.connecting = True
 
-    def init_conn(self):
+    def init_conn(self, silent=True):
         self.INIT = False
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.TIME_OUT = 4
-        self.conn.settimeout(self.TIME_OUT)
+        self.closing = False
+        if not silent:
+            print "[DEBUG] Creating conn_splash"
+            self.splash = overlay.conn_splash(window=vars.main_window)
+        self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.TIME_OUT = 4
+        self.conn_obj.settimeout(self.TIME_OUT)
+        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.conn = self.wrap_conn_obj(self.conn_obj)
         try:
             self.conn.connect(self.address)
-        except socket.timeout:
+        except ssl.SSLError as e:
+            print "[DEBUG] %s" % e
+            tkMessageBox.showerror("Error", "An encryption error occurred while connecting to the server.")
+            self.connecting = False
+            if not silent:
+                self.splash.destroy()
             return
-        if self.send("INIT") == -1: return
+        except socket.timeout:
+            tkMessageBox.showerror("Error", "A time-out occured while connecting to the server.")
+            self.connecting = False
+            if not silent:
+                self.splash.destroy()
+            return
+        except socket.error:
+            tkMessageBox.showerror("Error", "The server closed the connection.")
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
+            self.connecting = False
+            return
+        except:
+            tkMessageBox.showerror("Error", "An error occurred while connecting to the server.")
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
+            return
+        if self.send("INIT") == -1:
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
+            return
         self.BUFF = 16
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
+            return
         elif message == "INIT":
             self.INIT = True
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
             return
         elif message == "MAINTENANCE":
             self.maintenance()
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
             return
         elif message == "UNAVAILABLE":
             self.unavailable()
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
             return
         elif message == "BANNED":
             self.banned()
+            self.connecting = False
+            if not silent:
+                self.splash.FLAG = True
+                self.splash.destroy()
             return
         else:
             self.unexpected()
             self.close()
+        self.connecting = False
+        if not silent:
+            self.splash.FLAG = True
+            self.splash.destroy()
+        return
 
     def get_killed(self, ID, serv, player):
         if not self.INIT:
@@ -228,17 +294,24 @@ class client_conn:
             self.deprecated()
             self.close()
             return -1
+        elif message == "CLOSED" and not self.closing:
+            self.unexpected()
+            self.close()
+            return -1
         return message
 
     def close(self):
+        self.closing = True
         if self.send("STOPCN") == -1: return
         message = self.recv(self.BUFF)
         if message == -1: return
         elif message != "CLOSED":
             self.unexpected()
             self.conn.close()
+            self.conn_obj.close()
             return
         self.conn.close()
+        self.conn_obj.close()
         return
 
     def __exit__(self):
@@ -297,6 +370,11 @@ class client_conn:
         tkMessageBox.showerror("Error", "This IP-address is banned from this server.")
         return
 
+    @staticmethod
+    def wrap_conn_obj(sock):
+        wrapped = ssl.wrap_socket(sock)
+        return wrapped
+
 class realtime_conn(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -308,7 +386,12 @@ class realtime_conn(threading.Thread):
     def init_conn(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
-        self.conn.connect(self.address)
+        try:
+            self.conn.connect(self.address)
+        except ssl.SSLError:
+            tkMessageBox.showerror("Error", "An encryption error occurred while connecting to the server.")
+            self.INIT=False
+            return
         if self.send("INIT") == -1: return
         self.INIT = False
         self.BUFF = 16
