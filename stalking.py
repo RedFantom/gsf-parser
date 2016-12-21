@@ -58,6 +58,7 @@ class LogStalker(threading.Thread):
         """
         # self.folder = os.path.realpath(folder)
         threading.Thread.__init__(self)
+        self.FLAG = True
         self.folder = folder.replace("\n", "")
         self.extensions = extensions
         self._files_map = {}
@@ -94,7 +95,13 @@ class LogStalker(threading.Thread):
         """Start a busy loop checking for file changes every'interval' seconds.
         If 'blocking' is False make one loop and then return.
         """
-        while True:
+        while self.FLAG:
+            while self.FLAG:
+
+                if not vars.FLAG:
+                    print "[DEBUG] Closing because of vars.FLAG"
+                    self.close()
+                    return
             self.update_files()
             for fid, file in list(self._files_map.items()):
                 self.readlines(file)
