@@ -1,7 +1,12 @@
-# GSF-Parser
-A parser for Star - Wars The Old Republic: Galactic StarFighter, written by RedFantom and Daethyra
+--- Thranta Squadron GSF CombatLog Parser ---
 
-    Copyright (C) 2016  RedFantom and Daethyra
+Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra,
+Squadron Leader of Thranta Squadron. Source is available on:
+https://github.com/RedFantom/GSF-Parser
+
+This program is available under the GNU GPLv3 License:
+    Thranta Squadron GSF Parser: A parser for SWTOR:GSF
+    Copyright (C) 2016  RedFantom
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,8 +20,13 @@ A parser for Star - Wars The Old Republic: Galactic StarFighter, written by RedF
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  
+Created with:
+PyInstaller
+Inno Setup
+Tkinter
+mtTkinter
+tile-themes
 
-
-DISCLAIMER: I do not own Star Wars, Star Wars - The Old Republic or Galactic StarFighter or any related trademarks. These trademarks are property of their respective owners, and only referenced here for the clarity of the users. This program is intended for educational uses only, as the user can learn how to  play GSF better by using it. Therefore, I claim fair-use for all mentioned trade-marks.
-
-For the license under which all of the files in this repository are available, see LICENSE
+The creators of this sotware do not own Star Wars or any related trademarks. All
+trademarks are property of their respective owners.
