@@ -43,7 +43,8 @@ class LogStalker(threading.Thread):
             else:
                 print "[DEBUG] Watching: " + latest_file_name
                 self.current_file = latest_file_name
-                self.read_so_far = 0
+                with open(self.current_file, "r") as file_obj:
+                    self.read_so_far = len(file_obj.readlines())
 
     def read_from_file(self):
         del self.lines[:]
