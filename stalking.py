@@ -96,12 +96,10 @@ class LogStalker(threading.Thread):
         If 'blocking' is False make one loop and then return.
         """
         while self.FLAG:
-            while self.FLAG:
-
-                if not vars.FLAG:
-                    print "[DEBUG] Closing because of vars.FLAG"
-                    self.close()
-                    return
+            if not vars.FLAG:
+                print "[DEBUG] Closing because of vars.FLAG"
+                self.close()
+                return
             self.update_files()
             for fid, file in list(self._files_map.items()):
                 self.readlines(file)
