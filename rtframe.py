@@ -182,4 +182,6 @@ class realtime_frame(ttk.Frame):
                 print "[DEBUG] Error adding line to listbox"
         if self.parsing:
             self.main_window.after(500, self.insert)
-        self.listbox.yview(tk.END)
+            self.listbox.yview(tk.END)
+        else:
+            return
