@@ -31,8 +31,9 @@ class defaults:
     size = "big"
     # Set the corner the overlay will be displayed in
     pos = "TR"
-    # Set the defaults style
-    style = "plastik"
+    color = "darkgreen"
+    logo_color = "green"
+
 
 # Class that loads, stores and saves settings
 class settings:
@@ -71,7 +72,8 @@ class settings:
         self.opacity = float(self.conf.get("realtime", "opacity"))
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
-        self.style = self.conf.get("gui", "style")
+        self.color = self.conf.get("gui", "color")
+        self.logo_color = self.conf.get("gui", "logo_color")
         print "[DEBUG] self.pos: ", self.pos
         print "[DEBUG] self.auto_upl: ", self.auto_upl
         print "[DEBUG] Settings read"
@@ -98,7 +100,8 @@ class settings:
         self.conf.set("realtime", "opacity", defaults.opacity)
         self.conf.set("realtime", "size", defaults.size)
         self.conf.set("realtime", "pos", defaults.pos)
-        self.conf.set("gui", "style", defaults.style)
+        self.conf.set("gui", "color", defaults.color)
+        self.conf.set("gui", "logo_color", defaults.logo_color)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -112,7 +115,7 @@ class settings:
                   server_port=defaults.server_port,
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
-                  style=defaults.style):
+                  color=defaults.color, logo_color=defaults.logo_color):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -137,7 +140,8 @@ class settings:
         self.conf.set("realtime", "opacity", opacity)
         self.conf.set("realtime", "size", size)
         self.conf.set("realtime", "pos", pos)
-        self.conf.set("gui", "style", style)
+        self.conf.set("gui", "color", color)
+        self.conf.set("gui", "logo_color", logo_color)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()

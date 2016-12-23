@@ -8,6 +8,7 @@
 import mtTkinter as tk
 import ttk
 import tkMessageBox
+from PIL import Image, ImageTk
 # General imports
 import os
 # Own modules
@@ -21,7 +22,7 @@ import overlay
 class file_frame(ttk.Frame):
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
-        ttk.Frame.__init__(self, root_frame, width = 200, height = 400)
+        ttk.Frame.__init__(self, root_frame, width = 200, height = 420)
         self.main_window = main_window
         self.file_box = tk.Listbox(self)
         self.file_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL)
@@ -131,6 +132,7 @@ class file_frame(ttk.Frame):
             vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
             # Start adding the matches from the file to the listbox
             self.add_matches()
+        self.main_window.ship_frame.remove_image()
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
@@ -160,10 +162,14 @@ class file_frame(ttk.Frame):
              numbers = self.match_box.curselection()
              vars.match_timing = self.match_timing_strings[numbers[0] - 1]
              self.add_spawns()
+        self.main_window.ship_frame.remove_image()
 
     def spawn_update(self, instance):
         if self.spawn_box.curselection() == (0,):
-            match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+            try:
+                match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+            except ValueError:
+                print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
             for spawn in match:
                 vars.player_numbers.update(parse.determinePlayer(spawn))
             vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.match_statistics(match)
@@ -185,10 +191,14 @@ class file_frame(ttk.Frame):
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
+            self.main_window.ship_frame.remove_image()
         else:
             numbers = self.spawn_box.curselection()
             vars.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
-            match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+            try:
+                match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+            except ValueError:
+                print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
             spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
             vars.spawn = spawn
             vars.player_numbers = parse.determinePlayer(spawn)
@@ -210,20 +220,61 @@ class file_frame(ttk.Frame):
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.state(["!disabled"])
+            self.main_window.ship_frame.update_ship(vars.ships_list)
 
 class ship_frame(ttk.Frame):
-    # TODO Add possibility of pictures to the Ship Frame
     def __init__(self, root_frame):
-        ttk.Frame.__init__(self, root_frame, width = 300, height = 400)
+        ttk.Frame.__init__(self, root_frame, width = 300, height = 410)
         self.ship_label_var = tk.StringVar()
-        self.ship_label = ttk.Label(root_frame, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
-        self.ship_label.pack(side = tk.TOP)
+        self.ship_label_var.set("No file/match/spawn selected yet.")
+        self.ship_label = ttk.Label(self, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
+        self.ship_image = ttk.Label(self)
+
+    def grid_widgets(self):
+        print "[DEBUG] Gridding"
+        self.ship_image.grid(column = 0, row = 0, sticky =tk.N+tk.S+tk.W+tk.E)
+        self.ship_label.grid(column = 0, row = 1, sticky =tk.N+tk.S+tk.W+tk.E)
+        print "[DEBUG] Done"
+
+    def update_ship(self, ships_list):
+        print "[DEBUG] Attempting to set picture for ships"
+        if len(ships_list) > 1:
+            print "[DEBUG] Cannot set multiple images."
+            print "[DEBUG] Image file not found. Setting default."
+            try:
+                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
+            except IOError:
+                print "[DEBUG] Default image file not found. Please check your assets folder."
+            self.grid_widgets()
+            return
+        try:
+            self.ship = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\" + ships_list[0] + ".png")
+            self.ship = self.ship.resize((300, 180), Image.ANTIALIAS)
+            self.pic = ImageTk.PhotoImage(self.ship)
+        except IOError:
+            print "[DEBUG] Image file not found. Setting default."
+            try:
+                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
+            except IOError:
+                print "[DEBUG] Default image file not found. Please check your assets folder."
+            self.grid_widgets()
+            return
+        except:
+            print "[DEBUG] Error occurred while setting image."
+            self.grid_widgets()
+            return
+        self.ship_image.config(image = self.pic)
+        self.grid_widgets()
+        vars.main_window.update()
+
+    def remove_image(self):
+        self.ship_image.config(image=None)
 
 class middle_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
         self.window = main_window
-        self.notebook = ttk.Notebook(self, width = 300, height = 300)
+        self.notebook = ttk.Notebook(self, width = 300, height = 310)
         self.stats_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.stats_frame, text = "Statistics")
@@ -238,9 +289,9 @@ class middle_frame(ttk.Frame):
         self.statistics_label.setvar()
         self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
         self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
-        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 16)
-        self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 16)
-        self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 16)
+        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 17)
+        self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 17)
+        self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 17)
         self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
         self.enemies_scroll.config(command = self.enemies_scroll_yview)
         self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)

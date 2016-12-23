@@ -51,7 +51,7 @@ class main_window(tk.Tk):
         self.splash.update_progress()
         self.geometry("800x425")
         # Add a notebook widget with various tabs for the various functions
-        self.notebook = ttk.Notebook(self, height = 400, width = 800)
+        self.notebook = ttk.Notebook(self, height = 420, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = ttk.Frame(self.notebook)
@@ -59,18 +59,17 @@ class main_window(tk.Tk):
         self.file_select_frame = fframe.file_frame(self.file_tab_frame, self)
         self.realtime_frame = rtframe.realtime_frame(self.realtime_tab_frame, self)
         self.middle_frame = fframe.middle_frame(self.file_tab_frame, self)
-        self.ship_containment_frame = ttk.Frame(self.file_tab_frame, width = 300, height = 400)
-        self.ship_frame = fframe.ship_frame(self.ship_containment_frame)
+        self.ship_frame = fframe.ship_frame(self.file_tab_frame)
         self.settings_frame = seframe.settings_frame(self.settings_tab_frame, self)
         # Pack the frames and put their widgets into place
-        self.file_select_frame.grid(column = 1, row = 1, rowspan = 4, columnspan = 1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.file_select_frame.grid(column = 1, row = 1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column = 2, columnspan = 2, rowspan = 2, row = 1, sticky=tk.N+tk.S+tk.W+tk.E, padx = 5)
+        self.middle_frame.grid(column = 2, row = 1, sticky=tk.N+tk.S+tk.W+tk.E, padx = 5)
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
-        self.ship_containment_frame.grid(column =  4, columnspan = 1, row = 1, rowspan = 4, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.ship_frame.pack(side = tk.RIGHT)
+        self.ship_frame.grid(column=3, row=1, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text = "File parsing")
@@ -101,29 +100,25 @@ class main_window(tk.Tk):
             pass
         self.destroy()
         sys.exit()
-        return
 
     def update_style(self, start=False):
-        if sys.platform == "win32":
-            print self.tk.call('package', 'require', 'tile-themes')
-            self.styles = list(self.tk.call("ttk::themes"))
-            try:
-                self.style.theme_use(vars.set_obj.style)
-            except AttributeError:
-                try:
-                    self.style.theme_use("plastik")
-                    print "[DEBUG] Attribute Error: style set to plastik"
-                except:
-                    print "[DEBUG] Theme plastik is not available. Using default."
-                    self.style.theme_use("default")
-            self.style.configure('.', font=("Calibri", 10))
+        print self.tk.call('package', 'require', 'tile-themes')
+        try:
+            self.style.theme_use("plastik")
+        except:
+            print "[DEBUG] Theme plastik is not available. Using default."
+            self.style.theme_use("default")
+        self.style.configure('.', font=("Calibri", 10))
+        try:
+            self.style.configure('.', foreground=vars.set_obj.color)
+        except AttributeError:
             self.style.configure('.', foreground='#8B0000')
-            if not start:
-                self.destroy()
-                main.new_window()
+        if not start:
+            self.destroy()
+            main.new_window()
 
     def set_icon(self):
         try:
-            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\icon.ico")
+            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\icon_" + vars.set_obj.logo_color + ".ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"

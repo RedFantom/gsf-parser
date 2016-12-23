@@ -8,6 +8,8 @@
 import mtTkinter as tk
 import ttk
 import tkMessageBox
+# General imports
+import re
 # Own modules
 import vars
 import overlay
@@ -29,12 +31,21 @@ class settings_frame(ttk.Frame):
         ### GUI SETTINGS ###
         # TODO Add more GUI settings including colours
         self.gui_label = ttk.Label(root_frame, text = "GUI settings", justify=tk.LEFT)
-        self.style_label = ttk.Label(self.gui_frame, text = "\tParser style: ")
-        self.style_options = []
-        self.style = tk.StringVar()
-        self.style.set(main_window.style.theme_use())
-        for style in main_window.styles:
-            self.style_options.append(ttk.Radiobutton(self.gui_frame, value = str(style), text = style, variable = self.style))
+        self.color_label = ttk.Label(self.gui_frame, text = "\tParser text color: ")
+        self.color = tk.StringVar()
+        self.custom_color_entry = ttk.Entry(self.gui_frame, width = 10)
+        self.color_options = []
+        self.color_choices = ["darkgreen", "darkblue", "darkred", "black", "white", "custom: "]
+        for color in self.color_choices:
+            self.color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color, variable = self.color))
+        self.color.set(vars.set_obj.color)
+        self.logo_color_label = ttk.Label(self.gui_frame, text = "\tParser logo color: ")
+        self.logo_color = tk.StringVar()
+        self.logo_color_choices = ["green", "blue", "red"]
+        self.logo_color_options = []
+        self.logo_color.set(vars.set_obj.logo_color)
+        for color in self.logo_color_choices:
+            self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color, variable = self.logo_color))
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(root_frame, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = ttk.Entry(self.entry_frame, width=75)
@@ -92,11 +103,17 @@ class settings_frame(ttk.Frame):
         ### GUI SETTINGS ###
         self.gui_label.grid(column = 0, row=0, sticky=tk.W)
         self.gui_frame.grid(column = 0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.style_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.color_label.grid(column = 0, row = 0, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 0
-        for radio in self.style_options:
+        for radio in self.color_options:
             set_column += 1
             radio.grid(column=set_column, row=0,sticky=tk.N+tk.S+tk.W+tk.E)
+        self.custom_color_entry.grid(column=set_column+1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.logo_color_label.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        set_column = 0
+        for radio in self.logo_color_options:
+            set_column += 1
+            radio.grid(column=set_column, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.W)
@@ -160,19 +177,30 @@ class settings_frame(ttk.Frame):
         self.overlay_opacity_input.insert(0, vars.set_obj.opacity)
         self.overlay_size_var.set(vars.set_obj.size)
         self.overlay_position_var.set(vars.set_obj.pos)
+        self.logo_color.set(vars.set_obj.logo_color)
+        self.color.set(vars.set_obj.color)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
-        if str(self.style.get()) == vars.set_obj.style:
+        if str(self.color.get()) == vars.set_obj.color and self.logo_color.get() == vars.set_obj.logo_color:
             reboot = False
         else:
             reboot = True
+        print self.color.get()
+        if "custom" in self.color.get():
+            hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
+            print hex_color
+            if not hex_color:
+                tkMessageBox.showerror("Error", "The custom color you entered is not valid. It must be a hex color code.")
+                return
+            color = self.custom_color_entry.get()
+        else:
+            color = self.color.get()
         vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=str(self.privacy_var.get()),
                                server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
                                opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
-                               style=str(self.style.get()))
-        print self.style.get()
+                               color=color, logo_color=self.logo_color.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

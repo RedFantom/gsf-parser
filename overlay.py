@@ -65,9 +65,8 @@ class overlay(tk.Toplevel):
             elif vars.set_obj.size == "small":
                 pos_c = "+" + str(vars.screen_w - 80) + "+" + str(vars.screen_h - 60)
         else:
-            raise ValueError("vars.set_obj.pos not valid")
             self.destroy()
-            return
+            raise ValueError("vars.set_obj.pos not valid")
         self.attributes("-topmost", True)
         self.attributes("-alpha", vars.set_obj.opacity)
         self.overrideredirect(True)
@@ -78,8 +77,8 @@ class overlay(tk.Toplevel):
             self.wm_geometry("80x60" + pos_c)
             self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT)
         else:
+            self.destroy()
             raise ValueError("vars.set_obj.size is neither big nor small")
-            return
         self.stats_var = tk.StringVar()
         self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
         # self.stats_label.config(font=("Courier", 44))
@@ -116,8 +115,9 @@ class privacy(tk.Toplevel):
 class boot_splash(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
+        print vars.set_obj.logo_color
         try:
-            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\logo.png"))
+            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logo_" + vars.set_obj.logo_color + ".png"))
             self.panel = ttk.Label(self, image = self.logo)
             self.panel.pack()
         except:
@@ -129,9 +129,9 @@ class boot_splash(tk.Toplevel):
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 462, mode = "determinate")
         self.progress_bar.pack()
-        list = os.listdir(window.default_path)
+        directory = os.listdir(window.default_path)
         files = []
-        for file in list:
+        for file in directory:
             if file.endswith(".txt"):
                 files.append(file)
         vars.files_done = 0
@@ -146,11 +146,11 @@ class boot_splash(tk.Toplevel):
         self.done = False
 
     def update_progress(self):
+        print "[DEBUG] update_progress called"
         if vars.files_done != self.amount_files:
             self.label_var.set("Parsing the files...")
             self.progress_bar["value"] = vars.files_done
             self.update()
-            self.window.after(500, self.update_progress)
         else:
             return
 
