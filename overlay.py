@@ -183,7 +183,7 @@ class events_view(tk.Toplevel):
         self.resizable(width = False, height = False)
         try:
             for line in spawn:
-                self.listbox.insert(tk.END, statistics.print_event(line, vars.match_timing, player))
+                self.listbox.insert(tk.END, statistics.print_event(line, vars.spawn_timing, player))
         except TypeError:
             self.destroy()
 
