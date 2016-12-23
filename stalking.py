@@ -21,6 +21,7 @@ import stat
 import datetime
 import vars
 import threading
+import tkMessageBox
 
 
 # ===================================================================
@@ -217,6 +218,9 @@ class LogStalker(threading.Thread):
         try:
             file = self.open(fname)
             fid = self.get_file_id(os.stat(fname))
+        except IOError:
+            tkMessageBox.showerror("Error", "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
+            vars.main_window.on_close()
         except EnvironmentError as err:
             if err.errno != errno.ENOENT:
                 raise
