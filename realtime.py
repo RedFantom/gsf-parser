@@ -5,7 +5,7 @@
 # Written by Daethyra, edited by RedFantom
 
 from decimal import Decimal
-from stalking_alt import LogStalker
+from stalking import LogStalker
 import datetime
 import vars
 import re
@@ -60,7 +60,8 @@ class Parser(object):
     DEBUG = False
 
 
-    def __init__(self, spawn_callback, match_callback, insert):
+    def __init__(self, fname, spawn_callback, match_callback, insert):
+        self.fname = fname
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -96,7 +97,7 @@ class Parser(object):
         self.close()
 
     def parse(self, line, recursion=False):
-        self.dprint("\n[DEBUG] obj:")
+        self.dprint("\n[DEBUG] obj:", self.fname)
         self.dprint("[DEBUG] line", line)
 
         # If first line of the file, save the player name

@@ -11,7 +11,7 @@ import tkMessageBox
 # Own modules
 import vars
 import realtime
-import stalking_alt
+import stalking
 import overlay
 import statistics
 
@@ -30,7 +30,6 @@ class realtime_frame(ttk.Frame):
         self.upload_results_button = ttk.Button(self, text = "Start uploading events", command= self.upload_events, width = 25)
         self.server = tk.StringVar()
         self.faction = tk.StringVar()
-        self.parser = None
         self.faction_list = ttk.OptionMenu(self, self.faction,
                                            "Select a faction",
                                            "Imperial Faction",
@@ -65,7 +64,7 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path)
+            self.stalker_obj = stalking.LogStalker(self.callback, folder=vars.set_obj.cl_path)
             vars.needs_closing.append(self.stalker_obj)
             vars.FLAG = True
             self.stalker_obj.start()
@@ -84,8 +83,9 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
             vars.FLAG = False
+            self.stalker_obj.FLAG = False
             while self.stalker_obj.is_alive():
-                # print "[DEBUG] stalker_obj still running"
+                print "[DEBUG] stalker_obj still running"
                 pass
             if vars.set_obj.overlay:
                 self.overlay.destroy()
@@ -143,19 +143,19 @@ class realtime_frame(ttk.Frame):
             else:
                 raise
 
-    def callback(self, lines):
+    def callback(self, filename, lines):
         if not self.parsing:
             return
-        if not self.parser:
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, statistics.pretty_event)
+        for elem in self.parse:
+            if elem.fname is filename:
+                parser = elem
+        if not self.parse:
+            self.parser = realtime.Parser(filename, self.spawn_callback, self.match_callback, statistics.pretty_event)
+            self.parse.append(self.parser)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)
-            try:
-                self.parser.parse(process)
-            except TypeError:
-                print "[DEBUG] TypeError occurred"
-                return
+            self.parser.parse(process)
             self.dmg_done = self.parser.spawn_dmg_done
             self.dmg_taken = self.parser.spawn_dmg_taken
             self.selfdamage = self.parser.spawn_selfdmg
