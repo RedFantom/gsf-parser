@@ -29,7 +29,7 @@ def splitter(lines, playerList):
         source = elements[3]
         target = elements[5]
         # If "@" is not in source, then the ability is an in-match ability
-        if "@" not in source:
+        if("@" not in source and "@" not in target):
             # If the match hadn't started, it has now started and the the spawn
             # must be saved. The time of the spawn and the time the match has
             # started are also saved.

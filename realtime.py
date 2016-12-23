@@ -107,6 +107,9 @@ class Parser(object):
         if not self.is_match and '@' in line['source']:
             self.dprint("[DEBUG] out of match, skip")
             return
+        if not self.is_match and "@" in line['destination']:
+            self.dprint("[DEBUG] out of match, skip")
+            return
 
         self.insert(line, vars.rt_timing, self.active_id)
 
