@@ -70,11 +70,9 @@ client_obj = None
 main_window = None
 cl_path = None
 
-spawn_timings = None
+spawn_timing = None
 spawn_index = None
 spawn = None
-match_timing = None
-match_timings = None
 rt_timing = None
 
 needs_closing = []
