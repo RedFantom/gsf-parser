@@ -146,7 +146,6 @@ class boot_splash(tk.Toplevel):
         self.done = False
 
     def update_progress(self):
-        print "[DEBUG] update_progress called"
         if vars.files_done != self.amount_files:
             self.label_var.set("Parsing the files...")
             self.progress_bar["value"] = vars.files_done
