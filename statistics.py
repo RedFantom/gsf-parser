@@ -408,13 +408,13 @@ def pretty_event(line_dict, start_of_match, active_id):
     elif line_dict['source'] == "":
         string += "System" + (8+4) * " "
     else:
-        string += line_dict["source"] + 4 * " "
+        string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] == active_id:
         string += "You" + (11+4) * " "
     elif line_dict['destination'] == "":
         string += "System" + (8 + 4) * " "
     else:
-        string += line_dict['destination'] + "    "
+        string += line_dict["destination"] + (4 + 14 - len(line_dict['destination'])) * " "
     ability = line_dict['ability'].split(' {', 1)[0].strip()
     string += ability + (24 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
@@ -430,6 +430,7 @@ def pretty_event(line_dict, start_of_match, active_id):
 def print_event(line, start_of_match, player):
     line_dict = realtime.line_to_dictionary(line)
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
+    start_of_match = datetime.datetime.strptime(start_of_match, "%H:%M:%S")
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -444,13 +445,13 @@ def print_event(line, start_of_match, player):
     elif line_dict['source'] == "":
         string += "System" + (8+4) * " "
     else:
-        string += line_dict["source"] + 4 * " "
+        string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] in player:
         string += "You" + (11+4) * " "
     elif line_dict['destination'] == "":
         string += "System" + (8 + 4) * " "
     else:
-        string += line_dict['destination'] + "    "
+        string += line_dict["destination"] + (4 + 14 - len(line_dict['destination'])) * " "
     ability = line_dict['ability'].split(' {', 1)[0].strip()
     string += ability + (24 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
