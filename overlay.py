@@ -157,6 +157,7 @@ class boot_splash(tk.Toplevel):
 class conn_splash(tk.Toplevel):
     def __init__(self, window=vars.main_window):
         tk.Toplevel.__init__(self, window)
+        self.window = window
         self.FLAG = False
         self.label = ttk.Label(self, text = "Connecting to specified server...")
         self.label.pack()
