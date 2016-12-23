@@ -14,7 +14,7 @@ class LogStalker(threading.Thread):
         self.folder = folder
         print self.folder
         if not callback:
-            raise
+            raise ValueError("callback is not allowed to be None")
         self.callback = callback
         self.list_of_files = os.listdir(self.folder)
         self.current_file = None

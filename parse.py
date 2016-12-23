@@ -96,12 +96,15 @@ def splitter(lines, playerList):
         else:
             # If the previous line was a match-line and the next line is a match line,
             # The match continues and the line gets skipped altogether
-            if(not "@" in re.split(r"[\[\]]", lines[index -1])[3] and
-               not "@" in re.split(r"[\[\]]", lines[index + 1])[3] and
-               not "Safe Login" in re.split(r"[\[\]]", line)[7]):
-               continue
+            try:
+                if(not "@" in re.split(r"[\[\]]", lines[index -1])[3] and
+                   not "@" in re.split(r"[\[\]]", lines[index + 1])[3] and
+                   not "Safe Login" in re.split(r"[\[\]]", line)[7]):
+                        continue
+            except IndexError:
+                continue
             # If a match had started, then now it has ended
-            if matchStarted == True:
+            if matchStarted:
                 # End of the match
                 matchStarted = False
                 match.append(spawn)
