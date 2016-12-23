@@ -91,13 +91,7 @@ class main_window(tk.Tk):
         self.mainloop()
 
     def on_close(self):
-        for obj in vars.needs_closing:
-            obj.close()
-        self.realtime_frame.parsing = False
-        try:
-            self.realtime_frame.stalker_obj.FLAG = False
-        except:
-            pass
+        vars.FLAG = False
         self.destroy()
         sys.exit()
 
