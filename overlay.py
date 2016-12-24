@@ -89,8 +89,6 @@ class overlay(tk.Toplevel):
         self.configure(background = "white")
         self.wm_attributes("-transparentcolor", "white")
 
-    colors = ["white", "blue", "black", "green", "yellow", "red"]
-
 class privacy(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
@@ -183,7 +181,9 @@ class events_view(tk.Toplevel):
         self.resizable(width = False, height = False)
         try:
             for line in spawn:
-                self.listbox.insert(tk.END, statistics.print_event(line, vars.spawn_timing, player))
+                event = statistics.print_event(line, vars.spawn_timing, player)
+                if event is not None:
+                    self.listbox.insert(tk.END, event)
         except TypeError:
             self.destroy()
 

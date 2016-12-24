@@ -81,6 +81,7 @@ class Parser(object):
         self.spawn_healing_rcvd, self.spawn_selfdmg = [], []
 
         self.active_id = ''
+        self.active_ids = []
 
         self.hold = 0
         self.hold_list = []
@@ -135,6 +136,8 @@ class Parser(object):
         if line['source'] == line['destination']:
             self.dprint("[DEBUG] setting active id")
             self.active_id = line['source']
+            if self.active_id not in self.active_ids:
+                self.active_ids.append(self.active_id)
 
         self.dprint("[DEBUG] active id \'", self.active_id, "\'")
 
@@ -195,6 +198,7 @@ class Parser(object):
                 self.tmp_abilities = {}
                 self.active_id = ''
                 self.spawns = 1
+                self.active_ids = []
                 return
 
 

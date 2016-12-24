@@ -163,8 +163,8 @@ class realtime_frame(ttk.Frame):
             self.selfdamage = self.parser.spawn_selfdmg
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
-            self.spawns = self.parser.spawns
-            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, self.spawns)
+            self.spawns = self.parser.active_ids
+            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, len(self.spawns))
         for obj in self.parse:
             obj.close()
 
