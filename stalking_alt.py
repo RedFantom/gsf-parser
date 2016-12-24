@@ -6,6 +6,7 @@
 import os
 import vars
 import threading
+import time
 from datetime import datetime
 
 class LogStalker(threading.Thread):
@@ -45,6 +46,7 @@ class LogStalker(threading.Thread):
                 self.current_file = latest_file_name
                 with open(self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
+            time.sleep(0.1)
 
     def read_from_file(self):
         del self.lines[:]
