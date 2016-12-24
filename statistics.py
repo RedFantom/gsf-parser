@@ -416,6 +416,8 @@ def pretty_event(line_dict, start_of_match, active_id):
     else:
         string += line_dict["destination"] + (4 + 14 - len(line_dict['destination'])) * " "
     ability = line_dict['ability'].split(' {', 1)[0].strip()
+    if ability == "":
+        return
     string += ability + (24 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
@@ -453,6 +455,8 @@ def print_event(line, start_of_match, player):
     else:
         string += line_dict["destination"] + (4 + 14 - len(line_dict['destination'])) * " "
     ability = line_dict['ability'].split(' {', 1)[0].strip()
+    if ability == "":
+        return None
     string += ability + (24 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
