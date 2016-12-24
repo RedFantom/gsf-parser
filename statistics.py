@@ -399,7 +399,7 @@ def pretty_event(line_dict, start_of_match, active_id):
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     except TypeError:
-        string = "ERROR" + 4*" "
+        string = "00:00" + 4*" "
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
