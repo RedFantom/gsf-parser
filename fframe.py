@@ -234,17 +234,19 @@ class ship_frame(ttk.Frame):
         print "[DEBUG] Gridding"
         self.ship_image.grid(column = 0, row = 0, sticky =tk.N+tk.S+tk.W+tk.E)
         self.ship_label.grid(column = 0, row = 1, sticky =tk.N+tk.S+tk.W+tk.E)
+        self.remove_image()
         print "[DEBUG] Done"
 
     def update_ship(self, ships_list):
+        self.ship_image.config(image=None)
         print "[DEBUG] Attempting to set picture for ships"
         if len(ships_list) > 1:
             print "[DEBUG] Cannot set multiple images."
-            print "[DEBUG] Image file not found. Setting default."
             try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
+                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300, 180), Image.ANTIALIAS))
             except IOError:
                 print "[DEBUG] Default image file not found. Please check your assets folder."
+                return
             self.grid_widgets()
             return
         try:
@@ -254,9 +256,10 @@ class ship_frame(ttk.Frame):
         except IOError:
             print "[DEBUG] Image file not found. Setting default."
             try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
+                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300, 180), Image.ANTIALIAS))
             except IOError:
                 print "[DEBUG] Default image file not found. Please check your assets folder."
+                return
             self.grid_widgets()
             return
         except:
@@ -268,7 +271,12 @@ class ship_frame(ttk.Frame):
         vars.main_window.update()
 
     def remove_image(self):
-        self.ship_image.config(image=None)
+        try:
+            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300,180),Image.ANTIALIAS))
+        except IOError:
+            print "[DEBUG] default.png can not be opened."
+            return
+        self.ship_image.config(image=self.pic)
 
 class middle_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
