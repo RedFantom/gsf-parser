@@ -5,7 +5,7 @@
 # For license see LICENSE
 
 # UI imports
-import mtTkinter as tk
+import Tkinter as tk
 import ttk
 import tkMessageBox
 # Own modules

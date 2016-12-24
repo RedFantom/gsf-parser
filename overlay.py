@@ -3,7 +3,7 @@
 # For license see LICENSE
 
 # UI imports
-import mtTkinter as tk
+import Tkinter as tk
 from PIL import ImageTk, Image
 import ttk
 import tkMessageBox
