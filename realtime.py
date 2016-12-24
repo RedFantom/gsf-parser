@@ -60,13 +60,14 @@ class Parser(object):
     DEBUG = False
 
 
-    def __init__(self, spawn_callback, match_callback, insert):
+    def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
 
         self.spawn_callback = spawn_callback
         self.match_callback = match_callback
+        self.new_match_callback = new_match_callback
         self.insert = insert
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
@@ -154,12 +155,14 @@ class Parser(object):
             self.dprint("[DEBUG] caught up")
             return
 
+
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
         if not self.is_match:
             if '@' not in line['source']:
                 self.is_match = True
+                self.new_match_callback()
                 vars.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
         if self.is_match:

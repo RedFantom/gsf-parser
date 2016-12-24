@@ -8,6 +8,8 @@
 import Tkinter as tk
 import ttk
 import tkMessageBox
+# General imports
+import time
 # Own modules
 import vars
 import realtime
@@ -147,7 +149,7 @@ class realtime_frame(ttk.Frame):
         if not self.parsing:
             return
         if not self.parser:
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, statistics.pretty_event)
+            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback, statistics.pretty_event)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)
@@ -174,10 +176,15 @@ class realtime_frame(ttk.Frame):
     def match_callback(dd, dt, hr, sd):
         vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
 
+    def new_match_callback(self):
+        self.listbox.delete(0, tk.END)
+        self.parser.rt_timing = None
+
     def insert(self):
         while vars.insert_queue.qsize():
             try:
                 self.listbox.insert(tk.END, vars.insert_queue.get())
+                time.sleep(0.1)
             except:
                 print "[DEBUG] Error adding line to listbox"
         if self.parsing:
