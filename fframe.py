@@ -239,37 +239,34 @@ class ship_frame(ttk.Frame):
         print "[DEBUG] Done"
 
     def update_ship(self, ships_list):
-        self.ship_image.config(image=None)
-        print "[DEBUG] Attempting to set picture for ships"
         if len(ships_list) > 1:
-            print "[DEBUG] Cannot set multiple images."
+            print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300, 180), Image.ANTIALIAS))
+                self.set_image(os.path.dirname(__file__) + "\\assets\\default.png")
             except IOError:
-                print "[DEBUG] Default image file not found. Please check your assets folder."
+                print "[DEBUG] File not found."
+                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
-            self.grid_widgets()
-            return
+        elif len(ships_list) == 0:
+            raise ValueError("Ships_list == 0")
+        else:
+            print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
+            try:
+                self.set_image(os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png")
+            except IOError:
+                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png"
+                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
+                return
+        return
+
+    def set_image(self, file):
         try:
-            self.ship = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\" + ships_list[0] + ".png")
-            self.ship = self.ship.resize((300, 180), Image.ANTIALIAS)
-            self.pic = ImageTk.PhotoImage(self.ship)
+            self.img = Image.open(file)
+            self.img = self.img.resize((300,180), Image.ANTIALIAS)
+            self.pic = ImageTk.PhotoImage(self.img)
+            self.ship_image.config(image=self.pic)
         except IOError:
-            print "[DEBUG] Image file not found. Setting default."
-            try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300, 180), Image.ANTIALIAS))
-            except IOError:
-                print "[DEBUG] Default image file not found. Please check your assets folder."
-                return
-            self.grid_widgets()
-            return
-        except:
-            print "[DEBUG] Error occurred while setting image."
-            self.grid_widgets()
-            return
-        self.ship_image.config(image = self.pic)
-        self.grid_widgets()
-        vars.main_window.update()
+            raise IOError
 
     def remove_image(self):
         try:
