@@ -15,7 +15,6 @@ import vars
 import client
 import overlay
 import main
-import threading
 import fframe
 import rtframe
 import seframe
@@ -83,7 +82,6 @@ class main_window(tk.Tk):
         self.settings_frame.update_settings()
         # Give focus to the main window
         self.deiconify()
-        print "[DEBUG] Finished"
         self.finished = True
         self.splash.destroy()
         # Start the main loop
