@@ -424,7 +424,7 @@ def pretty_event(line_dict, start_of_match, active_id):
     ability = line_dict['ability'].split(' {', 1)[0].strip()
     if ability == "":
         return
-    string += ability + (24 - len(ability)) * " "
+    string += ability + (26 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
     elif "Heal" in line_dict['effect']:
