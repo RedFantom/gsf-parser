@@ -68,7 +68,6 @@ class realtime_frame(ttk.Frame):
             self.parsing = True
             self.main_window.after(100, self.insert)
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path)
-            vars.needs_closing.append(self.stalker_obj)
             vars.FLAG = True
             self.stalker_obj.start()
             if vars.set_obj.overlay:
