@@ -84,10 +84,10 @@ class overlay(tk.Toplevel):
         # self.stats_label.config(font=("Courier", 44))
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
-        self.stats_label.configure(background = "white", font = ("Calibri", 10), foreground = "yellow")
-        self.text_label.configure(background = "white", font = ("Calibri", 10), foreground = "yellow")
-        self.configure(background = "white")
-        self.wm_attributes("-transparentcolor", "white")
+        self.stats_label.configure(background = vars.set_obj.overlay_bg_color, font = ("Calibri", 10), foreground = vars.set_obj.overlay_tx_color)
+        self.text_label.configure(background = vars.set_obj.overlay_bg_color, font = ("Calibri", 10), foreground = vars.set_obj.overlay_tx_color)
+        self.configure(background = vars.set_obj.overlay_bg_color)
+        self.wm_attributes("-transparentcolor", vars.set_obj.overlay_tr_color)
 
 class privacy(tk.Toplevel):
     def __init__(self, window):
