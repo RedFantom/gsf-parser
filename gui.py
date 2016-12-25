@@ -94,7 +94,10 @@ class main_window(tk.Tk):
         sys.exit()
 
     def update_style(self, start=False):
-        print self.tk.call('package', 'require', 'tile-themes')
+        try:
+            print self.tk.call('package', 'require', 'tile-themes')
+        except:
+            print "[DEBUG] tile-themes is not available"
         try:
             self.style.theme_use("plastik")
         except:
