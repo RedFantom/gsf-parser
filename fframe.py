@@ -5,7 +5,7 @@
 # For license see LICENSE
 
 # UI imports
-import mtTkinter as tk
+import Tkinter as tk
 import ttk
 import tkMessageBox
 from PIL import Image, ImageTk
@@ -136,6 +136,7 @@ class file_frame(ttk.Frame):
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
+            self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
             vars.match_timing = self.match_timing_strings[numbers[0] - 1]
             file_cube = vars.file_cube
@@ -234,41 +235,46 @@ class ship_frame(ttk.Frame):
         print "[DEBUG] Gridding"
         self.ship_image.grid(column = 0, row = 0, sticky =tk.N+tk.S+tk.W+tk.E)
         self.ship_label.grid(column = 0, row = 1, sticky =tk.N+tk.S+tk.W+tk.E)
+        self.remove_image()
         print "[DEBUG] Done"
 
     def update_ship(self, ships_list):
-        print "[DEBUG] Attempting to set picture for ships"
         if len(ships_list) > 1:
-            print "[DEBUG] Cannot set multiple images."
-            print "[DEBUG] Image file not found. Setting default."
+            print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
+                self.set_image(os.path.dirname(__file__) + "\\assets\\default.png")
             except IOError:
-                print "[DEBUG] Default image file not found. Please check your assets folder."
-            self.grid_widgets()
-            return
+                print "[DEBUG] File not found."
+                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
+                return
+        elif len(ships_list) == 0:
+            raise ValueError("Ships_list == 0")
+        else:
+            print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
+            try:
+                self.set_image(os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png")
+            except IOError:
+                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png"
+                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
+                return
+        return
+
+    def set_image(self, file):
         try:
-            self.ship = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\" + ships_list[0] + ".png")
-            self.ship = self.ship.resize((300, 180), Image.ANTIALIAS)
-            self.pic = ImageTk.PhotoImage(self.ship)
+            self.img = Image.open(file)
+            self.img = self.img.resize((300,180), Image.ANTIALIAS)
+            self.pic = ImageTk.PhotoImage(self.img)
+            self.ship_image.config(image=self.pic)
         except IOError:
-            print "[DEBUG] Image file not found. Setting default."
-            try:
-                self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\Mangler.png").resize((300, 180), Image.ANTIALIAS))
-            except IOError:
-                print "[DEBUG] Default image file not found. Please check your assets folder."
-            self.grid_widgets()
-            return
-        except:
-            print "[DEBUG] Error occurred while setting image."
-            self.grid_widgets()
-            return
-        self.ship_image.config(image = self.pic)
-        self.grid_widgets()
-        vars.main_window.update()
+            raise IOError
 
     def remove_image(self):
-        self.ship_image.config(image=None)
+        try:
+            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300,180),Image.ANTIALIAS))
+        except IOError:
+            print "[DEBUG] default.png can not be opened."
+            return
+        self.ship_image.config(image=self.pic)
 
 class middle_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
@@ -282,7 +288,7 @@ class middle_frame(ttk.Frame):
         self.events_frame = ttk.Frame(self, width = 300)
         self.events_button = ttk.Button(self.events_frame, text = "Show events for spawn", command=self.show_events, state=tk.DISABLED, width = 43)
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\n"
+        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
         self.statistics_label_var.set(string)
         self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()

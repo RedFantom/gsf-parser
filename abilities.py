@@ -73,7 +73,7 @@ shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair 
 legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
                    "Proton Torpedo", "Concussion Missile", "Seeker Mine",
                    "Shield Power Converter", "Interdiction Drive",
-                   "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone",
+                   "Railgun", "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone", # Railgun = Railgun Sentry Drone
                    "Shield Projector", "Repair Drone", "Overcharged Shield"]
 razorwireAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
                       "Seismic Mine", "Proton Torpedo", "Seeker Mine",

@@ -5,7 +5,7 @@
 # For license see LICENSE
 
 # UI imports
-import mtTkinter as tk
+import Tkinter as tk
 import ttk
 # General imports
 import os
@@ -15,7 +15,6 @@ import vars
 import client
 import overlay
 import main
-import threading
 import fframe
 import rtframe
 import seframe
@@ -83,7 +82,6 @@ class main_window(tk.Tk):
         self.settings_frame.update_settings()
         # Give focus to the main window
         self.deiconify()
-        print "[DEBUG] Finished"
         self.finished = True
         self.splash.destroy()
         # Start the main loop
@@ -91,18 +89,15 @@ class main_window(tk.Tk):
         self.mainloop()
 
     def on_close(self):
-        for obj in vars.needs_closing:
-            obj.close()
-        self.realtime_frame.parsing = False
-        try:
-            self.realtime_frame.stalker_obj.FLAG = False
-        except:
-            pass
+        vars.FLAG = False
         self.destroy()
         sys.exit()
 
     def update_style(self, start=False):
-        print self.tk.call('package', 'require', 'tile-themes')
+        try:
+            print self.tk.call('package', 'require', 'tile-themes')
+        except:
+            print "[DEBUG] tile-themes is not available"
         try:
             self.style.theme_use("plastik")
         except:

@@ -33,7 +33,9 @@ class defaults:
     pos = "TR"
     color = "darkgreen"
     logo_color = "green"
-
+    overlay_bg_color = "white"
+    overlay_tr_color = "white"
+    overlay_tx_color = "yellow"
 
 # Class that loads, stores and saves settings
 class settings:
@@ -69,6 +71,9 @@ class settings:
             self.overlay = True
         else:
             self.overlay = False
+        self.overlay_bg_color = self.conf.get("realtime", "overlay_bg_color")
+        self.overlay_tr_color = self.conf.get("realtime", "overlay_tr_color")
+        self.overlay_tx_color = self.conf.get("realtime", "overlay_tx_color")
         self.opacity = float(self.conf.get("realtime", "opacity"))
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
@@ -100,6 +105,9 @@ class settings:
         self.conf.set("realtime", "opacity", defaults.opacity)
         self.conf.set("realtime", "size", defaults.size)
         self.conf.set("realtime", "pos", defaults.pos)
+        self.conf.set("realtime", "overlay_bg_color", defaults.overlay_bg_color)
+        self.conf.set("realtime", "overlay_tx_color", defaults.overlay_tx_color)
+        self.conf.set("realtime", "overlay_tr_color", defaults.overlay_tr_color)
         self.conf.set("gui", "color", defaults.color)
         self.conf.set("gui", "logo_color", defaults.logo_color)
         with open(self.file_name, "w") as settings_file_object:
@@ -115,7 +123,9 @@ class settings:
                   server_port=defaults.server_port,
                   auto_upl=defaults.auto_upl, overlay=defaults.overlay,
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
-                  color=defaults.color, logo_color=defaults.logo_color):
+                  color=defaults.color, logo_color=defaults.logo_color,
+                  bg_color=defaults.overlay_bg_color, tx_color=defaults.overlay_tx_color,
+                  tr_color=defaults.overlay_tr_color):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -140,6 +150,9 @@ class settings:
         self.conf.set("realtime", "opacity", opacity)
         self.conf.set("realtime", "size", size)
         self.conf.set("realtime", "pos", pos)
+        self.conf.set("realtime", "overlay_bg_color", bg_color)
+        self.conf.set("realtime", "overlay_tx_color", tx_color)
+        self.conf.set("realtime", "overlay_tr_color", tr_color)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         with open(self.file_name, "w") as settings_file_object:

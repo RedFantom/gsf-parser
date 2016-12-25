@@ -60,14 +60,15 @@ class Parser(object):
     DEBUG = False
 
 
-    def __init__(self, fname, spawn_callback, match_callback, insert):
-        self.fname = fname
+
+    def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
 
         self.spawn_callback = spawn_callback
         self.match_callback = match_callback
+        self.new_match_callback = new_match_callback
         self.insert = insert
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
@@ -81,6 +82,7 @@ class Parser(object):
         self.spawn_healing_rcvd, self.spawn_selfdmg = [], []
 
         self.active_id = ''
+        self.active_ids = []
 
         self.hold = 0
         self.hold_list = []
@@ -97,7 +99,6 @@ class Parser(object):
         self.close()
 
     def parse(self, line, recursion=False):
-        self.dprint("\n[DEBUG] obj:", self.fname)
         self.dprint("[DEBUG] line", line)
 
         # If first line of the file, save the player name
@@ -135,6 +136,8 @@ class Parser(object):
         if line['source'] == line['destination']:
             self.dprint("[DEBUG] setting active id")
             self.active_id = line['source']
+            if self.active_id not in self.active_ids:
+                self.active_ids.append(self.active_id)
 
         self.dprint("[DEBUG] active id \'", self.active_id, "\'")
 
@@ -155,12 +158,14 @@ class Parser(object):
             self.dprint("[DEBUG] caught up")
             return
 
+
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
         if not self.is_match:
             if '@' not in line['source']:
                 self.is_match = True
+                self.new_match_callback()
                 vars.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
         if self.is_match:
@@ -193,6 +198,7 @@ class Parser(object):
                 self.tmp_abilities = {}
                 self.active_id = ''
                 self.spawns = 1
+                self.active_ids = []
                 return
 
 

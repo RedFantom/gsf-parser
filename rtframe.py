@@ -5,13 +5,15 @@
 # For license see LICENSE
 
 # UI imports
-import mtTkinter as tk
+import Tkinter as tk
 import ttk
 import tkMessageBox
+# General imports
+import time
 # Own modules
 import vars
 import realtime
-import stalking
+import stalking_alt
 import overlay
 import statistics
 
@@ -64,8 +66,7 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking.LogStalker(self.callback, folder=vars.set_obj.cl_path)
-            vars.needs_closing.append(self.stalker_obj)
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path)
             vars.FLAG = True
             self.stalker_obj.start()
             if vars.set_obj.overlay:
@@ -146,12 +147,8 @@ class realtime_frame(ttk.Frame):
     def callback(self, filename, lines):
         if not self.parsing:
             return
-        for elem in self.parse:
-            if elem.fname is filename:
-                parser = elem
-        if not self.parse:
-            self.parser = realtime.Parser(filename, self.spawn_callback, self.match_callback, statistics.pretty_event)
-            self.parse.append(self.parser)
+        if not self.parser:
+            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback, statistics.pretty_event)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)
@@ -161,8 +158,8 @@ class realtime_frame(ttk.Frame):
             self.selfdamage = self.parser.spawn_selfdmg
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
-            self.spawns = self.parser.spawns
-            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, self.spawns)
+            self.spawns = self.parser.active_ids
+            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, len(self.spawns))
         for obj in self.parse:
             obj.close()
 
@@ -174,10 +171,15 @@ class realtime_frame(ttk.Frame):
     def match_callback(dd, dt, hr, sd):
         vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
 
+    def new_match_callback(self):
+        self.listbox.delete(0, tk.END)
+        self.parser.rt_timing = None
+
     def insert(self):
         while vars.insert_queue.qsize():
             try:
                 self.listbox.insert(tk.END, vars.insert_queue.get())
+                time.sleep(0.1)
             except:
                 print "[DEBUG] Error adding line to listbox"
         if self.parsing:
