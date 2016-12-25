@@ -36,7 +36,6 @@ enemydamaget            = None
 match_timings           = None
 spawn_timings           = None
 enemies_names           = None
-
 deaths                  = None
 
 file_cube              = None
@@ -44,9 +43,7 @@ player_numbers         = {}
 player_name            = None
 
 file_name = None
-match_timing = None
 user_name = None
-
 statisticsfile = False
 
 abilities_string = None
@@ -65,16 +62,17 @@ auto_upload = None
 parse = []
 path = ""
 
-set_obj = settings.settings()
 client_obj = None
 main_window = None
 cl_path = None
 
+match_timing = None
+match_timing_end = None
 spawn_timing = None
+spawn_timing_end = None
 spawn_index = None
 spawn = None
 rt_timing = None
 
-needs_closing = []
-
 insert_queue = Queue.Queue()
+set_obj = settings.settings()

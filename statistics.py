@@ -259,11 +259,8 @@ class statistics:
 
         return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
 
-    def match_statistics(self, match):
-        # match needs to be a matrix containing strings with each list being a spawn
-        total_ddealt = 0
-        total_dtaken = 0
-
+    @staticmethod
+    def match_statistics(match):
         total_abilitiesdict = {}
         total_damagetaken = 0
         total_damagedealt = 0
@@ -277,7 +274,7 @@ class statistics:
         total_enemydamaget = {}
         total_killsassists = 0
         ships_uncounted = 0
-
+        abilities_string = ""
         for spawn in match:
             (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
              criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
@@ -300,8 +297,6 @@ class statistics:
                     total_enemydamaget[key] += value
                 else:
                     total_enemydamaget[key] = value
-            abilities_string = ""
-            statistics_string = ""
             events_string = "Events is not available for a whole match"
             if len(ships_list) != 1:
                 ships_uncounted += 1
@@ -321,13 +316,21 @@ class statistics:
             total_criticalluck = round(total_criticalluck * 100, 2)
         except ZeroDivisionError:
             total_criticalluck = 0
+        delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1])['time'][:-4].strip(), "%H:%M:%S") - datetime.datetime.strptime(vars.match_timing.strip(), "%H:%M:%S")
+        elapsed = divmod(delta.total_seconds(), 60)
+        string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
+        try:
+            dps = round(total_damagedealt / delta.total_seconds(), 1)
+        except ZeroDivisionError:
+            dps = 0
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
-                             str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n")
+                             str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n" + string + "\n" + str(dps))
         return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
 
-    def spawn_statistics(self, spawn):
+    @staticmethod
+    def spawn_statistics(spawn):
         (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
          criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
         killsassists = 0
@@ -336,13 +339,8 @@ class statistics:
                 killsassists += 1
         abilities_string = ""
         events_string = ""
-        enemies_string = ""
-        statistics_string = ""
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
-        events = []
-        for event in reversed(spawn):
-            pass
         for key in abilitiesdict:
             abilities_string += key + "\n"
             if key in abilities.components:
@@ -382,11 +380,19 @@ class statistics:
             del comps[comps.index("Shield")]
         if "System" in comps:
             del comps[comps.index("System")]
-
+        last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) -1])
+        timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
+        delta = timing - datetime.datetime.strptime(vars.spawn_timing.strip(), "%H:%M:%S")
+        elapsed = divmod(delta.total_seconds(), 60)
+        string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
+        try:
+            dps = round(damagedealt / delta.total_seconds(), 1)
+        except ZeroDivisionError:
+            dps = 0
         statistics_string = (str(killsassists) + " enemies"+ "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
-                             str(criticalluck) + "%" + "\n" + "-\n")
+                             str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
 
         return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
