@@ -136,9 +136,9 @@ class file_frame(ttk.Frame):
 
     def match_update(self, instance):
         if self.match_box.curselection() == (0,):
+            self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
             vars.match_timing = self.match_timing_strings[numbers[0] - 1]
-            vars.match_timing_end = self.match_timing_strings[numbers[0]]
             file_cube = vars.file_cube
             vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget, vars.uncounted = self.statistics_object.file_statistics(file_cube)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
@@ -162,10 +162,6 @@ class file_frame(ttk.Frame):
         else:
              numbers = self.match_box.curselection()
              vars.match_timing = self.match_timing_strings[numbers[0] - 1]
-             try:
-                vars.match_timing_end = self.match_timing_strings[numbers[0]]
-             except IndexError:
-                 print "[DEBUG] List index out of range: ", numbers[0]
              self.add_spawns()
         self.main_window.ship_frame.remove_image()
 
