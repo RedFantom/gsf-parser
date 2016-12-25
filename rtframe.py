@@ -20,11 +20,12 @@ import statistics
 class realtime_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
+        self.parser = None
         self.main_window = main_window
         self.listbox = tk.Listbox(self, width = 105, height = 15)
         self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview())
         self.listbox.config(yscrollcommand=self.scrollbar.set, font = ("Consolas", 10))
-        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:")
+        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nSpawns:")
         self.statistics_list_label_two = ttk.Label(self, justify = tk.LEFT, text = "Abilities:")
         self.statistics_label_one_text = tk.StringVar()
         self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
@@ -128,7 +129,8 @@ class realtime_frame(ttk.Frame):
         self.statistics_label_one_text.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(selfdamage) + "\n" +
-                                           str(healing) + "\n")
+                                           str(healing) + "\n" +
+                                           str(spawns))
         if vars.set_obj.overlay:
             if vars.set_obj.size == "big":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
@@ -144,7 +146,7 @@ class realtime_frame(ttk.Frame):
             else:
                 raise
 
-    def callback(self, filename, lines):
+    def callback(self, lines):
         if not self.parsing:
             return
         if not self.parser:
