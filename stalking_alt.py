@@ -33,7 +33,7 @@ class LogStalker(threading.Thread):
                 try:
                     self.datetime_dict[datetime.strptime(name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")] = name
                 except ValueError:
-                    print "[DEBUG] File name can't be parsed. Skipping..."
+                    continue
             temp_datetime_list = []
             for (key, value) in self.datetime_dict.iteritems():
                 temp_datetime_list.append(key)
