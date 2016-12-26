@@ -316,6 +316,8 @@ class middle_frame(ttk.Frame):
         self.notebook.add(self.abilities_scrollable_frame, text = "Abilities")
         self.abilities_label_var = tk.StringVar()
         self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var, justify = tk.LEFT, wraplength = 295)
+        self.notice_label = ttk.Label(self.stats_frame, text = "\n\n\n\nThe damage dealt for bombers can not be accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
+                                      justify = tk.LEFT, wraplength = 290)
 
     def show_events(self):
         self.toplevel = overlay.events_view(self.window, vars.spawn, vars.player_numbers)
@@ -353,6 +355,7 @@ class middle_frame(ttk.Frame):
         self.events_button.grid(column = 0, row = 1,sticky=tk.N+tk.W+tk.S+tk.E, columnspan = 4)
         self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.W + tk.E)
+        self.notice_label.grid(column = 0, row = 3, columnspan = 4, sticky = tk.W+tk.E+tk.S)
         self.enemies_label.grid(column = 0, row = 0, columnspan = 3)
         self.enemies_listbox.grid(column = 0, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
         self.enemies_damaged.grid(column = 1, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
