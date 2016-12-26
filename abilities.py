@@ -131,6 +131,18 @@ excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Lo
                      "Plasma Burn", "Plasma Warheads"]
 
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
+rep_ships = {"Legion":"Warcarrier",
+             "Razorwire":"Rampart Mark Four",
+             "Decimus":"Sledgehammer",
+             "Mangler": "Quarrel",
+             "Jurgoran":"Condor",
+             "Dustmaker":"Comet Breaker",
+             "Rycer":"Star Guard",
+             "Imperium":"Clarion",
+             "Quell":"Pike",
+             "Sting":"Flashfire",
+             "Bloodmark":"Spearpoint",
+             "Blackbolt":"Novadive"}
 ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : "Rampart Mark Four",
              "Jurgoran" : "Condor", "Dustmaker" : "Comet Breaker", "Mangler" : "Quarrel",
              "Bloodmark" : "Spearpoint", "Blackbolt" : "Novadive", "Sting" : "Flashfire",
