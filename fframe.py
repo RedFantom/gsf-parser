@@ -115,6 +115,8 @@ class file_frame(ttk.Frame):
         return
 
     def file_update(self, instance):
+        self.main_window.middle_frame.statistics_numbers_var.set("")
+        self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         if self.file_box.curselection() == (0,):
             print("[DEBUG] All CombatLogs selected")
             stat_obj = statistics.statistics()
@@ -143,6 +145,8 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.remove_image()
 
     def match_update(self, instance):
+        self.main_window.middle_frame.statistics_numbers_var.set("")
+        self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
@@ -208,6 +212,7 @@ class file_frame(ttk.Frame):
                 match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
             except ValueError:
                 print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
+                return
             spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
             vars.spawn = spawn
             vars.player_numbers = parse.determinePlayer(spawn)
@@ -235,7 +240,7 @@ class ship_frame(ttk.Frame):
     def __init__(self, root_frame):
         ttk.Frame.__init__(self, root_frame, width = 300, height = 410)
         self.ship_label_var = tk.StringVar()
-        self.ship_label_var.set("No file/match/spawn selected yet.")
+        self.ship_label_var.set("No match or spawn selected yet.")
         self.ship_label = ttk.Label(self, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
         self.ship_image = ttk.Label(self)
 
