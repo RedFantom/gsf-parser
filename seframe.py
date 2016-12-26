@@ -256,5 +256,6 @@ class settings_frame(ttk.Frame):
 
     def show_privacy(self):
         if not vars.client_obj.INIT:
-            tkMessageBox.showerror("The connection to the server was not initialized correctly.")
+            tkMessageBox.showerror("Error","The connection to the server was not initialized correctly.")
+            return
         overlay.privacy(self.main_window)

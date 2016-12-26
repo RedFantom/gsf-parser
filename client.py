@@ -15,6 +15,7 @@ class client_conn:
     # TODO Add functionality to get leaderboards
     def __init__(self):
         self.connecting = True
+        self.INIT = False
 
     def init_conn(self, silent=True):
         self.INIT = False
