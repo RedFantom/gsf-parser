@@ -113,6 +113,7 @@ class privacy(tk.Toplevel):
 class boot_splash(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
+        self.title("GSF Parser: Starting...")
         print vars.set_obj.logo_color
         try:
             self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logo_" + vars.set_obj.logo_color + ".png"))
@@ -156,6 +157,7 @@ class conn_splash(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.window = window
         self.FLAG = False
+        self.title("GSF Parser: Connecting...")
         self.label = ttk.Label(self, text = "Connecting to specified server...")
         self.label.pack()
         self.conn_bar =  ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "indeterminate")
@@ -173,6 +175,7 @@ class conn_splash(tk.Toplevel):
 class events_view(tk.Toplevel):
     def __init__(self, window, spawn, player):
         tk.Toplevel.__init__(self, window)
+        self.title("GSF Parser: Events for spawn on %s of match started at %s" % (vars.spawn_timing, vars.match_timing))
         self.listbox = tk.Listbox(self, width=105, height=15, font=("Consolas", 10))
         self.scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command =self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scroll.set)
