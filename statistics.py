@@ -193,7 +193,8 @@ class statistics:
         for matrix in enemies:
             for lst in matrix:
                 for enemy in lst:
-                    total_enemies.append(enemy)
+                    if enemy not in total_enemies:
+                        total_enemies.append(enemy)
         for lst in criticalcount:
             for amount in lst:
                 total_criticalcount += amount
@@ -285,7 +286,8 @@ class statistics:
             total_healingrecv += healingreceived
             total_selfdamage += selfdamage
             for enemy in enemies:
-                total_enemies.append(enemy)
+                if enemy not in total_enemies:
+                    total_enemies.append(enemy)
             total_criticalcount += criticalcount
             total_hitcount += hitcount
             for key, value in enemydamaged.iteritems():
