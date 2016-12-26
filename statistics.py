@@ -10,11 +10,10 @@ import decimal
 import datetime
 # Own modules
 import vars
-import parse
-import client
 import abilities
 import parse
 import realtime
+import overlay
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
@@ -50,6 +49,7 @@ class statistics:
         avg_matchtime = None
         mostplayedship = None
         match_count = 0
+        match_timings = None
 
         razor_count = 0
         legion_count = 0
@@ -68,9 +68,12 @@ class statistics:
         criticaltotal = 0
 
         player_names = []
-
+        splash = overlay.splash_screen(vars.main_window, max=len(self.file_list))
         # Start looping through the files
+        vars.files_done = 0
         for name in self.file_list:
+            vars.files_done += 1
+            splash.update_progress()
             with open(name, "r") as file_object:
                 lines = file_object.readlines()
             name = parse.determinePlayerName(lines)
@@ -131,7 +134,7 @@ class statistics:
         start_time = False
         previous_time = None
         for datetime in match_timings:
-            if start_time == False:
+            if not start_time:
                 previous_time = datetime
                 continue
             else:
@@ -139,15 +142,14 @@ class statistics:
                 previous_time = datetime
                 continue
         (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed, 60)
-
+        splash.destroy()
         # Return all statistics calculated
-        return total_ddealt, total_dtaken, total_hrecvd, total_selfdmg, total_timeplayed_minutes, player_names
+        statistics_string = ("- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" +
+                             str(total_selfdmg) + "\n" + str(total_hrecvd) + """\n-\n-\n-\n-\n-\n-""")
+        return statistics_string
 
-    def file_statistics(self, file_cube):
-        for match in file_cube:
-            print "[DEBUG] match!"
-            for spawn in match:
-                print "[DEBUG] spawn!"
+    @staticmethod
+    def file_statistics(file_cube):
         player_list = []
         for match in file_cube:
             for spawn in match:
@@ -207,7 +209,6 @@ class statistics:
 
         abilities_string = ""
         statistics_string = ""
-        events_string = "Events is not available for a whole file"
         total_shipsdict = {}
         uncounted = 0
         for ship in abilities.ships:
@@ -255,9 +256,9 @@ class statistics:
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
-                             str(total_criticalluck) + "%" + "\n" + str(deaths))
+                             str(total_criticalluck) + "%" + "\n" + str(deaths) + "\n-\n-")
 
-        return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
+        return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
 
     @staticmethod
     def match_statistics(match):
@@ -297,7 +298,6 @@ class statistics:
                     total_enemydamaget[key] += value
                 else:
                     total_enemydamaget[key] = value
-            events_string = "Events is not available for a whole match"
             if len(ships_list) != 1:
                 ships_uncounted += 1
                 ships_list = []
@@ -316,6 +316,7 @@ class statistics:
             total_criticalluck = round(total_criticalluck * 100, 2)
         except ZeroDivisionError:
             total_criticalluck = 0
+        total_shipsdict["Uncounted"] = ships_uncounted
         delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1])['time'][:-4].strip(), "%H:%M:%S") - datetime.datetime.strptime(vars.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
@@ -327,7 +328,7 @@ class statistics:
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n" + string + "\n" + str(dps))
-        return abilities_string, events_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
+        return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
 
     @staticmethod
     def spawn_statistics(spawn):
@@ -338,7 +339,6 @@ class statistics:
             if enemydamaget[enemy] > 0:
                 killsassists += 1
         abilities_string = ""
-        events_string = ""
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
         for key in abilitiesdict:
@@ -394,7 +394,7 @@ class statistics:
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
 
-        return abilities_string, events_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+        return abilities_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
 colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 

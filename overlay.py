@@ -16,14 +16,14 @@ import vars
 import statistics
 
 class splash_screen(tk.Toplevel):
-    def __init__(self, window, boot=False):
+    def __init__(self, window, boot=False, max=None):
         tk.Toplevel.__init__(self, window)
         self.label = ttk.Label(self, text = "Working...")
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
         self.progress_bar.pack()
         try:
-            list = os.listdir(window.default_path)
+            list = os.listdir(vars.set_obj.cl_path)
         except:
             print "[DEBUG] Running on UNIX, functionality disabled"
             return
@@ -32,7 +32,10 @@ class splash_screen(tk.Toplevel):
             if file.endswith(".txt"):
                 files.append(file)
         vars.files_done = 0
-        self.amount_files = len(files)
+        if not max:
+            self.amount_files = len(files)
+        else:
+            self.amount_files = max
         if(self.amount_files >= 50 and boot):
             tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombatLogs folder. You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the startup times." % self.amount_files)
         self.progress_bar["maximum"] = self.amount_files

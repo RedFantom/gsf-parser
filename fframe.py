@@ -17,6 +17,7 @@ import parse
 import statistics
 import abilities
 import overlay
+import resources
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -116,7 +117,14 @@ class file_frame(ttk.Frame):
     def file_update(self, instance):
         if self.file_box.curselection() == (0,):
             print("[DEBUG] All CombatLogs selected")
-            tkMessageBox.showinfo("Info", "The statistics for a whole folder aren't supported yet.")
+            stat_obj = statistics.statistics()
+            stats_string = stat_obj.folder_statistics()
+            self.main_window.middle_frame.statistics_numbers_var.set(stats_string)
+            self.main_window.middle_frame.abilities_label_var.set("Abilities is currently not available for a whole folder.")
+            self.main_window.ship_frame.ship_label_var.set("Ships currently not available for a whole folder.")
+            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
             # Find the file name of the file selected in the list of file names
@@ -140,7 +148,7 @@ class file_frame(ttk.Frame):
             numbers = self.match_box.curselection()
             vars.match_timing = self.match_timing_strings[numbers[0] - 1]
             file_cube = vars.file_cube
-            vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget, vars.uncounted = self.statistics_object.file_statistics(file_cube)
+            vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget, vars.uncounted = self.statistics_object.file_statistics(file_cube)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -173,7 +181,7 @@ class file_frame(ttk.Frame):
                 print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
             for spawn in match:
                 vars.player_numbers.update(parse.determinePlayer(spawn))
-            vars.abilities_string, vars.events_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.match_statistics(match)
+            vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.match_statistics(match)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -182,7 +190,7 @@ class file_frame(ttk.Frame):
                     ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
-
+            ships_string += "Uncounted\t\t%s" % vars.total_shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
@@ -203,7 +211,7 @@ class file_frame(ttk.Frame):
             spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
             vars.spawn = spawn
             vars.player_numbers = parse.determinePlayer(spawn)
-            vars.abilities_string, vars.events_string, vars.statistics_string, vars.ships_list, vars.ships_comps, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.spawn_statistics(spawn)
+            vars.abilities_string, vars.statistics_string, vars.ships_list, vars.ships_comps, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.spawn_statistics(spawn)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Possible ships used:\n"
@@ -303,8 +311,9 @@ class middle_frame(ttk.Frame):
         self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
         self.enemies_damaget.config(yscrollcommand = self.enemies_damaget_scroll)
         self.enemies_damaged.config(yscrollcommand = self.enemies_damaged_scroll)
-        self.abilities_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.abilities_frame, text = "Abilities")
+        self.abilities_scrollable_frame = resources.vertical_scroll_frame(self.notebook)
+        self.abilities_frame = self.abilities_scrollable_frame.interior
+        self.notebook.add(self.abilities_scrollable_frame, text = "Abilities")
         self.abilities_label_var = tk.StringVar()
         self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var, justify = tk.LEFT, wraplength = 295)
 
