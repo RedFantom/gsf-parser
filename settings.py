@@ -13,7 +13,7 @@ import vars
 # Class with default settings for in the settings file
 class defaults:
     # Version to display in settings tab
-    version = "2.0.0_alpha"
+    version = "2.0.0"
     # Path to get the CombatLogs from
     cl_path = os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
@@ -36,6 +36,8 @@ class defaults:
     overlay_bg_color = "white"
     overlay_tr_color = "white"
     overlay_tx_color = "yellow"
+    overlay_tx_font = "Calibri"
+    overlay_tx_size = "12"
 
 # Class that loads, stores and saves settings
 class settings:
@@ -45,7 +47,10 @@ class settings:
         self.conf = ConfigParser.RawConfigParser()
         vars.install_path = os.getcwd()
         if self.file_name in os.listdir(os.path.dirname(os.path.realpath(__file__))):
-            self.read_set()
+            try:
+                self.read_set()
+            except ConfigParser.NoOptionError:
+                self.write_def()
         else:
             self.write_def()
             self.read_set()
@@ -79,6 +84,8 @@ class settings:
         self.pos = self.conf.get("realtime", "pos")
         self.color = self.conf.get("gui", "color")
         self.logo_color = self.conf.get("gui", "logo_color")
+        self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
+        self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
         print "[DEBUG] self.pos: ", self.pos
         print "[DEBUG] self.auto_upl: ", self.auto_upl
         print "[DEBUG] Settings read"
@@ -110,6 +117,8 @@ class settings:
         self.conf.set("realtime", "overlay_tr_color", defaults.overlay_tr_color)
         self.conf.set("gui", "color", defaults.color)
         self.conf.set("gui", "logo_color", defaults.logo_color)
+        self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
+        self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -125,7 +134,8 @@ class settings:
                   opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
                   color=defaults.color, logo_color=defaults.logo_color,
                   bg_color=defaults.overlay_bg_color, tx_color=defaults.overlay_tx_color,
-                  tr_color=defaults.overlay_tr_color):
+                  tr_color=defaults.overlay_tr_color, tx_font=defaults.overlay_tx_font,
+                  tx_size=defaults.overlay_tx_size):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -153,6 +163,8 @@ class settings:
         self.conf.set("realtime", "overlay_bg_color", bg_color)
         self.conf.set("realtime", "overlay_tx_color", tx_color)
         self.conf.set("realtime", "overlay_tr_color", tr_color)
+        self.conf.set("realtime", "overlay_tx_font", tx_font)
+        self.conf.set("realtime", "overlay_tx_size", tx_size)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         with open(self.file_name, "w") as settings_file_object:

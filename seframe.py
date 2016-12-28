@@ -100,6 +100,14 @@ class settings_frame(ttk.Frame):
         self.overlay_bg_label = ttk.Label(self.realtime_frame, text = "\tOverlay background colour: ")
         self.overlay_tx_label = ttk.Label(self.realtime_frame, text = "\tOverlay text colour: ")
         self.overlay_tr_label = ttk.Label(self.realtime_frame, text = "\tOverlay transparent colour: ")
+        self.overlay_font_label = ttk.Label(self.realtime_frame, text = "\tOverlay font: ")
+        self.overlay_font_options = ["Calibri", "Arial", "Consolas"]
+        self.overlay_font_radios = []
+        self.overlay_font = tk.StringVar()
+        for font in self.overlay_font_options:
+            self.overlay_font_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_font, value = font, text = font))
+        self.overlay_text_size_label = ttk.Label(self.realtime_frame, text = "\tOverlay text size: ")
+        self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width = 5)
         ### MISC ###
         self.separator = ttk.Separator(self.frame.interior, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -168,6 +176,9 @@ class settings_frame(ttk.Frame):
         self.overlay_tx_label.grid(column=0, row = 5, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_bg_label.grid(column = 0, row = 6, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_tr_label.grid(column=0,row=7, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_font_label.grid(column=0,row=8, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_label.grid(column = 0, row = 9, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_entry.grid(column = 1, row = 9, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 1
         for radio in self.overlay_tx_color_radios:
             radio.grid(column = set_column, row = 5,sticky=tk.N+tk.S+tk.W+tk.E)
@@ -179,6 +190,10 @@ class settings_frame(ttk.Frame):
         set_column = 1
         for radio in self.overlay_tr_color_radios:
             radio.grid(column = set_column, row = 7,sticky=tk.N+tk.S+tk.W+tk.E)
+            set_column += 1
+        set_column = 1
+        for radio in self.overlay_font_radios:
+            radio.grid(column = set_column, row = 8, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         ### MISC ###
         self.save_settings_button.grid(column=0, row=0, padx=2)
@@ -215,6 +230,9 @@ class settings_frame(ttk.Frame):
         self.overlay_bg_color.set(vars.set_obj.overlay_bg_color)
         self.overlay_tx_color.set(vars.set_obj.overlay_tx_color)
         self.overlay_tr_color.set(vars.set_obj.overlay_tr_color)
+        self.overlay_font.set(vars.set_obj.overlay_tx_font)
+        self.overlay_text_size_entry.delete(0, tk.END)
+        self.overlay_text_size_entry.insert(0, vars.set_obj.overlay_tx_size)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
@@ -237,7 +255,7 @@ class settings_frame(ttk.Frame):
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
                                opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
                                color=color, logo_color=self.logo_color.get(), bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
-                               tx_color=self.overlay_tx_color.get())
+                               tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(), tx_size=self.overlay_text_size_entry.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

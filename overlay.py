@@ -49,48 +49,55 @@ class splash_screen(tk.Toplevel):
 class overlay(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
+        self.update_position()
         if sys.platform == "win32":
             with open('C:/Users/' + getpass.getuser() + "/AppData/Local/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
                 if "D3DFullScreen = true" in swtor:
                     tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
+        print "[DEBUG] Setting overlay font to: ", (vars.set_obj.overlay_tx_font, vars.set_obj.overlay_tx_size)
+        if vars.set_obj.size == "big":
+            self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT,
+                                        font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
+                                        foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
+        elif vars.set_obj.size == "small":
+            self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT,
+                                        font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
+                                        foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
+        else:
+            raise ValueError("Size setting not valid.")
+        self.stats_var = tk.StringVar()
+        self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT,
+                                     font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
+                                     foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
+        self.text_label.pack(side=tk.LEFT)
+        self.stats_label.pack(side=tk.RIGHT)
+        self.configure(background = vars.set_obj.overlay_bg_color)
+        self.wm_attributes("-transparentcolor", vars.set_obj.overlay_tr_color)
+        self.overrideredirect(True)
+        self.attributes("-topmost", True)
+        self.attributes("-alpha", vars.set_obj.opacity)
+
+    def update_position(self):
+        if vars.set_obj.size == "big":
+            h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 5
+            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.8) + 2 ) * (14 + 6)
+        elif vars.set_obj.size == "small":
+            h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 4
+            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.8) + 2) * (4 + 6)
+        else:
+            raise
         if vars.set_obj.pos == "TL":
             pos_c = "+0+0"
         elif vars.set_obj.pos == "BL":
-            pos_c = "+0+" + str(vars.screen_h - 60)
+            pos_c = "+0+%s" % (int(vars.screen_h) - int(h_req))
         elif vars.set_obj.pos == "TR":
-            if vars.set_obj.size == "big":
-                pos_c = "+" + str(vars.screen_w - 200) + "+0"
-            elif vars.set_obj.size == "small":
-                pos_c = "+" + str(vars.screen_w - 80) + "+0"
+            pos_c = "+%s+0" % (int(vars.screen_w) - int(w_req))
         elif vars.set_obj.pos == "BR":
-            if vars.set_obj.size == "big":
-                pos_c = "+" + str(vars.screen_w - 200) + "+" + str(vars.screen_h - 60)
-            elif vars.set_obj.size == "small":
-                pos_c = "+" + str(vars.screen_w - 80) + "+" + str(vars.screen_h - 60)
+            pos_c = "+%s+%s" % (int(vars.screen_w) - int(w_req), int(vars.screen_h) - int(h_req))
         else:
-            self.destroy()
             raise ValueError("vars.set_obj.pos not valid")
-        self.attributes("-topmost", True)
-        self.attributes("-alpha", vars.set_obj.opacity)
-        self.overrideredirect(True)
-        if vars.set_obj.size == "big":
-            self.wm_geometry("200x75" + pos_c)
-            self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT)
-        elif vars.set_obj.size == "small":
-            self.wm_geometry("80x60" + pos_c)
-            self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT)
-        else:
-            self.destroy()
-            raise ValueError("vars.set_obj.size is neither big nor small")
-        self.stats_var = tk.StringVar()
-        self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT)
-        # self.stats_label.config(font=("Courier", 44))
-        self.text_label.pack(side=tk.LEFT)
-        self.stats_label.pack(side=tk.RIGHT)
-        self.stats_label.configure(background = vars.set_obj.overlay_bg_color, font = ("Calibri", 10), foreground = vars.set_obj.overlay_tx_color)
-        self.text_label.configure(background = vars.set_obj.overlay_bg_color, font = ("Calibri", 10), foreground = vars.set_obj.overlay_tx_color)
-        self.configure(background = vars.set_obj.overlay_bg_color)
-        self.wm_attributes("-transparentcolor", vars.set_obj.overlay_tr_color)
+        self.wm_geometry("%sx%s" % (int(w_req), int(h_req))+ pos_c)
+        print "[DEBUG] Overlay position set to: ", "%sx%s" % (int(w_req), int(h_req))+ pos_c
 
 class privacy(tk.Toplevel):
     def __init__(self, window):
