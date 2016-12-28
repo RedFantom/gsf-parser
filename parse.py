@@ -250,56 +250,56 @@ def parse_spawn(spawn, player):
                  "Imperium", "Quell", "Rycer"]
     amount_secondaries = 0
     for key in abilities:
-        if key not in excluded_abilities:
-            if key in secondaries:
+        if key.strip() not in excluded_abilities:
+            if key.strip() in secondaries:
                 amount_secondaries += 1
             if "Legion" in ships_list:
-                if key not in legionAbilities:
-                    print "[DEBUG] Legion removed for: ", key
+                if key.strip() not in legionAbilities:
+                    print "[DEBUG] Legion removed for: ", key.strip()
                     ships_list.remove("Legion")
             if "Razorwire" in ships_list:
-                if key not in razorwireAbilities:
-                    print "[DEBUG] Razorwire removed for: ", key
+                if key.strip() not in razorwireAbilities:
+                    print "[DEBUG] Razorwire removed for: ", key.strip()
                     ships_list.remove("Razorwire")
             if "Decimus" in ships_list:
-                if key not in decimusAbilities:
-                    print "[DEBUG] Decimus removed for: ", key
+                if key.strip() not in decimusAbilities:
+                    print "[DEBUG] Decimus removed for: ", key.strip()
                     ships_list.remove("Decimus")
             if "Mangler" in ships_list:
-                if key not in manglerAbilities:
-                    print "[DEBUG] Mangler removed for: ", key
+                if key.strip() not in manglerAbilities:
+                    print "[DEBUG] Mangler removed for: ", key.strip()
                     ships_list.remove("Mangler")
             if "Jurgoran" in ships_list:
-                if key not in jurgoranAbilities:
-                    print "[DEBUG] Jurgoran removed for: ", key
+                if key.strip() not in jurgoranAbilities:
+                    print "[DEBUG] Jurgoran removed for: ", key.strip()
                     ships_list.remove("Jurgoran")
             if "Dustmaker" in ships_list:
-                if key not in dustmakerAbilities:
-                    print "[DEBUG] Dustmaker removed for: ", key
+                if key.strip() not in dustmakerAbilities:
+                    print "[DEBUG] Dustmaker removed for: ", key.strip()
                     ships_list.remove("Dustmaker")
             if "Bloodmark" in ships_list:
-                if key not in bloodmarkAbilities:
-                    print "[DEBUG] Bloodmark removed for: ", key
+                if key.strip() not in bloodmarkAbilities:
+                    print "[DEBUG] Bloodmark removed for: ", key.strip()
                     ships_list.remove("Bloodmark")
             if "Blackbolt" in ships_list:
-                if key not in blackboltAbilities:
-                    print "[DEBUG] Blackbolt removed for: ", key
+                if key.strip() not in blackboltAbilities:
+                    print "[DEBUG] Blackbolt removed for: ", key.strip()
                     ships_list.remove("Blackbolt")
             if "Sting" in ships_list:
-                if key not in stingAbilities:
-                    print "[DEBUG] Sting removed for: ", key
+                if key.strip() not in stingAbilities:
+                    print "[DEBUG] Sting removed for: ", key.strip()
                     ships_list.remove("Sting")
             if "Imperium" in ships_list:
-                if key not in imperiumAbilities:
-                    print "[DEBUG] Imperium removed for: ", key
+                if key.strip() not in imperiumAbilities:
+                    print "[DEBUG] Imperium removed for: ", key.strip()
                     ships_list.remove("Imperium")
             if "Quell" in ships_list:
-                if key not in quellAbilities:
-                    print "[DEBUG] Quell removed for: ", key
+                if key.strip() not in quellAbilities:
+                    print "[DEBUG] Quell removed for: ", key.strip()
                     ships_list.remove("Quell")
             if "Rycer" in ships_list:
-                if key not in rycerAbilities:
-                    print "[DEBUG] Rycer removed for: ", key
+                if key.strip() not in rycerAbilities:
+                    print "[DEBUG] Rycer removed for: ", key.strip()
                     ships_list.remove("Rycer")
     if amount_secondaries == 2:
         for ship in ships_list:
@@ -536,42 +536,42 @@ def determineShip(abilitiesDictionary):
                  "Bloodmark", "Blackbolt", "Sting",
                  "Imperium", "Quell", "Rycer"]
     for key in abilitiesDictionary:
-        if key not in excluded_abilities:
+        if key.strip() not in excluded_abilities:
             if "Legion" in shipsList:
-                if key not in legionAbilities:
+                if key.strip() not in legionAbilities:
                     shipsList.remove("Legion")
             if "Razorwire" in shipsList:
-                if key not in razorwireAbilities:
+                if key.strip() not in razorwireAbilities:
                     shipsList.remove("Razorwire")
             if "Decimus" in shipsList:
-                if key not in decimusAbilities:
+                if key.strip() not in decimusAbilities:
                     shipsList.remove("Decimus")
             if "Mangler" in shipsList:
-                if key not in manglerAbilities:
+                if key.strip() not in manglerAbilities:
                     shipsList.remove("Mangler")
             if "Jurgoran" in shipsList:
-                if key not in jurgoranAbilities:
+                if key.strip() not in jurgoranAbilities:
                     shipsList.remove("Jurgoran")
             if "Dustmaker" in shipsList:
-                if key not in dustmakerAbilities:
+                if key.strip() not in dustmakerAbilities:
                     shipsList.remove("Dustmaker")
             if "Bloodmark" in shipsList:
-                if key not in bloodmarkAbilities:
+                if key.strip() not in bloodmarkAbilities:
                     shipsList.remove("Bloodmark")
             if "Blackbolt" in shipsList:
-                if key not in blackboltAbilities:
+                if key.strip() not in blackboltAbilities:
                     shipsList.remove("Blackbolt")
             if "Sting" in shipsList:
-                if key not in stingAbilities:
+                if key.strip() not in stingAbilities:
                     shipsList.remove("Sting")
             if "Imperium" in shipsList:
-                if key not in imperiumAbilities:
+                if key.strip() not in imperiumAbilities:
                     shipsList.remove("Imperium")
             if "Quell" in shipsList:
-                if key not in quellAbilities:
+                if key.strip() not in quellAbilities:
                     shipsList.remove("Quell")
             if "Rycer" in shipsList:
-                if key not in rycerAbilities:
+                if key.strip() not in rycerAbilities:
                     shipsList.remove("Rycer")
 
     return shipsList
