@@ -117,6 +117,9 @@ class file_frame(ttk.Frame):
     def file_update(self, instance):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         if self.file_box.curselection() == (0,):
             print("[DEBUG] All CombatLogs selected")
             stat_obj = statistics.statistics()
@@ -147,6 +150,9 @@ class file_frame(ttk.Frame):
     def match_update(self, instance):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
