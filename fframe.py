@@ -53,6 +53,7 @@ class file_frame(ttk.Frame):
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
 
     def add_matches(self):
+        self.spawn_box.delete(0, tk.END)
         self.match_timing_strings = []
         self.match_timing_strings = [str(time.time()) for time in vars.match_timings]
         self.match_timing_strings = self.match_timing_strings[::2]
@@ -89,6 +90,8 @@ class file_frame(ttk.Frame):
         os.chdir(vars.path)
         self.file_strings = []
         self.file_box.delete(0, tk.END)
+        self.match_box.delete(0, tk.END)
+        self.spawn_box.delete(0, tk.END)
         if not silent:
             self.splash = overlay.splash_screen(self.main_window)
         try:
@@ -307,7 +310,7 @@ class middle_frame(ttk.Frame):
         self.events_frame = ttk.Frame(self, width = 300)
         self.events_button = ttk.Button(self.events_frame, text = "Show events for spawn", command=self.show_events, state=tk.DISABLED, width = 43)
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
+        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
         self.statistics_label_var.set(string)
         self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()

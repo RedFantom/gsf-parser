@@ -143,8 +143,12 @@ class statistics:
                 continue
         (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed, 60)
         splash.destroy()
+        try:
+            damage_ratio_string = str(str(round(float(total_ddealt) / float(total_dtaken), 1)) + " : 1") + "\n"
+        except ZeroDivisionError:
+            damage_ratio_string = "0.0 : 1\n"
         # Return all statistics calculated
-        statistics_string = ("- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" +
+        statistics_string = ("- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" + damage_ratio_string +
                              str(total_selfdmg) + "\n" + str(total_hrecvd) + """\n-\n-\n-\n-\n-\n-""")
         return statistics_string
 
@@ -254,7 +258,12 @@ class statistics:
         deaths = 0
         for match in file_cube:
             deaths += len(match)
+        try:
+            damage_ratio_string = str(str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
+        except ZeroDivisionError:
+            damage_ratio_string = "0.0 : 1\n"
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
+                             damage_ratio_string +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(deaths) + "\n-\n-")
@@ -326,7 +335,12 @@ class statistics:
             dps = round(total_damagedealt / delta.total_seconds(), 1)
         except ZeroDivisionError:
             dps = 0
+        try:
+            damage_ratio_string = str(str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
+        except ZeroDivisionError:
+            damage_ratio_string = "0.0 : 1\n"
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
+                             damage_ratio_string +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n" + string + "\n" + str(dps))
@@ -391,7 +405,12 @@ class statistics:
             dps = round(damagedealt / delta.total_seconds(), 1)
         except ZeroDivisionError:
             dps = 0
+        try:
+            damage_ratio_string = str(str(round(float(damagedealt) / float(damagetaken), 1)) + " : 1") + "\n"
+        except ZeroDivisionError:
+            damage_ratio_string = "0.0 : 1\n"
         statistics_string = (str(killsassists) + " enemies"+ "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
+                             damage_ratio_string +
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
