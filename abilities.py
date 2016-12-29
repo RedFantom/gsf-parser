@@ -83,7 +83,8 @@ razorwireAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon"
 decimusAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
                     "Cluster Missiles", "Concussion Missile", "Proton Torpedo"
                     "Shield Power Converter", "Power Dive", "Interdiction Drive",
-                    "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone"]
+                    "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone",
+                    "Overcharged Shield", "Directional Shield", "Charged Plating"]
 jurgoranAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Laser Cannon",
                      "Cluster Missiles", "Slug Railgun", "Interdiction Missile", "EMP Missile"
                      "Koiogran Turn", "Retro Thrusters", "Power Dive", "Interdiction Drive",
