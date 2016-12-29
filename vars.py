@@ -41,6 +41,7 @@ deaths                  = None
 file_cube              = None
 player_numbers         = {}
 player_name            = None
+rt_name                = None
 
 file_name = None
 user_name = None

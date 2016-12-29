@@ -102,9 +102,18 @@ class Parser(object):
         self.dprint("[DEBUG] line", line)
 
         # If first line of the file, save the player name
-        if self.player_name is '' and '@' in line['source']:
+        if(self.player_name == '' and '@' in line['source']):
             self.player_name = line['source'][1:]
-
+            vars.rt_name = self.player_name
+            print self.player_name
+        # Sometimes multiple log-ins are stored in one log
+        # Then the player_name must be changed if it is a self-targeted ability
+        if(line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and
+           not bool(re.search(r'\d', line['source']))):
+            if line['source'][1:] != self.player_name:
+                self.player_name = line['source'][1:]
+                vars.rt_name = self.player_name
+                print self.player_name
         if not self.is_match and '@' in line['source']:
             self.dprint("[DEBUG] out of match, skip")
             return

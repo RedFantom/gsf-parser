@@ -430,14 +430,24 @@ def pretty_event(line_dict, start_of_match, active_id):
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
+    # If the player name is too long, shorten it
+    if vars.rt_name:
+        if len(vars.rt_name) > 14:
+            vars.rt_name = vars.rt_name[:14]
     if line_dict['source'] == active_id:
-        string += "You" + (11+4) * " "
+        if vars.rt_name:
+            string += vars.rt_name + (14 - len(vars.rt_name) + 4) * " "
+        else:
+            string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
         string += "System" + (8+4) * " "
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] == active_id:
-        string += "You" + (11+4) * " "
+        if vars.rt_name:
+            string += vars.rt_name + (14 - len(vars.rt_name) + 4) * " "
+        else:
+            string += "You" + " " * (11 + 4)
     elif line_dict['destination'] == "":
         string += "System" + (8 + 4) * " "
     else:
@@ -465,18 +475,24 @@ def print_event(line, start_of_match, player):
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     except TypeError:
-        string = "ERROR" + 4*" "
+        string = "00:00" + 4*" "
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
     if line_dict['source'] in player:
-        string += "You" + (11+4) * " "
+        if vars.player_name:
+            string += vars.player_name + (14 - len(vars.player_name) + 4) * " "
+        else:
+            string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
         string += "System" + (8+4) * " "
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] in player:
-        string += "You" + (11+4) * " "
+        if vars.player_name:
+            string += vars.player_name + (14 - len(vars.player_name) + 4) * " "
+        else:
+            string += "You" + " " * (11 + 4)
     elif line_dict['destination'] == "":
         string += "System" + (8 + 4) * " "
     else:

@@ -53,6 +53,8 @@ class file_frame(ttk.Frame):
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
 
     def add_matches(self):
+        with open(vars.file_name, "r") as file:
+            vars.player_name = parse.determinePlayerName(file.readlines())
         self.spawn_box.delete(0, tk.END)
         self.match_timing_strings = []
         self.match_timing_strings = [str(time.time()) for time in vars.match_timings]
