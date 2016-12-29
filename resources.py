@@ -2,7 +2,7 @@
 # This code was written by others. For the credits, see the block-comment in each class. This file is excluded from the copyright of RedFantom
 # and Daethyra, but the code in this file IS redistributed under the license found in LICENSE.
 import ttk
-import Tkinter as tk
+import mtTkinter as tk
 import platform
 
 # Vertically scrollable frame with built-in scrollbar
@@ -11,7 +11,7 @@ class vertical_scroll_frame(ttk.Frame):
     """
     This code is based on:
     http://tkinter.unpythonic.net/wiki/VerticalScrolledFrame
-    Tkinter Wiki
+    mtTkinter Wiki
     Author: Not listed
     License: Not listed
 

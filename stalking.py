@@ -212,7 +212,7 @@ class LogStalker(threading.Thread):
             lines = file.readlines(self._sizehint)
             if not lines:
                 break
-            self._callback(file.name, lines)
+            self._callback(lines)
 
     def watch(self, fname):
         try:
