@@ -186,23 +186,24 @@ def parse_spawn(spawn, player):
         # even where the ability name is not. Only English is supported at this time.
         ability = ability.split(' {', 1)[0]
         if source in player:
-            if "Ion Railgun" in ability:
-                if source != target:
+            if "AbilityActivate" in effect:
+                if "Ion Railgun" in ability:
+                    if source != target:
+                        if ability not in abilities:
+                            abilities[ability] = 1
+                        else:
+                            abilities[ability] += 1
+                elif "Hull Cutter" in ability:
+                    if source != target:
+                        if ability not in abilities:
+                            abilities[ability] = 1
+                        else:
+                            abilities[ability] += 1
+                elif ability != "":
                     if ability not in abilities:
-                        abilities[ability] = 1
+                       abilities[ability] = 1
                     else:
-                        abilities[ability] += 1
-            elif "Hull Cutter" in ability:
-                if source != target:
-                    if ability not in abilities:
-                        abilities[ability] = 1
-                    else:
-                        abilities[ability] += 1
-            elif ability != "":
-                if ability not in abilities:
-                   abilities[ability] = 1
-                else:
-                   abilities[ability] += 1
+                       abilities[ability] += 1
         if "kinetic" in event:
             # Takes damagestring and split after the pattern (stuff in here) and take the second element
             # containing the "stuff in here"

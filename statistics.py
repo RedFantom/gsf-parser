@@ -163,7 +163,7 @@ class statistics:
 
         (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
          hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
-        total_abilities = []
+        total_abilities = {}
         total_damagetaken = 0
         total_damagedealt = 0
         total_selfdamage = 0
@@ -178,10 +178,12 @@ class statistics:
         total_spawn_timings = None
 
         for mat in abs:
-            for lst in mat:
-                for item in lst:
-                    if item not in total_abilities:
-                        total_abilities.append(item)
+            for dic in mat:
+                for (key, value) in dic.iteritems():
+                    if key not in total_abilities:
+                        total_abilities[key] = value
+                    else:
+                        total_abilities[key] += value
         for lst in damagetaken:
             for amount in lst:
                 total_damagetaken += amount
@@ -212,7 +214,7 @@ class statistics:
         total_enemydamaged = enemydamaged
         total_enemydamaget = enemydamaget
 
-        abilities_string = ""
+        abilities_string = "Ability\t\t\tTimes used\n\n"
         statistics_string = ""
         total_shipsdict = {}
         uncounted = 0
@@ -249,8 +251,13 @@ class statistics:
                 else:
                     uncounted += 1
         total_killsassists = 0
-        for ability in total_abilities:
-            abilities_string = abilities_string + ability.strip() + "\n"
+        for (key, value) in total_abilities.iteritems():
+            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif (len(key.strip()) < 8):
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif(len(key.strip()) > 18):
+                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
                  total_killsassists += 1
@@ -285,7 +292,7 @@ class statistics:
         total_enemydamaget = {}
         total_killsassists = 0
         ships_uncounted = 0
-        abilities_string = ""
+        abilities_string = "Ability\t\t\tTimes used\n\n"
         for spawn in match:
             (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
              criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
@@ -317,8 +324,13 @@ class statistics:
                     total_shipsdict[ship] += 1
                 else:
                     total_shipsdict[ship] = 1
-        for (ability, count) in total_abilitiesdict.iteritems():
-            abilities_string = abilities_string + ability.strip() + "\n"
+        for (key, value) in total_abilitiesdict.iteritems():
+            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif (len(key.strip()) < 8):
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif(len(key.strip()) > 18):
+                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
                 total_killsassists += 1
@@ -354,13 +366,16 @@ class statistics:
         for enemy in enemies:
             if enemydamaget[enemy] > 0:
                 killsassists += 1
-        abilities_string = ""
+        abilities_string = "Ability\t\t\tTimes used\n\n"
         ship_components = []
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
-        for key in abilitiesdict:
-            abilities_string += key + "\n"
-            if key in abilities.components:
-                ship_components.append(key)
+        for (key, value) in abilitiesdict.iteritems():
+            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif (len(key.strip()) < 8):
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif(len(key.strip()) > 18):
+                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for component in ship_components:
             if component in abilities.primaries:
                 if "Rycer" in ships_list:

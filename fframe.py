@@ -53,6 +53,13 @@ class file_frame(ttk.Frame):
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
 
     def add_matches(self):
+        self.file_strings = []
+        self.spawn_box.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.ship_frame.ship_label_var.set("")
         with open(vars.file_name, "r") as file:
             vars.player_name = parse.determinePlayerName(file.readlines())
         self.spawn_box.delete(0, tk.END)
@@ -73,6 +80,12 @@ class file_frame(ttk.Frame):
                 self.match_box.insert(tk.END, time)
 
     def add_spawns(self):
+        self.file_strings = []
+        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
         if vars.match_timing != None:
             try:
@@ -89,11 +102,16 @@ class file_frame(ttk.Frame):
                 self.spawn_box.insert(tk.END, spawn)
 
     def add_files(self, silent=False):
-        os.chdir(vars.path)
+        os.chdir(vars.set_obj.cl_path)
         self.file_strings = []
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.ship_frame.ship_label_var.set("")
         if not silent:
             self.splash = overlay.splash_screen(self.main_window)
         try:
