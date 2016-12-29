@@ -80,10 +80,10 @@ class overlay(tk.Toplevel):
     def update_position(self):
         if vars.set_obj.size == "big":
             h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 5
-            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.8) + 2 ) * (14 + 6)
+            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.5) + 2 ) * (14 + 6)
         elif vars.set_obj.size == "small":
             h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 4
-            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.8) + 2) * (4 + 6)
+            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
         else:
             raise
         if vars.set_obj.pos == "TL":
