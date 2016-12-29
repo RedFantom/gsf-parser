@@ -81,7 +81,7 @@ razorwireAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon"
                       "Interdiction Mine", "Concussion Mine", "Ion Mine",
                       "Charged Plating", "Overcharged Shield", "Shield Projector"]
 decimusAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
-                    "Cluster Missiles", "Concussion Missile", "Proton Torpedo"
+                    "Cluster Missiles", "Concussion Missile", "Proton Torpedo",
                     "Shield Power Converter", "Power Dive", "Interdiction Drive",
                     "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone",
                     "Overcharged Shield", "Directional Shield", "Charged Plating"]
