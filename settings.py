@@ -7,6 +7,7 @@ import tkMessageBox
 # General imports
 import os
 import ConfigParser
+import tempfile
 # Own modules
 import vars
 
@@ -42,11 +43,16 @@ class defaults:
 # Class that loads, stores and saves settings
 class settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name = "settings.ini"):
-        self.file_name = file_name
+    def __init__(self, file_name = "settings.ini", directory = tempfile.gettempdir()):
+        try:
+            os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
+        except WindowsError:
+            pass
+        self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
+        self.file_name = directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
         self.conf = ConfigParser.RawConfigParser()
         vars.install_path = os.getcwd()
-        if self.file_name in os.listdir(os.path.dirname(os.path.realpath(__file__))):
+        if file_name in os.listdir(self.directory):
             try:
                 self.read_set()
             except ConfigParser.NoOptionError:
@@ -86,8 +92,6 @@ class settings:
         self.logo_color = self.conf.get("gui", "logo_color")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
-        print "[DEBUG] self.pos: ", self.pos
-        print "[DEBUG] self.auto_upl: ", self.auto_upl
         print "[DEBUG] Settings read"
         os.chdir(self.cl_path)
 
