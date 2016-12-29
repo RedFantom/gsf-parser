@@ -53,7 +53,6 @@ class file_frame(ttk.Frame):
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
 
     def add_matches(self):
-        self.file_strings = []
         self.spawn_box.delete(0, tk.END)
         self.main_window.middle_frame.abilities_label_var.set("")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -80,7 +79,6 @@ class file_frame(ttk.Frame):
                 self.match_box.insert(tk.END, time)
 
     def add_spawns(self):
-        self.file_strings = []
         self.main_window.middle_frame.abilities_label_var.set("")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
