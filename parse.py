@@ -636,8 +636,12 @@ def determinePlayerName(lines):
     :return: Player name, string
     """
     # In an unmodified file, lines[0] will always have this format
-    elements = re.split(r"[\[\]]", lines[0])  # Split line
-    return elements[3][1:]
+    for line in lines:
+        elements = re.split(r"[\[\]]", line)  # Split line
+        if elements[3] == elements[5]:
+            return elements[3][1:]
+        else:
+            continue
 
 # Debugging purposes
 if __name__ == "__main__":
