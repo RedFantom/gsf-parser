@@ -129,7 +129,7 @@ excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Lo
                      "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
                      "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
                      "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
-                     "Plasma Burn", "Plasma Warheads"]
+                     "Plasma Burn", "Plasma Warheads", "Space Exhaustion"]
 
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
 rep_ships = {"Legion":"Warcarrier",
