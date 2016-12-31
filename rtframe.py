@@ -94,7 +94,7 @@ class realtime_frame(ttk.Frame):
             while self.stalker_obj.is_alive():
                 print "[DEBUG] stalker_obj still running"
                 pass
-            if vars.set_obj.overlay:
+            if vars.set_obj.overlay and self.overlay:
                 self.overlay.destroy()
             self.overlay = None
             self.parsing_bar.stop()
