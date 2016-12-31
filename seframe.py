@@ -108,6 +108,10 @@ class settings_frame(ttk.Frame):
             self.overlay_font_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_font, value = font, text = font))
         self.overlay_text_size_label = ttk.Label(self.realtime_frame, text = "\tOverlay text size: ")
         self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width = 5)
+        self.overlay_when_gsf_label = ttk.Label(self.realtime_frame, text = "\tOnly display overlay in a GSF match: ")
+        self.overlay_when_gsf = tk.BooleanVar()
+        self.overlay_when_gsf_true = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf, text = "Yes", value = True)
+        self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf, text = "No", value = False)
         ### MISC ###
         self.separator = ttk.Separator(self.frame.interior, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -195,6 +199,9 @@ class settings_frame(ttk.Frame):
         for radio in self.overlay_font_radios:
             radio.grid(column = set_column, row = 8, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
+        self.overlay_when_gsf_label.grid(column = 0, row = 10)
+        self.overlay_when_gsf_true.grid(column = 1, row = 10)
+        self.overlay_when_gsf_false.grid(column = 2, row = 10)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=0, padx=2)
         self.discard_settings_button.grid(column=1, row=0, padx=2)
@@ -233,6 +240,7 @@ class settings_frame(ttk.Frame):
         self.overlay_font.set(vars.set_obj.overlay_tx_font)
         self.overlay_text_size_entry.delete(0, tk.END)
         self.overlay_text_size_entry.insert(0, vars.set_obj.overlay_tx_size)
+        self.overlay_when_gsf.set(vars.set_obj.overlay_when_gsf)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
@@ -255,7 +263,8 @@ class settings_frame(ttk.Frame):
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
                                opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
                                color=color, logo_color=self.logo_color.get(), bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
-                               tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(), tx_size=self.overlay_text_size_entry.get())
+                               tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(), tx_size=self.overlay_text_size_entry.get(),
+                               overlay_when_gsf=self.overlay_when_gsf.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

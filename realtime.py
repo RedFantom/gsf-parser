@@ -100,7 +100,9 @@ class Parser(object):
 
     def parse(self, line, recursion=False):
         self.dprint("[DEBUG] line", line)
-
+        if not line:
+            print "[DEBUG] Line is of NoneType"
+            pass
         # If first line of the file, save the player name
         if(self.player_name == '' and '@' in line['source']):
             self.player_name = line['source'][1:]

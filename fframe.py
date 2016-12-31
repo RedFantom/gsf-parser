@@ -194,7 +194,10 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
             for enemy in vars.enemies:
-                self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                if enemy == "":
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                else:
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
@@ -227,7 +230,10 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
             for enemy in vars.enemies:
-                self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                if enemy == "":
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                else:
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)

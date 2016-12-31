@@ -16,11 +16,13 @@ import realtime
 import stalking_alt
 import overlay
 import statistics
+import cv2
 
 class realtime_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
         self.parser = None
+        self.overlay = None
         self.main_window = main_window
         self.listbox = tk.Listbox(self, width = 105, height = 15)
         self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview())
@@ -60,6 +62,9 @@ class realtime_frame(ttk.Frame):
         self.parse = []
         self.parsing_bar = ttk.Progressbar(self, orient = tk.HORIZONTAL, mode = "indeterminate")
         self.uploading_bar = ttk.Progressbar(self, orient = tk.HORIZONTAL, mode = "indeterminate")
+        self.watching_stringvar = tk.StringVar()
+        self.watching_label = ttk.Label(self, textvariable = self.watching_stringvar, justify = tk.LEFT)
+        self.watching_stringvar.set("Watching no CombatLog...")
 
     def start_parsing(self):
         if not self.parsing:
@@ -67,10 +72,10 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path)
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path, watching_stringvar=self.watching_stringvar)
             vars.FLAG = True
             self.stalker_obj.start()
-            if vars.set_obj.overlay:
+            if vars.set_obj.overlay and not vars.set_obj.overlay_when_gsf:
                 self.overlay = overlay.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
@@ -91,8 +96,10 @@ class realtime_frame(ttk.Frame):
                 pass
             if vars.set_obj.overlay:
                 self.overlay.destroy()
+            self.overlay = None
             self.parsing_bar.stop()
             self.start_parsing_button.configure(text="Start real-time parsing")
+            self.watching_stringvar.set("Watching no CombatLog...")
 
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")
@@ -112,6 +119,7 @@ class realtime_frame(ttk.Frame):
         self.scrollbar.grid(column = 5, row = 3, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_label_one_text.set("")
         self.statistics_label_one_text.set("")
+        self.watching_label.grid(column = 0, row = 4, columnspan = 2, sticky = tk.W)
 
     def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, spawns):
         damage_done = 0
@@ -131,7 +139,7 @@ class realtime_frame(ttk.Frame):
                                            str(selfdamage) + "\n" +
                                            str(healing) + "\n" +
                                            str(spawns))
-        if vars.set_obj.overlay:
+        if self.overlay:
             if vars.set_obj.size == "big":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
@@ -169,13 +177,17 @@ class realtime_frame(ttk.Frame):
     def spawn_callback(dd, dt, hr, sd):
         vars.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
 
-    @staticmethod
-    def match_callback(dd, dt, hr, sd):
+    def match_callback(self, dd, dt, hr, sd):
         vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
+        if vars.set_obj.overlay_when_gsf and self.overlay:
+            self.overlay.destroy()
+            self.overlay = None
 
     def new_match_callback(self):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
+        if vars.set_obj.overlay_when_gsf and not self.overlay:
+            self.overlay = overlay.overlay(self.main_window)
 
     def insert(self):
         while vars.insert_queue.qsize():

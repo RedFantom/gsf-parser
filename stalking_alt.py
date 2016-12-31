@@ -10,9 +10,10 @@ import time
 from datetime import datetime
 
 class LogStalker(threading.Thread):
-    def __init__(self, folder=vars.set_obj.cl_path, callback=None):
+    def __init__(self, folder=vars.set_obj.cl_path, callback=None, watching_stringvar=None):
         threading.Thread.__init__(self)
         self.folder = folder
+        self.stringvar = watching_stringvar
         print self.folder
         if not callback:
             raise ValueError("callback is not allowed to be None")
@@ -43,6 +44,8 @@ class LogStalker(threading.Thread):
                 self.callback(self.read_from_file())
             else:
                 print "[DEBUG] Watching: " + latest_file_name
+                if self.stringvar:
+                    self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
                 with open(self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
