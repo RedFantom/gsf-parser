@@ -16,7 +16,6 @@ import realtime
 import stalking_alt
 import overlay
 import statistics
-import cv2
 
 class realtime_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
