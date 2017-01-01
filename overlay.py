@@ -18,6 +18,7 @@ import statistics
 class splash_screen(tk.Toplevel):
     def __init__(self, window, boot=False, max=None):
         tk.Toplevel.__init__(self, window)
+        self.grab_set()
         self.label = ttk.Label(self, text = "Working...")
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")

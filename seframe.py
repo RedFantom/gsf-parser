@@ -50,8 +50,8 @@ class settings_frame(ttk.Frame):
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = ttk.Entry(self.entry_frame, width=100)
-        self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder:")
-        self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification:")
+        self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder: ")
+        self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification: ")
         self.privacy_var = tk.BooleanVar()
         self.privacy_select_true = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
         self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False, text = "No")
