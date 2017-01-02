@@ -369,7 +369,6 @@ class statistics:
         abilities_string = "Ability\t\t\tTimes used\n\n"
         ship_components = []
         for key in abilitiesdict:
-            abilities_string += key + "\n"
             if key in abilities.components:
                 ship_components.append(key)
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
