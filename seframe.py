@@ -258,6 +258,10 @@ class settings_frame(ttk.Frame):
             color = self.custom_color_entry.get()
         else:
             color = self.color.get()
+        if self.overlay_when_gsf.get() and not vars.set_obj.overlay_when_gsf:
+            help_string = """This setting makes the overlay only appear inside GSF matches. Please note that the overlay will only appear after the
+                             first GSF ability is executed, so the overlay may appear to display a little late, but this is normal behaviour."""
+            tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
         vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=str(self.privacy_var.get()),
                                server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
