@@ -368,6 +368,10 @@ class statistics:
                 killsassists += 1
         abilities_string = "Ability\t\t\tTimes used\n\n"
         ship_components = []
+        for key in abilitiesdict:
+            abilities_string += key + "\n"
+            if key in abilities.components:
+                ship_components.append(key)
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
         for (key, value) in abilitiesdict.iteritems():
             if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
@@ -429,7 +433,6 @@ class statistics:
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
-
         return abilities_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
 colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
