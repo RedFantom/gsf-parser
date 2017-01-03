@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+
+# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# For license see LICENSE
+
+# UI Imports
+import mtTkinter as tk
+import ttk
+import tkMessageBox
+# General imports
+import matplotlib
+matplotlib.use('TkAgg')
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+from matplotlib import pyplot
+from matplotlib import dates as matdates
+import numpy
+import os
+import datetime
+# Own modules
+import vars
+import parse
+import overlay
+
+class graphs_frame(ttk.Frame):
+    def __init__(self, root, main_window):
+        ttk.Frame.__init__(self, root)
+        if matplotlib.get_backend() != "TkAgg":
+            raise
+        self.main_window = main_window
+        self.type_graph = tk.StringVar()
+        self.graph_label = ttk.Label(self, text = "Here you can view various types of graphs of your performance over time.", justify = tk.LEFT,
+                                     font = ("Calibri", 12))
+        self.play_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "play", text = "Matches played")
+        self.dmgd_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgd", text = "Damage dealt")
+        self.dmgt_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgt", text = "Damage taken")
+        self.hrec_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "hrec", text = "Healing received")
+        self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies damage dealt to")
+        self.update_button = ttk.Button(self, command = self.update_graph, text = "Update graph")
+        self.figure, self.axes = pyplot.subplots(figsize=(8.3, 4.2))
+        pyplot.ion()
+        self.canvas = FigureCanvasTkAgg(self.figure, self)
+        self.canvasw = self.canvas.get_tk_widget()
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar.update()
+
+    def update_graph(self):
+        if self.type_graph.get() == "play":
+            files_dates = {}
+            datetimes = []
+            vars.files_done = 0
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)))
+            matches_played_date = {}
+            for file in os.listdir(vars.set_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except: continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                    file_cube, match_timings, spawn_timings = parse.splitter(lines, parse.determinePlayer(lines))
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                vars.files_done += 1
+                self.splash_screen.update_progress()
+            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()))
+            self.axes.xaxis_date()
+            pyplot.title("Matches played")
+            pyplot.ylabel("Amount of matches")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom = 0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        else:
+            tkMessageBox.showinfo("Notice", "This graph is not yet supported.")
+
+    def grid_widgets(self):
+        self.graph_label.grid(column = 0, row = 0, rowspan = 1, columnspan = 2, sticky = tk.W, pady = 5)
+        self.play_graph_radio.grid(column = 0, row = 1, sticky = tk.W)
+        self.dmgd_graph_radio.grid(column = 0, row = 2, sticky = tk.W)
+        self.dmgt_graph_radio.grid(column = 0, row = 3, sticky = tk.W)
+        self.hrec_graph_radio.grid(column = 0, row = 4, sticky = tk.W)
+        self.enem_graph_radio.grid(column = 0, row = 5, sticky = tk.W)
+        self.update_button.grid(column = 0, row = 6, sticky =tk.W + tk.E + tk.N + tk.S)
+        self.canvasw.grid(column = 1, row = 1, rowspan = 20, sticky = tk.N + tk.W, padx = 10)
+        self.toolbar.grid(column = 1, row = 21, sticky =tk.N + tk.W)
+        # self.canvas._tkcanvas.grid(column = 1, row = 0, rowspan = 5)
+
+    def close(self):
+        pyplot.close()
+

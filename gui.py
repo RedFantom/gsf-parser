@@ -15,10 +15,12 @@ import vars
 import client
 import overlay
 import main
-import fframe
-import rtframe
-import seframe
-import shframe
+import fileframe
+import realtimeframe
+import settingsframe
+import sharingframe
+import graphsframe
+import resourcesframe
 
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
@@ -54,13 +56,15 @@ class main_window(tk.Tk):
         self.notebook = ttk.Notebook(self, height = 420, width = 800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
-        self.share_tab_frame = shframe.share_frame(self.notebook)
+        self.share_tab_frame = sharingframe.share_frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
-        self.file_select_frame = fframe.file_frame(self.file_tab_frame, self)
-        self.realtime_frame = rtframe.realtime_frame(self.realtime_tab_frame, self)
-        self.middle_frame = fframe.middle_frame(self.file_tab_frame, self)
-        self.ship_frame = fframe.ship_frame(self.file_tab_frame)
-        self.settings_frame = seframe.settings_frame(self.settings_tab_frame, self)
+        self.file_select_frame = fileframe.file_frame(self.file_tab_frame, self)
+        self.realtime_frame = realtimeframe.realtime_frame(self.realtime_tab_frame, self)
+        self.middle_frame = fileframe.middle_frame(self.file_tab_frame, self)
+        self.ship_frame = fileframe.ship_frame(self.file_tab_frame)
+        self.settings_frame = settingsframe.settings_frame(self.settings_tab_frame, self)
+        self.graphs_frame = graphsframe.graphs_frame(self.notebook, self)
+        self.resources_frame = resourcesframe.resources_frame(self.notebook, self)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column = 1, row = 1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
@@ -71,11 +75,16 @@ class main_window(tk.Tk):
         self.ship_frame.grid(column=3, row=1, sticky=tk.N+tk.S+tk.E+tk.W)
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
+        self.graphs_frame.grid(column = 0, row = 0)
+        self.graphs_frame.grid_widgets()
+        self.resources_frame.grid()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text = "File parsing")
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
         # TODO Finish Sharing and Leaderboards tab
         self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
+        self.notebook.add(self.graphs_frame, text = "Graphs")
+        self.notebook.add(self.resources_frame, text = "Resources")
         self.notebook.add(self.settings_tab_frame, text = "Settings")
         # Update the files in the file_select frame
         self.notebook.grid(column = 0, row = 0)
@@ -92,6 +101,7 @@ class main_window(tk.Tk):
     def on_close(self):
         vars.FLAG = False
         self.destroy()
+        self.graphs_frame.close()
         sys.exit()
 
     def update_style(self, start=False):

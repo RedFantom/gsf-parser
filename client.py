@@ -373,6 +373,7 @@ class client_conn:
 
     @staticmethod
     def wrap_conn_obj(sock):
+        ssl.create_default_context()
         wrapped = ssl.wrap_socket(sock)
         return wrapped
 
