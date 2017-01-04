@@ -18,6 +18,7 @@ from matplotlib import dates as matdates
 import numpy
 import os
 import datetime
+import collections
 # Own modules
 import vars
 import parse
@@ -44,13 +45,16 @@ class graphs_frame(ttk.Frame):
         self.canvasw = self.canvas.get_tk_widget()
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
         self.toolbar.update()
+        self.figure.clear()
 
     def update_graph(self):
+        self.figure.clear()
         if self.type_graph.get() == "play":
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)))
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                       title="Calculating graph...")
             matches_played_date = {}
             for file in os.listdir(vars.set_obj.cl_path):
                 if not file.endswith(".txt"):
@@ -72,6 +76,146 @@ class graphs_frame(ttk.Frame):
             self.axes.xaxis_date()
             pyplot.title("Matches played")
             pyplot.ylabel("Amount of matches")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom = 0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "dmgd":
+            files_dates = {}
+            datetimes = []
+            vars.files_done = 0
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                       title="Calculating graph...")
+            matches_played_date = {}
+            damage_per_date = {}
+            for file in os.listdir(vars.set_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except: continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in damage_per_date:
+                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[2]])
+                else:
+                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[2]])
+                vars.files_done += 1
+                self.splash_screen.update_progress()
+            avg_dmg_date = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    pass
+            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            self.axes.xaxis_date()
+            pyplot.title("Average damage taken per match")
+            pyplot.ylabel("Amount of damage")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom = 0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "dmgt":
+            files_dates = {}
+            datetimes = []
+            vars.files_done = 0
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                       title="Calculating graph...")
+            matches_played_date = {}
+            damage_per_date = {}
+            for file in os.listdir(vars.set_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except: continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in damage_per_date:
+                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[1]])
+                else:
+                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[1]])
+                vars.files_done += 1
+                self.splash_screen.update_progress()
+            avg_dmg_date = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    pass
+            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            self.axes.xaxis_date()
+            pyplot.title("Average healing received per match")
+            pyplot.ylabel("Amount of damage")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom = 0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "hrec":
+            files_dates = {}
+            datetimes = []
+            vars.files_done = 0
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)))
+            matches_played_date = {}
+            damage_per_date = {}
+            for file in os.listdir(vars.set_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except: continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in damage_per_date:
+                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[4]])
+                else:
+                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[4]])
+                vars.files_done += 1
+                self.splash_screen.update_progress()
+            avg_dmg_date = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    pass
+            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            self.axes.xaxis_date()
+            pyplot.title("Average damage taken per match")
+            pyplot.ylabel("Amount of damage")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())

@@ -80,10 +80,10 @@ class main_window(tk.Tk):
         self.resources_frame.grid()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text = "File parsing")
+        self.notebook.add(self.graphs_frame, text = "Graphs")
         self.notebook.add(self.realtime_tab_frame, text = "Real-time parsing")
         # TODO Finish Sharing and Leaderboards tab
         self.notebook.add(self.share_tab_frame, text = "Sharing and Leaderboards")
-        self.notebook.add(self.graphs_frame, text = "Graphs")
         self.notebook.add(self.resources_frame, text = "Resources")
         self.notebook.add(self.settings_tab_frame, text = "Settings")
         # Update the files in the file_select frame
