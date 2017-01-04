@@ -14,12 +14,9 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib import pyplot
 from matplotlib import dates as matdates
-import matplotlib.mlab as mlab
-import matplotlib.ticker as ticker
 import os
 import datetime
 from collections import OrderedDict
-import numpy
 # Own modules
 import vars
 import parse
