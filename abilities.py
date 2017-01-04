@@ -1,6 +1,14 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
+
+'''
+This file contains lists and dictionaries of the abilities and ships used in Galactic StarFighter,
+in order for the parser to be able to identify ships by their components and abilities and print
+them neatly onto the screen.
+'''
+
+# A list of ALL components available in Galactic StarFighter
 components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon",
               "Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile",
@@ -11,6 +19,9 @@ components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad 
               "Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
                     "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
+# The ID numbers of abilities and their English names
+# For future support of multiple Combatlog languages
+# Automatically generated, some abilities may be missing
 components_english = {'3330936116609024': 'Hyperspace Beacon', 
                       '3300630827368448': 'Shield Power Converter', 
                       '3294609283219456': 'Distortion Field', 
@@ -59,6 +70,9 @@ components_english = {'3330936116609024': 'Hyperspace Beacon',
                       '3327289689374720': 'Interdiction Mine', 
                       '3326061328728064': 'Ion Mine'}
 
+'''
+All components sorted into categories of their component type
+'''
 primaries = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon"]
 secondaries = ["Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile"]
@@ -69,7 +83,11 @@ systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry 
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
                     "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
-# These lists were made with the help of Yellowbird
+'''
+These lists were made with the help of Yellowbird
+
+Lists of the components supported by each ship
+'''
 legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
                    "Proton Torpedo", "Concussion Missile", "Seeker Mine",
                    "Shield Power Converter", "Interdiction Drive",
@@ -131,7 +149,11 @@ excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Lo
                      "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
                      "Plasma Burn", "Plasma Warheads", "Space Exhaustion"]
 
+# All ships with their Imperial Faction names available in GSF
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
+
+# A dictionary for converting the names of the ships to the Republic Faction
+# names, for future feature of allowing both faction names
 rep_ships = {"Legion":"Warcarrier",
              "Razorwire":"Rampart Mark Four",
              "Decimus":"Sledgehammer",
@@ -144,8 +166,7 @@ rep_ships = {"Legion":"Warcarrier",
              "Sting":"Flashfire",
              "Bloodmark":"Spearpoint",
              "Blackbolt":"Novadive"}
-ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : "Rampart Mark Four",
-             "Jurgoran" : "Condor", "Dustmaker" : "Comet Breaker", "Mangler" : "Quarrel",
-             "Bloodmark" : "Spearpoint", "Blackbolt" : "Novadive", "Sting" : "Flashfire",
-             "Imperium" : "Clarion", "Rycer" : "Star Guard", "Quell" : "Pike"}
+
+# The ships with their Imperial Faction names to print on the screen, with \t padding
+# to make the printing look the same for every ship.
 ships_strings = ["Legion\t", "Decimus\t", "Razorwire\t", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark", "Blackbolt\t", "Sting\t", "Imperium\t", "Rycer\t", "Quell\t"]

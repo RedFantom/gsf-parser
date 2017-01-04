@@ -8,6 +8,7 @@
 import mtTkinter as tk
 import ttk
 import tkMessageBox
+import tkSimpleDialog
 # General imports
 import time
 # Own modules
@@ -102,6 +103,9 @@ class realtime_frame(ttk.Frame):
 
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")
+        return
+        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you want the character you're playing now to belong to in the database. Enter nothing or the name of the character you're currently playing on to create a new main character.")
+
 
     def grid_widgets(self):
         self.start_parsing_button.grid(column = 0, row = 1, padx = 5, pady = 5)
