@@ -9,7 +9,7 @@ components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad 
               "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone", "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
                     "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine", "Ion Mine", "Concussion Mine", "Tensor Field", 
               "Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
-                    "Directional Shield", "Distortion Field", "Quick-charge Shield"]
+                    "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
 components_english = {'3330936116609024': 'Hyperspace Beacon', 
                       '3300630827368448': 'Shield Power Converter', 
@@ -67,7 +67,7 @@ engines = ["Shield Power Converter", "Weapon Power Converter", "Engine Power Con
 systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone", "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
                     "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine", "Ion Mine", "Concussion Mine", "Tensor Field"]
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
-                    "Directional Shield", "Distortion Field", "Quick-charge Shield"]
+                    "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
 # These lists were made with the help of Yellowbird
 legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
@@ -106,12 +106,12 @@ blackboltAbilities = ["Rapid-fire Laser Cannon", "Light Laser Cannon", "Laser Ca
                       "Rocket Pod", "Thermite Torpedo", "Sabotage Probe",
                       "Power Dive", "Snap Turn", "Barrel Roll", "Koiogran Turn",
                       "Targeting Telemetry", "EMP Field", "Booster Recharge", "Sensor Beacon",
-                      "Distortion Field", "Quick-charge Shield", "Engine Power Converter"]
+                      "Distortion Field", "Quick-Charge Shield", "Engine Power Converter"]
 stingAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon",
                   "Rocket Pod", "Cluster Missiles", "Sabotage Probe"
                   "Koiogran Turn", "Retro Thrusters", "Power Dive", "Barrel Roll",
                   "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
-                  "Distortion Field", "Quick-charge Shield", "Directional Shield"]
+                  "Distortion Field", "Quick-Charge Shield", "Directional Shield"]
 imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Laser Cannon",
                      "Thermite Torpedo", "EMP Missile", "Proton Torpedo", "Ion Missile",
                      "Koiogran Turn", "Shield Power Converter", "Power Dive", "Interdiction Drive",
@@ -120,11 +120,11 @@ imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Lase
 rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon", "Laser Cannon",
                   "Concussion Missile", "Cluster Missiles", "Proton Torpedo",
                   "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn",
-                  "Charged Plating", "Quick-charge Shield", "Directional Shield"]
+                  "Charged Plating", "Quick-Charge Shield", "Directional Shield"]
 quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon",
                   "Cluster Missiles", "Ion Missile", "Proton Torpedo", "Concussion Missile", "EMP Missile",
                   "Weapon Power Converter", "Shield Power Converter", "Koiogran Turn", "Barrel Roll",
-                  "Quick-charge Shield", "Directional Shield", "Charged Plating"]
+                  "Quick-Charge Shield", "Directional Shield", "Charged Plating"]
 excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
                      "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
                      "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
