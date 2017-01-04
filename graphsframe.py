@@ -12,13 +12,14 @@ import tkMessageBox
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
 from matplotlib import pyplot
 from matplotlib import dates as matdates
-import numpy
+import matplotlib.mlab as mlab
+import matplotlib.ticker as ticker
 import os
 import datetime
-import collections
+from collections import OrderedDict
+import numpy
 # Own modules
 import vars
 import parse
@@ -31,16 +32,17 @@ class graphs_frame(ttk.Frame):
             raise
         self.main_window = main_window
         self.type_graph = tk.StringVar()
+        self.type_graph.set("play")
         self.graph_label = ttk.Label(self, text = "Here you can view various types of graphs of your performance over time.", justify = tk.LEFT,
                                      font = ("Calibri", 12))
         self.play_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "play", text = "Matches played")
         self.dmgd_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgd", text = "Damage dealt")
         self.dmgt_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgt", text = "Damage taken")
         self.hrec_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "hrec", text = "Healing received")
-        self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies damage dealt to")
+        # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies damage dealt to")
         self.update_button = ttk.Button(self, command = self.update_graph, text = "Update graph")
         self.figure, self.axes = pyplot.subplots(figsize=(8.3, 4.2))
-        pyplot.ion()
+        # pyplot.ion()
         self.canvas = FigureCanvasTkAgg(self.figure, self)
         self.canvasw = self.canvas.get_tk_widget()
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
@@ -72,7 +74,7 @@ class graphs_frame(ttk.Frame):
                     matches_played_date[file_date] += len(file_cube)
                 vars.files_done += 1
                 self.splash_screen.update_progress()
-            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()))
+            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()), color=vars.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Matches played")
             pyplot.ylabel("Amount of matches")
@@ -119,7 +121,8 @@ class graphs_frame(ttk.Frame):
                 except ZeroDivisionError:
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
-            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average damage taken per match")
             pyplot.ylabel("Amount of damage")
@@ -166,9 +169,10 @@ class graphs_frame(ttk.Frame):
                 except ZeroDivisionError:
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
-            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Average healing received per match")
+            pyplot.title("Average damage taken per match")
             pyplot.ylabel("Amount of damage")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
@@ -180,7 +184,8 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)))
+            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                       title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(vars.set_obj.cl_path):
@@ -212,10 +217,11 @@ class graphs_frame(ttk.Frame):
                 except ZeroDivisionError:
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
-            pyplot.bar(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()))
+            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key = lambda t: t[0]))
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Average damage taken per match")
-            pyplot.ylabel("Amount of damage")
+            pyplot.title("Average healing received per match")
+            pyplot.ylabel("Amount of healing")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
@@ -223,7 +229,9 @@ class graphs_frame(ttk.Frame):
             self.canvas.show()
             self.splash_screen.destroy()
         else:
-            tkMessageBox.showinfo("Notice", "This graph is not yet supported.")
+            tkMessageBox.showinfo("Notice", "No correct graph type selected!")
+        self.axes.set_ylim(bottom=0.)
+
 
     def grid_widgets(self):
         self.graph_label.grid(column = 0, row = 0, rowspan = 1, columnspan = 2, sticky = tk.W, pady = 5)
@@ -231,12 +239,20 @@ class graphs_frame(ttk.Frame):
         self.dmgd_graph_radio.grid(column = 0, row = 2, sticky = tk.W)
         self.dmgt_graph_radio.grid(column = 0, row = 3, sticky = tk.W)
         self.hrec_graph_radio.grid(column = 0, row = 4, sticky = tk.W)
-        self.enem_graph_radio.grid(column = 0, row = 5, sticky = tk.W)
         self.update_button.grid(column = 0, row = 6, sticky =tk.W + tk.E + tk.N + tk.S)
         self.canvasw.grid(column = 1, row = 1, rowspan = 20, sticky = tk.N + tk.W, padx = 10)
         self.toolbar.grid(column = 1, row = 21, sticky =tk.N + tk.W)
-        # self.canvas._tkcanvas.grid(column = 1, row = 0, rowspan = 5)
 
     def close(self):
+        print "[DEBUG] Close() of graphs_frame called"
+        # Plots are not correctly closed, threads keep running in the background
+        # This is a known bug to matplotlib and Tkinter: TkAgg
+        pyplot.cla()
+        pyplot.clf()
         pyplot.close()
+        pyplot.close('all')
+        pyplot.plot()
+        self.figure.clear()
+        self.canvasw.destroy()
+        self.toolbar.destroy()
 

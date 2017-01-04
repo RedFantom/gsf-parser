@@ -9,7 +9,6 @@ import mtTkinter as tk
 import ttk
 # General imports
 import os
-import sys
 # Own modules
 import vars
 import client
@@ -100,9 +99,11 @@ class main_window(tk.Tk):
 
     def on_close(self):
         vars.FLAG = False
-        self.destroy()
         self.graphs_frame.close()
-        sys.exit()
+        self.destroy()
+        # Due to a bug in matplotlib, not all plots are closed when using pyplot.close('all')
+        # Terminating the process manually is required
+        os.kill(os.getpid(), 9)
 
     def update_style(self, start=False):
         try:
