@@ -11,6 +11,7 @@ import tkMessageBox
 import os
 import getpass
 import sys
+import tempfile
 # Own modules
 import vars
 import statistics
@@ -25,6 +26,10 @@ class splash_screen(tk.Toplevel):
         self.progress_bar.pack()
         try:
             list = os.listdir(vars.set_obj.cl_path)
+        except WindowsError:
+            print "[DEBUG] Error changing directory"
+            tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
+            return
         except:
             print "[DEBUG] Running on UNIX, functionality disabled"
             return
@@ -52,9 +57,12 @@ class overlay(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.update_position()
         if sys.platform == "win32":
-            with open('C:/Users/' + getpass.getuser() + "/AppData/Local/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
-                if "D3DFullScreen = true" in swtor:
-                    tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
+            try:
+                with open(tempfile.gettempdir().replace("temp", "") + "/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
+                    if "D3DFullScreen = true" in swtor:
+                        tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
+            except IOError:
+                tkMessageBox.showerror("Error", "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
         print "[DEBUG] Setting overlay font to: ", (vars.set_obj.overlay_tx_font, vars.set_obj.overlay_tx_size)
         if vars.set_obj.size == "big":
             self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT,
@@ -139,7 +147,11 @@ class boot_splash(tk.Toplevel):
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 462, mode = "determinate")
         self.progress_bar.pack()
-        directory = os.listdir(window.default_path)
+        try:
+            directory = os.listdir(window.default_path)
+        except WindowsError:
+            tkMessageBox.showerror("Error", "Error accessing directory set in settings. Please check your settings.")
+            directory = []
         files = []
         for file in directory:
             if file.endswith(".txt"):
