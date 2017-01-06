@@ -130,7 +130,10 @@ class file_frame(ttk.Frame):
         :param silent:
         :return:
         '''
-        os.chdir(vars.set_obj.cl_path)
+        try:
+            os.chdir(vars.set_obj.cl_path)
+        except WindowsError:
+            return
         self.file_strings = []
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
@@ -386,6 +389,8 @@ class ship_frame(ttk.Frame):
             self.ship_image.config(image=self.pic)
         except IOError:
             raise IOError
+        except tk.TclError:
+            pass
 
     def remove_image(self):
         '''
@@ -397,7 +402,10 @@ class ship_frame(ttk.Frame):
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return
-        self.ship_image.config(image=self.pic)
+        try:
+            self.ship_image.config(image=self.pic)
+        except tk.TclError:
+            pass
 
 class middle_frame(ttk.Frame):
     '''
