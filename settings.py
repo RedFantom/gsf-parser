@@ -98,7 +98,10 @@ class settings:
         else:
             self.overlay_when_gsf = False
         print "[DEBUG] Settings read"
-        os.chdir(self.cl_path)
+        try:
+            os.chdir(self.cl_path)
+        except WindowsError:
+            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
 
     # Write the defaults settings found in the class defaults to a pickle in a file
     def write_def(self):
@@ -133,7 +136,10 @@ class settings:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
         self.read_set()
-        os.chdir(self.cl_path)
+        try:
+            os.chdir(self.cl_path)
+        except WindowsError:
+            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
 
         # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always written
@@ -182,4 +188,7 @@ class settings:
             self.conf.write(settings_file_object)
         self.read_set()
         print "[DEBUG] Settings written"
-        os.chdir(self.cl_path)
+        try:
+            os.chdir(self.cl_path)
+        except WindowsError:
+            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
