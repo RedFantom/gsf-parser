@@ -19,6 +19,25 @@ import overlay
 import statistics
 
 class realtime_frame(ttk.Frame):
+    '''
+    A frame that contains all buttons and widgets involved in real-time parsing
+    Callbacks for the buttons control the parsing and a listbox displays the events
+    that have been recorded in the real-time parsing process
+
+    --------------------------------------------------------------------------
+    | ________________  ________________  ________________  ________________ |
+    | |Start parsing |  |Start upload  |  |Server dropd  |  |Faction dropd | |
+    |                                                                        |
+    | ________________  ________________  Stastics string                    |
+    | | parsing bar  |  |uploading bar |  Stastics string                    |
+    | ______________________________________________________________________ |
+    | | event                                                          |/\|| |
+    | | event                                                          ||||| |
+    | | event                                                          |  || |
+    | |________________________________________________________________|\/|| |
+    | Watching string                                                        |
+    --------------------------------------------------------------------------
+    '''
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
         self.parser = None
