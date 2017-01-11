@@ -26,6 +26,19 @@ class file_frame(ttk.Frame):
     one for spawns, and updates them and other widgets after parsing the files using the
     methods found in the parse.py module accordingly. This frame controls the whole of file
     parsing, the other frames only display the results.
+    --------------------
+    | combatlog_1 | /\ |
+    | combatlog_2 | || |
+    | combatlog_3 | \/ |
+    --------------------
+    | match_1     | /\ |
+    | match_2     | || |
+    | match_3     | \/ |
+    --------------------
+    | spawn_1     | /\ |
+    | spawn_2     | || |
+    | spawn_3     | \/ |
+    --------------------
     '''
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
@@ -326,6 +339,17 @@ class ship_frame(ttk.Frame):
     '''
     Simple frame with a picture and a string containing information about the ships
     used by the player.
+    -----------------------------------
+    | ------------------------------- |
+    | |                             | |
+    | | image of ship of player     | |
+    | |                             | |
+    | ------------------------------- |
+    | string                          |
+    | of                              |
+    | text                            |
+    |                                 |
+    -----------------------------------
     '''
 
     def __init__(self, root_frame):
@@ -410,8 +434,38 @@ class ship_frame(ttk.Frame):
 class middle_frame(ttk.Frame):
     '''
     A simple frame containing a notebook with three tabs to show statistics and information to the user
-    '''
+    Main frame:
+    ----------------------------------
+    |  _____ _____ _____             |
+    | |_____|_____|_____|___________ |
+    | | frame to display            ||
+    | |_____________________________||
+    ----------------------------------
 
+    Statistics tab:
+    ----------------------------------
+    | list                           |
+    | of                             |
+    | stats                          |
+    ----------------------------------
+
+    Enemies tab:
+    -----------------------------
+    | Help string               |
+    | ______ ______ ______ ____ |
+    | |enem| |dmgd| |dmgt| |/\| |
+    | |enem| |dmgd| |dmgt| |||| |
+    | |enem| |dmgd| |dmgt| |\/| |
+    | |____| |____| |____| |__| |
+    -----------------------------
+
+    Abilities tab:
+    -----------------------------
+    | ability              |/\| |
+    | ability              |||| |
+    | ability              |\/| |
+    -----------------------------
+    '''
     def __init__(self, root_frame, main_window):
         '''
         Set up all widgets and variables. StringVars can be manipulated by the file frame,
