@@ -46,12 +46,15 @@ class realtime_frame(ttk.Frame):
         self.listbox = tk.Listbox(self, width = 105, height = 15)
         self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview())
         self.listbox.config(yscrollcommand=self.scrollbar.set, font = ("Consolas", 10))
-        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\nSelfdamage:\nHealing received:\nSpawns:")
+        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\n"+\
+                                                   "Selfdamage:\nHealing received:\nSpawns:")
         self.statistics_list_label_two = ttk.Label(self, justify = tk.LEFT, text = "Abilities:")
         self.statistics_label_one_text = tk.StringVar()
         self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
-        self.start_parsing_button = ttk.Button(self, text = "Start real-time parsing", command=self.start_parsing, width = 25)
-        self.upload_results_button = ttk.Button(self, text = "Start uploading events", command= self.upload_events, width = 25)
+        self.start_parsing_button = ttk.Button(self, text = "Start real-time parsing", command=self.start_parsing,
+                                               width = 25)
+        self.upload_results_button = ttk.Button(self, text = "Start uploading events", command= self.upload_events,
+                                                width = 25)
         self.server = tk.StringVar()
         self.faction = tk.StringVar()
         self.faction_list = ttk.OptionMenu(self, self.faction,
@@ -91,7 +94,8 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path, watching_stringvar=self.watching_stringvar)
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path,
+                                                       watching_stringvar=self.watching_stringvar)
             vars.FLAG = True
             self.stalker_obj.start()
             if vars.set_obj.overlay and not vars.set_obj.overlay_when_gsf:
@@ -123,7 +127,10 @@ class realtime_frame(ttk.Frame):
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")
         return
-        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you want the character you're playing now to belong to in the database. Enter nothing or the name of the character you're currently playing on to create a new main character.")
+        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you "+\
+                                            "want the character you're playing now to belong to in the database. Enter"+\
+                                            "nothing or the name of the character you're currently playing on to "+\
+                                            "create a new main character.")
 
 
     def grid_widgets(self):
@@ -180,7 +187,8 @@ class realtime_frame(ttk.Frame):
         if not self.parsing:
             return
         if not self.parser:
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback, statistics.pretty_event)
+            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
+                                          statistics.pretty_event)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)
@@ -191,16 +199,19 @@ class realtime_frame(ttk.Frame):
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
             self.spawns = self.parser.active_ids
-            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities, len(self.spawns))
+            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities,
+                              len(self.spawns))
         for obj in self.parse:
             obj.close()
 
     @staticmethod
     def spawn_callback(dd, dt, hr, sd):
-        vars.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
+        vars.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
+                                                                                      str(sum(hr)), str(sum(sd))))
 
     def match_callback(self, dd, dt, hr, sd):
-        vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)), str(sum(hr)), str(sum(sd))))
+        vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
+                                                                                      str(sum(hr)), str(sum(sd))))
         if vars.set_obj.overlay_when_gsf and self.overlay:
             self.overlay.destroy()
             self.overlay = None

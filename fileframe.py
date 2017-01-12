@@ -239,7 +239,8 @@ class file_frame(ttk.Frame):
             numbers = self.match_box.curselection()
             vars.match_timing = self.match_timing_strings[numbers[0] - 1]
             file_cube = vars.file_cube
-            vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget, vars.uncounted = self.statistics_object.file_statistics(file_cube)
+            (vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged,
+             vars.enemydamaget, vars.uncounted) = self.statistics_object.file_statistics(file_cube)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -281,7 +282,8 @@ class file_frame(ttk.Frame):
                 print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
             for spawn in match:
                 vars.player_numbers.update(parse.determinePlayer(spawn))
-            vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.match_statistics(match)
+            (vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged,
+             vars.enemydamaget) = self.statistics_object.match_statistics(match)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -315,7 +317,8 @@ class file_frame(ttk.Frame):
             spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
             vars.spawn = spawn
             vars.player_numbers = parse.determinePlayer(spawn)
-            vars.abilities_string, vars.statistics_string, vars.ships_list, vars.ships_comps, vars.enemies, vars.enemydamaged, vars.enemydamaget = self.statistics_object.spawn_statistics(spawn)
+            (vars.abilities_string, vars.statistics_string, vars.ships_list, vars.ships_comps, vars.enemies,
+             vars.enemydamaged, vars.enemydamaget) = self.statistics_object.spawn_statistics(spawn)
             self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
             ships_string = "Possible ships used:\n"
@@ -422,7 +425,8 @@ class ship_frame(ttk.Frame):
         :return:
         '''
         try:
-            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\default.png").resize((300,180),Image.ANTIALIAS))
+            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
+                                                     "\\assets\\default.png").resize((300,180),Image.ANTIALIAS))
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return
@@ -482,14 +486,18 @@ class middle_frame(ttk.Frame):
         self.notebook.add(self.stats_frame, text = "Statistics")
         self.notebook.add(self.enemies_frame, text = "Enemies")
         self.events_frame = ttk.Frame(self, width = 300)
-        self.events_button = ttk.Button(self.events_frame, text = "Show events for spawn", command=self.show_events, state=tk.DISABLED, width = 43)
+        self.events_button = ttk.Button(self.events_frame, text = "Show events for spawn", command=self.show_events,
+                                        state=tk.DISABLED, width = 43)
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\nHealing received:\nHitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
+        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\nHealing received:\n" + \
+                  "Hitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
         self.statistics_label_var.set(string)
-        self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT, wraplength = 145)
+        self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT,
+                                          wraplength = 145)
         self.statistics_numbers_var = tk.StringVar()
         self.statistics_label.setvar()
-        self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var, justify = tk.LEFT, wraplength = 145)
+        self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var,
+                                            justify = tk.LEFT, wraplength = 145)
         self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
         self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 17)
         self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 17)
@@ -503,8 +511,10 @@ class middle_frame(ttk.Frame):
         self.abilities_frame = self.abilities_scrollable_frame.interior
         self.notebook.add(self.abilities_scrollable_frame, text = "Abilities")
         self.abilities_label_var = tk.StringVar()
-        self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var, justify = tk.LEFT, wraplength = 295)
-        self.notice_label = ttk.Label(self.stats_frame, text = "\n\n\n\nThe damage dealt for bombers can not be accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
+        self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var,
+                                         justify = tk.LEFT, wraplength = 295)
+        self.notice_label = ttk.Label(self.stats_frame, text = "\n\n\n\nThe damage dealt for bombers can not be" +
+                " accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
                                       justify = tk.LEFT, wraplength = 290)
 
     def show_events(self):

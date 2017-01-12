@@ -9,7 +9,6 @@ import ttk
 import tkMessageBox
 # General imports
 import os
-import getpass
 import sys
 import tempfile
 # Own modules
@@ -44,7 +43,9 @@ class splash_screen(tk.Toplevel):
         else:
             self.amount_files = max
         if(self.amount_files >= 50 and boot):
-            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombatLogs folder. You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the startup times." % self.amount_files)
+            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombatLogs folder. "+\
+                                  "You may want to archive some of your %s CombatLogs in order to speed up the parsing "+\
+                                  "program and the startup times." % self.amount_files)
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()
@@ -61,13 +62,14 @@ class overlay(tk.Toplevel):
             try:
                 with open(tempfile.gettempdir().replace("temp", "") + "/SWTOR/swtor/settings/client_settings.ini", "r") as swtor:
                     if "D3DFullScreen = true" in swtor:
-                        tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
+                        tkMessageBox.showerror("Error", "The overlay cannot be shown with the current SWTOR settings. "+\
+                                               "Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
             except IOError:
                 tkMessageBox.showerror("Error", "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
         print "[DEBUG] Setting overlay font to: ", (vars.set_obj.overlay_tx_font, vars.set_obj.overlay_tx_size)
         if vars.set_obj.size == "big":
-            self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:", justify = tk.LEFT,
-                                        font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
+            self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
+                                        justify = tk.LEFT, font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
                                         foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
         elif vars.set_obj.size == "small":
             self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT,
@@ -136,7 +138,8 @@ class boot_splash(tk.Toplevel):
         self.title("GSF Parser: Starting...")
         print vars.set_obj.logo_color
         try:
-            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logo_" + vars.set_obj.logo_color + ".png"))
+            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logo_" + \
+                                                      vars.set_obj.logo_color + ".png"))
             self.panel = ttk.Label(self, image = self.logo)
             self.panel.pack()
         except:
@@ -161,7 +164,9 @@ class boot_splash(tk.Toplevel):
         self.amount_files = len(files)
         '''
         if self.amount_files >= 50:
-            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombadwLogs folder. You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the startup times." % self.amount_files)
+            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombadwLogs folder. "+\
+            "You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the "+\
+            "startup times." % self.amount_files)
         '''
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0

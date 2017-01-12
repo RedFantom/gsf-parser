@@ -39,8 +39,8 @@ class graphs_frame(ttk.Frame):
         self.main_window = main_window
         self.type_graph = tk.StringVar()
         self.type_graph.set("play")
-        self.graph_label = ttk.Label(self, text = "Here you can view various types of graphs of your performance over time.", justify = tk.LEFT,
-                                     font = ("Calibri", 12))
+        self.graph_label = ttk.Label(self, text = "Here you can view various types of graphs of your performance over time.",
+                                     justify = tk.LEFT, font = ("Calibri", 12))
         self.play_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "play", text = "Matches played")
         self.dmgd_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgd", text = "Damage dealt")
         self.dmgt_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgt", text = "Damage taken")

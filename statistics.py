@@ -162,7 +162,8 @@ class statistics:
                     player_list.append(id)
 
         (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
-         hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
+         hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
+            parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
         total_abilities = {}
         total_damagetaken = 0
         total_damagedealt = 0
@@ -340,7 +341,9 @@ class statistics:
         except ZeroDivisionError:
             total_criticalluck = 0
         total_shipsdict["Uncounted"] = ships_uncounted
-        delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1])['time'][:-4].strip(), "%H:%M:%S") - datetime.datetime.strptime(vars.match_timing.strip(), "%H:%M:%S")
+        delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1]) \
+                                               ['time'][:-4].strip(), "%H:%M:%S") - \
+                                               datetime.datetime.strptime(vars.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -351,8 +354,8 @@ class statistics:
             damage_ratio_string = str(str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
-        statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
-                             damage_ratio_string +
+        statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
+                             str(total_damagetaken) + "\n" + damage_ratio_string +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n" + string + "\n" + str(dps))

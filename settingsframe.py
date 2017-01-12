@@ -38,7 +38,8 @@ class settings_frame(ttk.Frame):
         self.color_options = []
         self.color_choices = ["darkgreen", "darkblue", "darkred", "black", "white", "custom: "]
         for color in self.color_choices:
-            self.color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color, variable = self.color))
+            self.color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
+                                                      variable = self.color))
         self.color.set(vars.set_obj.color)
         self.logo_color_label = ttk.Label(self.gui_frame, text = "\tParser logo color: ")
         self.logo_color = tk.StringVar()
@@ -46,15 +47,18 @@ class settings_frame(ttk.Frame):
         self.logo_color_options = []
         self.logo_color.set(vars.set_obj.logo_color)
         for color in self.logo_color_choices:
-            self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color, variable = self.logo_color))
+            self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
+                                                           variable = self.logo_color))
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
         self.path_entry = ttk.Entry(self.entry_frame, width=100)
         self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder: ")
         self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification: ")
         self.privacy_var = tk.BooleanVar()
-        self.privacy_select_true = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True, text = "Yes")
-        self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False, text = "No")
+        self.privacy_select_true = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = True,
+                                                   text = "Yes")
+        self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False,
+                                                    text = "No")
         ### SHARING SETTINGS ###
         self.sharing_label = ttk.Label(self.frame.interior, text = "Share settings", justify=tk.LEFT)
         self.server_label = ttk.Label(self.server_frame, text = "\tServer for sharing: ")
@@ -63,29 +67,39 @@ class settings_frame(ttk.Frame):
         self.server_port_entry = ttk.Entry(self.server_frame, width=8)
         self.auto_upload_label = ttk.Label(self.upload_frame, text="\tAuto-upload CombatLogs to the server:\t\t")
         self.auto_upload_var = tk.BooleanVar()
-        self.auto_upload_false = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False, text="No")
-        self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True, text="Yes")
+        self.auto_upload_false = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False,
+                                                 text="No")
+        self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True,
+                                                text="Yes")
         ### REAL-TIME SETTINGS ###
         # TODO Add more colours for the overlay
         # TODO Add events view possibility to the overlay
         self.realtime_settings_label = ttk.Label(self.realtime_frame, text = "Real-time parsing settings")
         self.overlay_enable_label = ttk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
         self.overlay_enable_radio_var = tk.BooleanVar()
-        self.overlay_enable_radio_yes = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=True, text="Yes")
-        self.overlay_enable_radio_no = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var, value=False, text="No")
+        self.overlay_enable_radio_yes = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var,
+                                                        value=True, text="Yes")
+        self.overlay_enable_radio_no = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var,
+                                                       value=False, text="No")
         self.overlay_opacity_label = ttk.Label(self.realtime_frame, text = "\tOverlay opacity (between 0 and 1):")
         self.overlay_opacity_input = ttk.Entry(self.realtime_frame, width = 4)
         self.overlay_size_label = ttk.Label(self.realtime_frame, text = "\tOverlay window size: ")
         self.overlay_size_var = tk.StringVar()
-        self.overlay_size_radio_big = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "big", text = "Big")
-        self.overlay_size_radio_small = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var, value = "small", text = "Small")
+        self.overlay_size_radio_big = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var,
+                                                      value = "big", text = "Big")
+        self.overlay_size_radio_small = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_size_var,
+                                                        value = "small", text = "Small")
         self.overlay_position_label = ttk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
         self.overlay_position_var.set(vars.set_obj.pos)
-        self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TL", text =  "Top left")
-        self.overlay_position_radio_bl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BL", text = "Bottom left")
-        self.overlay_position_radio_tr = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "TR", text = "Top right")
-        self.overlay_position_radio_br = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var, value = "BR", text = "Bottom right")
+        self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
+                                                         value = "TL", text =  "Top left")
+        self.overlay_position_radio_bl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
+                                                         value = "BL", text = "Bottom left")
+        self.overlay_position_radio_tr = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
+                                                         value = "TR", text = "Top right")
+        self.overlay_position_radio_br = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
+                                                         value = "BR", text = "Bottom right")
         self.overlay_color_options = ["white", "black", "yellow", "green", "blue", "red"]
         self.overlay_bg_color_radios = []
         self.overlay_bg_color = tk.StringVar()
@@ -94,9 +108,12 @@ class settings_frame(ttk.Frame):
         self.overlay_tr_color_radios = []
         self.overlay_tr_color = tk.StringVar()
         for color in self.overlay_color_options:
-            self.overlay_bg_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_bg_color, value = color, text = color))
-            self.overlay_tx_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_tx_color, value = color, text = color))
-            self.overlay_tr_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_tr_color, value = color, text = color))
+            self.overlay_bg_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_bg_color,
+                                                                value = color, text = color))
+            self.overlay_tx_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_tx_color,
+                                                                value = color, text = color))
+            self.overlay_tr_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_tr_color,
+                                                                value = color, text = color))
         self.overlay_bg_label = ttk.Label(self.realtime_frame, text = "\tOverlay background colour: ")
         self.overlay_tx_label = ttk.Label(self.realtime_frame, text = "\tOverlay text colour: ")
         self.overlay_tr_label = ttk.Label(self.realtime_frame, text = "\tOverlay transparent colour: ")
@@ -105,13 +122,16 @@ class settings_frame(ttk.Frame):
         self.overlay_font_radios = []
         self.overlay_font = tk.StringVar()
         for font in self.overlay_font_options:
-            self.overlay_font_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_font, value = font, text = font))
+            self.overlay_font_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_font,
+                                                            value = font, text = font))
         self.overlay_text_size_label = ttk.Label(self.realtime_frame, text = "\tOverlay text size: ")
         self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width = 5)
         self.overlay_when_gsf_label = ttk.Label(self.realtime_frame, text = "\tOnly display overlay in a GSF match: ")
         self.overlay_when_gsf = tk.BooleanVar()
-        self.overlay_when_gsf_true = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf, text = "Yes", value = True)
-        self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf, text = "No", value = False)
+        self.overlay_when_gsf_true = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf,
+                                                     text = "Yes", value = True)
+        self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf,
+                                                      text = "No", value = False)
         ### MISC ###
         self.separator = ttk.Separator(self.frame.interior, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -122,8 +142,10 @@ class settings_frame(ttk.Frame):
         self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
         self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
-        self.copyright_label = ttk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra", justify=tk.LEFT)
-        self.thanks_label = ttk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing", justify=tk.LEFT)
+        self.copyright_label = ttk.Label(self.license_frame, text = "Copyright (C) 2016 by RedFantom and Daethyra",
+                                         justify=tk.LEFT)
+        self.thanks_label = ttk.Label(self.license_frame, text = "Special thanks to Nightmaregale for bèta testing",
+                                      justify=tk.LEFT)
         self.update_settings()
 
     def grid_widgets(self):
@@ -265,10 +287,11 @@ class settings_frame(ttk.Frame):
         vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=str(self.privacy_var.get()),
                                server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
-                               opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()), pos=str(self.overlay_position_var.get()),
-                               color=color, logo_color=self.logo_color.get(), bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
-                               tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(), tx_size=self.overlay_text_size_entry.get(),
-                               overlay_when_gsf=self.overlay_when_gsf.get())
+                               opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()),
+                               pos=str(self.overlay_position_var.get()), color=color, logo_color=self.logo_color.get(),
+                               bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
+                               tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(),
+                               tx_size=self.overlay_text_size_entry.get(), overlay_when_gsf=self.overlay_when_gsf.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

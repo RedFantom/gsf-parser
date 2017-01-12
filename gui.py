@@ -25,6 +25,10 @@ import resourcesframe
 # Creates various frames and gets all widgets into place
 # Main loop is started at the end
 class main_window(tk.Tk):
+    '''
+    Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
+    various functions of the parser an
+    '''
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
@@ -126,6 +130,7 @@ class main_window(tk.Tk):
 
     def set_icon(self):
         try:
-            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\icon_" + vars.set_obj.logo_color + ".ico")
+            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\icon_" +
+                                    vars.set_obj.logo_color + ".ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"
