@@ -11,6 +11,7 @@ import tkMessageBox
 from PIL import Image, ImageTk
 # General imports
 import os
+import re
 # Own modules
 import vars
 import parse
@@ -257,6 +258,8 @@ class file_frame(ttk.Frame):
             for enemy in vars.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                elif re.search('[a-zA-Z]', enemy):
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
                 else:
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
@@ -300,6 +303,8 @@ class file_frame(ttk.Frame):
             for enemy in vars.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                elif re.search('[a-zA-Z]', enemy):
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
                 else:
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
@@ -332,7 +337,12 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
             for enemy in vars.enemies:
-                self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                if enemy == "":
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                elif re.search('[a-zA-Z]', enemy):
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                else:
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.state(["!disabled"])

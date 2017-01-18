@@ -185,6 +185,10 @@ def parse_spawn(spawn, player):
         # This ID number is for recognition between languages. The ID number is always the same,
         # even where the ability name is not. Only English is supported at this time.
         ability = ability.split(' {', 1)[0]
+
+        if source == "":
+            source = ability
+
         if source in player:
             if "AbilityActivate" in effect:
                 if "Ion Railgun" in ability:
@@ -386,6 +390,9 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                 # This ID number is for recognition between languages. The ID number is always the same,
                 # even where the ability name is not. Only English is supported at this time.
                 ability = ability.split(' {', 1)[0]
+
+                if source == "":
+                    source = ability
 
                 if source in player:
                     if "Ion Railgun" in ability:
