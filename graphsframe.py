@@ -5,7 +5,10 @@
 # For license see LICENSE
 
 # UI Imports
-import mtTkinter as tk
+try:
+     import mtTkinter as tk
+except ImportError:
+     import Tkinter as tk
 import ttk
 import tkMessageBox
 # General imports
