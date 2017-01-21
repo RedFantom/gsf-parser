@@ -12,19 +12,19 @@ import ssl
 import time
 
 class client_conn:
-    '''
+    """
     A class that connects to a remote server as specified in the settings_obj
     of the module vars.py in order to get data related to parsing
     Operates following the protocol as described in PROTOCOL
     Has support for a splash screen from the module overlay
-    '''
+    """
     # TODO Add functionality to get leaderboards
     def __init__(self):
         self.connecting = True
         self.INIT = False
 
     def init_conn(self, silent=True):
-        '''
+        """
         Set up the connection to server and do the required error handling when
         this fails. Also tries to wrap the connection in an SSL layer.
 
@@ -33,7 +33,7 @@ class client_conn:
         long time >:|
         :param silent: when True, no splash screen is created for connecting
         :return:
-        '''
+        """
         self.INIT = False
         self.closing = False
         if not silent:
@@ -126,14 +126,14 @@ class client_conn:
         return
 
     def get_killed(self, ID, serv, player):
-        '''
+        """
         Takes parameters and sends them to server, returns the id
         of the killer.
         :param ID: The ID number/hash (to be decided) of the victim
         :param serv: The server of the victim
         :param player: The altname of the victim
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -156,7 +156,7 @@ class client_conn:
         return False
 
     def get_name(self, ID, serv, fact):
-        '''
+        """
         Perform a lookup of a name of a certain id on the remote server
         and return the name found, or a special code if none is found for
         the id number
@@ -164,7 +164,7 @@ class client_conn:
         :param serv: the server of the player
         :param fact: the faction of the player
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -184,7 +184,7 @@ class client_conn:
         return message
 
     def logstr(self, file_name, serv, fact, player_name):
-        '''
+        """
         Send a Combatlog file to the server if it is not already
         present on the server.
         :param file_name: the file to send
@@ -192,7 +192,7 @@ class client_conn:
         :param fact: the faction
         :param player_name: the altname of the player
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -225,14 +225,14 @@ class client_conn:
         return 0
 
     def name_send(self, name, ID, serv, fact):
-        '''
+        """
         Send a name and the belonging id to the server for storage
         :param name: altname
         :param ID: id number
         :param serv: server
         :param fact: faction
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -254,7 +254,7 @@ class client_conn:
         return 0
 
     def kill_send(self, ID_self, ID_kill, serv, fact):
-        '''
+        """
         Store a killer-victim combination on the server
         for later retrievel by the get_killed() function
         :param ID_self: victim id
@@ -262,7 +262,7 @@ class client_conn:
         :param serv: server
         :param fact: faction
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -284,11 +284,11 @@ class client_conn:
         return 0
 
     def send_fb(self, fb):
-        '''
+        """
         Send feedback to the server for review by the server owner
         :param fb: A string of feedback
         :return:
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return
@@ -307,10 +307,10 @@ class client_conn:
         return 0
 
     def get_privacy(self):
-        '''
+        """
         Get the privacy statement of the server
         :return: privacy statement
-        '''
+        """
         if not self.INIT:
             self.notinit()
             return -1
@@ -326,18 +326,18 @@ class client_conn:
         return self.recv(length)
 
     def retry(self):
-        '''
+        """
         Function to retry connecting to the server
         :return:
-        '''
+        """
         self.init_conn()
 
     def send(self, message):
-        '''
+        """
         Send a message to the server and do the error-handling
         :param message:
         :return:
-        '''
+        """
         try:
             self.conn.send(message)
         except socket.timeout:
@@ -349,11 +349,11 @@ class client_conn:
         return 0
 
     def recv(self, BUFF=128):
-        '''
+        """
         Receive a message from the server and do the error-handling
         :param BUFF:
         :return:
-        '''
+        """
         try:
             message = self.conn.recv(BUFF)
         except socket.timeout:
@@ -384,11 +384,11 @@ class client_conn:
         return message
 
     def close(self):
-        '''
+        """
         Close the connection to the server by sending the signal
         and then close the objects
         :return:
-        '''
+        """
         self.closing = True
         if self.send("STOPCN") == -1: return
         message = self.recv(self.BUFF)
@@ -408,9 +408,9 @@ class client_conn:
     def __enter__(self):
         return self
 
-    '''
+    """
     Methods for displaying various error messages to the user.
-    '''
+    """
     @staticmethod
     def timeout():
         tkMessageBox.showerror("Error", "The connection timed out.")
@@ -463,21 +463,21 @@ class client_conn:
 
     @staticmethod
     def wrap_conn_obj(sock):
-        '''
+        """
         Take a socket object and return it wrapped in a layer of SSL
         :param sock:
         :return: an SSL-wrapped socket
-        '''
+        """
         ssl.create_default_context()
         wrapped = ssl.wrap_socket(sock)
         return wrapped
 
 class realtime_conn(threading.Thread):
-    '''
+    """
     UNFINISHED!
     This class will run in the background, sending real-time data to the server
     and retrieving data as well.
-    '''
+    """
     def __init__(self):
         threading.Thread.__init__(self)
         self.init_conn()

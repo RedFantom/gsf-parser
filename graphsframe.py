@@ -17,6 +17,7 @@ matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib import pyplot
 from matplotlib import dates as matdates
+from matplotlib.figure import Figure
 import os
 import datetime
 from collections import OrderedDict
@@ -26,16 +27,16 @@ import parse
 import overlay
 
 class graphs_frame(ttk.Frame):
-    '''
+    """
     A frame containing a place for a graph where the user can view his/her performance over time.
-    '''
+    """
     def __init__(self, root, main_window):
-        '''
+        """
         Set-up the plot, check the back-end and create all widgets necessary to display the plot
         and let the user select the type of plot he/she wants.
         :param root:
         :param main_window:
-        '''
+        """
         ttk.Frame.__init__(self, root)
         if matplotlib.get_backend() != "TkAgg":
             raise
@@ -59,13 +60,13 @@ class graphs_frame(ttk.Frame):
         self.figure.clear()
 
     def update_graph(self):
-        '''
+        """
         Function called by the update_button.
         Starts the calculation of the graphs and sets the axes and format of the plot
         Shows the plot accordingly
         Code of last three options is mostly the same
         :return:
-        '''
+        """
         self.figure.clear()
         if self.type_graph.get() == "play":
             files_dates = {}
@@ -250,10 +251,10 @@ class graphs_frame(ttk.Frame):
 
 
     def grid_widgets(self):
-        '''
+        """
         Put all widgets in the right place
         :return:
-        '''
+        """
         self.graph_label.grid(column = 0, row = 0, rowspan = 1, columnspan = 2, sticky = tk.W, pady = 5)
         self.play_graph_radio.grid(column = 0, row = 1, sticky = tk.W)
         self.dmgd_graph_radio.grid(column = 0, row = 2, sticky = tk.W)
@@ -264,12 +265,12 @@ class graphs_frame(ttk.Frame):
         self.toolbar.grid(column = 1, row = 21, sticky =tk.N + tk.W)
 
     def close(self):
-        '''
+        """
         Try to close as much as possible
         A known bug makes it impossible for the plot to be
         closed correctly. This bug is in the matplotlib library
         :return:
-        '''
+        """
         print "[DEBUG] Close() of graphs_frame called"
         # Plots are not correctly closed, threads keep running in the background
         # This is a known bug to matplotlib and Tkinter: TkAgg

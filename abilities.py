@@ -2,11 +2,11 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
-'''
+"""
 This file contains lists and dictionaries of the abilities and ships used in Galactic StarFighter,
 in order for the parser to be able to identify ships by their components and abilities and print
 them neatly onto the screen.
-'''
+"""
 
 # A list of ALL components available in Galactic StarFighter
 components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon",
@@ -70,9 +70,9 @@ components_english = {'3330936116609024': 'Hyperspace Beacon',
                       '3327289689374720': 'Interdiction Mine', 
                       '3326061328728064': 'Ion Mine'}
 
-'''
+"""
 All components sorted into categories of their component type
-'''
+"""
 primaries = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon"]
 secondaries = ["Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile"]
@@ -83,11 +83,11 @@ systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry 
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
                     "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
-'''
+"""
 These lists were made with the help of Yellowbird
 
 Lists of the components supported by each ship
-'''
+"""
 legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
                    "Proton Torpedo", "Concussion Missile", "Seeker Mine",
                    "Shield Power Converter", "Interdiction Drive",
