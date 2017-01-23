@@ -228,7 +228,13 @@ class realtime_frame(ttk.Frame):
     def insert(self):
         while vars.insert_queue.qsize():
             try:
-                self.listbox.insert(tk.END, vars.insert_queue.get())
+                items = vars.insert_queue.get()
+                if isinstance(items, tuple):
+                    self.listbox.insert(tk.END, items[0])
+                    self.listbox.itemconfig(tk.END, bg = items[1])
+                else:
+                    self.listbox.insert(tk.END, items)
+                    self.listbox.itemconfig(tk.END, bg = "black", fg = "white")
                 time.sleep(0.1)
             except:
                 print "[DEBUG] Error adding line to listbox"

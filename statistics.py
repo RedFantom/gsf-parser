@@ -441,6 +441,7 @@ colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 
 def pretty_event(line_dict, start_of_match, active_id):
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
+    colour = None
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -478,13 +479,33 @@ def pretty_event(line_dict, start_of_match, active_id):
     string += ability + (26 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
+        if line_dict['destination'] == active_id:
+            if line_dict['source'] == active_id:
+                colour = "#800040"
+            else:
+                colour = "#ff1a1a"
+        else:
+            colour = "#ffd11a"
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
+        if line_dict['source'] == active_id:
+            colour = "#008000"
+        else:
+            colour = "#00b300"
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
+        for engine in abilities.engines:
+            if engine in string:
+                colour = "#8533ff"
+                break
+        if not colour:
+            colour = "#33adff"
     else:
         return
-    vars.insert_queue.put(string)
+    if not colour:
+        print "[DEBUG] No colour set!"
+        colour = "white"
+    vars.insert_queue.put((string, colour))
 
 def print_event(line, start_of_match, player):
     line_dict = realtime.line_to_dictionary(line)
