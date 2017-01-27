@@ -69,6 +69,13 @@ class file_frame(ttk.Frame):
         self.spawn_box.bind("<Double-Button-1>", self.spawn_update)
         self.statistics_object = statistics.statistics()
         self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
+        self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
+
+    def filters(self, event):
+        '''
+        Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
+        '''
+        pass
 
     def grid_widgets(self):
         '''
@@ -84,7 +91,9 @@ class file_frame(ttk.Frame):
         self.match_box_scroll.grid(column = 2, row = 8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
         self.spawn_box.grid(column = 0, row = 16, columnspan = 2, padx = 5, pady = 5)
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S, pady = 5)
+        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S)
+        self.filters_button.grid(column = 0, columnspan = 3, row = 18, rowspan = 1, sticky = tk.N + tk.S)
+
 
     def add_matches(self):
         '''
