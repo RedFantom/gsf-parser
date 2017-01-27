@@ -15,7 +15,7 @@ import os
 # Own modules
 import vars
 import client
-import overlay
+import toplevels
 import main
 import fileframe
 import realtimeframe
@@ -51,7 +51,7 @@ class main_window(tk.Tk):
         self.wm_title("GSF Parser")
         self.withdraw()
         vars.client_obj = client.client_conn()
-        self.splash = overlay.boot_splash(self)
+        self.splash = toplevels.boot_splash(self)
         # TODO Enable connecting to the server in a later phase
         if vars.set_obj.auto_upl or vars.set_obj.auto_ident:
             vars.client_obj.init_conn()

@@ -18,7 +18,7 @@ import time
 import vars
 import realtime
 import stalking_alt
-import overlay
+import toplevels
 import statistics
 
 class realtime_frame(ttk.Frame):
@@ -102,7 +102,7 @@ class realtime_frame(ttk.Frame):
             vars.FLAG = True
             self.stalker_obj.start()
             if vars.set_obj.overlay and not vars.set_obj.overlay_when_gsf:
-                self.overlay = overlay.overlay(self.main_window)
+                self.overlay = toplevels.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
         elif self.parsing:
@@ -223,7 +223,7 @@ class realtime_frame(ttk.Frame):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
         if vars.set_obj.overlay_when_gsf and not self.overlay:
-            self.overlay = overlay.overlay(self.main_window)
+            self.overlay = toplevels.overlay(self.main_window)
 
     def insert(self):
         while vars.insert_queue.qsize():

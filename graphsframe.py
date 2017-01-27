@@ -23,7 +23,7 @@ from collections import OrderedDict
 # Own modules
 import vars
 import parse
-import overlay
+import toplevels
 
 class graphs_frame(ttk.Frame):
     '''
@@ -71,8 +71,8 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
-                                                       title="Calculating graph...")
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                         title="Calculating graph...")
             matches_played_date = {}
             for file in os.listdir(vars.set_obj.cl_path):
                 if not file.endswith(".txt"):
@@ -104,8 +104,8 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
-                                                       title="Calculating graph...")
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                         title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(vars.set_obj.cl_path):
@@ -152,8 +152,8 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
-                                                       title="Calculating graph...")
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                         title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(vars.set_obj.cl_path):
@@ -200,8 +200,8 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             vars.files_done = 0
-            self.splash_screen = overlay.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
-                                                       title="Calculating graph...")
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+                                                         title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(vars.set_obj.cl_path):

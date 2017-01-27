@@ -15,7 +15,7 @@ import tkMessageBox
 import re
 # Own modules
 import vars
-import overlay
+import toplevels
 import resources
 
 class settings_frame(ttk.Frame):
@@ -315,4 +315,4 @@ class settings_frame(ttk.Frame):
         if not vars.client_obj.INIT:
             tkMessageBox.showerror("Error","The connection to the server was not initialized correctly.")
             return
-        overlay.privacy(self.main_window)
+        toplevels.privacy(self.main_window)

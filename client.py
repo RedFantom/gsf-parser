@@ -4,7 +4,7 @@
 
 import socket
 import vars
-import overlay
+import toplevels
 import tkMessageBox
 import hashlib
 import threading
@@ -38,7 +38,7 @@ class client_conn:
         self.closing = False
         if not silent:
             print "[DEBUG] Creating conn_splash"
-            self.splash = overlay.conn_splash(window=vars.main_window)
+            self.splash = toplevels.conn_splash(window=vars.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
         self.TIME_OUT = 4

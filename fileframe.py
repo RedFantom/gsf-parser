@@ -20,7 +20,7 @@ import vars
 import parse
 import statistics
 import abilities
-import overlay
+import toplevels
 import resources
 
 # Class for the _frame in the fileTab of the parser
@@ -171,7 +171,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
-        self.splash = overlay.splash_screen(self.main_window)
+        self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(vars.set_obj.cl_path)
         except:
@@ -212,7 +212,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
         if not silent:
-            self.splash = overlay.splash_screen(self.main_window)
+            self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(vars.set_obj.cl_path)
         except:
@@ -593,7 +593,7 @@ class middle_frame(ttk.Frame):
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
         '''
-        self.toplevel = overlay.events_view(self.window, vars.spawn, vars.player_numbers)
+        self.toplevel = toplevels.events_view(self.window, vars.spawn, vars.player_numbers)
 
     def enemies_scroll_yview(self, *args):
         '''

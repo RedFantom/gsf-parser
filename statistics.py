@@ -13,7 +13,7 @@ import vars
 import abilities
 import parse
 import realtime
-import overlay
+import toplevels
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
@@ -68,7 +68,7 @@ class statistics:
         criticaltotal = 0
 
         player_names = []
-        splash = overlay.splash_screen(vars.main_window, max=len(self.file_list))
+        splash = toplevels.splash_screen(vars.main_window, max=len(self.file_list))
         # Start looping through the files
         vars.files_done = 0
         for name in self.file_list:
