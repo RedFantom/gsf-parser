@@ -68,21 +68,23 @@ class file_frame(ttk.Frame):
         self.match_box.bind("<Double-Button-1>", self.match_update)
         self.spawn_box.bind("<Double-Button-1>", self.spawn_update)
         self.statistics_object = statistics.statistics()
+        self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
 
     def grid_widgets(self):
         '''
         Put all widgets in the right places
         :return:
         '''
-        self.file_box.config(height = 7)
-        self.match_box.config(height = 7)
-        self.spawn_box.config(height = 7)
+        self.file_box.config(height = 6)
+        self.match_box.config(height = 6)
+        self.spawn_box.config(height = 6)
         self.file_box.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
         self.file_box_scroll.grid(column = 2, row = 0, rowspan =8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
         self.match_box.grid(column = 0, row =8, columnspan = 2, padx = 5, pady = 5)
         self.match_box_scroll.grid(column = 2, row = 8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
         self.spawn_box.grid(column = 0, row = 16, columnspan = 2, padx = 5, pady = 5)
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
+        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S, pady = 5)
 
     def add_matches(self):
         '''
@@ -138,6 +140,46 @@ class file_frame(ttk.Frame):
                 self.spawn_timing_strings.append(str(spawn.time()))
             for spawn in self.spawn_timing_strings:
                 self.spawn_box.insert(tk.END, spawn)
+
+    def add_files_cb(self, event):
+        '''
+        Function that checks files found in the in the settings specified folder for
+        GSF matches and if those are found in a file, it gets added to the listbox
+        Also calls for a splash screen if :param silent: is set to False
+        :param silent:
+        :return:
+        '''
+        try:
+            os.chdir(vars.set_obj.cl_path)
+        except WindowsError:
+            return
+        self.file_strings = []
+        self.file_box.delete(0, tk.END)
+        self.match_box.delete(0, tk.END)
+        self.spawn_box.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.ship_frame.ship_label_var.set("")
+        self.splash = overlay.splash_screen(self.main_window)
+        try:
+            os.chdir(vars.set_obj.cl_path)
+        except:
+            tkMessageBox.showerror("Error", "Folder not valid: " + vars.set_obj.cl_path)
+            self.splash.destroy()
+            return
+        for file in os.listdir(os.getcwd()):
+            if file.endswith(".txt"):
+                if statistics.check_gsf(file):
+                    self.file_strings.append(file)
+                vars.files_done += 1
+                self.splash.update_progress()
+        self.file_box.insert(tk.END, "All CombatLogs")
+        for file in self.file_strings:
+            self.file_box.insert(tk.END, file[7:-14])
+        self.splash.destroy()
+        return
 
     def add_files(self, silent=False):
         '''

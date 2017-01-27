@@ -93,7 +93,7 @@ class realtime_frame(ttk.Frame):
 
     def start_parsing(self):
         if not self.parsing:
-            self.main_window.file_select_frame.add_files()
+            # self.main_window.file_select_frame.add_files()
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
