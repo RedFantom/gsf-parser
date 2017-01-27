@@ -212,7 +212,14 @@ class file_frame(ttk.Frame):
         else:
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
-            vars.file_name = self.file_strings[numbers[0] - 1]
+            try:
+                vars.file_name = self.file_strings[numbers[0] - 1]
+            except TypeError:
+                try:
+                    vars.file_name = self.file_strings[int(numbers[0]) - 1]
+                except:
+                    tkMessageBox.showerror("The parser encountered a bug known as #19 in the repository. This bug has not " \
+                                           "been fixed. Check out issue #19 in the repository for more information.")
             # Read all the lines from the selected file
             with open(vars.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
