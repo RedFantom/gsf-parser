@@ -71,7 +71,7 @@ class file_frame(ttk.Frame):
         self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
         self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
 
-    def filters(self, event):
+    def filters(self):
         '''
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         '''
@@ -150,12 +150,9 @@ class file_frame(ttk.Frame):
             for spawn in self.spawn_timing_strings:
                 self.spawn_box.insert(tk.END, spawn)
 
-    def add_files_cb(self, event):
+    def add_files_cb(self):
         '''
-        Function that checks files found in the in the settings specified folder for
-        GSF matches and if those are found in a file, it gets added to the listbox
-        Also calls for a splash screen if :param silent: is set to False
-        :param silent:
+        Function that adds the files to the list that are currently in the directory when the
         :return:
         '''
         try:
