@@ -254,10 +254,10 @@ class Parser(object):
 # ===================================================================
 
 def line_to_dictionary(line):
-    logpats = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-    logpat = re.compile(logpats)
+    logpaths = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
+    logpath = re.compile(logpaths)
 
-    group = logpat.match(line) if isinstance(line, str) else logpat.match(line.decode('cp1252'))
+    group = logpath.match(line) if isinstance(line, str) else logpath.match(line.decode('cp1252'))
     try:
         tuple_ = group.groups()
     except AttributeError as err:
