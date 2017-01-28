@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 class LogStalker(threading.Thread):
-    '''
+    """
     A new LogStalker class (compared to the LogStalker class in stalking.py),
     that provides a new way of reading CombatLogs for less IO usage and a more
     stable back-end.
@@ -20,7 +20,7 @@ class LogStalker(threading.Thread):
     LogStalker classes are completely interchangable and compatible with the
     current code, only the import statement in realtimeframe.py must be
     changed.
-    '''
+    """
     def __init__(self, folder=vars.set_obj.cl_path, callback=None,
                  watching_stringvar=None):
         threading.Thread.__init__(self)

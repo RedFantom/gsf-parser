@@ -267,10 +267,10 @@ def line_to_dictionary(line):
     colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
     log = dict(zip(colnames, tuple_))
 
-    '''
+    """
     if not log['ability'] is '':
         log['ability'] = log['ability'].rsplit(None, 1)[1][1:-1]
-    '''
+    """
     if not log['amount'] is '':
         log['amount'] = log['amount'].split(None, 1)[0]
 

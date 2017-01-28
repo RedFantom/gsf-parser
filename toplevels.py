@@ -168,12 +168,12 @@ class boot_splash(tk.Toplevel):
                 files.append(file)
         vars.files_done = 0
         self.amount_files = len(files)
-        '''
+        """
         if self.amount_files >= 50:
             tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombadwLogs folder. "+\
             "You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the "+\
             "startup times." % self.amount_files)
-        '''
+        """
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()

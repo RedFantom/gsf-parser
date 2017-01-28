@@ -28,10 +28,10 @@ import resourcesframe
 # Creates various frames and gets all widgets into place
 # Main loop is started at the end
 class main_window(tk.Tk):
-    '''
+    """
     Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
     various functions of the parser an
-    '''
+    """
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
