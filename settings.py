@@ -40,6 +40,7 @@ class defaults:
     overlay_tx_font = "Calibri"
     overlay_tx_size = "12"
     overlay_when_gsf = str(False)
+    event_colors = "basic"
 
 # Class that loads, stores and saves settings
 class settings:
@@ -90,6 +91,7 @@ class settings:
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
         self.color = self.conf.get("gui", "color")
+        self.event_colors = self.conf.get("gui", "event_colors")
         self.logo_color = self.conf.get("gui", "logo_color")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
@@ -129,6 +131,7 @@ class settings:
         self.conf.set("realtime", "overlay_tr_color", defaults.overlay_tr_color)
         self.conf.set("gui", "color", defaults.color)
         self.conf.set("gui", "logo_color", defaults.logo_color)
+        self.conf.set("gui", "event_colors", defaults.event_colors)
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
@@ -151,7 +154,8 @@ class settings:
                   color=defaults.color, logo_color=defaults.logo_color,
                   bg_color=defaults.overlay_bg_color, tx_color=defaults.overlay_tx_color,
                   tr_color=defaults.overlay_tr_color, tx_font=defaults.overlay_tx_font,
-                  tx_size=defaults.overlay_tx_size, overlay_when_gsf=defaults.overlay_when_gsf):
+                  tx_size=defaults.overlay_tx_size, overlay_when_gsf=defaults.overlay_when_gsf,
+                  event_colors=defaults.event_colors):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -184,6 +188,7 @@ class settings:
         self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
+        self.conf.set("gui", "event_colors", event_colors)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()
