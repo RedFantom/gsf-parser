@@ -14,9 +14,12 @@ import tkMessageBox
 import os
 import sys
 import tempfile
+import datetime
 # Own modules
 import vars
 import statistics
+import resources
+import abilities
 
 class splash_screen(tk.Toplevel):
     def __init__(self, window, boot=False, max=None, title="GSF Parser"):
@@ -221,6 +224,85 @@ class events_view(tk.Toplevel):
                     self.listbox.insert(tk.END, event)
         except TypeError:
             self.destroy()
+
+class filters(tk.Toplevel):
+    """
+    A class for a Toplevel that shows all possible filters that can be applied to CombatLogs. Using expandable frames,
+    the settings in a certain category can be shown or hidden. If all settings are set, the user can click OK and a
+    special function is called passing a dictionary of files.
+    """
+
+    def __init__(self, window):
+        tk.Toplevel.__init__(self, window)
+        self.description_label = ttk.Label(self, text = "Please enter the filters you want to apply",
+                                           font = ("Calibri", 12))
+
+        self.type_frame = resources.ToggledFrame(self, text = "Type")
+        self.type_variable = tk.StringVar()
+        self.type_variable.set("any")
+        self.any_radio = ttk.Radiobutton(self.type_frame.sub_frame, text = "Any", variable = self.type_variable,
+                                           value = "any")
+        self.logs_radio = ttk.Radiobutton(self.type_frame.sub_frame, text = "CombatLogs", variable = self.type_variable,
+                                          value = "logs")
+        self.matches_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Matches", variable=self.type_variable,
+                                             value="matches")
+        self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text = "Spawns", variable = self.type_variable,
+                                            value = "spawns")
+
+        self.dateframe = resources.ToggledFrame(self, text = "Date")
+        self.start_date_widget = resources.Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = resources.Calendar(self.dateframe.sub_frame)
+
+        self.components_frame = resources.ToggledFrame(self, text = "Components")
+        self.primaries_frame = resources.ToggledFrame(self.components_frame.sub_frame, text = "Primaries")
+        self.secondaries_frame = resources.ToggledFrame(self.components_frame.sub_frame, text = "Secondaries")
+        self.engines_frame = resources.ToggledFrame(self.components_frame.sub_frame, text = "Engines")
+        self.shields_frame = resources.ToggledFrame(self.components_frame.sub_frame, text = "Shields")
+        self.systems_frame = resources.ToggledFrame(self.components_frame.sub_frame, text = "Sytems")
+        self.primaries_tickboxes = {}
+        self.primaries_tickboxes_vars = {}
+        self.secondaries_tickboxes = {}
+        self.secondaries_tickboxes_vars = {}
+        self.engines_tickboxes = {}
+        self.engines_tickboxes_vars = {}
+        self.shields_tickboxes = {}
+        self.shields_tickboxes_vars = {}
+        self.systems_tickboxes = {}
+        self.systems_tickboxes_vars = {}
+        for primary in abilities.primaries:
+            primary_var = tk.IntVar()
+            primary_chk = ttk.Checkbutton(self.primaries_frame.sub_frame, text = primary)
+            self.primaries_tickboxes[primary] = primary_chk
+            self.primaries_tickboxes_vars[primary_chk] = primary_var
+        for secondary in abilities.secondaries:
+            secondary_var = tk.IntVar()
+            secondary_chk = ttk.Checkbutton(self.secondaries_frame.sub_frame, text = secondary)
+            self.secondaries_tickboxes[secondary] = secondary_chk
+            self.secondaries_tickboxes_vars[secondary_chk] = secondary_var
+        for engine in abilities.engines:
+            engine_var = tk.IntVar()
+            engine_chk = ttk.Checkbutton(self.engines_frame.sub_frame, text = engine)
+            self.engines_tickboxes[engine] = engine_chk
+            self.engines_tickboxes_vars[engine_chk] = engine_var
+        for shield in abilities.shields:
+            shield_var = tk.IntVar()
+            shield_chk = ttk.Checkbutton(self.shields_frame.sub_frame, text = shield)
+            self.shields_tickboxes[shield] = shield_chk
+            self.shields_tickboxes_vars[shield_chk] = shield_var
+        for system in abilities.systems:
+            system_var = tk.IntVar()
+            system_chk = ttk.Checkbutton(self.systems_frame.sub_frame, text = system)
+            self.systems_tickboxes[system] = system_chk
+            self.systems_tickboxes_vars[system_chk] = system_var
+
+        self.ships_frame = resources.ToggledFrame(self, text = "Ships")
+
+        self.complete_button = ttk.Button(self, text = "Filter", command = self.filter_files)
+        self.cancel_button = ttk.Button(self, text = "Cancel", command = self.destroy)
+
+    def filter_files(self):
+        pass
+
 
 
 
