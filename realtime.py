@@ -261,6 +261,7 @@ def line_to_dictionary(line):
     try:
         tuple_ = group.groups()
     except AttributeError as err:
+        print("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group)
         print(err)
         return
 
