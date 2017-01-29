@@ -144,7 +144,7 @@ class boot_splash(tk.Toplevel):
         self.title("GSF Parser: Starting...")
         print vars.set_obj.logo_color
         try:
-            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logo_" + \
+            self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\logo_" + \
                                                       vars.set_obj.logo_color + ".png"))
             self.panel = ttk.Label(self, image = self.logo)
             self.panel.pack()

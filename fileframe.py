@@ -21,7 +21,7 @@ import parse
 import statistics
 import abilities
 import toplevels
-import resources
+import widgets
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -454,7 +454,7 @@ class ship_frame(ttk.Frame):
         if len(ships_list) > 1:
             print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\default.png")
+                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\default.png")
             except IOError:
                 print "[DEBUG] File not found."
                 tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
@@ -464,9 +464,9 @@ class ship_frame(ttk.Frame):
         else:
             print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png")
+                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png")
             except IOError:
-                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\" + ships_list[0] + ".png"
+                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png"
                 tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
         return
@@ -494,7 +494,7 @@ class ship_frame(ttk.Frame):
         '''
         try:
             self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
-                                                     "\\assets\\default.png").resize((300,180),Image.ANTIALIAS))
+                                                     "\\assets\\img\\default.png").resize((300,180),Image.ANTIALIAS))
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return

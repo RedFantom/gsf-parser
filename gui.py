@@ -133,7 +133,7 @@ class main_window(tk.Tk):
 
     def set_icon(self):
         try:
-            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\icon_" +
+            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\logos\\icon_" +
                                     vars.set_obj.logo_color + ".ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"
