@@ -157,7 +157,7 @@ class Calendar(ttk.Frame):
 
         self._cal = self.get_calendar(locale, fwday)
 
-        self.__setup_styles()       # creates custom styles
+        # self.__setup_styles()       # creates custom styles
         self.__place_widgets()      # pack/grid used widgets
         self.__config_calendar()    # adjust calendar columns and setup tags
         # configure a canvas, and proper bindings, for selecting dates
@@ -193,6 +193,7 @@ class Calendar(ttk.Frame):
             r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(self, item)})
             return r[item]
 
+    '''
     def __setup_styles(self):
         # custom ttk styles
         style = ttk.Style(self.master)
@@ -201,22 +202,27 @@ class Calendar(ttk.Frame):
         )
         style.layout('L.TButton', arrow_layout('left'))
         style.layout('R.TButton', arrow_layout('right'))
+    '''
 
     def __place_widgets(self):
         # header frame and its widgets
         hframe = ttk.Frame(self)
-        lbtn = ttk.Button(hframe, style='L.TButton', command=self._prev_month)
-        rbtn = ttk.Button(hframe, style='R.TButton', command=self._next_month)
+        lbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\left.png")
+        rbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\right.png")
+        lbtn_tkimg = ImageTk.PhotoImage(lbtn_img)
+        rbtn_tkimg = ImageTk.PhotoImage(rbtn_img)
+        lbtn = ttk.Button(hframe, command=self._prev_month, image = lbtn_tkimg)
+        rbtn = ttk.Button(hframe, command=self._next_month, image = rbtn_tkimg)
         self._header = ttk.Label(hframe, width=15, anchor='center')
         # the calendar
-        self._calendar = ttk.Treeview(show='', selectmode='none', height=7)
+        self._calendar = ttk.Treeview(hframe, show='', selectmode='none', height=7)
 
         # pack the widgets
-        hframe.pack(in_=self, side='top', pady=4, anchor='center')
-        lbtn.grid(in_=hframe)
-        self._header.grid(in_=hframe, column=1, row=0, padx=12)
-        rbtn.grid(in_=hframe, column=2, row=0)
-        self._calendar.pack(in_=self, expand=1, fill='both', side='bottom')
+        hframe.pack(side='top', pady=4, anchor='center')
+        lbtn.grid()
+        self._header.grid(column=1, row=0, padx=12)
+        rbtn.grid(column=2, row=0)
+        self._calendar.pack(expand=1, fill='both', side='bottom')
 
     def __config_calendar(self):
         cols = self._cal.formatweekheader(3).split()
@@ -355,13 +361,13 @@ class ToggledFrame(ttk.Frame):
         self.show.set(0)
         self.title_frame = ttk.Frame(self)
         self.title_frame.pack(fill="x", expand=1)
-        closed_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\closed.png")
+        closed_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\gui\\closed.png")
         self.closed = ImageTk.PhotoImage(closed_img)
-        open_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\open.png")
+        open_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\gui\\open.png")
         self.open = ImageTk.PhotoImage(open_img)
         ttk.Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
-        self.toggle_button = ttk.Checkbutton(self.title_frame, width=2, image=self.closed, command=self.toggle,
-                                            variable=self.show, style='Toolbutton')
+        self.toggle_button = ttk.Checkbutton(self.title_frame, width=4, image=self.closed,
+                                             command=self.toggle, variable=self.show, style='Toolbutton')
         self.toggle_button.pack(side="left")
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
 

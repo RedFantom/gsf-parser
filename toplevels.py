@@ -19,6 +19,7 @@ import datetime
 import vars
 import statistics
 import resources
+import widgets
 import abilities
 
 class splash_screen(tk.Toplevel):

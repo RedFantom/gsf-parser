@@ -575,7 +575,7 @@ class middle_frame(ttk.Frame):
         self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
         self.enemies_damaget.config(yscrollcommand = self.enemies_damaget_scroll)
         self.enemies_damaged.config(yscrollcommand = self.enemies_damaged_scroll)
-        self.abilities_scrollable_frame = resources.vertical_scroll_frame(self.notebook)
+        self.abilities_scrollable_frame = widgets.vertical_scroll_frame(self.notebook)
         self.abilities_frame = self.abilities_scrollable_frame.interior
         self.notebook.add(self.abilities_scrollable_frame, text = "Abilities")
         self.abilities_label_var = tk.StringVar()
