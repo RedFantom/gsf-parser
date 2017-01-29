@@ -11,6 +11,7 @@ except ImportError:
      import Tkinter as tk
 import ttk
 import tkMessageBox
+import tkFileDialog
 # General imports
 import re
 # Own modules
@@ -54,7 +55,9 @@ class settings_frame(ttk.Frame):
                                                            variable = self.logo_color))
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
-        self.path_entry = ttk.Entry(self.entry_frame, width=100)
+        self.path_var = tk.StringVar()
+        self.path_entry = ttk.Entry(self.entry_frame, width=85, textvariable = self.path_var)
+        self.path_entry_button = ttk.Button(self.entry_frame, text = "Choose", command = self.set_directory_dialog)
         self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder: ")
         self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification: ")
         self.privacy_var = tk.BooleanVar()
@@ -151,6 +154,13 @@ class settings_frame(ttk.Frame):
                                       justify=tk.LEFT)
         self.update_settings()
 
+    def set_directory_dialog(self):
+        directory = tkFileDialog.askdirectory(initialdir = self.path_var.get(), mustexist = True,
+                                              parent = self.main_window, title = "GSF Parser: Choosing directory")
+        if directory == "":
+            return
+        self.path_var.set(directory)
+
     def grid_widgets(self):
         ### GUI SETTINGS ###
         self.gui_label.grid(column = 0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -169,6 +179,7 @@ class settings_frame(ttk.Frame):
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx =5)
+        self.path_entry_button.grid(column = 2, row = 0, sticky = tk.N+tk.S+tk.W+tk.E, padx = 3)
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.entry_frame.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.privacy_label.grid(column=0, row=0,sticky=tk.W)
@@ -244,8 +255,7 @@ class settings_frame(ttk.Frame):
         self.grid(column=0,row=0,sticky=tk.N+tk.S+tk.W+tk.E)
 
     def update_settings(self):
-        self.path_entry.delete(0, tk.END)
-        self.path_entry.insert(0, vars.set_obj.cl_path)
+        self.path_var.set(vars.set_obj.cl_path)
         self.privacy_var.set(bool(vars.set_obj.auto_ident))
         self.server_address_entry.delete(0, tk.END)
         self.server_address_entry.insert(0, str(vars.set_obj.server_address))
@@ -287,7 +297,7 @@ class settings_frame(ttk.Frame):
             help_string = """This setting makes the overlay only appear inside GSF matches. Please note that the overlay will only appear after the
                              first GSF ability is executed, so the overlay may appear to display a little late, but this is normal behaviour."""
             tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
-        vars.set_obj.write_set(cl_path=str(self.path_entry.get()), auto_ident=str(self.privacy_var.get()),
+        vars.set_obj.write_set(cl_path=str(self.path_var.get()), auto_ident=str(self.privacy_var.get()),
                                server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
                                auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
                                opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()),
