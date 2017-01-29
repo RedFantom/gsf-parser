@@ -15,6 +15,7 @@ from PIL import Image, ImageTk
 # General imports
 import os
 import re
+from datetime import datetime
 # Own modules
 import vars
 import parse
@@ -91,8 +92,8 @@ class file_frame(ttk.Frame):
         self.match_box_scroll.grid(column = 2, row = 8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
         self.spawn_box.grid(column = 0, row = 16, columnspan = 2, padx = 5, pady = 5)
         self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S)
-        self.filters_button.grid(column = 0, columnspan = 3, row = 18, rowspan = 1, sticky = tk.N + tk.S)
+        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S + tk.E + tk.W)
+        self.filters_button.grid(column = 0, columnspan = 3, row = 18, rowspan = 1, sticky = tk.N + tk.S + tk.E + tk.W)
 
 
     def add_matches(self):
@@ -160,6 +161,7 @@ class file_frame(ttk.Frame):
         except WindowsError:
             return
         self.file_strings = []
+        self.files_dict = {}
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
@@ -178,12 +180,17 @@ class file_frame(ttk.Frame):
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
-                    self.file_strings.append(file)
+                    try:
+                        dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d %H:%M")
+                    except:
+                        dt = file
+                    self.files_dict[dt] = file
+                    self.file_strings.append(dt)
                 vars.files_done += 1
                 self.splash.update_progress()
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
-            self.file_box.insert(tk.END, file[7:-14])
+            self.file_box.insert(tk.END, file)
         self.splash.destroy()
         return
 
@@ -200,6 +207,7 @@ class file_frame(ttk.Frame):
         except WindowsError:
             return
         self.file_strings = []
+        self.files_dict = {}
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
@@ -220,7 +228,13 @@ class file_frame(ttk.Frame):
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
-                    self.file_strings.append(file)
+                    try:
+                        dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d %H:%M")
+                        print "[DEBUG] Generated time: ", dt
+                    except:
+                        dt = file
+                    self.files_dict[dt] = file
+                    self.file_strings.append(dt)
                 vars.files_done += 1
                 if not silent:
                     self.splash.update_progress()
@@ -228,7 +242,7 @@ class file_frame(ttk.Frame):
                     self.main_window.splash.update_progress()
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
-            self.file_box.insert(tk.END, file[7:-14])
+            self.file_box.insert(tk.END, file)
         if not silent:
             self.splash.destroy()
         return
@@ -261,13 +275,17 @@ class file_frame(ttk.Frame):
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
             try:
-                vars.file_name = self.file_strings[numbers[0] - 1]
+                vars.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
                 try:
                     vars.file_name = self.file_strings[int(numbers[0]) - 1]
                 except:
-                    tkMessageBox.showerror("The parser encountered a bug known as #19 in the repository. This bug has not " \
-                                           "been fixed. Check out issue #19 in the repository for more information.")
+                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
+                                                    "This bug has not been fixed. Check out issue #19 in the repository"
+                                                    " for more information.")
+            except KeyError:
+                tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
+                                                "consult the issues page of the GitHub repository.")
             # Read all the lines from the selected file
             with open(vars.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
