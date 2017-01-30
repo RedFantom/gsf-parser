@@ -8,7 +8,6 @@ import gui
 import tkMessageBox
 
 def new_window():
-    import gui
     main_window = gui.main_window()
 
 if __name__ == "__main__":
