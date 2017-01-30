@@ -19,7 +19,7 @@ import errno
 import time
 import stat
 import datetime
-import vars
+import variables
 import threading
 import tkMessageBox
 
@@ -45,7 +45,7 @@ class LogStalker(threading.Thread):
     >>>
     """
 
-    def __init__(self, callback, folder=vars.path, extensions=["txt"], tail_lines=0, sizehint=1048576):
+    def __init__(self, callback, folder=variables.path, extensions=["txt"], tail_lines=0, sizehint=1048576):
         """
 
         :param folder: (str), folder to watch
@@ -97,7 +97,7 @@ class LogStalker(threading.Thread):
         If 'blocking' is False make one loop and then return.
         """
         while self.FLAG:
-            if not vars.FLAG:
+            if not variables.FLAG:
                 print "[DEBUG] Closing because of vars.FLAG"
                 self.close()
                 return
@@ -107,7 +107,7 @@ class LogStalker(threading.Thread):
 
             if not blocking:
                 return
-            if not vars.FLAG:
+            if not variables.FLAG:
                 self.close()
                 return
             time.sleep(interval)
@@ -220,7 +220,7 @@ class LogStalker(threading.Thread):
             fid = self.get_file_id(os.stat(fname))
         except IOError:
             tkMessageBox.showerror("Error", "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
-            vars.main_window.on_close()
+            variables.main_window.on_close()
         except EnvironmentError as err:
             if err.errno != errno.ENOENT:
                 raise

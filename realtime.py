@@ -7,7 +7,7 @@
 from decimal import Decimal
 from stalking import LogStalker
 import datetime
-import vars
+import variables
 import re
 
 class Parser(object):
@@ -106,7 +106,7 @@ class Parser(object):
         # If first line of the file, save the player name
         if(self.player_name == '' and '@' in line['source']):
             self.player_name = line['source'][1:]
-            vars.rt_name = self.player_name
+            variables.rt_name = self.player_name
             print self.player_name
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
@@ -114,7 +114,7 @@ class Parser(object):
            not bool(re.search(r'\d', line['source']))):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
-                vars.rt_name = self.player_name
+                variables.rt_name = self.player_name
                 print self.player_name
         if not self.is_match and '@' in line['source']:
             self.dprint("[DEBUG] out of match, skip")
@@ -123,7 +123,7 @@ class Parser(object):
             self.dprint("[DEBUG] out of match, skip")
             return
 
-        self.insert(line, vars.rt_timing, self.active_id)
+        self.insert(line, variables.rt_timing, self.active_id)
 
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
@@ -177,7 +177,7 @@ class Parser(object):
             if '@' not in line['source']:
                 self.is_match = True
                 self.new_match_callback()
-                vars.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
         if self.is_match:
             if '@' in line['source']:

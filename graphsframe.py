@@ -22,7 +22,7 @@ import os
 import datetime
 from collections import OrderedDict
 # Own modules
-import vars
+import variables
 import parse
 import toplevels
 
@@ -71,11 +71,11 @@ class graphs_frame(ttk.Frame):
         if self.type_graph.get() == "play":
             files_dates = {}
             datetimes = []
-            vars.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.set_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
-            for file in os.listdir(vars.set_obj.cl_path):
+            for file in os.listdir(variables.set_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
                 try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
@@ -89,9 +89,9 @@ class graphs_frame(ttk.Frame):
                     matches_played_date[file_date] = len(file_cube)
                 else:
                     matches_played_date[file_date] += len(file_cube)
-                vars.files_done += 1
+                variables.files_done += 1
                 self.splash_screen.update_progress()
-            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()), color=vars.set_obj.color)
+            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()), color=variables.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Matches played")
             pyplot.ylabel("Amount of matches")
@@ -104,12 +104,12 @@ class graphs_frame(ttk.Frame):
         elif self.type_graph.get() == "dmgd":
             files_dates = {}
             datetimes = []
-            vars.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.set_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(vars.set_obj.cl_path):
+            for file in os.listdir(variables.set_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
                 try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
@@ -129,7 +129,7 @@ class graphs_frame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[2]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[2]])
-                vars.files_done += 1
+                variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
             for key, value in matches_played_date.iteritems():
@@ -139,7 +139,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average damage dealt per match")
             pyplot.ylabel("Amount of damage")
@@ -152,12 +152,12 @@ class graphs_frame(ttk.Frame):
         elif self.type_graph.get() == "dmgt":
             files_dates = {}
             datetimes = []
-            vars.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.set_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(vars.set_obj.cl_path):
+            for file in os.listdir(variables.set_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
                 try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
@@ -177,7 +177,7 @@ class graphs_frame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[1]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[1]])
-                vars.files_done += 1
+                variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
             for key, value in matches_played_date.iteritems():
@@ -187,7 +187,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average damage taken per match")
             pyplot.ylabel("Amount of damage")
@@ -200,12 +200,12 @@ class graphs_frame(ttk.Frame):
         elif self.type_graph.get() == "hrec":
             files_dates = {}
             datetimes = []
-            vars.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(vars.set_obj.cl_path)),
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.set_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(vars.set_obj.cl_path):
+            for file in os.listdir(variables.set_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
                 try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
@@ -225,7 +225,7 @@ class graphs_frame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[4]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[4]])
-                vars.files_done += 1
+                variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
             for key, value in matches_played_date.iteritems():
@@ -235,7 +235,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key = lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=vars.set_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.set_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average healing received per match")
             pyplot.ylabel("Amount of healing")

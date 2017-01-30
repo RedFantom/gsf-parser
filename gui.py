@@ -13,7 +13,7 @@ import ttk
 # General imports
 import os
 # Own modules
-import vars
+import variables
 import client
 import toplevels
 import main
@@ -41,20 +41,20 @@ class main_window(tk.Tk):
         self.update_style(start = True)
         self.set_icon()
         # Get the screen properties
-        vars.screen_w = self.winfo_screenwidth()
-        vars.screen_h = self.winfo_screenheight()
-        vars.path = vars.set_obj.cl_path
+        variables.screen_w = self.winfo_screenwidth()
+        variables.screen_h = self.winfo_screenheight()
+        variables.path = variables.set_obj.cl_path
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = vars.set_obj.cl_path
+        self.default_path = variables.set_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
         self.wm_title("GSF Parser")
         self.withdraw()
-        vars.client_obj = client.client_conn()
+        variables.client_obj = client.client_conn()
         self.splash = toplevels.boot_splash(self)
         # TODO Enable connecting to the server in a later phase
-        if vars.set_obj.auto_upl or vars.set_obj.auto_ident:
-            vars.client_obj.init_conn()
+        if variables.set_obj.auto_upl or variables.set_obj.auto_ident:
+            variables.client_obj.init_conn()
             print "[DEBUG] Connection initialized"
         self.splash.update_progress()
         self.geometry("800x425")
@@ -101,11 +101,11 @@ class main_window(tk.Tk):
         self.finished = True
         self.splash.destroy()
         # Start the main loop
-        vars.main_window = self
+        variables.main_window = self
         self.mainloop()
 
     def on_close(self):
-        vars.FLAG = False
+        variables.FLAG = False
         self.graphs_frame.close()
         self.destroy()
         # Due to a bug in matplotlib, not all plots are closed when using pyplot.close('all')
@@ -124,7 +124,7 @@ class main_window(tk.Tk):
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
         try:
-            self.style.configure('.', foreground=vars.set_obj.color)
+            self.style.configure('.', foreground=variables.set_obj.color)
         except AttributeError:
             self.style.configure('.', foreground='#8B0000')
         if not start:
@@ -134,6 +134,6 @@ class main_window(tk.Tk):
     def set_icon(self):
         try:
             self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\logos\\icon_" +
-                                    vars.set_obj.logo_color + ".ico")
+                                    variables.set_obj.logo_color + ".ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"
