@@ -30,6 +30,20 @@ class Oob_window(tk.Tk):
 
     def __init__(self):
         tk.Tk.__init__(self)
+        self.style = ttk.Style()
+        try:
+            self.tk.call('package', 'require', 'tile-themes')
+            self.style.theme_use("plastik")
+        except:
+            pass
+        self.next_button = ttk.Button(self, text = "Next",
+                                      command = self.next_button_cb)
+        self.prev_button = ttk.Button(self, text = "Previous",
+                                      command = self.prev_button_cb)
+        self.comp_button = ttk.Button(self, text = "Finish",
+                                      command = self.comp_button_cb)
+        self.cancel_button = ttk.Button(self, text = "Cancel",
+                                        command = self.cancel_button_cb)
 
     def next_button_cb(self):
         """
