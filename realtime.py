@@ -10,6 +10,7 @@ import datetime
 import vars
 import re
 
+
 class Parser(object):
     """Parse a SWTOR combat log file. Each instance is a different
     file. The parser is designed for GSF battles
@@ -59,8 +60,6 @@ class Parser(object):
 
     DEBUG = False
 
-
-
     def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
         self.player_name = ''
         self.crit_nr = 0
@@ -103,23 +102,22 @@ class Parser(object):
         if not line:
             print "[DEBUG] Line is of NoneType"
             pass
+
         # If first line of the file, save the player name
-        if(self.player_name == '' and '@' in line['source']):
+        if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
             vars.rt_name = self.player_name
             print self.player_name
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
-        if(line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and
-           not bool(re.search(r'\d', line['source']))):
+        if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
+                not bool(re.search(r'\d', line['source'])):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
                 vars.rt_name = self.player_name
                 print self.player_name
-        if not self.is_match and '@' in line['source']:
-            self.dprint("[DEBUG] out of match, skip")
-            return
-        if not self.is_match and "@" in line['destination']:
+
+        if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
             self.dprint("[DEBUG] out of match, skip")
             return
 
@@ -169,7 +167,6 @@ class Parser(object):
             self.dprint("[DEBUG] caught up")
             return
 
-
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
@@ -181,7 +178,7 @@ class Parser(object):
 
         if self.is_match:
             if '@' in line['source']:
-                if not "Safe Login" in line['ability']:
+                if "Safe Login" not in line['ability']:
                     self.dprint("[DEBUG] Line with '@' but no end of match detected")
                     return
                 self.dprint("[DEBUG] end of match, resetting")
@@ -211,8 +208,6 @@ class Parser(object):
                 self.spawns = 1
                 self.active_ids = []
                 return
-
-
 
             # Start parsing
             if 'Heal' in line['effect']:
@@ -272,6 +267,7 @@ def line_to_dictionary(line):
     if not log['ability'] is '':
         log['ability'] = log['ability'].rsplit(None, 1)[1][1:-1]
     """
+
     if not log['amount'] is '':
         log['amount'] = log['amount'].split(None, 1)[0]
 
