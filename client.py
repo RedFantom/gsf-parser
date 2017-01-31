@@ -3,7 +3,7 @@
 # For license see LICENSE
 
 import socket
-import vars
+import variables
 import toplevels
 import tkMessageBox
 import hashlib
@@ -14,7 +14,7 @@ import time
 class client_conn:
     """
     A class that connects to a remote server as specified in the settings_obj
-    of the module vars.py in order to get data related to parsing
+    of the module variables.py in order to get data related to parsing
     Operates following the protocol as described in PROTOCOL
     Has support for a splash screen from the module overlay
     """
@@ -38,12 +38,12 @@ class client_conn:
         self.closing = False
         if not silent:
             print "[DEBUG] Creating conn_splash"
-            self.splash = toplevels.conn_splash(window=vars.main_window)
+            self.splash = toplevels.conn_splash(window=variables.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
         self.TIME_OUT = 4
         self.conn_obj.settimeout(self.TIME_OUT)
-        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
         self.conn = self.wrap_conn_obj(self.conn_obj)
         try:
             self.conn.connect(self.address)
@@ -487,7 +487,7 @@ class realtime_conn(threading.Thread):
 
     def init_conn(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (vars.set_obj.server_address, vars.set_obj.server_port)
+        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
         try:
             self.conn.connect(self.address)
         except ssl.SSLError:

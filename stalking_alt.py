@@ -4,7 +4,7 @@
 
 # Fully new stalking_alt.py file written by RedFantom as a test for solving the problems with the earlier stalking_alt.py file
 import os
-import vars
+import variables
 import threading
 import time
 from datetime import datetime
@@ -21,7 +21,7 @@ class LogStalker(threading.Thread):
     current code, only the import statement in realtimeframe.py must be
     changed.
     """
-    def __init__(self, folder=vars.set_obj.cl_path, callback=None,
+    def __init__(self, folder=variables.set_obj.cl_path, callback=None,
                  watching_stringvar=None):
         threading.Thread.__init__(self)
         self.folder = folder
@@ -37,7 +37,7 @@ class LogStalker(threading.Thread):
         self.datetime_dict = {}
 
     def run(self):
-        while vars.FLAG:
+        while variables.FLAG:
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
             for name in folder_list:

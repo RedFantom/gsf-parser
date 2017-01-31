@@ -15,7 +15,7 @@ import tkSimpleDialog
 # General imports
 import time
 # Own modules
-import vars
+import variables
 import realtime
 import stalking_alt
 import toplevels
@@ -97,11 +97,11 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=vars.set_obj.cl_path,
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=variables.set_obj.cl_path,
                                                        watching_stringvar=self.watching_stringvar)
-            vars.FLAG = True
+            variables.FLAG = True
             self.stalker_obj.start()
-            if vars.set_obj.overlay and not vars.set_obj.overlay_when_gsf:
+            if variables.set_obj.overlay and not variables.set_obj.overlay_when_gsf:
                 self.overlay = toplevels.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
@@ -115,12 +115,12 @@ class realtime_frame(ttk.Frame):
             """
             # self.start_parsing_button.config(relief=tk.RAISED)
             self.parsing = False
-            vars.FLAG = False
+            variables.FLAG = False
             self.stalker_obj.FLAG = False
             while self.stalker_obj.is_alive():
                 print "[DEBUG] stalker_obj still running"
                 pass
-            if vars.set_obj.overlay and self.overlay:
+            if variables.set_obj.overlay and self.overlay:
                 self.overlay.destroy()
             self.overlay = None
             self.parsing_bar.stop()
@@ -172,13 +172,13 @@ class realtime_frame(ttk.Frame):
                                            str(healing) + "\n" +
                                            str(spawns))
         if self.overlay:
-            if vars.set_obj.size == "big":
+            if variables.set_obj.size == "big":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
                                            str(selfdamage) + "\n" +
                                            str(spawns))
-            elif vars.set_obj.size == "small":
+            elif variables.set_obj.size == "small":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
@@ -209,26 +209,26 @@ class realtime_frame(ttk.Frame):
 
     @staticmethod
     def spawn_callback(dd, dt, hr, sd):
-        vars.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
-                                                                                      str(sum(hr)), str(sum(sd))))
+        variables.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
+                                                                                           str(sum(hr)), str(sum(sd))))
 
     def match_callback(self, dd, dt, hr, sd):
-        vars.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
-                                                                                      str(sum(hr)), str(sum(sd))))
-        if vars.set_obj.overlay_when_gsf and self.overlay:
+        variables.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
+                                                                                           str(sum(hr)), str(sum(sd))))
+        if variables.set_obj.overlay_when_gsf and self.overlay:
             self.overlay.destroy()
             self.overlay = None
 
     def new_match_callback(self):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
-        if vars.set_obj.overlay_when_gsf and not self.overlay:
+        if variables.set_obj.overlay_when_gsf and not self.overlay:
             self.overlay = toplevels.overlay(self.main_window)
 
     def insert(self):
-        while vars.insert_queue.qsize():
+        while variables.insert_queue.qsize():
             try:
-                items = vars.insert_queue.get()
+                items = variables.insert_queue.get()
                 if isinstance(items, tuple):
                     self.listbox.insert(tk.END, items[0])
                     self.listbox.itemconfig(tk.END, bg = items[1])

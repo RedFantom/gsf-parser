@@ -9,14 +9,15 @@ import os
 import ConfigParser
 import tempfile
 # Own modules
-import vars
+import variables
 
 # Class with default settings for in the settings file
 class defaults:
     # Version to display in settings tab
-    version = "2.0.0"
+    version = "2.2.1"
     # Path to get the CombatLogs from
-    cl_path = os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
+    cl_path = os.path.expanduser("~") + \
+              "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
@@ -45,15 +46,17 @@ class defaults:
 # Class that loads, stores and saves settings
 class settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name = "settings.ini", directory = tempfile.gettempdir()):
+    def __init__(self, file_name = "settings.ini",
+                 directory = tempfile.gettempdir()):
         try:
             os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
         except WindowsError:
             pass
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
-        self.file_name = directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
+        self.file_name = directory.replace("\\temp", "") + \
+                         "\\GSF Parser\\" + file_name
         self.conf = ConfigParser.RawConfigParser()
-        vars.install_path = os.getcwd()
+        variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
             try:
                 self.read_set()
@@ -62,7 +65,7 @@ class settings:
         else:
             self.write_def()
             self.read_set()
-        vars.path = self.cl_path
+        variables.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
@@ -103,9 +106,14 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)
 
-    # Write the defaults settings found in the class defaults to a pickle in a file
+    # Write the defaults settings found in the class defaults to a pickle in a
+    # file
     def write_def(self):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
@@ -142,19 +150,33 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)
 
-        # Write the settings passed as arguments to a pickle in a file
-    # Setting defaults to default if not specified, so all settings are always written
-    def write_set(self, version=defaults.version, cl_path=defaults.cl_path,
-                  auto_ident=defaults.auto_ident, server_address=defaults.server_address,
+    # Write the settings passed as arguments to a pickle in a file
+    # Setting defaults to default if not specified, so all settings are always
+    # written
+    def write_set(self, version=defaults.version,
+                  cl_path=defaults.cl_path,
+                  auto_ident=defaults.auto_ident,
+                  server_address=defaults.server_address,
                   server_port=defaults.server_port,
-                  auto_upl=defaults.auto_upl, overlay=defaults.overlay,
-                  opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
-                  color=defaults.color, logo_color=defaults.logo_color,
-                  bg_color=defaults.overlay_bg_color, tx_color=defaults.overlay_tx_color,
-                  tr_color=defaults.overlay_tr_color, tx_font=defaults.overlay_tx_font,
-                  tx_size=defaults.overlay_tx_size, overlay_when_gsf=defaults.overlay_when_gsf,
+                  auto_upl=defaults.auto_upl,
+                  overlay=defaults.overlay,
+                  opacity=defaults.opacity,
+                  size=defaults.size,
+                  pos=defaults.pos,
+                  color=defaults.color,
+                  logo_color=defaults.logo_color,
+                  bg_color=defaults.overlay_bg_color,
+                  tx_color=defaults.overlay_tx_color,
+                  tr_color=defaults.overlay_tr_color,
+                  tx_font=defaults.overlay_tx_font,
+                  tx_size=defaults.overlay_tx_size,
+                  overlay_when_gsf=defaults.overlay_when_gsf,
                   event_colors=defaults.event_colors):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
@@ -167,9 +189,14 @@ class settings:
             pass
         # TODO Make this setting changable without restarting
         if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting for auto uploading CombatLogs, the parser must be restarted.")
+            tkMessageBox.showinfo("Notice", "In order to change the setting for "
+                                            "auto uploading CombatLogs, the "
+                                            "parser must be restarted.")
         if str(auto_ident) != self.conf.get("parsing", "auto_ident"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting for auto identifying enemies in CombatLogs, the parser must be restarted.")
+            tkMessageBox.showinfo("Notice", "In order to change the setting "
+                                            "for auto identifying enemies in "
+                                            "CombatLogs, the parser must be "
+                                            "restarted.")
         self.conf.set("misc", "version", version)
         self.conf.set("parsing", "cl_path", cl_path)
         self.conf.set("parsing", "auto_ident", auto_ident)
@@ -196,4 +223,8 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)

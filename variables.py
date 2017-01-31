@@ -15,9 +15,11 @@
 # enemydamaget is a dictionary
 # match_timings is a list of datetimes
 # spawn_timings is a matrix of datetimes
-import settings
 import os
 import Queue
+import settings
+
+set_obj = settings.settings()
 
 FLAG = False
 
@@ -76,4 +78,3 @@ spawn = None
 rt_timing = None
 
 insert_queue = Queue.Queue()
-set_obj = settings.settings()

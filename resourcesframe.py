@@ -4,7 +4,7 @@
 import Tkinter as tk
 import ttk
 import webbrowser
-from resources import *
+from widgets import *
 
 class resources_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
