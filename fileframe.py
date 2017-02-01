@@ -17,7 +17,7 @@ import os
 import re
 from datetime import datetime
 # Own modules
-import vars
+import variables
 import parse
 import statistics
 import abilities
@@ -107,11 +107,11 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
-        with open(vars.file_name, "r") as file:
-            vars.player_name = parse.determinePlayerName(file.readlines())
+        with open(variables.file_name, "r") as file:
+            variables.player_name = parse.determinePlayerName(file.readlines())
         self.spawn_box.delete(0, tk.END)
         self.match_timing_strings = []
-        self.match_timing_strings = [str(time.time()) for time in vars.match_timings]
+        self.match_timing_strings = [str(time.time()) for time in variables.match_timings]
         self.match_timing_strings = self.match_timing_strings[::2]
         '''
         for number in range(0, len(self.match_timing_strings) + 1):
@@ -137,16 +137,16 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
-        if vars.match_timing != None:
+        if variables.match_timing != None:
             try:
-                index = self.match_timing_strings.index(vars.match_timing)
-                vars.spawn_index = index
+                index = self.match_timing_strings.index(variables.match_timing)
+                variables.spawn_index = index
             except:
                 self.spawn_box.delete(0, tk.END)
                 return
             self.spawn_box.delete(0, tk.END)
             self.spawn_box.insert(tk.END, "All spawns")
-            for spawn in vars.spawn_timings[index]:
+            for spawn in variables.spawn_timings[index]:
                 self.spawn_timing_strings.append(str(spawn.time()))
             for spawn in self.spawn_timing_strings:
                 self.spawn_box.insert(tk.END, spawn)
@@ -157,7 +157,7 @@ class file_frame(ttk.Frame):
         :return:
         '''
         try:
-            os.chdir(vars.set_obj.cl_path)
+            os.chdir(variables.set_obj.cl_path)
         except WindowsError:
             return
         self.file_strings = []
@@ -172,9 +172,9 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
         self.splash = toplevels.splash_screen(self.main_window)
         try:
-            os.chdir(vars.set_obj.cl_path)
+            os.chdir(variables.set_obj.cl_path)
         except:
-            tkMessageBox.showerror("Error", "Folder not valid: " + vars.set_obj.cl_path)
+            tkMessageBox.showerror("Error", "Folder not valid: " + variables.set_obj.cl_path)
             self.splash.destroy()
             return
         for file in os.listdir(os.getcwd()):
@@ -186,7 +186,7 @@ class file_frame(ttk.Frame):
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
-                vars.files_done += 1
+                variables.files_done += 1
                 self.splash.update_progress()
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
@@ -203,7 +203,7 @@ class file_frame(ttk.Frame):
         :return:
         '''
         try:
-            os.chdir(vars.set_obj.cl_path)
+            os.chdir(variables.set_obj.cl_path)
         except WindowsError:
             return
         self.file_strings = []
@@ -219,9 +219,9 @@ class file_frame(ttk.Frame):
         if not silent:
             self.splash = toplevels.splash_screen(self.main_window)
         try:
-            os.chdir(vars.set_obj.cl_path)
+            os.chdir(variables.set_obj.cl_path)
         except:
-            tkMessageBox.showerror("Error", "Folder not valid: " + vars.set_obj.cl_path)
+            tkMessageBox.showerror("Error", "Folder not valid: " + variables.set_obj.cl_path)
             if not silent:
                 self.splash.destroy()
             return
@@ -235,7 +235,7 @@ class file_frame(ttk.Frame):
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
-                vars.files_done += 1
+                variables.files_done += 1
                 if not silent:
                     self.splash.update_progress()
                 else:
@@ -275,10 +275,10 @@ class file_frame(ttk.Frame):
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
             try:
-                vars.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
+                variables.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
                 try:
-                    vars.file_name = self.file_strings[int(numbers[0]) - 1]
+                    variables.file_name = self.file_strings[int(numbers[0]) - 1]
                 except:
                     tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
                                                     "This bug has not been fixed. Check out issue #19 in the repository"
@@ -287,13 +287,13 @@ class file_frame(ttk.Frame):
                 tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
                                                 "consult the issues page of the GitHub repository.")
             # Read all the lines from the selected file
-            with open(vars.file_name, "rU") as clicked_file:
+            with open(variables.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
             # PARSING STARTS
             # Get the player ID numbers from the list of lines
             player = parse.determinePlayer(lines)
             # Parse the lines with the acquired player ID numbers
-            vars.file_cube, vars.match_timings, vars.spawn_timings = parse.splitter(lines, player)
+            variables.file_cube, variables.match_timings, variables.spawn_timings = parse.splitter(lines, player)
             # Start adding the matches from the file to the listbox
             self.add_matches()
         self.main_window.ship_frame.remove_image()
@@ -314,36 +314,36 @@ class file_frame(ttk.Frame):
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
-            vars.match_timing = self.match_timing_strings[numbers[0] - 1]
-            file_cube = vars.file_cube
-            (vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged,
-             vars.enemydamaget, vars.uncounted) = self.statistics_object.file_statistics(file_cube)
-            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
+            variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+            file_cube = variables.file_cube
+            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
+             variables.enemydamaget, variables.uncounted) = self.statistics_object.file_statistics(file_cube)
+            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
                 try:
-                    ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += ship + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
-            ships_string += "Uncounted\t\t" + str(vars.uncounted)
+            ships_string += "Uncounted\t\t" + str(variables.uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            for enemy in vars.enemies:
+            for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
                 else:
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
              numbers = self.match_box.curselection()
-             vars.match_timing = self.match_timing_strings[numbers[0] - 1]
+             variables.match_timing = self.match_timing_strings[numbers[0] - 1]
              self.add_spawns()
         self.main_window.ship_frame.remove_image()
 
@@ -356,73 +356,73 @@ class file_frame(ttk.Frame):
         '''
         if self.spawn_box.curselection() == (0,):
             try:
-                match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+                match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             except ValueError:
                 print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
             for spawn in match:
-                vars.player_numbers.update(parse.determinePlayer(spawn))
-            (vars.abilities_string, vars.statistics_string, vars.total_shipsdict, vars.enemies, vars.enemydamaged,
-             vars.enemydamaget) = self.statistics_object.match_statistics(match)
-            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
+                variables.player_numbers.update(parse.determinePlayer(spawn))
+            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
+             variables.enemydamaget) = self.statistics_object.match_statistics(match)
+            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
                 try:
-                    ships_string += ship + "\t\t" + str(vars.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += ship + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
-            ships_string += "Uncounted\t\t%s" % vars.total_shipsdict["Uncounted"]
+            ships_string += "Uncounted\t\t%s" % variables.total_shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            for enemy in vars.enemies:
+            for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
                 else:
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             self.main_window.ship_frame.remove_image()
         else:
             numbers = self.spawn_box.curselection()
-            vars.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
+            variables.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
             try:
-                match = vars.file_cube[self.match_timing_strings.index(vars.match_timing)]
+                match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             except ValueError:
                 print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
                 return
-            spawn = match[self.spawn_timing_strings.index(vars.spawn_timing)]
-            vars.spawn = spawn
-            vars.player_numbers = parse.determinePlayer(spawn)
-            (vars.abilities_string, vars.statistics_string, vars.ships_list, vars.ships_comps, vars.enemies,
-             vars.enemydamaged, vars.enemydamaget) = self.statistics_object.spawn_statistics(spawn)
-            self.main_window.middle_frame.abilities_label_var.set(vars.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(vars.statistics_string)
+            spawn = match[self.spawn_timing_strings.index(variables.spawn_timing)]
+            variables.spawn = spawn
+            variables.player_numbers = parse.determinePlayer(spawn)
+            (variables.abilities_string, variables.statistics_string, variables.ships_list, variables.ships_comps, variables.enemies,
+             variables.enemydamaged, variables.enemydamaget) = self.statistics_object.spawn_statistics(spawn)
+            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
+            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Possible ships used:\n"
-            for ship in vars.ships_list:
+            for ship in variables.ships_list:
                 ships_string += str(ship) + "\n"
             ships_string += "\t\t\t\t\t\t\nWith the components:\n"
-            for component in vars.ships_comps:
+            for component in variables.ships_comps:
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            for enemy in vars.enemies:
+            for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
                 else:
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, vars.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, vars.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
             self.main_window.middle_frame.events_button.state(["!disabled"])
-            self.main_window.ship_frame.update_ship(vars.ships_list)
+            self.main_window.ship_frame.update_ship(variables.ships_list)
 
 class ship_frame(ttk.Frame):
     '''
@@ -608,7 +608,7 @@ class middle_frame(ttk.Frame):
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
         '''
-        self.toplevel = toplevels.events_view(self.window, vars.spawn, vars.player_numbers)
+        self.toplevel = toplevels.events_view(self.window, variables.spawn, variables.player_numbers)
 
     def enemies_scroll_yview(self, *args):
         '''

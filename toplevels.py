@@ -16,7 +16,7 @@ import sys
 import tempfile
 import datetime
 # Own modules
-import vars
+import variables
 import statistics
 import widgets
 import abilities
@@ -31,7 +31,7 @@ class splash_screen(tk.Toplevel):
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
         self.progress_bar.pack()
         try:
-            list = os.listdir(vars.set_obj.cl_path)
+            list = os.listdir(variables.set_obj.cl_path)
         except WindowsError:
             print "[DEBUG] Error changing directory"
             tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
@@ -43,7 +43,7 @@ class splash_screen(tk.Toplevel):
         for file in list:
             if file.endswith(".txt"):
                 files.append(file)
-        vars.files_done = 0
+        variables.files_done = 0
         if not max:
             self.amount_files = len(files)
         else:
@@ -57,7 +57,7 @@ class splash_screen(tk.Toplevel):
         self.update()
 
     def update_progress(self):
-        self.progress_bar["value"] = vars.files_done
+        self.progress_bar["value"] = variables.files_done
         self.update()
 
 class overlay(tk.Toplevel):
@@ -72,46 +72,46 @@ class overlay(tk.Toplevel):
                                                "Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
             except IOError:
                 tkMessageBox.showerror("Error", "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
-        print "[DEBUG] Setting overlay font to: ", (vars.set_obj.overlay_tx_font, vars.set_obj.overlay_tx_size)
-        if vars.set_obj.size == "big":
+        print "[DEBUG] Setting overlay font to: ", (variables.set_obj.overlay_tx_font, variables.set_obj.overlay_tx_size)
+        if variables.set_obj.size == "big":
             self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
-                                        justify = tk.LEFT, font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
-                                        foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
-        elif vars.set_obj.size == "small":
+                                        justify = tk.LEFT, font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
+                                        foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
+        elif variables.set_obj.size == "small":
             self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT,
-                                        font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
-                                        foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
+                                        font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
+                                        foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
         else:
             raise ValueError("Size setting not valid.")
         self.stats_var = tk.StringVar()
         self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT,
-                                     font = (vars.set_obj.overlay_tx_font, int(vars.set_obj.overlay_tx_size)),
-                                     foreground = vars.set_obj.overlay_tx_color, background = vars.set_obj.overlay_bg_color)
+                                     font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
+                                     foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
-        self.configure(background = vars.set_obj.overlay_bg_color)
-        self.wm_attributes("-transparentcolor", vars.set_obj.overlay_tr_color)
+        self.configure(background = variables.set_obj.overlay_bg_color)
+        self.wm_attributes("-transparentcolor", variables.set_obj.overlay_tr_color)
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.attributes("-alpha", vars.set_obj.opacity)
+        self.attributes("-alpha", variables.set_obj.opacity)
 
     def update_position(self):
-        if vars.set_obj.size == "big":
-            h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 5
-            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.5) + 2 ) * (14 + 6)
-        elif vars.set_obj.size == "small":
-            h_req = (int(vars.set_obj.overlay_tx_size) * 1.6) * 4
-            w_req = ((int(vars.set_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
+        if variables.set_obj.size == "big":
+            h_req = (int(variables.set_obj.overlay_tx_size) * 1.6) * 5
+            w_req = ((int(variables.set_obj.overlay_tx_size) / 1.5) + 2) * (14 + 6)
+        elif variables.set_obj.size == "small":
+            h_req = (int(variables.set_obj.overlay_tx_size) * 1.6) * 4
+            w_req = ((int(variables.set_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
         else:
             raise
-        if vars.set_obj.pos == "TL":
+        if variables.set_obj.pos == "TL":
             pos_c = "+0+0"
-        elif vars.set_obj.pos == "BL":
-            pos_c = "+0+%s" % (int(vars.screen_h) - int(h_req))
-        elif vars.set_obj.pos == "TR":
-            pos_c = "+%s+0" % (int(vars.screen_w) - int(w_req))
-        elif vars.set_obj.pos == "BR":
-            pos_c = "+%s+%s" % (int(vars.screen_w) - int(w_req), int(vars.screen_h) - int(h_req))
+        elif variables.set_obj.pos == "BL":
+            pos_c = "+0+%s" % (int(variables.screen_h) - int(h_req))
+        elif variables.set_obj.pos == "TR":
+            pos_c = "+%s+0" % (int(variables.screen_w) - int(w_req))
+        elif variables.set_obj.pos == "BR":
+            pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req), int(variables.screen_h) - int(h_req))
         else:
             raise ValueError("vars.set_obj.pos not valid")
         self.wm_geometry("%sx%s" % (int(w_req), int(h_req))+ pos_c)
@@ -120,7 +120,7 @@ class overlay(tk.Toplevel):
 class privacy(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
-        privacy = vars.client_obj.get_privacy()
+        privacy = variables.client_obj.get_privacy()
         privacy_listbox = tk.Listbox(self, height = 10, width = 30)
         privacy_listbox.pack(side=tk.LEFT)
         privacy_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL, command = privacy_listbox.yview)
@@ -142,10 +142,10 @@ class boot_splash(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
-        print vars.set_obj.logo_color
+        print variables.set_obj.logo_color
         try:
             self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\logo_" + \
-                                                      vars.set_obj.logo_color + ".png"))
+                                                      variables.set_obj.logo_color + ".png"))
             self.panel = ttk.Label(self, image = self.logo)
             self.panel.pack()
         except:
@@ -166,7 +166,7 @@ class boot_splash(tk.Toplevel):
         for file in directory:
             if file.endswith(".txt"):
                 files.append(file)
-        vars.files_done = 0
+        variables.files_done = 0
         self.amount_files = len(files)
         """
         if self.amount_files >= 50:
@@ -180,15 +180,15 @@ class boot_splash(tk.Toplevel):
         self.done = False
 
     def update_progress(self):
-        if vars.files_done != self.amount_files:
+        if variables.files_done != self.amount_files:
             self.label_var.set("Parsing the files...")
-            self.progress_bar["value"] = vars.files_done
+            self.progress_bar["value"] = variables.files_done
             self.update()
         else:
             return
 
 class conn_splash(tk.Toplevel):
-    def __init__(self, window=vars.main_window):
+    def __init__(self, window=variables.main_window):
         tk.Toplevel.__init__(self, window)
         self.window = window
         self.FLAG = False
@@ -210,7 +210,7 @@ class conn_splash(tk.Toplevel):
 class events_view(tk.Toplevel):
     def __init__(self, window, spawn, player):
         tk.Toplevel.__init__(self, window)
-        self.title("GSF Parser: Events for spawn on %s of match started at %s" % (vars.spawn_timing, vars.match_timing))
+        self.title("GSF Parser: Events for spawn on %s of match started at %s" % (variables.spawn_timing, variables.match_timing))
         self.listbox = tk.Listbox(self, width=105, height=15, font=("Consolas", 10))
         self.scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command =self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scroll.set)
@@ -219,7 +219,7 @@ class events_view(tk.Toplevel):
         self.resizable(width = False, height = False)
         try:
             for line in spawn:
-                event = statistics.print_event(line, vars.spawn_timing, player)
+                event = statistics.print_event(line, variables.spawn_timing, player)
                 if event is not None:
                     self.listbox.insert(tk.END, event)
         except TypeError:

@@ -1,7 +1,6 @@
 # Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
-import toplevels
 import settings
 import tempfile
 import os
@@ -146,7 +145,7 @@ class complete_frame(ttk.Frame):
     def __init__(self):
         ttk.Frame.__init__(self)
 
-class settings_importer(Object):
+class settings_importer(object):
     """
     Class capable of importing settings from settings files for all versions of
     the GSF Parser and putting them in a dictionary in order to allow the user
@@ -156,9 +155,8 @@ class settings_importer(Object):
     def __init__(self):
         self.first_install = False
         self.conf = ConfigParser.RawConfigParser()
-        self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
-        self.file_name = tempfile.gettempdir().\
-                         replace("\\temp", "") + "\\GSF Parser\\settings.ini"
+        self.directory = tempfile.gettempdir().replace("\\temp", "") + "\\GSF Parser"
+        self.file_name = self.directory + "\\GSF Parser\\settings.ini"
         try:
             os.makedirs(self.directory, True)
         except WindowsError:

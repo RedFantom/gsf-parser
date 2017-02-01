@@ -9,7 +9,7 @@ import os
 import decimal
 import datetime
 # Own modules
-import vars
+import variables
 import abilities
 import parse
 import realtime
@@ -68,11 +68,11 @@ class statistics:
         criticaltotal = 0
 
         player_names = []
-        splash = toplevels.splash_screen(vars.main_window, max=len(self.file_list))
+        splash = toplevels.splash_screen(variables.main_window, max=len(self.file_list))
         # Start looping through the files
-        vars.files_done = 0
+        variables.files_done = 0
         for name in self.file_list:
-            vars.files_done += 1
+            variables.files_done += 1
             splash.update_progress()
             with open(name, "r") as file_object:
                 lines = file_object.readlines()
@@ -163,7 +163,7 @@ class statistics:
 
         (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
          hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
-            parse.parse_file(file_cube, player_list, vars.match_timings, vars.spawn_timings)
+            parse.parse_file(file_cube, player_list, variables.match_timings, variables.spawn_timings)
         total_abilities = {}
         total_damagetaken = 0
         total_damagedealt = 0
@@ -296,7 +296,7 @@ class statistics:
         abilities_string = "Ability\t\t\tTimes used\n\n"
         for spawn in match:
             (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-             criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
+             criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, variables.player_numbers)
             total_abilitiesdict.update(abilitiesdict)
             total_damagetaken += damagetaken
             total_damagedealt += damagedealt
@@ -343,7 +343,7 @@ class statistics:
         total_shipsdict["Uncounted"] = ships_uncounted
         delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1]) \
                                                ['time'][:-4].strip(), "%H:%M:%S") - \
-                                               datetime.datetime.strptime(vars.match_timing.strip(), "%H:%M:%S")
+                                               datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -364,7 +364,7 @@ class statistics:
     @staticmethod
     def spawn_statistics(spawn):
         (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, vars.player_numbers)
+         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, variables.player_numbers)
         killsassists = 0
         for enemy in enemies:
             if enemydamaget[enemy] > 0:
@@ -419,7 +419,7 @@ class statistics:
             del comps[comps.index("System")]
         last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) -1])
         timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
-        delta = timing - datetime.datetime.strptime(vars.spawn_timing.strip(), "%H:%M:%S")
+        delta = timing - datetime.datetime.strptime(variables.spawn_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -452,12 +452,12 @@ def pretty_event(line_dict, start_of_match, active_id):
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
     # If the player name is too long, shorten it
-    if vars.rt_name:
-        if len(vars.rt_name) > 14:
-            vars.rt_name = vars.rt_name[:14]
+    if variables.rt_name:
+        if len(variables.rt_name) > 14:
+            variables.rt_name = variables.rt_name[:14]
     if line_dict['source'] == active_id:
-        if vars.rt_name:
-            string += vars.rt_name + (14 - len(vars.rt_name) + 4) * " "
+        if variables.rt_name:
+            string += variables.rt_name + (14 - len(variables.rt_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
@@ -465,8 +465,8 @@ def pretty_event(line_dict, start_of_match, active_id):
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] == active_id:
-        if vars.rt_name:
-            string += vars.rt_name + (14 - len(vars.rt_name) + 4) * " "
+        if variables.rt_name:
+            string += variables.rt_name + (14 - len(variables.rt_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['destination'] == "":
@@ -505,7 +505,7 @@ def pretty_event(line_dict, start_of_match, active_id):
     if not colour:
         print "[DEBUG] No colour set!"
         colour = "white"
-    vars.insert_queue.put((string, colour))
+    variables.insert_queue.put((string, colour))
 
 def print_event(line, start_of_match, player):
     line_dict = realtime.line_to_dictionary(line)
@@ -521,8 +521,8 @@ def print_event(line, start_of_match, player):
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
     if line_dict['source'] in player:
-        if vars.player_name:
-            string += vars.player_name + (14 - len(vars.player_name) + 4) * " "
+        if variables.player_name:
+            string += variables.player_name + (14 - len(variables.player_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
@@ -530,8 +530,8 @@ def print_event(line, start_of_match, player):
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] in player:
-        if vars.player_name:
-            string += vars.player_name + (14 - len(vars.player_name) + 4) * " "
+        if variables.player_name:
+            string += variables.player_name + (14 - len(variables.player_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['destination'] == "":
