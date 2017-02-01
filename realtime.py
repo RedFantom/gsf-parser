@@ -65,10 +65,10 @@ class Parser(object):
         self.crit_nr = 0
         self.is_match = False
 
-        self.spawn_callback = spawn_callback
-        self.match_callback = match_callback
-        self.new_match_callback = new_match_callback
-        self.insert = insert
+        self.spawn_callback = spawn_callback # Function to call when a new spawn is detected
+        self.match_callback = match_callback # Function to call when the end of a match is detected
+        self.new_match_callback = new_match_callback # Function to call when a new match is detected
+        self.insert = insert # Function to call when a new line is parsed to insert it into the events box of the UI
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
@@ -86,7 +86,7 @@ class Parser(object):
         self.hold = 0
         self.hold_list = []
 
-        self.spawns = 0
+        self.spawns = 0 # The amount of spawns so far
 
     def __enter__(self):
         return self
@@ -101,6 +101,7 @@ class Parser(object):
         self.dprint("[DEBUG] line", line)
         if not line:
             print "[DEBUG] Line is of NoneType"
+            # Should be return for #20?
             pass
 
         # If first line of the file, save the player name
@@ -121,6 +122,7 @@ class Parser(object):
             self.dprint("[DEBUG] out of match, skip")
             return
 
+        # Insert the line (or the pretty version of it) into the events box of real-time parsing
         self.insert(line, variables.rt_timing, self.active_id)
 
         # if the active id is neither source nor destination, the player id has changed
@@ -128,6 +130,7 @@ class Parser(object):
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
             print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
                   sum(self.spawn_selfdmg))
+            # Call the new spawn callback
             self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
             self.spawns += 1
             self.active_id = ''
@@ -173,6 +176,7 @@ class Parser(object):
         if not self.is_match:
             if '@' not in line['source']:
                 self.is_match = True
+                # Call the callback for a new match
                 self.new_match_callback()
                 variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
@@ -182,6 +186,7 @@ class Parser(object):
                     self.dprint("[DEBUG] Line with '@' but no end of match detected")
                     return
                 self.dprint("[DEBUG] end of match, resetting")
+                # Call the end of match callback
                 self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
