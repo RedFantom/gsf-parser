@@ -63,11 +63,12 @@ server_address = None
 server_port = None
 auto_upload = None
 parse = []
-path = ""
 
 client_obj = None
 main_window = None
 cl_path = None
+install_path = os.path.dirname(__file__)
+path = set_obj.cl_path
 
 match_timing = None
 match_timing_end = None

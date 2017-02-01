@@ -9,7 +9,7 @@ import os
 import ConfigParser
 import tempfile
 # Own modules
-import variables
+# import variables
 
 # Class with default settings for in the settings file
 class defaults:
@@ -56,7 +56,7 @@ class settings:
         self.file_name = directory.replace("\\temp", "") + \
                          "\\GSF Parser\\" + file_name
         self.conf = ConfigParser.RawConfigParser()
-        variables.install_path = os.getcwd()
+        # variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
             try:
                 self.read_set()
@@ -65,7 +65,7 @@ class settings:
         else:
             self.write_def()
             self.read_set()
-        variables.path = self.cl_path
+        # variables.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
