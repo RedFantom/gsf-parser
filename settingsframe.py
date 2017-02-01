@@ -20,6 +20,14 @@ import toplevels
 import widgets
 
 class settings_frame(ttk.Frame):
+    """
+    A rather complicated Frame with lots of widgets containing the widgets for
+    all user-changable settings of the parser. The instance calls on functions
+    of a settings.settings instance to write the settings to the file and read
+    the settings from the file. The settings.settings instance used is created
+    in the variables.py file.
+    """
+
     def __init__(self, root_frame, main_window):
         ### LAY-OUT ###
         ttk.Frame.__init__(self, root_frame)

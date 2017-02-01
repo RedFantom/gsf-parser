@@ -143,6 +143,8 @@ class complete_frame(ttk.Frame):
     showing the user the complete button while setting the next button to
     unclickable.
     """
+    def __init__(self):
+        ttk.Frame.__init__(self)
 
 class settings_importer(Object):
     """
@@ -169,8 +171,18 @@ class settings_importer(Object):
         self.import_set()
 
     def import_set(self):
-        # If this setting cannot be found in the settings file, then continue as
-        # if this was a new installation.
+        """
+        Import all settings that can be read from the old settings file. If the
+        setting cannot be read, use the default value for the setting from the
+        settings.defaults class.
+        If a certain setting is not in the specified configuration file,
+        a ConfigParser.NoOptionError is raised.
+        If a certain section is not in the specified configuration file,
+        a ConfigParser.NoSectionError is raised.
+        If the user is attempting to add a section to a configuration file while
+        this section already exists, the ConfigParser.DuplicateSectionError is
+        raised.
+        """
         try:
             self.conf.add_section("misc")
         except ConfigParser.DuplicateSectionError:
