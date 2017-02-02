@@ -441,7 +441,8 @@ colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 
 def pretty_event(line_dict, start_of_match, active_id):
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
-    colour = None
+    colour = "#ffffff"
+    fg_colour = "#000000"
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -494,18 +495,35 @@ def pretty_event(line_dict, start_of_match, active_id):
             colour = "#00b300"
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-        for engine in abilities.engines:
-            if engine in string:
-                colour = "#8533ff"
-                break
-        if not colour:
+        if variables.set_obj.event_colors == "advanced":
+            for engine in abilities.engines:
+                if engine in string:
+                    colour = "#8533ff"
+                    fg_colour = "#ffffff"
+                    break
+            for shield in abilities.shields:
+                if shield in string:
+                    colour = "#004d00"
+                    fg_colour = "#ffffff"
+                    break
+            for system in abilities.systems:
+                if system in string:
+                    colour = "#002db3"
+                    fg_colour = "#ffffff"
+                    break
+            if colour == "#ffffff":
+                colour = "#33adff"
+        elif variables.set_obj.event_colors == "basic":
             colour = "#33adff"
     else:
         return
     if not colour:
         print "[DEBUG] No colour set!"
         colour = "white"
-    variables.insert_queue.put((string, colour))
+    if variables.set_obj.event_colors == "none":
+        colour = "#ffffff"
+        fg_colour = "#000000"
+    variables.insert_queue.put((string, colour, fg_colour))
 
 def print_event(line, start_of_match, player):
     line_dict = realtime.line_to_dictionary(line)

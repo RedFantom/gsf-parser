@@ -61,11 +61,19 @@ class settings_frame(ttk.Frame):
         for color in self.logo_color_choices:
             self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
                                                            variable = self.logo_color))
+        self.event_colors_label = ttk.Label(self.gui_frame, text = "\tEvent colours: ")
+        self.event_colors = tk.StringVar()
+        self.event_colors_none = ttk.Radiobutton(self.gui_frame, text = "None", variable = self.event_colors,
+                                                   value = "none")
+        self.event_colors_basic = ttk.Radiobutton(self.gui_frame, text = "Basic", variable = self.event_colors,
+                                                    value = "basic")
+        self.event_colors_adv = ttk.Radiobutton(self.gui_frame, text = "Advanced", variable = self.event_colors,
+                                                  value = "advanced")
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
         self.path_var = tk.StringVar()
         self.path_entry = ttk.Entry(self.entry_frame, width=85, textvariable = self.path_var)
-        self.path_entry_button = ttk.Button(self.entry_frame, text = "Choose", command = self.set_directory_dialog)
+        self.path_entry_button = ttk.Button(self.entry_frame, text = "Browse", command = self.set_directory_dialog)
         self.path_entry_label = ttk.Label(self.entry_frame, text = "\tCombatLogs folder: ")
         self.privacy_label = ttk.Label(self.privacy_frame, text = "\tConnect to server for player identification: ")
         self.privacy_var = tk.BooleanVar()
@@ -171,7 +179,7 @@ class settings_frame(ttk.Frame):
 
     def grid_widgets(self):
         ### GUI SETTINGS ###
-        self.gui_label.grid(column = 0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.gui_label.grid(column = 0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, pady = 5)
         self.gui_frame.grid(column = 0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.color_label.grid(column = 0, row = 0, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 0
@@ -184,8 +192,12 @@ class settings_frame(ttk.Frame):
         for radio in self.logo_color_options:
             set_column += 1
             radio.grid(column=set_column, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_label.grid(column = 0, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_basic.grid(column = 2, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_none.grid(column = 1, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_adv.grid(column = 3, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
         ### PARSING SETTINGS ###
-        self.parsing_label.grid(column=0, row=2, sticky=tk.W)
+        self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady = 5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx =5)
         self.path_entry_button.grid(column = 2, row = 0, sticky = tk.N+tk.S+tk.W+tk.E, padx = 3)
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -195,7 +207,7 @@ class settings_frame(ttk.Frame):
         self.privacy_select_false.grid(column=2, row=0)
         self.privacy_frame.grid(column=0, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
         ### SHARING SETTINGS ###
-        self.sharing_label.grid(column=0, row=5, sticky=tk.W)
+        self.sharing_label.grid(column=0, row=5, sticky=tk.W, pady = 5)
         self.server_label.grid(column=0, row=0, sticky=tk.W)
         self.server_address_entry.grid(column=1,row=0)
         self.server_colon_label.grid(column=2,row=0)
@@ -211,7 +223,7 @@ class settings_frame(ttk.Frame):
         self.overlay_enable_radio_no.grid(column = 2, row = 1, sticky=tk.W)
         self.overlay_opacity_label.grid(column = 0, row = 2, sticky=tk.W)
         self.overlay_opacity_input.grid(column = 1, row = 2, sticky=tk.W)
-        self.realtime_settings_label.grid(column = 0, row = 0, sticky=tk.W)
+        self.realtime_settings_label.grid(column = 0, row = 0, sticky=tk.W, pady = 5)
         self.overlay_size_label.grid(column = 0, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_size_radio_big.grid(column = 1, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_size_radio_small.grid(column = 2, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -257,7 +269,7 @@ class settings_frame(ttk.Frame):
         self.update_label.grid(column=0, row=2, sticky=tk.W)
         self.thanks_label.grid(column=0,row=1, sticky=tk.W)
         self.separator.grid(column = 0, row = 10, sticky = tk.N+tk.S+tk.W+tk.E, pady=10)
-        self.license_frame.grid(column=0, row=11, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.license_frame.grid(column=0, row=11, sticky=tk.N+tk.S+tk.W+tk.E, pady = 5)
         ### FINAL FRAME ###
         self.frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
         self.grid(column=0,row=0,sticky=tk.N+tk.S+tk.W+tk.E)
@@ -284,6 +296,7 @@ class settings_frame(ttk.Frame):
         self.overlay_text_size_entry.delete(0, tk.END)
         self.overlay_text_size_entry.insert(0, variables.set_obj.overlay_tx_size)
         self.overlay_when_gsf.set(variables.set_obj.overlay_when_gsf)
+        self.event_colors.set(variables.set_obj.event_colors)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
@@ -307,12 +320,13 @@ class settings_frame(ttk.Frame):
             tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
         variables.set_obj.write_set(cl_path=str(self.path_var.get()), auto_ident=str(self.privacy_var.get()),
                                     server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
-                                    auto_upl=str(self.auto_upload_var.get()), overlay=str(self.overlay_enable_radio_var.get()),
+                                    auto_upl=str(self.auto_upload_var), overlay=str(self.overlay_enable_radio_var.get()),
                                     opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()),
                                     pos=str(self.overlay_position_var.get()), color=color, logo_color=self.logo_color.get(),
                                     bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
                                     tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(),
-                                    tx_size=self.overlay_text_size_entry.get(), overlay_when_gsf=self.overlay_when_gsf.get())
+                                    tx_size=self.overlay_text_size_entry.get(), overlay_when_gsf=self.overlay_when_gsf.get(),
+                                    event_colors=self.event_colors.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

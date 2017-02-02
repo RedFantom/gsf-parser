@@ -231,7 +231,7 @@ class realtime_frame(ttk.Frame):
                 items = variables.insert_queue.get()
                 if isinstance(items, tuple):
                     self.listbox.insert(tk.END, items[0])
-                    self.listbox.itemconfig(tk.END, bg = items[1])
+                    self.listbox.itemconfig(tk.END, bg = items[1], fg = items[2])
                 else:
                     self.listbox.insert(tk.END, items)
                     self.listbox.itemconfig(tk.END, bg = "black", fg = "white")
