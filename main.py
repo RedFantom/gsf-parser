@@ -13,8 +13,8 @@ def new_window():
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        oob = firstrun.Oob_window()
-        oob.mainloop()
+        # oob = firstrun.Oob_window()
+        # oob.mainloop()
         import variables
         if variables.set_obj.version != "v2.2.1":
             print "[DEBUG] OOB not completed successfully, exiting..."
