@@ -230,7 +230,7 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-                        print "[DEBUG] Generated time: ", dt
+                        # print "[DEBUG] Generated time: ", dt
                     except:
                         dt = file
                     self.files_dict[dt] = file
@@ -584,8 +584,8 @@ class middle_frame(ttk.Frame):
         self.statistics_label.setvar()
         self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var,
                                             justify = tk.LEFT, wraplength = 145)
-        self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\tDamage taken\tDamage dealt\n")
-        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 14, height = 17)
+        self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\t          Damage taken\t      Damage dealt\n")
+        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 17, height = 17)
         self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 17)
         self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 17)
         self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
@@ -654,7 +654,7 @@ class middle_frame(ttk.Frame):
         self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
         self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N  + tk.W + tk.E)
         self.events_frame.grid(column = 0, row = 1, columnspan = 4, sticky=tk.N+tk.W+tk.S+tk.E)
-        self.events_button.grid(column = 0, row = 1,sticky=tk.N+tk.W+tk.S+tk.E, columnspan = 4)
+        self.events_button.grid(column = 0, row = 1,sticky=tk.N+tk.W+tk.S+tk.E, columnspan = 4, pady = 12)
         self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
         self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.W + tk.E)
         self.notice_label.grid(column = 0, row = 3, columnspan = 4, sticky = tk.W+tk.E+tk.S)
