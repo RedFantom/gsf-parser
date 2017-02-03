@@ -15,7 +15,7 @@ import tkMessageBox
 import ConfigParser
 from PIL import Image, ImageTk
 
-class Oob_window(tk.Tk):
+class oob_window(tk.Tk):
     """
     This class is a child class of tk.Tk and provides a kind of setup wizard for
     the first time a new version of the parser is run. It provides screenshots
