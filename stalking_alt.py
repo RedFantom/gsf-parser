@@ -66,13 +66,16 @@ class LogStalker(threading.Thread):
             time.sleep(0.1)
 
     def read_from_file(self):
-        del self.lines[:]
+        self.lines = []
         with open(self.current_file, "rb") as file_obj:
-            self.lines = []
             lines_temp = file_obj.readlines()[self.read_so_far:]
-        if realtime.line_to_dictionary(lines_temp[-1]):
+        try:
+            line_temp = lines_temp[-1]
+        except IndexError:
+            return []
+        if realtime.line_to_dictionary(line_temp):
             self.lines = lines_temp
         else:
             self.lines = lines_temp[:-1]
-        self.read_so_far = len(self.lines)
+        self.read_so_far += len(self.lines)
         return self.lines
