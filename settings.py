@@ -233,3 +233,42 @@ class settings:
                                             "CombatLogs directory. Please "
                                             "check if this folder exists: %s"
                                             % self.cl_path)
+
+class color_schemes:
+    def __init__(self):
+        self.default_scheme = {'default_bg':'#ffffff',
+                               'default_fg':'#000000',
+                               'selfdamage':'#800040',
+                               'damage':'#ffd11a',
+                               '':''}
+        self.pastel_scheme = {}
+        self.current_scheme = self.default_scheme
+
+    def __setitem__(self, key, value):
+        self.current_scheme[key] = value
+
+    def __getitem__(self, key):
+        try:
+            return self.current_scheme[key]
+        except KeyError:
+            tkMessageBox.showerror("Error", "The requested color for %s was not found, "\
+                                   "did you alter the event_colors.ini file?" % key)
+            return "#ffffff"
+
+    def set_scheme(self, name):
+        if name == "default":
+            self.current_scheme = self.default_scheme
+        elif name == "pastel":
+            self.current_scheme = self.pastel_scheme
+        elif name == "custom":
+            cp = ConfigParser.RawConfigParser()
+            cp.read(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini")
+            self.current_scheme = dict(cp.items("colors"))
+
+    def write_custom(self):
+        cp = ConfigParser.RawConfigParser()
+        for key, value in self.current_scheme.iteritems():
+            cp.set('colors', key, value)
+        with open(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini", "w") as file_obj:
+            cp.write(file_obj)
+

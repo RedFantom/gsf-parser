@@ -20,6 +20,7 @@ import Queue
 import settings
 
 set_obj = settings.settings()
+col_obj = settings.color_schemes()
 
 FLAG = False
 

@@ -483,11 +483,11 @@ def pretty_event(line_dict, start_of_match, active_id):
         string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
             if line_dict['source'] == active_id:
-                color = "#800040"
+                color = variables.col_obj['selfdamage']
             else:
-                color = "#ff1a1a"
+                color = variables.col_obj['damage']
         else:
-            color = "#ffd11a"
+            color = variables.col_obj['damage']
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
         if line_dict['source'] == active_id:
