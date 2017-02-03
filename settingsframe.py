@@ -42,7 +42,7 @@ class settings_frame(ttk.Frame):
         self.license_frame = ttk.Frame(self.frame.interior)
         self.main_window = main_window
         ### GUI SETTINGS ###
-        # TODO Add more GUI settings including colours
+        # TODO Add more GUI settings including colors
         self.gui_label = ttk.Label(self.frame.interior, text = "GUI settings", justify=tk.LEFT)
         self.color_label = ttk.Label(self.gui_frame, text = "\tParser text color: ")
         self.color = tk.StringVar()
@@ -61,7 +61,7 @@ class settings_frame(ttk.Frame):
         for color in self.logo_color_choices:
             self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
                                                            variable = self.logo_color))
-        self.event_colors_label = ttk.Label(self.gui_frame, text = "\tEvent colours: ")
+        self.event_colors_label = ttk.Label(self.gui_frame, text = "\tEvent colors: ")
         self.event_colors = tk.StringVar()
         self.event_colors_none = ttk.Radiobutton(self.gui_frame, text = "None", variable = self.event_colors,
                                                    value = "none")
@@ -69,6 +69,17 @@ class settings_frame(ttk.Frame):
                                                     value = "basic")
         self.event_colors_adv = ttk.Radiobutton(self.gui_frame, text = "Advanced", variable = self.event_colors,
                                                   value = "advanced")
+
+        self.event_scheme = tk.StringVar()
+        self.event_scheme_label = ttk.Label(self.gui_frame, text = "\tEvent color scheme: ")
+        self.event_scheme_default = ttk.Radiobutton(self.gui_frame, text = "Default", variable = self.event_scheme,
+                                                    value = "default")
+        self.event_scheme_pastel = ttk.Radiobutton(self.gui_frame, text = "Pastel", variable = self.event_scheme,
+                                                   value = "pastel")
+        self.event_scheme_custom = ttk.Radiobutton(self.gui_frame, text = "Custom", variable = self.event_scheme,
+                                                   value = "custom")
+        self.event_scheme_custom_button = ttk.Button(self.gui_frame, text = "Choose colors",
+                                                     command = self.set_custom_event_colors)
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
         self.path_var = tk.StringVar()
@@ -94,7 +105,7 @@ class settings_frame(ttk.Frame):
         self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True,
                                                 text="Yes")
         ### REAL-TIME SETTINGS ###
-        # TODO Add more colours for the overlay
+        # TODO Add more colors for the overlay
         # TODO Add events view possibility to the overlay
         self.realtime_settings_label = ttk.Label(self.realtime_frame, text = "Real-time parsing settings")
         self.overlay_enable_label = ttk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
@@ -136,9 +147,9 @@ class settings_frame(ttk.Frame):
                                                                 value = color, text = color))
             self.overlay_tr_color_radios.append(ttk.Radiobutton(self.realtime_frame, variable = self.overlay_tr_color,
                                                                 value = color, text = color))
-        self.overlay_bg_label = ttk.Label(self.realtime_frame, text = "\tOverlay background colour: ")
-        self.overlay_tx_label = ttk.Label(self.realtime_frame, text = "\tOverlay text colour: ")
-        self.overlay_tr_label = ttk.Label(self.realtime_frame, text = "\tOverlay transparent colour: ")
+        self.overlay_bg_label = ttk.Label(self.realtime_frame, text = "\tOverlay background color: ")
+        self.overlay_tx_label = ttk.Label(self.realtime_frame, text = "\tOverlay text color: ")
+        self.overlay_tr_label = ttk.Label(self.realtime_frame, text = "\tOverlay transparent color: ")
         self.overlay_font_label = ttk.Label(self.realtime_frame, text = "\tOverlay font: ")
         self.overlay_font_options = ["Calibri", "Arial", "Consolas"]
         self.overlay_font_radios = []
@@ -170,6 +181,9 @@ class settings_frame(ttk.Frame):
                                       justify=tk.LEFT)
         self.update_settings()
 
+    def set_custom_event_colors(self):
+        pass
+
     def set_directory_dialog(self):
         directory = tkFileDialog.askdirectory(initialdir = self.path_var.get(), mustexist = True,
                                               parent = self.main_window, title = "GSF Parser: Choosing directory")
@@ -196,6 +210,12 @@ class settings_frame(ttk.Frame):
         self.event_colors_basic.grid(column = 2, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
         self.event_colors_none.grid(column = 1, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
         self.event_colors_adv.grid(column = 3, row = 2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_label.grid(column = 0, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_default.grid(column = 1, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_pastel.grid(column = 2, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_custom.grid(column = 3, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_custom_button.grid(column = 4, row = 3, sticky=tk.N+tk.S+tk.W+tk.E,
+                                             padx = 5)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady = 5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx =5)
@@ -297,6 +317,7 @@ class settings_frame(ttk.Frame):
         self.overlay_text_size_entry.insert(0, variables.set_obj.overlay_tx_size)
         self.overlay_when_gsf.set(variables.set_obj.overlay_when_gsf)
         self.event_colors.set(variables.set_obj.event_colors)
+        self.event_scheme.set(variables.set_obj.event_scheme)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
@@ -318,15 +339,25 @@ class settings_frame(ttk.Frame):
             help_string = """This setting makes the overlay only appear inside GSF matches. Please note that the overlay will only appear after the
                              first GSF ability is executed, so the overlay may appear to display a little late, but this is normal behaviour."""
             tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
-        variables.set_obj.write_set(cl_path=str(self.path_var.get()), auto_ident=str(self.privacy_var.get()),
-                                    server_address=str(self.server_address_entry.get()), server_port=str(self.server_port_entry.get()),
-                                    auto_upl=str(self.auto_upload_var), overlay=str(self.overlay_enable_radio_var.get()),
-                                    opacity=str(self.overlay_opacity_input.get()), size=str(self.overlay_size_var.get()),
-                                    pos=str(self.overlay_position_var.get()), color=color, logo_color=self.logo_color.get(),
-                                    bg_color=self.overlay_bg_color.get(), tr_color=self.overlay_tr_color.get(),
-                                    tx_color=self.overlay_tx_color.get(), tx_font=self.overlay_font.get(),
-                                    tx_size=self.overlay_text_size_entry.get(), overlay_when_gsf=self.overlay_when_gsf.get(),
-                                    event_colors=self.event_colors.get())
+        variables.set_obj.write_set(cl_path=str(self.path_var.get()),
+                                    auto_ident=str(self.privacy_var.get()),
+                                    server_address=str(self.server_address_entry.get()),
+                                    server_port=str(self.server_port_entry.get()),
+                                    auto_upl=str(self.auto_upload_var),
+                                    overlay=str(self.overlay_enable_radio_var.get()),
+                                    opacity=str(self.overlay_opacity_input.get()),
+                                    size=str(self.overlay_size_var.get()),
+                                    pos=str(self.overlay_position_var.get()),
+                                    color=color,
+                                    logo_color=self.logo_color.get(),
+                                    bg_color=self.overlay_bg_color.get(),
+                                    tr_color=self.overlay_tr_color.get(),
+                                    tx_color=self.overlay_tx_color.get(),
+                                    tx_font=self.overlay_font.get(),
+                                    tx_size=self.overlay_text_size_entry.get(),
+                                    overlay_when_gsf=self.overlay_when_gsf.get(),
+                                    event_colors=self.event_colors.get(),
+                                    event_scheme=self.event_scheme.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

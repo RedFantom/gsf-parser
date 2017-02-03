@@ -10,6 +10,7 @@ except ImportError:
 from PIL import ImageTk, Image
 import ttk
 import tkMessageBox
+import tkColorChooser
 # General imports
 import os
 import sys
@@ -224,6 +225,13 @@ class events_view(tk.Toplevel):
                     self.listbox.insert(tk.END, event)
         except TypeError:
             self.destroy()
+
+class event_colors(tk.Toplevel):
+    """
+    A class for a Toplevel that lets the user set their own custom HTML colors for events.
+    """
+    def __init__(self, window):
+        tk.Toplevel.__init__(self, window)
 
 class filters(tk.Toplevel):
     """

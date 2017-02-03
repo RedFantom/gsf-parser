@@ -21,7 +21,7 @@ class defaults:
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
-    server_address = "thrantasquadron.tk"
+    server_address = "parser.thrantasquadron.tk"
     server_port = str(83)
     # Automatically upload CombatLogs as they are parsed to the remote server
     auto_upl = str(False)
@@ -42,6 +42,7 @@ class defaults:
     overlay_tx_size = "12"
     overlay_when_gsf = str(False)
     event_colors = "basic"
+    event_scheme = "default"
 
 # Class that loads, stores and saves settings
 class settings:
@@ -95,6 +96,7 @@ class settings:
         self.pos = self.conf.get("realtime", "pos")
         self.color = self.conf.get("gui", "color")
         self.event_colors = self.conf.get("gui", "event_colors")
+        self.event_scheme = self.conf.get("gui", "event_scheme")
         self.logo_color = self.conf.get("gui", "logo_color")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
@@ -140,6 +142,7 @@ class settings:
         self.conf.set("gui", "color", defaults.color)
         self.conf.set("gui", "logo_color", defaults.logo_color)
         self.conf.set("gui", "event_colors", defaults.event_colors)
+        self.conf.set("gui", "event_scheme", defaults.event_scheme)
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
@@ -177,7 +180,8 @@ class settings:
                   tx_font=defaults.overlay_tx_font,
                   tx_size=defaults.overlay_tx_size,
                   overlay_when_gsf=defaults.overlay_when_gsf,
-                  event_colors=defaults.event_colors):
+                  event_colors=defaults.event_colors,
+                  event_scheme=defaults.event_scheme):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -187,7 +191,7 @@ class settings:
             self.conf.add_section("gui")
         except:
             pass
-        # TODO Make this setting changable without restarting
+        # TODO Make this setting changeable without restarting
         if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
             tkMessageBox.showinfo("Notice", "In order to change the setting for "
                                             "auto uploading CombatLogs, the "
@@ -216,6 +220,7 @@ class settings:
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)
+        self.conf.set("gui", "event_scheme", event_scheme)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()

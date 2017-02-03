@@ -440,9 +440,10 @@ class statistics:
 colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 
 def pretty_event(line_dict, start_of_match, active_id):
+    # TODO: Use dictionaries to determine the colors an event should have
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
-    colour = "#ffffff"
-    fg_colour = "#000000"
+    color = "#ffffff"
+    fg_color = "#000000"
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -482,50 +483,51 @@ def pretty_event(line_dict, start_of_match, active_id):
         string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
             if line_dict['source'] == active_id:
-                colour = "#800040"
+                color = "#800040"
             else:
-                colour = "#ff1a1a"
+                color = "#ff1a1a"
         else:
-            colour = "#ffd11a"
+            color = "#ffd11a"
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
         if line_dict['source'] == active_id:
-            colour = "#008000"
+            color = "#008000"
         else:
-            colour = "#00b300"
+            color = "#00b300"
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
         if variables.set_obj.event_colors == "advanced":
             for engine in abilities.engines:
                 if engine in string:
-                    colour = "#8533ff"
-                    fg_colour = "#ffffff"
+                    color = "#8533ff"
+                    fg_color = "#ffffff"
                     break
             for shield in abilities.shields:
                 if shield in string:
-                    colour = "#004d00"
-                    fg_colour = "#ffffff"
+                    color = "#004d00"
+                    fg_color = "#ffffff"
                     break
             for system in abilities.systems:
                 if system in string:
-                    colour = "#002db3"
-                    fg_colour = "#ffffff"
+                    color = "#002db3"
+                    fg_color = "#ffffff"
                     break
-            if colour == "#ffffff":
-                colour = "#33adff"
+            if color == "#ffffff":
+                color = "#33adff"
         elif variables.set_obj.event_colors == "basic":
-            colour = "#33adff"
+            color = "#33adff"
     else:
         return
-    if not colour:
-        print "[DEBUG] No colour set!"
-        colour = "white"
+    if not color:
+        print "[DEBUG] No color set!"
+        color = "white"
     if variables.set_obj.event_colors == "none":
-        colour = "#ffffff"
-        fg_colour = "#000000"
-    variables.insert_queue.put((string, colour, fg_colour))
+        color = "#ffffff"
+        fg_color = "#000000"
+    variables.insert_queue.put((string, color, fg_color))
 
 def print_event(line, start_of_match, player):
+    # TODO: Make color compatible
     line_dict = realtime.line_to_dictionary(line)
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
     start_of_match = datetime.datetime.strptime(start_of_match, "%H:%M:%S")
