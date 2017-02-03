@@ -8,6 +8,7 @@ import variables
 import threading
 import time
 from datetime import datetime
+import realtime
 
 class LogStalker(threading.Thread):
     """
@@ -21,6 +22,7 @@ class LogStalker(threading.Thread):
     current code, only the import statement in realtimeframe.py must be
     changed.
     """
+
     def __init__(self, folder=variables.set_obj.cl_path, callback=None,
                  watching_stringvar=None):
         threading.Thread.__init__(self)
@@ -66,6 +68,11 @@ class LogStalker(threading.Thread):
     def read_from_file(self):
         del self.lines[:]
         with open(self.current_file, "rb") as file_obj:
-            self.lines = file_obj.readlines()[self.read_so_far:]
-            self.read_so_far += len(self.lines)
+            self.lines = []
+            lines_temp = file_obj.readlines()[self.read_so_far:]
+        if realtime.line_to_dictionary(lines_temp[-1]):
+            self.lines = lines_temp
+        else:
+            self.lines = lines_temp[:-1]
+        self.read_so_far = len(self.lines)
         return self.lines
