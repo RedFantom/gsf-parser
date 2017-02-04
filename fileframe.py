@@ -163,7 +163,7 @@ class file_frame(ttk.Frame):
         """
 
         try:
-            os.chdir(variables.set_obj.cl_path)
+            os.chdir(variables.settings_obj.cl_path)
         except WindowsError:
             return
         self.file_strings = []
@@ -178,9 +178,9 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
         self.splash = toplevels.splash_screen(self.main_window)
         try:
-            os.chdir(variables.set_obj.cl_path)
+            os.chdir(variables.settings_obj.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.set_obj.cl_path)
+            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             self.splash.destroy()
             return
         for file in os.listdir(os.getcwd()):
@@ -210,7 +210,7 @@ class file_frame(ttk.Frame):
         """
 
         try:
-            os.chdir(variables.set_obj.cl_path)
+            os.chdir(variables.settings_obj.cl_path)
         except WindowsError:
             return
         self.file_strings = []
@@ -226,9 +226,9 @@ class file_frame(ttk.Frame):
         if not silent:
             self.splash = toplevels.splash_screen(self.main_window)
         try:
-            os.chdir(variables.set_obj.cl_path)
+            os.chdir(variables.settings_obj.cl_path)
         except:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.set_obj.cl_path)
+            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             if not silent:
                 self.splash.destroy()
             return

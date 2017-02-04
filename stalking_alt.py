@@ -23,7 +23,7 @@ class LogStalker(threading.Thread):
     changed.
     """
 
-    def __init__(self, folder=variables.set_obj.cl_path, callback=None,
+    def __init__(self, folder=variables.settings_obj.cl_path, callback=None,
                  watching_stringvar=None):
         threading.Thread.__init__(self)
         self.folder = folder

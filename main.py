@@ -16,7 +16,7 @@ if __name__ == "__main__":
         # oob = firstrun.oob_window()
         # oob.mainloop()
         import variables
-        if variables.set_obj.version != "v2.2.1":
+        if variables.settings_obj.version != "v2.2.1":
             print "[DEBUG] OOB not completed successfully, exiting..."
         main_window = gui.main_window()
     else:

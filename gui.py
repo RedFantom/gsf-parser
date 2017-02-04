@@ -44,9 +44,9 @@ class main_window(tk.Tk):
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.set_obj.cl_path
+        variables.path = variables.settings_obj.cl_path
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.set_obj.cl_path
+        self.default_path = variables.settings_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width = False, height = False)
         self.wm_title("GSF Parser")
@@ -54,7 +54,7 @@ class main_window(tk.Tk):
         variables.client_obj = client.client_conn()
         self.splash = toplevels.boot_splash(self)
         # TODO Enable connecting to the server in a later phase
-        if variables.set_obj.auto_upl or variables.set_obj.auto_ident:
+        if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
             variables.client_obj.init_conn()
             print "[DEBUG] Connection initialized"
         self.splash.update_progress()
@@ -125,7 +125,7 @@ class main_window(tk.Tk):
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
         try:
-            self.style.configure('.', foreground=variables.set_obj.color)
+            self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:
             self.style.configure('.', foreground='#8B0000')
         if not start:
@@ -135,6 +135,6 @@ class main_window(tk.Tk):
     def set_icon(self):
         try:
             self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__))+"\\assets\\logos\\icon_" +
-                                    variables.set_obj.logo_color + ".ico")
+                                    variables.settings_obj.logo_color + ".ico")
         except:
             print "[DEBUG] No icon found, is this from the GitHub repo?"

@@ -33,7 +33,7 @@ class splash_screen(tk.Toplevel):
         self.progress_bar = ttk.Progressbar(self, orient = "horizontal", length = 300, mode = "determinate")
         self.progress_bar.pack()
         try:
-            list = os.listdir(variables.set_obj.cl_path)
+            list = os.listdir(variables.settings_obj.cl_path)
         except WindowsError:
             tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
             return
@@ -73,48 +73,48 @@ class overlay(tk.Toplevel):
                                                "Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
             except IOError:
                 tkMessageBox.showerror("Error", "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
-        print "[DEBUG] Setting overlay font to: ", (variables.set_obj.overlay_tx_font, variables.set_obj.overlay_tx_size)
-        if variables.set_obj.size == "big":
+        print "[DEBUG] Setting overlay font to: ", (variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
+        if variables.settings_obj.size == "big":
             self.text_label = ttk.Label(self, text = "Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
-                                        justify = tk.LEFT, font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
-                                        foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
-        elif variables.set_obj.size == "small":
+                                        justify = tk.LEFT, font = (variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
+                                        foreground = variables.settings_obj.overlay_tx_color, background = variables.settings_obj.overlay_bg_color)
+        elif variables.settings_obj.size == "small":
             self.text_label = ttk.Label(self, text = "DD:\nDT:\nHR:\nSD:", justify = tk.LEFT,
-                                        font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
-                                        foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
+                                        font = (variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
+                                        foreground = variables.settings_obj.overlay_tx_color, background = variables.settings_obj.overlay_bg_color)
         else:
             raise ValueError("Size setting not valid.")
         self.stats_var = tk.StringVar()
         self.stats_label = ttk.Label(self, textvariable = self.stats_var, justify = tk.RIGHT,
-                                     font = (variables.set_obj.overlay_tx_font, int(variables.set_obj.overlay_tx_size)),
-                                     foreground = variables.set_obj.overlay_tx_color, background = variables.set_obj.overlay_bg_color)
+                                     font = (variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
+                                     foreground = variables.settings_obj.overlay_tx_color, background = variables.settings_obj.overlay_bg_color)
         self.text_label.pack(side=tk.LEFT)
         self.stats_label.pack(side=tk.RIGHT)
-        self.configure(background = variables.set_obj.overlay_bg_color)
-        self.wm_attributes("-transparentcolor", variables.set_obj.overlay_tr_color)
+        self.configure(background = variables.settings_obj.overlay_bg_color)
+        self.wm_attributes("-transparentcolor", variables.settings_obj.overlay_tr_color)
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.attributes("-alpha", variables.set_obj.opacity)
+        self.attributes("-alpha", variables.settings_obj.opacity)
 
     def update_position(self):
-        if variables.set_obj.size == "big":
-            h_req = (int(variables.set_obj.overlay_tx_size) * 1.6) * 5
-            w_req = ((int(variables.set_obj.overlay_tx_size) / 1.5) + 2) * (14 + 6)
-        elif variables.set_obj.size == "small":
-            h_req = (int(variables.set_obj.overlay_tx_size) * 1.6) * 4
-            w_req = ((int(variables.set_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
+        if variables.settings_obj.size == "big":
+            h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 5
+            w_req = ((int(variables.settings_obj.overlay_tx_size) / 1.5) + 2) * (14 + 6)
+        elif variables.settings_obj.size == "small":
+            h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 4
+            w_req = ((int(variables.settings_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
         else:
             raise
-        if variables.set_obj.pos == "TL":
+        if variables.settings_obj.pos == "TL":
             pos_c = "+0+0"
-        elif variables.set_obj.pos == "BL":
+        elif variables.settings_obj.pos == "BL":
             pos_c = "+0+%s" % (int(variables.screen_h) - int(h_req))
-        elif variables.set_obj.pos == "TR":
+        elif variables.settings_obj.pos == "TR":
             pos_c = "+%s+0" % (int(variables.screen_w) - int(w_req))
-        elif variables.set_obj.pos == "BR":
+        elif variables.settings_obj.pos == "BR":
             pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req), int(variables.screen_h) - int(h_req))
         else:
-            raise ValueError("vars.set_obj.pos not valid")
+            raise ValueError("vars.settings_obj.pos not valid")
         self.wm_geometry("%sx%s" % (int(w_req), int(h_req))+ pos_c)
         print "[DEBUG] Overlay position set to: ", "%sx%s" % (int(w_req), int(h_req))+ pos_c
 
@@ -143,10 +143,10 @@ class boot_splash(tk.Toplevel):
     def __init__(self, window):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
-        print variables.set_obj.logo_color
+        print variables.settings_obj.logo_color
         try:
             self.logo = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\logo_" + \
-                                                      variables.set_obj.logo_color + ".png"))
+                                                      variables.settings_obj.logo_color + ".png"))
             self.panel = ttk.Label(self, image = self.logo)
             self.panel.pack()
         except:
@@ -252,7 +252,7 @@ class event_colors(tk.Toplevel):
         self.column_label_two = ttk.Label(self, text = "Background color", font = ("Calibri", 12))
         self.column_label_three = ttk.Label(self, text="Text color", font=("Calibri", 12))
         self.colors = collections.OrderedDict()
-        variables.color_scheme.set_scheme(variables.set_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         self.colors['dmgd_pri'] = [variables.color_scheme['dmgd_pri'][0], variables.color_scheme['dmgd_pri'][1]]
         self.colors['dmgt_pri'] = [variables.color_scheme['dmgt_pri'][0], variables.color_scheme['dmgt_pri'][1]]
         self.colors['dmgd_sec'] = [variables.color_scheme['dmgd_sec'][0], variables.color_scheme['dmgd_sec'][1]]

@@ -98,11 +98,11 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=variables.set_obj.cl_path,
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=variables.settings_obj.cl_path,
                                                        watching_stringvar=self.watching_stringvar)
             variables.FLAG = True
             self.stalker_obj.start()
-            if variables.set_obj.overlay and not variables.set_obj.overlay_when_gsf:
+            if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
                 self.overlay = toplevels.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
@@ -114,7 +114,7 @@ class realtime_frame(ttk.Frame):
             self.stalker_obj.FLAG = False
             while self.stalker_obj.is_alive():
                 pass
-            if variables.set_obj.overlay and self.overlay:
+            if variables.settings_obj.overlay and self.overlay:
                 self.overlay.destroy()
             self.overlay = None
             self.parsing_bar.stop()
@@ -166,13 +166,13 @@ class realtime_frame(ttk.Frame):
                                            str(healing) + "\n" +
                                            str(spawns))
         if self.overlay:
-            if variables.set_obj.size == "big":
+            if variables.settings_obj.size == "big":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
                                            str(selfdamage) + "\n" +
                                            str(spawns))
-            elif variables.set_obj.size == "small":
+            elif variables.settings_obj.size == "small":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
@@ -209,14 +209,14 @@ class realtime_frame(ttk.Frame):
     def match_callback(self, dd, dt, hr, sd):
         variables.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
                                                                                            str(sum(hr)), str(sum(sd))))
-        if variables.set_obj.overlay_when_gsf and self.overlay:
+        if variables.settings_obj.overlay_when_gsf and self.overlay:
             self.overlay.destroy()
             self.overlay = None
 
     def new_match_callback(self):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
-        if variables.set_obj.overlay_when_gsf and not self.overlay:
+        if variables.settings_obj.overlay_when_gsf and not self.overlay:
             self.overlay = toplevels.overlay(self.main_window)
 
     def insert(self):

@@ -52,12 +52,12 @@ class settings_frame(ttk.Frame):
         for color in self.color_choices:
             self.color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
                                                       variable = self.color, width = 8))
-        self.color.set(variables.set_obj.color)
+        self.color.set(variables.settings_obj.color)
         self.logo_color_label = ttk.Label(self.gui_frame, text = "\tParser logo color: ")
         self.logo_color = tk.StringVar()
         self.logo_color_choices = ["green", "blue", "red"]
         self.logo_color_options = []
-        self.logo_color.set(variables.set_obj.logo_color)
+        self.logo_color.set(variables.settings_obj.logo_color)
         for color in self.logo_color_choices:
             self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
                                                            variable = self.logo_color, width = 10))
@@ -124,7 +124,7 @@ class settings_frame(ttk.Frame):
                                                         value = "small", text = "Small")
         self.overlay_position_label = ttk.Label(self.realtime_frame, text = "\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
-        self.overlay_position_var.set(variables.set_obj.pos)
+        self.overlay_position_var.set(variables.settings_obj.pos)
         self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
                                                          value = "TL", text =  "Top left")
         self.overlay_position_radio_bl = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_position_var,
@@ -297,34 +297,34 @@ class settings_frame(ttk.Frame):
         self.grid(column=0,row=0,sticky=tk.N+tk.S+tk.W+tk.E)
 
     def update_settings(self):
-        self.path_var.set(variables.set_obj.cl_path)
-        self.privacy_var.set(bool(variables.set_obj.auto_ident))
+        self.path_var.set(variables.settings_obj.cl_path)
+        self.privacy_var.set(bool(variables.settings_obj.auto_ident))
         self.server_address_entry.delete(0, tk.END)
-        self.server_address_entry.insert(0, str(variables.set_obj.server_address))
+        self.server_address_entry.insert(0, str(variables.settings_obj.server_address))
         self.server_port_entry.delete(0, tk.END)
-        self.server_port_entry.insert(0, int(variables.set_obj.server_port))
-        self.auto_upload_var.set(bool(variables.set_obj.auto_upl))
-        self.overlay_enable_radio_var.set(bool(variables.set_obj.overlay))
+        self.server_port_entry.insert(0, int(variables.settings_obj.server_port))
+        self.auto_upload_var.set(bool(variables.settings_obj.auto_upl))
+        self.overlay_enable_radio_var.set(bool(variables.settings_obj.overlay))
         self.overlay_opacity_input.delete(0, tk.END)
-        self.overlay_opacity_input.insert(0, variables.set_obj.opacity)
-        self.overlay_size_var.set(variables.set_obj.size)
-        self.overlay_position_var.set(variables.set_obj.pos)
-        self.logo_color.set(variables.set_obj.logo_color)
-        self.color.set(variables.set_obj.color)
-        self.overlay_bg_color.set(variables.set_obj.overlay_bg_color)
-        self.overlay_tx_color.set(variables.set_obj.overlay_tx_color)
-        self.overlay_tr_color.set(variables.set_obj.overlay_tr_color)
-        self.overlay_font.set(variables.set_obj.overlay_tx_font)
+        self.overlay_opacity_input.insert(0, variables.settings_obj.opacity)
+        self.overlay_size_var.set(variables.settings_obj.size)
+        self.overlay_position_var.set(variables.settings_obj.pos)
+        self.logo_color.set(variables.settings_obj.logo_color)
+        self.color.set(variables.settings_obj.color)
+        self.overlay_bg_color.set(variables.settings_obj.overlay_bg_color)
+        self.overlay_tx_color.set(variables.settings_obj.overlay_tx_color)
+        self.overlay_tr_color.set(variables.settings_obj.overlay_tr_color)
+        self.overlay_font.set(variables.settings_obj.overlay_tx_font)
         self.overlay_text_size_entry.delete(0, tk.END)
-        self.overlay_text_size_entry.insert(0, variables.set_obj.overlay_tx_size)
-        self.overlay_when_gsf.set(variables.set_obj.overlay_when_gsf)
-        self.event_colors.set(variables.set_obj.event_colors)
-        self.event_scheme.set(variables.set_obj.event_scheme)
-        variables.color_scheme.set_scheme(variables.set_obj.event_scheme)
+        self.overlay_text_size_entry.insert(0, variables.settings_obj.overlay_tx_size)
+        self.overlay_when_gsf.set(variables.settings_obj.overlay_when_gsf)
+        self.event_colors.set(variables.settings_obj.event_colors)
+        self.event_scheme.set(variables.settings_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
-        if str(self.color.get()) == variables.set_obj.color and self.logo_color.get() == variables.set_obj.logo_color:
+        if str(self.color.get()) == variables.settings_obj.color and self.logo_color.get() == variables.settings_obj.logo_color:
             reboot = False
         else:
             reboot = True
@@ -338,11 +338,11 @@ class settings_frame(ttk.Frame):
             color = self.custom_color_entry.get()
         else:
             color = self.color.get()
-        if self.overlay_when_gsf.get() and not variables.set_obj.overlay_when_gsf:
+        if self.overlay_when_gsf.get() and not variables.settings_obj.overlay_when_gsf:
             help_string = """This setting makes the overlay only appear inside GSF matches. Please note that the overlay will only appear after the
                              first GSF ability is executed, so the overlay may appear to display a little late, but this is normal behaviour."""
             tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
-        variables.set_obj.write_set(cl_path=str(self.path_var.get()),
+        variables.settings_obj.write_set(cl_path=str(self.path_var.get()),
                                     auto_ident=str(self.privacy_var.get()),
                                     server_address=str(self.server_address_entry.get()),
                                     server_port=str(self.server_port_entry.get()),
@@ -370,7 +370,7 @@ class settings_frame(ttk.Frame):
         self.update_settings()
 
     def default_settings(self):
-        variables.set_obj.write_def()
+        variables.settings_obj.write_def()
         self.update_settings()
 
     @staticmethod

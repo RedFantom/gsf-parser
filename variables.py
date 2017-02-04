@@ -19,7 +19,7 @@ import os
 import Queue
 import settings
 
-set_obj = settings.settings()
+settings_obj = settings.settings()
 color_scheme = settings.color_schemes()
 
 FLAG = False
@@ -69,7 +69,7 @@ client_obj = None
 main_window = None
 cl_path = None
 install_path = os.path.dirname(__file__)
-path = set_obj.cl_path
+path = settings_obj.cl_path
 
 match_timing = None
 match_timing_end = None

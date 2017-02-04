@@ -40,10 +40,10 @@ class client_conn:
             print "[DEBUG] Creating conn_splash"
             self.splash = toplevels.conn_splash(window=variables.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
+        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
         self.TIME_OUT = 4
         self.conn_obj.settimeout(self.TIME_OUT)
-        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
+        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
         self.conn = self.wrap_conn_obj(self.conn_obj)
         try:
             self.conn.connect(self.address)
@@ -487,7 +487,7 @@ class realtime_conn(threading.Thread):
 
     def init_conn(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (variables.set_obj.server_address, variables.set_obj.server_port)
+        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
         try:
             self.conn.connect(self.address)
         except ssl.SSLError:
