@@ -26,7 +26,7 @@ import widgets
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
-    '''
+    """
     Class for a frame that contains three listboxes, one for files, one for matches and
     one for spawns, and updates them and other widgets after parsing the files using the
     methods found in the parse.py module accordingly. This frame controls the whole of file
@@ -44,14 +44,15 @@ class file_frame(ttk.Frame):
     | spawn_2     | || |
     | spawn_3     | \/ |
     --------------------
-    '''
+    """
+
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
-        '''
+        """
         Create all widgets and make the links between them
         :param root_frame:
         :param main_window:
-        '''
+        """
         ttk.Frame.__init__(self, root_frame, width = 200, height = 420)
         self.main_window = main_window
         self.file_box = tk.Listbox(self)
@@ -73,16 +74,18 @@ class file_frame(ttk.Frame):
         self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
 
     def filters(self):
-        '''
+        """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
-        '''
+        """
+
         pass
 
     def grid_widgets(self):
-        '''
+        """
         Put all widgets in the right places
         :return:
-        '''
+        """
+
         self.file_box.config(height = 6)
         self.match_box.config(height = 6)
         self.spawn_box.config(height = 6)
@@ -97,10 +100,11 @@ class file_frame(ttk.Frame):
 
 
     def add_matches(self):
-        '''
+        """
         Function that adds the matches found in the file selected to the appropriate listbox
         :return:
-        '''
+        """
+
         self.spawn_box.delete(0, tk.END)
         self.main_window.middle_frame.abilities_label_var.set("")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -113,10 +117,10 @@ class file_frame(ttk.Frame):
         self.match_timing_strings = []
         self.match_timing_strings = [str(time.time()) for time in variables.match_timings]
         self.match_timing_strings = self.match_timing_strings[::2]
-        '''
+        """
         for number in range(0, len(self.match_timing_strings) + 1):
             self.match_box.delete(number)
-        '''
+        """
         self.match_box.delete(0, tk.END)
         self.match_box.insert(tk.END, "All matches")
         if len(self.match_timing_strings) == 0:
@@ -127,10 +131,11 @@ class file_frame(ttk.Frame):
                 self.match_box.insert(tk.END, time)
 
     def add_spawns(self):
-        '''
+        """
         Function that adds the spawns found in the selected match to the appropriate listbox
         :return:
-        '''
+        """
+
         self.main_window.middle_frame.abilities_label_var.set("")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
@@ -152,10 +157,11 @@ class file_frame(ttk.Frame):
                 self.spawn_box.insert(tk.END, spawn)
 
     def add_files_cb(self):
-        '''
+        """
         Function that adds the files to the list that are currently in the directory when the
         :return:
-        '''
+        """
+
         try:
             os.chdir(variables.set_obj.cl_path)
         except WindowsError:
@@ -195,13 +201,14 @@ class file_frame(ttk.Frame):
         return
 
     def add_files(self, silent=False):
-        '''
+        """
         Function that checks files found in the in the settings specified folder for
         GSF matches and if those are found in a file, it gets added to the listbox
         Also calls for a splash screen if :param silent: is set to False
         :param silent:
         :return:
-        '''
+        """
+
         try:
             os.chdir(variables.set_obj.cl_path)
         except WindowsError:
@@ -248,13 +255,14 @@ class file_frame(ttk.Frame):
         return
 
     def file_update(self, instance):
-        '''
+        """
         Function either sets the file and calls add_matches to add the matches found in the file
         to the matches_listbox, or starts the parsing of all files found in the specified folder
         and displays the results in the other frames.
         :param instance: for Tkinter callback
         :return:
-        '''
+        """
+
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -299,13 +307,14 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.remove_image()
 
     def match_update(self, instance):
-        '''
+        """
         Either adds sets the match and calls add_spawns to add the spawns found in the match
         or starts the parsing of all files found in the specified file and displays the results
         in the other frames.
         :param instance: for Tkinter callback
         :return:
-        '''
+        """
+
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -348,12 +357,12 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.remove_image()
 
     def spawn_update(self, instance):
-        '''
+        """
         Either starts the parsing of ALL spawns found in the specified match or just one of them
         and displays the results in the other frames accordingly
         :param instance: for Tkinter callback
         :return:
-        '''
+        """
         if self.spawn_box.curselection() == (0,):
             try:
                 match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
@@ -425,7 +434,7 @@ class file_frame(ttk.Frame):
             self.main_window.ship_frame.update_ship(variables.ships_list)
 
 class ship_frame(ttk.Frame):
-    '''
+    """
     Simple frame with a picture and a string containing information about the ships
     used by the player.
     -----------------------------------
@@ -439,13 +448,13 @@ class ship_frame(ttk.Frame):
     | text                            |
     |                                 |
     -----------------------------------
-    '''
+    """
 
     def __init__(self, root_frame):
-        '''
+        """
         Create all labels and variables
         :param root_frame:
-        '''
+        """
         ttk.Frame.__init__(self, root_frame, width = 300, height = 410)
         self.ship_label_var = tk.StringVar()
         self.ship_label_var.set("No match or spawn selected yet.")
@@ -453,22 +462,22 @@ class ship_frame(ttk.Frame):
         self.ship_image = ttk.Label(self)
 
     def grid_widgets(self):
-        '''
+        """
         Put the widgets in the right place
         :return:
-        '''
+        """
         self.ship_image.grid(column = 0, row = 0, sticky =tk.N+tk.S+tk.W+tk.E)
         self.ship_label.grid(column = 0, row = 1, sticky =tk.N+tk.S+tk.W+tk.E)
         self.remove_image()
 
     def update_ship(self, ships_list):
-        '''
+        """
         Update the picture of the ship by using the ships_list as reference
         If more ships are possible, set the default.
         If zero ships are possible, there must be an error somewhere in the abilities module
         :param ships_list:
         :return:
-        '''
+        """
         if len(ships_list) > 1:
             print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
@@ -490,11 +499,11 @@ class ship_frame(ttk.Frame):
         return
 
     def set_image(self, file):
-        '''
+        """
         Set the image file, unless there is an IOError, because  then the assets folder is not in place
         :param file:
         :return:
-        '''
+        """
         try:
             self.img = Image.open(file)
             self.img = self.img.resize((300,180), Image.ANTIALIAS)
@@ -506,10 +515,10 @@ class ship_frame(ttk.Frame):
             pass
 
     def remove_image(self):
-        '''
+        """
         Set the default image
         :return:
-        '''
+        """
         try:
             self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
                                                      "\\assets\\img\\default.png").resize((300,180),Image.ANTIALIAS))
@@ -522,7 +531,7 @@ class ship_frame(ttk.Frame):
             pass
 
 class middle_frame(ttk.Frame):
-    '''
+    """
     A simple frame containing a notebook with three tabs to show statistics and information to the user
     Main frame:
     ----------------------------------
@@ -555,15 +564,15 @@ class middle_frame(ttk.Frame):
     | ability              |||| |
     | ability              |\/| |
     -----------------------------
-    '''
+    """
     def __init__(self, root_frame, main_window):
-        '''
+        """
         Set up all widgets and variables. StringVars can be manipulated by the file frame,
         so that frame can set the statistics to be shown in this frame. Strings for Tkinter
         cannot span multiple lines!
         :param root_frame:
         :param main_window:
-        '''
+        """
         ttk.Frame.__init__(self, root_frame)
         self.window = main_window
         self.notebook = ttk.Notebook(self, width = 300, height = 310)
@@ -604,18 +613,18 @@ class middle_frame(ttk.Frame):
                                       justify = tk.LEFT, wraplength = 290)
 
     def show_events(self):
-        '''
+        """
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
-        '''
+        """
         self.toplevel = toplevels.events_view(self.window, variables.spawn, variables.player_numbers)
 
     def enemies_scroll_yview(self, *args):
-        '''
+        """
         Combine the scrolling of three listboxes into one
         :param args:
         :return:
-        '''
+        """
         self.enemies_listbox.yview(*args)
         self.enemies_damaged.yview(*args)
         self.enemies_damaget.yview(*args)
@@ -647,10 +656,10 @@ class middle_frame(ttk.Frame):
         self.enemies_scroll.set(*args)
 
     def grid_widgets(self):
-        '''
+        """
         Put all widgets in the right place
         :return:
-        '''
+        """
         self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
         self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N  + tk.W + tk.E)
         self.events_frame.grid(column = 0, row = 1, columnspan = 4, sticky=tk.N+tk.W+tk.S+tk.E)
