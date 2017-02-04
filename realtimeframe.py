@@ -106,6 +106,8 @@ class realtime_frame(ttk.Frame):
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
         elif self.parsing:
+            print "[DEBUG] Stopping real-time parsing"
+            print "[DEBUG] add_files()"
             self.main_window.file_select_frame.add_files()
             """
             for (id, file) in self.stalker_obj.ls:
@@ -114,18 +116,26 @@ class realtime_frame(ttk.Frame):
                     file.close()
             """
             # self.start_parsing_button.config(relief=tk.RAISED)
+            print "[DEBUG] setting flags to False"
             self.parsing = False
             variables.FLAG = False
             self.stalker_obj.FLAG = False
+            print "[DEBUG] Waiting for stalker_obj..."
             while self.stalker_obj.is_alive():
-                print "[DEBUG] stalker_obj still running"
                 pass
+            print "[DEBUG] Closing overlay if necessary"
             if variables.set_obj.overlay and self.overlay:
                 self.overlay.destroy()
+                print "[DEBUG] Closed overlay"
+            print "[DEBUG] Settings self.overlay to None"
             self.overlay = None
+            print "[DEBUG] Stopping the parsing bar from looping"
             self.parsing_bar.stop()
+            print "[DEBUG] Configuring button with different text"
             self.start_parsing_button.configure(text="Start real-time parsing")
+            print "[DEBUG] Setting watching_stringvar"
             self.watching_stringvar.set("Watching no CombatLog...")
+            print "[DEBUG] All done stopping real-time parsing"
 
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")
