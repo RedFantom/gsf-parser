@@ -40,6 +40,7 @@ class main_window(tk.Tk):
         self.style = ttk.Style()
         self.update_style(start = True)
         self.set_icon()
+        variables.color_scheme.set_scheme(variables.set_obj.event_scheme)
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()

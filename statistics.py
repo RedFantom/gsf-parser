@@ -440,10 +440,9 @@ class statistics:
 colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 
 def pretty_event(line_dict, start_of_match, active_id):
-    # TODO: Use dictionaries to determine the colors an event should have
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
-    color = "#ffffff"
-    fg_color = "#000000"
+    bg_color = None
+    fg_color = None
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -482,55 +481,89 @@ def pretty_event(line_dict, start_of_match, active_id):
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
-            if line_dict['source'] == active_id:
-                color = variables.col_obj['selfdamage']
+            if variables.set_obj.event_colors == "basic":
+                if line_dict['source'] == active_id:
+                    bg_color = variables.color_scheme['selfdmg'][0]
+                    fg_color = variables.color_scheme['selfdmg'][1]
+                else:
+                    bg_color = variables.color_scheme['dmgt_pri'][0]
+                    fg_color = variables.color_scheme['dmgt_pri'][1]
             else:
-                color = variables.col_obj['damage']
+                if line_dict['source'] == active_id:
+                    bg_color = variables.color_scheme['selfdmg'][0]
+                    fg_color = variables.color_scheme['selfdmg'][1]
+                else:
+                    if ability in abilities.primaries:
+                        bg_color = variables.color_scheme['dmgt_pri'][0]
+                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                    elif ability in abilities.secondaries:
+                        bg_color = variables.color_scheme['dmgt_sec'][0]
+                        fg_color = variables.color_scheme['dmgt_sec'][1]
+                    else:
+                        bg_color = variables.color_scheme['dmgt_pri'][0]
+                        fg_color = variables.color_scheme['dmgt_pri'][1]
         else:
-            color = variables.col_obj['damage']
+            if ability in abilities.primaries:
+                bg_color = variables.color_scheme['dmgd_pri'][0]
+                fg_color = variables.color_scheme['dmgd_pri'][1]
+            elif ability in abilities.secondaries:
+                bg_color = variables.color_scheme['dmgd_sec'][0]
+                fg_color = variables.color_scheme['dmgd_sec'][1]
+            else:
+                bg_color = variables.color_scheme['dmgd_pri'][0]
+                fg_color = variables.color_scheme['dmgd_pri'][1]
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
         if line_dict['source'] == active_id:
-            color = "#008000"
+            bg_color = variables.color_scheme['selfheal'][0]
+            fg_color = variables.color_scheme['selfheal'][1]
         else:
-            color = "#00b300"
+            bg_color = variables.color_scheme['healing'][0]
+            fg_color = variables.color_scheme['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
         if variables.set_obj.event_colors == "advanced":
             for engine in abilities.engines:
                 if engine in string:
-                    color = "#8533ff"
-                    fg_color = "#ffffff"
+                    bg_color = variables.color_scheme['engine'][0]
+                    fg_color = variables.color_scheme['engine'][1]
                     break
             for shield in abilities.shields:
                 if shield in string:
-                    color = "#004d00"
-                    fg_color = "#ffffff"
+                    bg_color = variables.color_scheme['shield'][0]
+                    fg_color = variables.color_scheme['shield'][1]
                     break
             for system in abilities.systems:
                 if system in string:
-                    color = "#002db3"
-                    fg_color = "#ffffff"
+                    bg_color = variables.color_scheme['system'][0]
+                    fg_color = variables.color_scheme['system'][1]
                     break
-            if color == "#ffffff":
-                color = "#33adff"
+            if not bg_color:
+                bg_color = variables.color_scheme['other'][0]
+                fg_color = variables.color_scheme['other'][1]
         elif variables.set_obj.event_colors == "basic":
-            color = "#33adff"
+            bg_color = variables.color_scheme['other'][0]
+            fg_color = variables.color_scheme['other'][1]
     else:
         return
-    if not color:
-        print "[DEBUG] No color set!"
-        color = "white"
-    if variables.set_obj.event_colors == "none":
-        color = "#ffffff"
-        fg_color = "#000000"
-    variables.insert_queue.put((string, color, fg_color))
+    if not bg_color:
+        bg_color = variables.color_scheme['default'][0]
+        fg_color = variables.color_scheme['default'][1]
+    variables.insert_queue.put((string, bg_color, fg_color))
 
-def print_event(line, start_of_match, player):
-    # TODO: Make color compatible
-    line_dict = realtime.line_to_dictionary(line)
+def print_event(line_dict, start_of_match, player):
+    line_dict_new = None
+    try:
+        line_dict_new = realtime.line_to_dictionary(line_dict)
+    except TypeError:
+        pass
+    if not line_dict_new:
+        pass
+    else:
+        line_dict = line_dict_new
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
-    start_of_match = datetime.datetime.strptime(start_of_match, "%H:%M:%S")
+    bg_color = None
+    fg_color = None
     try:
         delta = timing - start_of_match
         elapsed = divmod(delta.total_seconds(), 60)
@@ -540,9 +573,13 @@ def print_event(line, start_of_match, player):
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
+    # If the player name is too long, shorten it
+    if variables.rt_name:
+        if len(variables.rt_name) > 14:
+            variables.rt_name = variables.rt_name[:14]
     if line_dict['source'] in player:
-        if variables.player_name:
-            string += variables.player_name + (14 - len(variables.player_name) + 4) * " "
+        if variables.rt_name:
+            string += variables.rt_name + (14 - len(variables.rt_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
@@ -550,8 +587,8 @@ def print_event(line, start_of_match, player):
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] in player:
-        if variables.player_name:
-            string += variables.player_name + (14 - len(variables.player_name) + 4) * " "
+        if variables.rt_name:
+            string += variables.rt_name + (14 - len(variables.rt_name) + 4) * " "
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['destination'] == "":
@@ -560,12 +597,78 @@ def print_event(line, start_of_match, player):
         string += line_dict["destination"] + (4 + 14 - len(line_dict['destination'])) * " "
     ability = line_dict['ability'].split(' {', 1)[0].strip()
     if ability == "":
-        return None
-    string += ability + (24 - len(ability)) * " "
+        return
+    string += ability + (26 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
         string += "Damage  " + line_dict['amount'].replace("\n", "")
+        if line_dict['destination'] in player:
+            if variables.set_obj.event_colors == "basic":
+                if line_dict['source'] in player:
+                    bg_color = variables.color_scheme['selfdmg'][0]
+                    fg_color = variables.color_scheme['selfdmg'][1]
+                else:
+                    bg_color = variables.color_scheme['dmgt_pri'][0]
+                    fg_color = variables.color_scheme['dmgt_pri'][1]
+            else:
+                if line_dict['source'] in player:
+                    bg_color = variables.color_scheme['selfdmg'][0]
+                    fg_color = variables.color_scheme['selfdmg'][1]
+                else:
+                    if ability in abilities.primaries:
+                        bg_color = variables.color_scheme['dmgt_pri'][0]
+                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                    elif ability in abilities.secondaries:
+                        bg_color = variables.color_scheme['dmgt_sec'][0]
+                        fg_color = variables.color_scheme['dmgt_sec'][1]
+                    else:
+                        bg_color = variables.color_scheme['dmgt_pri'][0]
+                        fg_color = variables.color_scheme['dmgt_pri'][1]
+        else:
+            if ability in abilities.primaries:
+                bg_color = variables.color_scheme['dmgd_pri'][0]
+                fg_color = variables.color_scheme['dmgd_pri'][1]
+            elif ability in abilities.secondaries:
+                bg_color = variables.color_scheme['dmgd_sec'][0]
+                fg_color = variables.color_scheme['dmgd_sec'][1]
+            else:
+                bg_color = variables.color_scheme['dmgd_pri'][0]
+                fg_color = variables.color_scheme['dmgd_pri'][1]
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
+        if line_dict['source'] in player:
+            bg_color = variables.color_scheme['selfheal'][0]
+            fg_color = variables.color_scheme['selfheal'][1]
+        else:
+            bg_color = variables.color_scheme['healing'][0]
+            fg_color = variables.color_scheme['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-    return string
+        if variables.set_obj.event_colors == "advanced":
+            for engine in abilities.engines:
+                if engine in string:
+                    bg_color = variables.color_scheme['engine'][0]
+                    fg_color = variables.color_scheme['engine'][1]
+                    break
+            for shield in abilities.shields:
+                if shield in string:
+                    bg_color = variables.color_scheme['shield'][0]
+                    fg_color = variables.color_scheme['shield'][1]
+                    break
+            for system in abilities.systems:
+                if system in string:
+                    bg_color = variables.color_scheme['system'][0]
+                    fg_color = variables.color_scheme['system'][1]
+                    break
+            if not bg_color:
+                bg_color = variables.color_scheme['other'][0]
+                fg_color = variables.color_scheme['other'][1]
+        elif variables.set_obj.event_colors == "basic":
+            bg_color = variables.color_scheme['other'][0]
+            fg_color = variables.color_scheme['other'][1]
+    else:
+        return
+    if not bg_color:
+        bg_color = variables.color_scheme['default'][0]
+        fg_color = variables.color_scheme['default'][1]
+    print "[DEBUG] %s, %s, %s" % (string, bg_color, fg_color)
+    return string, bg_color, fg_color

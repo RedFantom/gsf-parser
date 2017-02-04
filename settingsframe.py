@@ -182,7 +182,9 @@ class settings_frame(ttk.Frame):
         self.update_settings()
 
     def set_custom_event_colors(self):
-        pass
+        self.color_toplevel = toplevels.event_colors(variables.main_window)
+        self.color_toplevel.grid_widgets()
+        self.color_toplevel.focus_set()
 
     def set_directory_dialog(self):
         directory = tkFileDialog.askdirectory(initialdir = self.path_var.get(), mustexist = True,
@@ -318,6 +320,7 @@ class settings_frame(ttk.Frame):
         self.overlay_when_gsf.set(variables.set_obj.overlay_when_gsf)
         self.event_colors.set(variables.set_obj.event_colors)
         self.event_scheme.set(variables.set_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.set_obj.event_scheme)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"

@@ -8,6 +8,8 @@ import tkMessageBox
 import os
 import ConfigParser
 import tempfile
+import collections
+import ast
 # Own modules
 # import variables
 
@@ -236,37 +238,71 @@ class settings:
 
 class color_schemes:
     def __init__(self):
-        self.default_scheme = {'default_bg':'#ffffff',
-                               'default_fg':'#000000',
-                               'selfdamage':'#800040',
-                               'damage':'#ffd11a',
-                               '':''}
-        self.pastel_scheme = {}
-        self.current_scheme = self.default_scheme
+        self.default_colors = collections.OrderedDict()
+        self.default_colors['dmgd_pri'] = ['#ffd11a', '#000000']
+        self.default_colors['dmgt_pri'] = ['#ff0000', '#000000']
+        self.default_colors['dmgd_sec'] = ['#e6b800', '#000000']
+        self.default_colors['dmgt_sec'] = ['#cc0000', '#000000']
+        self.default_colors['selfdmg'] = ['#990000', '#000000']
+        self.default_colors['healing'] = ['#00b300', '#000000']
+        self.default_colors['selfheal'] = ['#008000', '#000000']
+        self.default_colors['engine'] = ['#8533ff', '#ffffff']
+        self.default_colors['shield'] = ['#004d00', '#ffffff']
+        self.default_colors['system'] = ['#002db3', '#ffffff']
+        self.default_colors['other'] = ['#33adff', '#000000']
+        self.default_colors['spawn'] = ['#000000', '#ffffff']
+        self.default_colors['match'] = ['#000000', '#ffffff']
+        self.default_colors['default'] = ['#ffffff', '#000000']
+        self.pastel_colors = collections.OrderedDict()
+        self.pastel_colors['dmgd_pri'] = ['#ffffff', '#000000']
+        self.pastel_colors['dmgt_pri'] = ['#ffffff', '#000000']
+        self.pastel_colors['dmgd_sec'] = ['#ffffff', '#000000']
+        self.pastel_colors['dmgt_sec'] = ['#ffffff', '#000000']
+        self.pastel_colors['selfdmg'] = ['#ffffff', '#000000']
+        self.pastel_colors['healing'] = ['#ffffff', '#000000']
+        self.pastel_colors['selfheal'] = ['#ffffff', '#000000']
+        self.pastel_colors['engine'] = ['#ffffff', '#000000']
+        self.pastel_colors['shield'] = ['#ffffff', '#000000']
+        self.pastel_colors['system'] = ['#ffffff', '#000000']
+        self.pastel_colors['other'] = ['#ffffff', '#000000']
+        self.current_scheme = collections.OrderedDict()
 
     def __setitem__(self, key, value):
         self.current_scheme[key] = value
 
     def __getitem__(self, key):
         try:
-            return self.current_scheme[key]
+            return list(self.current_scheme[key])
         except KeyError:
             tkMessageBox.showerror("Error", "The requested color for %s was not found, "\
                                    "did you alter the event_colors.ini file?" % key)
-            return "#ffffff"
+            return ['#ffffff', '#000000']
+        except TypeError:
+            tkMessageBox.showerror("Error", "The requested color for %s was could not be " \
+                                   "type changed into a list. Did you alter the " \
+                                   "event_colors.ini file?" % key)
+            return ['#ffffff', '#000000']
 
     def set_scheme(self, name):
         if name == "default":
-            self.current_scheme = self.default_scheme
+            self.current_scheme = self.default_colors
         elif name == "pastel":
-            self.current_scheme = self.pastel_scheme
+            self.current_scheme = self.pastel_colors
         elif name == "custom":
             cp = ConfigParser.RawConfigParser()
             cp.read(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini")
-            self.current_scheme = dict(cp.items("colors"))
+            current_scheme = dict(cp.items("colors"))
+            for key, value in current_scheme.iteritems():
+                self.current_scheme[key] = ast.literal_eval(value)
+        else:
+            raise ValueError("Expected default, pastel or custom, got %s" % name)
 
     def write_custom(self):
         cp = ConfigParser.RawConfigParser()
+        try:
+            cp.add_section("colors")
+        except ConfigParser.DuplicateSectionError:
+            pass
         for key, value in self.current_scheme.iteritems():
             cp.set('colors', key, value)
         with open(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini", "w") as file_obj:
