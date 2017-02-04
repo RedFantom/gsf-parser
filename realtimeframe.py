@@ -108,7 +108,7 @@ class realtime_frame(ttk.Frame):
         elif self.parsing:
             print "[DEBUG] Stopping real-time parsing"
             print "[DEBUG] add_files()"
-            self.main_window.file_select_frame.add_files()
+            # self.main_window.file_select_frame.add_files()
             """
             for (id, file) in self.stalker_obj.ls:
                 self.stalker_obj.unwatch(file, id)
