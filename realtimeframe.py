@@ -48,7 +48,7 @@ class realtime_frame(ttk.Frame):
         self.overlay = None
         self.main_window = main_window
         self.listbox = tk.Listbox(self, width = 105, height = 15)
-        self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview())
+        self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scrollbar.set, font = ("Consolas", 10))
         self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\n"+\
                                                    "Selfdamage:\nHealing received:\nSpawns:")
