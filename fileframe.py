@@ -323,7 +323,15 @@ class file_frame(ttk.Frame):
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
-            variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+            try:
+                variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+            except TypeError:
+                try:
+                    variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
+                except:
+                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
+                                                    "This bug has not been fixed. Check out issue #19 in the repository"
+                                                    " for more information.")
             file_cube = variables.file_cube
             (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
              variables.enemydamaget, variables.uncounted) = self.statistics_object.file_statistics(file_cube)
@@ -352,7 +360,15 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
              numbers = self.match_box.curselection()
-             variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+             try:
+                 variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+             except TypeError:
+                 try:
+                     variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
+                 except:
+                     tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
+                                                     "This bug has not been fixed. Check out issue #19 in the repository"
+                                                     " for more information.")
              self.add_spawns()
         self.main_window.ship_frame.remove_image()
 
@@ -398,7 +414,16 @@ class file_frame(ttk.Frame):
             self.main_window.ship_frame.remove_image()
         else:
             numbers = self.spawn_box.curselection()
-            variables.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
+            try:
+                variables.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
+            except TypeError:
+                try:
+                    variables.spawn_timing = self.spawn_timing_strings[int(numbers[0]) -1]
+                except:
+                    tkMessageBox.showerror("Error",
+                                           "The parser encountered a bug known as #19 in the repository. "
+                                           "This bug has not been fixed. Check out issue #19 in the repository"
+                                           " for more information.")
             try:
                 match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             except ValueError:
