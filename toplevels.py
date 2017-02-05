@@ -290,7 +290,6 @@ class event_colors(tk.Toplevel):
         self.color_button_widgets_fg = {}
         self.color_button_widgets_bg = {}
         for key in self.colors.iterkeys():
-            self.colors[key] = ['#ffffff', '#000000']
             self.color_labels[key] = ttk.Label(self, text = self.color_descriptions[key], justify = tk.LEFT)
             self.color_button_widgets_fg[key] = ttk.Button(self, text = "Choose",
                                                            command=lambda color=key: self.set_color(color, fg = True))
