@@ -107,7 +107,7 @@ class realtime_frame(ttk.Frame):
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
         elif self.parsing:
-            if platform.release() != "10":
+            if platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1":
                 self.main_window.file_select_frame.add_files_cb()
             self.parsing = False
             variables.FLAG = False
