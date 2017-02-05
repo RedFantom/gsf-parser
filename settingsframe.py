@@ -365,6 +365,7 @@ class settings_frame(ttk.Frame):
         self.main_window.file_select_frame.add_files()
         if reboot:
             self.main_window.update_style()
+        variables.color_scheme.set_scheme(self.event_scheme.get())
 
     def discard_settings(self):
         self.update_settings()
