@@ -562,6 +562,7 @@ def print_event(line_dict, start_of_match, player):
     else:
         line_dict = line_dict_new
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
+    start_of_match = datetime.datetime.strptime(start_of_match, "%H:%M:%S")
     bg_color = None
     fg_color = None
     try:
@@ -670,5 +671,4 @@ def print_event(line_dict, start_of_match, player):
     if not bg_color:
         bg_color = variables.color_scheme['default'][0]
         fg_color = variables.color_scheme['default'][1]
-    print "[DEBUG] %s, %s, %s" % (string, bg_color, fg_color)
     return string, bg_color, fg_color
