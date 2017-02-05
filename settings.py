@@ -283,21 +283,21 @@ class color_schemes:
                                    "event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
 
-    def set_scheme(self, name):
+    def set_scheme(self, name, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
         if name == "default":
             self.current_scheme = self.default_colors
         elif name == "pastel":
             self.current_scheme = self.pastel_colors
         elif name == "custom":
             cp = ConfigParser.RawConfigParser()
-            cp.read(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini")
+            cp.read(custom_file)
             current_scheme = dict(cp.items("colors"))
             for key, value in current_scheme.iteritems():
                 self.current_scheme[key] = ast.literal_eval(value)
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
-    def write_custom(self):
+    def write_custom(self, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
         cp = ConfigParser.RawConfigParser()
         try:
             cp.add_section("colors")
@@ -305,6 +305,6 @@ class color_schemes:
             pass
         for key, value in self.current_scheme.iteritems():
             cp.set('colors', key, value)
-        with open(tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini", "w") as file_obj:
+        with open(custom_file, "w") as file_obj:
             cp.write(file_obj)
 
