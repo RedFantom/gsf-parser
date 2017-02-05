@@ -43,7 +43,7 @@ class settings_frame(ttk.Frame):
         self.main_window = main_window
         ### GUI SETTINGS ###
         # TODO Add more GUI settings including colors
-        self.gui_label = ttk.Label(self.frame.interior, text = "GUI settings", justify=tk.LEFT)
+        self.gui_label = ttk.Label(self.frame.interior, text = "GUI settings", justify=tk.LEFT, font = ("Calibri", 12))
         self.color_label = ttk.Label(self.gui_frame, text = "\tParser text color: ")
         self.color = tk.StringVar()
         self.custom_color_entry = ttk.Entry(self.gui_frame, width = 10)
@@ -81,7 +81,8 @@ class settings_frame(ttk.Frame):
         self.event_scheme_custom_button = ttk.Button(self.gui_frame, text = "Choose colors",
                                                      command = self.set_custom_event_colors)
         ### PARSING SETTINGS ###
-        self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT)
+        self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT,
+                                       font = ("Calibri", 12))
         self.path_var = tk.StringVar()
         self.path_entry = ttk.Entry(self.entry_frame, width=85, textvariable = self.path_var)
         self.path_entry_button = ttk.Button(self.entry_frame, text = "Browse", command = self.set_directory_dialog)
@@ -93,7 +94,8 @@ class settings_frame(ttk.Frame):
         self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable = self.privacy_var, value = False,
                                                     text = "No")
         ### SHARING SETTINGS ###
-        self.sharing_label = ttk.Label(self.frame.interior, text = "Share settings", justify=tk.LEFT)
+        self.sharing_label = ttk.Label(self.frame.interior, text = "Share settings", justify=tk.LEFT,
+                                       font = ("Calibri", 12))
         self.server_label = ttk.Label(self.server_frame, text = "\tServer for sharing: ")
         self.server_address_entry = ttk.Entry(self.server_frame, width=35)
         self.server_colon_label = ttk.Label(self.server_frame, text = ":")
@@ -107,7 +109,8 @@ class settings_frame(ttk.Frame):
         ### REAL-TIME SETTINGS ###
         # TODO Add more colors for the overlay
         # TODO Add events view possibility to the overlay
-        self.realtime_settings_label = ttk.Label(self.realtime_frame, text = "Real-time parsing settings")
+        self.realtime_settings_label = ttk.Label(self.realtime_frame, text = "Real-time parsing settings",
+                                                 font = ("Calibri", 12))
         self.overlay_enable_label = ttk.Label(self.realtime_frame, text = "\tEnable overlay for real-time parsing: ")
         self.overlay_enable_radio_var = tk.BooleanVar()
         self.overlay_enable_radio_yes = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_enable_radio_var,
