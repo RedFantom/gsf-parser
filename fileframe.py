@@ -348,6 +348,7 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            color = "white"
             for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
@@ -357,6 +358,13 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
+                if color == "white":
+                    color = "lightgrey"
+                else:
+                    color = "white"
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
              numbers = self.match_box.curselection()
@@ -401,6 +409,7 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            color = "white"
             for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
@@ -410,6 +419,13 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background = color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background = color)
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background = color)
+                if color == "white":
+                    color = "lightgrey"
+                else:
+                    color = "white"
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             self.main_window.ship_frame.remove_image()
         else:
@@ -446,6 +462,7 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
+            color = "white"
             for enemy in variables.enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
@@ -455,6 +472,13 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
+                if color == "white":
+                    color = "lightgrey"
+                else:
+                    color = "white"
             self.main_window.middle_frame.events_button.state(["!disabled"])
             self.main_window.ship_frame.update_ship(variables.ships_list)
 
