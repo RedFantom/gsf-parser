@@ -171,9 +171,10 @@ def parse_spawn(spawn, player):
 
     enemydamaget = {}
     enemydamaged = {}
-    for i in range(len(spawn)):
+    line = 0
+    for event in spawn:
         # Split the event string into smaller strings containing the information we want.
-        elements = re.split(r"[\[\]]", spawn[i])
+        elements = re.split(r"[\[\]]", event)
         # sign those elements to individual variables to keep things clear.
         timestring = elements[1]
         source = elements[3]
@@ -202,15 +203,14 @@ def parse_spawn(spawn, player):
                        abilities[ability] = 1
                     else:
                        abilities[ability] += 1
-            
-            if "Damage" in effect and "Ion Railgun" in ability and i > 0 and "AbilityActivate" in spawn[i-1]:
+            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[line - 1]:
                     if source != target:
                         if ability not in abilities:
                             abilities[ability] = 1
                         else:
                             abilities[ability] += 1
                             
-        if "kinetic" in spawn[i]:
+        if "kinetic" in event:
             # Takes damagestring and split after the pattern (stuff in here) and take the second element
             # containing the "stuff in here"
             # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}', '']
@@ -243,14 +243,15 @@ def parse_spawn(spawn, player):
                     enemydamaged[source] += int(damagestring.replace("*", ""))
                 if source not in enemydamaget:
                     enemydamaget[source] = 0
-        elif "Heal" in spawn[i]:
+        elif "Heal" in event:
             damagestring = re.split(r"\((.*?)\)", damagestring)[1]
             damagestring = damagestring.split(None, 1)[0]
             healingreceived += int(damagestring.replace("*", ""))
-        elif "Selfdamage" in spawn[i]:
+        elif "Selfdamage" in event:
             damagestring = re.split(r"\((.*?)\)", damagestring)[1]
             damagestring = damagestring.split(None, 1)[0]
             selfdamage += int(damagestring.replace("*", ""))
+        line += 1
     ships_list = ["Legion", "Razorwire", "Decimus",
                  "Mangler", "Dustmaker", "Jurgoran",
                  "Bloodmark", "Blackbolt", "Sting",
