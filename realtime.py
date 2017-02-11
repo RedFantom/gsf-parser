@@ -7,8 +7,9 @@
 from decimal import Decimal
 from stalking import LogStalker
 import datetime
-import vars
+import variables
 import re
+
 
 class Parser(object):
     """Parse a SWTOR combat log file. Each instance is a different
@@ -59,17 +60,15 @@ class Parser(object):
 
     DEBUG = False
 
-
-
     def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
 
-        self.spawn_callback = spawn_callback
-        self.match_callback = match_callback
-        self.new_match_callback = new_match_callback
-        self.insert = insert
+        self.spawn_callback = spawn_callback # Function to call when a new spawn is detected
+        self.match_callback = match_callback # Function to call when the end of a match is detected
+        self.new_match_callback = new_match_callback # Function to call when a new match is detected
+        self.insert = insert # Function to call when a new line is parsed to insert it into the events box of the UI
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
@@ -87,7 +86,7 @@ class Parser(object):
         self.hold = 0
         self.hold_list = []
 
-        self.spawns = 0
+        self.spawns = 0 # The amount of spawns so far
 
     def __enter__(self):
         return self
@@ -102,34 +101,36 @@ class Parser(object):
         self.dprint("[DEBUG] line", line)
         if not line:
             print "[DEBUG] Line is of NoneType"
+            # Should be return for #20?
             pass
+
         # If first line of the file, save the player name
-        if(self.player_name == '' and '@' in line['source']):
+        if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
-            vars.rt_name = self.player_name
+            variables.rt_name = self.player_name
             print self.player_name
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
-        if(line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and
-           not bool(re.search(r'\d', line['source']))):
+        if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
+                not bool(re.search(r'\d', line['source'])):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
-                vars.rt_name = self.player_name
+                variables.rt_name = self.player_name
                 print self.player_name
-        if not self.is_match and '@' in line['source']:
-            self.dprint("[DEBUG] out of match, skip")
-            return
-        if not self.is_match and "@" in line['destination']:
+
+        if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
             self.dprint("[DEBUG] out of match, skip")
             return
 
-        self.insert(line, vars.rt_timing, self.active_id)
+        # Insert the line (or the pretty version of it) into the events box of real-time parsing
+        self.insert(line, variables.rt_timing, self.active_id)
 
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
             print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
                   sum(self.spawn_selfdmg))
+            # Call the new spawn callback
             self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
             self.spawns += 1
             self.active_id = ''
@@ -169,22 +170,23 @@ class Parser(object):
             self.dprint("[DEBUG] caught up")
             return
 
-
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
         if not self.is_match:
             if '@' not in line['source']:
                 self.is_match = True
+                # Call the callback for a new match
                 self.new_match_callback()
-                vars.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
         if self.is_match:
             if '@' in line['source']:
-                if not "Safe Login" in line['ability']:
+                if "Safe Login" not in line['ability']:
                     self.dprint("[DEBUG] Line with '@' but no end of match detected")
                     return
                 self.dprint("[DEBUG] end of match, resetting")
+                # Call the end of match callback
                 self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
@@ -211,8 +213,6 @@ class Parser(object):
                 self.spawns = 1
                 self.active_ids = []
                 return
-
-
 
             # Start parsing
             if 'Heal' in line['effect']:
@@ -254,23 +254,25 @@ class Parser(object):
 # ===================================================================
 
 def line_to_dictionary(line):
-    logpats = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-    logpat = re.compile(logpats)
+    logpaths = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
+    logpath = re.compile(logpaths)
 
-    group = logpat.match(line) if isinstance(line, str) else logpat.match(line.decode('cp1252'))
+    group = logpath.match(line) if isinstance(line, str) else logpath.match(line.decode('cp1252'))
     try:
         tuple_ = group.groups()
     except AttributeError as err:
+        print("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group)
         print(err)
         return
 
     colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
     log = dict(zip(colnames, tuple_))
 
-    '''
+    """
     if not log['ability'] is '':
         log['ability'] = log['ability'].rsplit(None, 1)[1][1:-1]
-    '''
+    """
+
     if not log['amount'] is '':
         log['amount'] = log['amount'].split(None, 1)[0]
 

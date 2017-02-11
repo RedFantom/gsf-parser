@@ -1,6 +1,14 @@
 ﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
+
+"""
+This file contains lists and dictionaries of the abilities and ships used in Galactic StarFighter,
+in order for the parser to be able to identify ships by their components and abilities and print
+them neatly onto the screen.
+"""
+
+# A list of ALL components available in Galactic StarFighter
 components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon",
               "Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile",
@@ -9,8 +17,11 @@ components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad 
               "Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone", "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
                     "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine", "Ion Mine", "Concussion Mine", "Tensor Field", 
               "Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
-                    "Directional Shield", "Distortion Field", "Quick-charge Shield"]
+                    "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
+# The ID numbers of abilities and their English names
+# For future support of multiple Combatlog languages
+# Automatically generated, some abilities may be missing
 components_english = {'3330936116609024': 'Hyperspace Beacon', 
                       '3300630827368448': 'Shield Power Converter', 
                       '3294609283219456': 'Distortion Field', 
@@ -59,6 +70,9 @@ components_english = {'3330936116609024': 'Hyperspace Beacon',
                       '3327289689374720': 'Interdiction Mine', 
                       '3326061328728064': 'Ion Mine'}
 
+"""
+All components sorted into categories of their component type
+"""
 primaries = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon", "Ion Cannon", "Burst Laser Cannon"]
 secondaries = ["Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine", "Rocket Pod", "EMP Missile", "Ion Missile",
                     "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun", "Interdiction Missile"]
@@ -67,9 +81,13 @@ engines = ["Shield Power Converter", "Weapon Power Converter", "Engine Power Con
 systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry Drone", "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
                     "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine", "Ion Mine", "Concussion Mine", "Tensor Field"]
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield", "Fortress Shield", "Feedback Shield",
-                    "Directional Shield", "Distortion Field", "Quick-charge Shield"]
+                    "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
-# These lists were made with the help of Yellowbird
+"""
+These lists were made with the help of Yellowbird
+
+Lists of the components supported by each ship
+"""
 legionAbilities = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon",
                    "Proton Torpedo", "Concussion Missile", "Seeker Mine",
                    "Shield Power Converter", "Interdiction Drive",
@@ -106,12 +124,12 @@ blackboltAbilities = ["Rapid-fire Laser Cannon", "Light Laser Cannon", "Laser Ca
                       "Rocket Pod", "Thermite Torpedo", "Sabotage Probe",
                       "Power Dive", "Snap Turn", "Barrel Roll", "Koiogran Turn",
                       "Targeting Telemetry", "EMP Field", "Booster Recharge", "Sensor Beacon",
-                      "Distortion Field", "Quick-charge Shield", "Engine Power Converter"]
+                      "Distortion Field", "Quick-Charge Shield", "Engine Power Converter"]
 stingAbilities = ["Burst Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon", "Rapid-fire Laser Cannon",
                   "Rocket Pod", "Cluster Missiles", "Sabotage Probe"
                   "Koiogran Turn", "Retro Thrusters", "Power Dive", "Barrel Roll",
                   "Targeting Telemetry", "Blaster Overcharge", "Booster Recharge",
-                  "Distortion Field", "Quick-charge Shield", "Directional Shield"]
+                  "Distortion Field", "Quick-Charge Shield", "Directional Shield"]
 imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Laser Cannon",
                      "Thermite Torpedo", "EMP Missile", "Proton Torpedo", "Ion Missile",
                      "Koiogran Turn", "Shield Power Converter", "Power Dive", "Interdiction Drive",
@@ -120,18 +138,22 @@ imperiumAbilities = ["Quad Laser Cannon", "Rapid-fire Laser Cannon", "Light Lase
 rycerAbilities = ["Quad Laser Cannon", "Ion Cannon", "Rapid-fire Laser Cannon", "Heavy Laser Cannon", "Laser Cannon",
                   "Concussion Missile", "Cluster Missiles", "Proton Torpedo",
                   "Weapon Power Converter", "Retro Thrusters", "Barrel Roll", "Koiogran Turn",
-                  "Charged Plating", "Quick-charge Shield", "Directional Shield"]
+                  "Charged Plating", "Quick-Charge Shield", "Directional Shield"]
 quellAbilities = ["Heavy Laser Cannon", "Quad Laser Cannon", "Light Laser Cannon",
                   "Cluster Missiles", "Ion Missile", "Proton Torpedo", "Concussion Missile", "EMP Missile",
                   "Weapon Power Converter", "Shield Power Converter", "Koiogran Turn", "Barrel Roll",
-                  "Quick-charge Shield", "Directional Shield", "Charged Plating"]
+                  "Quick-Charge Shield", "Directional Shield", "Charged Plating"]
 excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
                      "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
                      "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
                      "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
                      "Plasma Burn", "Plasma Warheads", "Space Exhaustion"]
 
+# All ships with their Imperial Faction names available in GSF
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting", "Imperium", "Rycer", "Quell"]
+
+# A dictionary for converting the names of the ships to the Republic Faction
+# names, for future feature of allowing both faction names
 rep_ships = {"Legion":"Warcarrier",
              "Razorwire":"Rampart Mark Four",
              "Decimus":"Sledgehammer",
@@ -144,8 +166,7 @@ rep_ships = {"Legion":"Warcarrier",
              "Sting":"Flashfire",
              "Bloodmark":"Spearpoint",
              "Blackbolt":"Novadive"}
-ships_rep = {"Legion" : "Warcarrier", "Decimus" : "Sledgehammer", "Razorwire" : "Rampart Mark Four",
-             "Jurgoran" : "Condor", "Dustmaker" : "Comet Breaker", "Mangler" : "Quarrel",
-             "Bloodmark" : "Spearpoint", "Blackbolt" : "Novadive", "Sting" : "Flashfire",
-             "Imperium" : "Clarion", "Rycer" : "Star Guard", "Quell" : "Pike"}
+
+# The ships with their Imperial Faction names to print on the screen, with \t padding
+# to make the printing look the same for every ship.
 ships_strings = ["Legion\t", "Decimus\t", "Razorwire\t", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark", "Blackbolt\t", "Sting\t", "Imperium\t", "Rycer\t", "Quell\t"]

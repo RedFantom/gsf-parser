@@ -8,19 +8,22 @@ import tkMessageBox
 import os
 import ConfigParser
 import tempfile
+import collections
+import ast
 # Own modules
-import vars
+# import variables
 
 # Class with default settings for in the settings file
 class defaults:
     # Version to display in settings tab
-    version = "2.0.0"
+    version = "2.2.1"
     # Path to get the CombatLogs from
-    cl_path = os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
+    cl_path = os.path.expanduser("~") + \
+              "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
-    server_address = "thrantasquadron.tk"
+    server_address = "parser.thrantasquadron.tk"
     server_port = str(83)
     # Automatically upload CombatLogs as they are parsed to the remote server
     auto_upl = str(False)
@@ -40,19 +43,23 @@ class defaults:
     overlay_tx_font = "Calibri"
     overlay_tx_size = "12"
     overlay_when_gsf = str(False)
+    event_colors = "basic"
+    event_scheme = "default"
 
 # Class that loads, stores and saves settings
 class settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name = "settings.ini", directory = tempfile.gettempdir()):
+    def __init__(self, file_name = "settings.ini",
+                 directory = tempfile.gettempdir()):
         try:
             os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
         except WindowsError:
             pass
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
-        self.file_name = directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
+        self.file_name = directory.replace("\\temp", "") + \
+                         "\\GSF Parser\\" + file_name
         self.conf = ConfigParser.RawConfigParser()
-        vars.install_path = os.getcwd()
+        # variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
             try:
                 self.read_set()
@@ -61,7 +68,7 @@ class settings:
         else:
             self.write_def()
             self.read_set()
-        vars.path = self.cl_path
+        # variables.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
@@ -90,6 +97,8 @@ class settings:
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
         self.color = self.conf.get("gui", "color")
+        self.event_colors = self.conf.get("gui", "event_colors")
+        self.event_scheme = self.conf.get("gui", "event_scheme")
         self.logo_color = self.conf.get("gui", "logo_color")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
@@ -101,9 +110,14 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)
 
-    # Write the defaults settings found in the class defaults to a pickle in a file
+    # Write the defaults settings found in the class defaults to a pickle in a
+    # file
     def write_def(self):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
@@ -129,6 +143,8 @@ class settings:
         self.conf.set("realtime", "overlay_tr_color", defaults.overlay_tr_color)
         self.conf.set("gui", "color", defaults.color)
         self.conf.set("gui", "logo_color", defaults.logo_color)
+        self.conf.set("gui", "event_colors", defaults.event_colors)
+        self.conf.set("gui", "event_scheme", defaults.event_scheme)
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
@@ -139,19 +155,35 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)
 
-        # Write the settings passed as arguments to a pickle in a file
-    # Setting defaults to default if not specified, so all settings are always written
-    def write_set(self, version=defaults.version, cl_path=defaults.cl_path,
-                  auto_ident=defaults.auto_ident, server_address=defaults.server_address,
+    # Write the settings passed as arguments to a pickle in a file
+    # Setting defaults to default if not specified, so all settings are always
+    # written
+    def write_set(self, version=defaults.version,
+                  cl_path=defaults.cl_path,
+                  auto_ident=defaults.auto_ident,
+                  server_address=defaults.server_address,
                   server_port=defaults.server_port,
-                  auto_upl=defaults.auto_upl, overlay=defaults.overlay,
-                  opacity=defaults.opacity, size=defaults.size, pos=defaults.pos,
-                  color=defaults.color, logo_color=defaults.logo_color,
-                  bg_color=defaults.overlay_bg_color, tx_color=defaults.overlay_tx_color,
-                  tr_color=defaults.overlay_tr_color, tx_font=defaults.overlay_tx_font,
-                  tx_size=defaults.overlay_tx_size, overlay_when_gsf=defaults.overlay_when_gsf):
+                  auto_upl=defaults.auto_upl,
+                  overlay=defaults.overlay,
+                  opacity=defaults.opacity,
+                  size=defaults.size,
+                  pos=defaults.pos,
+                  color=defaults.color,
+                  logo_color=defaults.logo_color,
+                  bg_color=defaults.overlay_bg_color,
+                  tx_color=defaults.overlay_tx_color,
+                  tr_color=defaults.overlay_tr_color,
+                  tx_font=defaults.overlay_tx_font,
+                  tx_size=defaults.overlay_tx_size,
+                  overlay_when_gsf=defaults.overlay_when_gsf,
+                  event_colors=defaults.event_colors,
+                  event_scheme=defaults.event_scheme):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -161,11 +193,16 @@ class settings:
             self.conf.add_section("gui")
         except:
             pass
-        # TODO Make this setting changable without restarting
+        # TODO Make this setting changeable without restarting
         if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting for auto uploading CombatLogs, the parser must be restarted.")
+            tkMessageBox.showinfo("Notice", "In order to change the setting for "
+                                            "auto uploading CombatLogs, the "
+                                            "parser must be restarted.")
         if str(auto_ident) != self.conf.get("parsing", "auto_ident"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting for auto identifying enemies in CombatLogs, the parser must be restarted.")
+            tkMessageBox.showinfo("Notice", "In order to change the setting "
+                                            "for auto identifying enemies in "
+                                            "CombatLogs, the parser must be "
+                                            "restarted.")
         self.conf.set("misc", "version", version)
         self.conf.set("parsing", "cl_path", cl_path)
         self.conf.set("parsing", "auto_ident", auto_ident)
@@ -184,6 +221,8 @@ class settings:
         self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
+        self.conf.set("gui", "event_colors", event_colors)
+        self.conf.set("gui", "event_scheme", event_scheme)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()
@@ -191,4 +230,84 @@ class settings:
         try:
             os.chdir(self.cl_path)
         except WindowsError:
-            tkMessageBox.showerror("Error", "An error occurred while changing the directory to the specified CombatLogs directory. Please check if this folder exists: %s" % self.cl_path)
+            tkMessageBox.showerror("Error", "An error occurred while changing "
+                                            "the directory to the specified "
+                                            "CombatLogs directory. Please "
+                                            "check if this folder exists: %s"
+                                            % self.cl_path)
+
+class color_schemes:
+    def __init__(self):
+        self.default_colors = collections.OrderedDict()
+        self.default_colors['dmgd_pri'] = ['#ffd11a', '#000000']
+        self.default_colors['dmgt_pri'] = ['#ff0000', '#000000']
+        self.default_colors['dmgd_sec'] = ['#e6b800', '#000000']
+        self.default_colors['dmgt_sec'] = ['#cc0000', '#000000']
+        self.default_colors['selfdmg'] = ['#990000', '#000000']
+        self.default_colors['healing'] = ['#00b300', '#000000']
+        self.default_colors['selfheal'] = ['#008000', '#000000']
+        self.default_colors['engine'] = ['#8533ff', '#ffffff']
+        self.default_colors['shield'] = ['#004d00', '#ffffff']
+        self.default_colors['system'] = ['#002db3', '#ffffff']
+        self.default_colors['other'] = ['#33adff', '#000000']
+        self.default_colors['spawn'] = ['#000000', '#ffffff']
+        self.default_colors['match'] = ['#000000', '#ffffff']
+        self.default_colors['default'] = ['#ffffff', '#000000']
+        self.pastel_colors = collections.OrderedDict()
+        self.pastel_colors['dmgd_pri'] = ['#ffe066', '#000000']
+        self.pastel_colors['dmgt_pri'] = ['#ff6666', '#000000']
+        self.pastel_colors['dmgd_sec'] = ['#ffd633', '#000000']
+        self.pastel_colors['dmgt_sec'] = ['#ff3333', '#000000']
+        self.pastel_colors['selfdmg'] = ['#b30000', '#000000']
+        self.pastel_colors['healing'] = ['#80ff80', '#000000']
+        self.pastel_colors['selfheal'] = ['#66ff8c', '#000000']
+        self.pastel_colors['engine'] = ['#b380ff', '#000000']
+        self.pastel_colors['shield'] = ['#ccffcc', '#000000']
+        self.pastel_colors['system'] = ['#668cff', '#000000']
+        self.pastel_colors['other'] = ['#80ccff', '#000000']
+        self.pastel_colors['spawn'] = ['#b3b3b3', '#000000']
+        self.pastel_colors['match'] = ['#b3b3b3', '#000000']
+        self.pastel_colors['default'] = ['#ffffff', '#000000']
+        self.current_scheme = collections.OrderedDict()
+
+    def __setitem__(self, key, value):
+        self.current_scheme[key] = value
+
+    def __getitem__(self, key):
+        try:
+            return list(self.current_scheme[key])
+        except KeyError:
+            tkMessageBox.showerror("Error", "The requested color for %s was not found, "\
+                                   "did you alter the event_colors.ini file?" % key)
+            return ['#ffffff', '#000000']
+        except TypeError:
+            tkMessageBox.showerror("Error", "The requested color for %s was could not be " \
+                                   "type changed into a list. Did you alter the " \
+                                   "event_colors.ini file?" % key)
+            return ['#ffffff', '#000000']
+
+    def set_scheme(self, name, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+        if name == "default":
+            self.current_scheme = self.default_colors
+        elif name == "pastel":
+            self.current_scheme = self.pastel_colors
+        elif name == "custom":
+            cp = ConfigParser.RawConfigParser()
+            cp.read(custom_file)
+            current_scheme = dict(cp.items("colors"))
+            for key, value in current_scheme.iteritems():
+                self.current_scheme[key] = ast.literal_eval(value)
+        else:
+            raise ValueError("Expected default, pastel or custom, got %s" % name)
+
+    def write_custom(self, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+        cp = ConfigParser.RawConfigParser()
+        try:
+            cp.add_section("colors")
+        except ConfigParser.DuplicateSectionError:
+            pass
+        for key, value in self.current_scheme.iteritems():
+            cp.set('colors', key, value)
+        with open(custom_file, "w") as file_obj:
+            cp.write(file_obj)
+

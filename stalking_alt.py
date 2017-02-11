@@ -4,13 +4,27 @@
 
 # Fully new stalking_alt.py file written by RedFantom as a test for solving the problems with the earlier stalking_alt.py file
 import os
-import vars
+import variables
 import threading
 import time
 from datetime import datetime
+import realtime
 
 class LogStalker(threading.Thread):
-    def __init__(self, folder=vars.set_obj.cl_path, callback=None, watching_stringvar=None):
+    """
+    A new LogStalker class (compared to the LogStalker class in stalking.py),
+    that provides a new way of reading CombatLogs for less IO usage and a more
+    stable back-end.
+    Trade-off is that the datetime.datetime.strptime every time makes the
+    process take longer to pick-up on changes, due to the required processing
+    time of the datetime functions.
+    LogStalker classes are completely interchangable and compatible with the
+    current code, only the import statement in realtimeframe.py must be
+    changed.
+    """
+
+    def __init__(self, folder=variables.settings_obj.cl_path, callback=None,
+                 watching_stringvar=None):
         threading.Thread.__init__(self)
         self.folder = folder
         self.stringvar = watching_stringvar
@@ -25,7 +39,7 @@ class LogStalker(threading.Thread):
         self.datetime_dict = {}
 
     def run(self):
-        while vars.FLAG:
+        while variables.FLAG:
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
             for name in folder_list:
@@ -52,8 +66,16 @@ class LogStalker(threading.Thread):
             time.sleep(0.1)
 
     def read_from_file(self):
-        del self.lines[:]
+        self.lines = []
         with open(self.current_file, "rb") as file_obj:
-            self.lines = file_obj.readlines()[self.read_so_far:]
-            self.read_so_far += len(self.lines)
+            lines_temp = file_obj.readlines()[self.read_so_far:]
+        try:
+            line_temp = lines_temp[-1]
+        except IndexError:
+            return []
+        if realtime.line_to_dictionary(line_temp):
+            self.lines = lines_temp
+        else:
+            self.lines = lines_temp[:-1]
+        self.read_so_far += len(self.lines)
         return self.lines
