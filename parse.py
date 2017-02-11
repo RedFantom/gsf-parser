@@ -1,4 +1,4 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
@@ -171,6 +171,7 @@ def parse_spawn(spawn, player):
 
     enemydamaget = {}
     enemydamaged = {}
+    line = 0
     for event in spawn:
         # Split the event string into smaller strings containing the information we want.
         elements = re.split(r"[\[\]]", event)
@@ -191,23 +192,24 @@ def parse_spawn(spawn, player):
 
         if source in player:
             if "AbilityActivate" in effect:
-                if "Ion Railgun" in ability:
+                if "Hull Cutter" in ability:
                     if source != target:
                         if ability not in abilities:
                             abilities[ability] = 1
                         else:
                             abilities[ability] += 1
-                elif "Hull Cutter" in ability:
-                    if source != target:
-                        if ability not in abilities:
-                            abilities[ability] = 1
-                        else:
-                            abilities[ability] += 1
-                elif ability != "":
+                elif ability != "" and "Ion Railgun" not in ability:
                     if ability not in abilities:
                        abilities[ability] = 1
                     else:
                        abilities[ability] += 1
+            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[line - 1] and "Ion Railgun" in spawn[line - 1]:
+                    if source != target:
+                        if ability not in abilities:
+                            abilities[ability] = 1
+                        else:
+                            abilities[ability] += 1
+                            
         if "kinetic" in event:
             # Takes damagestring and split after the pattern (stuff in here) and take the second element
             # containing the "stuff in here"
@@ -249,6 +251,7 @@ def parse_spawn(spawn, player):
             damagestring = re.split(r"\((.*?)\)", damagestring)[1]
             damagestring = damagestring.split(None, 1)[0]
             selfdamage += int(damagestring.replace("*", ""))
+        line += 1
     ships_list = ["Legion", "Razorwire", "Decimus",
                  "Mangler", "Dustmaker", "Jurgoran",
                  "Bloodmark", "Blackbolt", "Sting",
