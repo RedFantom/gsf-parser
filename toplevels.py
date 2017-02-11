@@ -307,7 +307,6 @@ class event_colors(tk.Toplevel):
             self.color_entry_widgets_fg[key].delete(0, tk.END)
             self.color_entry_widgets_bg[key].insert(0, self.colors[key][0])
             self.color_entry_widgets_fg[key].insert(0, self.colors[key][1])
-            print self.colors[key]
             color_tuple = struct.unpack("BBB", self.colors[key][0].replace("#", "").decode('hex'))
             red = int(color_tuple[0])
             green = int(color_tuple[1])
@@ -372,11 +371,12 @@ class event_colors(tk.Toplevel):
         if not fg:
             color_tuple = tkColorChooser.askcolor(color = self.color_entry_widgets_bg[key].get(),
                                                   title="GSF Parser: Choose color for %s"%self.color_descriptions[key])
-            if not color_tuple:
+            try:
+                red = int(color_tuple[0][0])
+                green = int(color_tuple[0][1])
+                blue = int(color_tuple[0][2])
+            except TypeError:
                 return
-            red = int(color_tuple[0][0])
-            green = int(color_tuple[0][1])
-            blue = int(color_tuple[0][2])
             foreground_color = '#000000' if (red*0.299 + green*0.587 + blue*0.114) > 186 else "#ffffff"
             self.color_entry_widgets_bg[key].delete(0, tk.END)
             self.color_entry_widgets_bg[key].insert(0, color_tuple[1])
@@ -385,11 +385,12 @@ class event_colors(tk.Toplevel):
         else:
             color_tuple = tkColorChooser.askcolor(color = self.color_entry_widgets_fg[key].get(),
                                                   title="GSF Parser: Choose color for %s"%self.color_descriptions[key])
-            if not color_tuple:
+            try:
+                red = int(color_tuple[0][0])
+                green = int(color_tuple[0][1])
+                blue = int(color_tuple[0][2])
+            except TypeError:
                 return
-            red = int(color_tuple[0][0])
-            green = int(color_tuple[0][1])
-            blue = int(color_tuple[0][2])
             foreground_color = '#000000' if (red*0.299 + green*0.587 + blue*0.114) > 186 else "#ffffff"
             self.color_entry_widgets_fg[key].delete(0, tk.END)
             self.color_entry_widgets_fg[key].insert(0, color_tuple[1])
