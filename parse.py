@@ -203,7 +203,7 @@ def parse_spawn(spawn, player):
                        abilities[ability] = 1
                     else:
                        abilities[ability] += 1
-            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[line - 1]:
+            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[line - 1] and "Ion Railgun" in spawn[line - 1]:
                     if source != target:
                         if ability not in abilities:
                             abilities[ability] = 1
