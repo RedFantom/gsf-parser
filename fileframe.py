@@ -286,7 +286,7 @@ class file_frame(ttk.Frame):
                 variables.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
                 try:
-                    variables.file_name = self.file_strings[int(numbers[0]) - 1]
+                    variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
                 except:
                     tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
                                                     "This bug has not been fixed. Check out issue #19 in the repository"
