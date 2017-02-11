@@ -1,4 +1,4 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
+# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
 # For license see LICENSE
 
@@ -171,9 +171,9 @@ def parse_spawn(spawn, player):
 
     enemydamaget = {}
     enemydamaged = {}
-    for event in spawn:
+    for i in range(len(spawn)):
         # Split the event string into smaller strings containing the information we want.
-        elements = re.split(r"[\[\]]", event)
+        elements = re.split(r"[\[\]]", spawn[i])
         # sign those elements to individual variables to keep things clear.
         timestring = elements[1]
         source = elements[3]
@@ -185,26 +185,32 @@ def parse_spawn(spawn, player):
         # This ID number is for recognition between languages. The ID number is always the same,
         # even where the ability name is not. Only English is supported at this time.
         ability = ability.split(' {', 1)[0]
+
+        if source == "":
+            source = ability
+
         if source in player:
             if "AbilityActivate" in effect:
-                if "Ion Railgun" in ability:
+                if "Hull Cutter" in ability:
                     if source != target:
                         if ability not in abilities:
                             abilities[ability] = 1
                         else:
                             abilities[ability] += 1
-                elif "Hull Cutter" in ability:
-                    if source != target:
-                        if ability not in abilities:
-                            abilities[ability] = 1
-                        else:
-                            abilities[ability] += 1
-                elif ability != "":
+                elif ability != "" and "Ion Railgun" not in ability:
                     if ability not in abilities:
                        abilities[ability] = 1
                     else:
                        abilities[ability] += 1
-        if "kinetic" in event:
+            
+            if "Damage" in effect and "Ion Railgun" in ability and i > 0 and "AbilityActivate" in spawn[i-1]:
+                    if source != target:
+                        if ability not in abilities:
+                            abilities[ability] = 1
+                        else:
+                            abilities[ability] += 1
+                            
+        if "kinetic" in spawn[i]:
             # Takes damagestring and split after the pattern (stuff in here) and take the second element
             # containing the "stuff in here"
             # example: (436 kinetic {836045448940873}) => ['', '436 kinetic {836045448940873}', '']
@@ -237,11 +243,11 @@ def parse_spawn(spawn, player):
                     enemydamaged[source] += int(damagestring.replace("*", ""))
                 if source not in enemydamaget:
                     enemydamaget[source] = 0
-        elif "Heal" in event:
+        elif "Heal" in spawn[i]:
             damagestring = re.split(r"\((.*?)\)", damagestring)[1]
             damagestring = damagestring.split(None, 1)[0]
             healingreceived += int(damagestring.replace("*", ""))
-        elif "Selfdamage" in event:
+        elif "Selfdamage" in spawn[i]:
             damagestring = re.split(r"\((.*?)\)", damagestring)[1]
             damagestring = damagestring.split(None, 1)[0]
             selfdamage += int(damagestring.replace("*", ""))
@@ -386,6 +392,9 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                 # This ID number is for recognition between languages. The ID number is always the same,
                 # even where the ability name is not. Only English is supported at this time.
                 ability = ability.split(' {', 1)[0]
+
+                if source == "":
+                    source = ability
 
                 if source in player:
                     if "Ion Railgun" in ability:
