@@ -187,7 +187,13 @@ class file_frame(ttk.Frame):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
                     try:
-                        dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
+                        if variables.settings_obj.date_format == "ymd":
+                            dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
+                        elif variables.settings_obj.date_format == "ydm":
+                            dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%d-%m   %H:%M:%S")
+                        else:
+                            tkMessageBox.showerror("No valid date format setting found.")
+                            return
                     except:
                         dt = file
                     self.files_dict[dt] = file

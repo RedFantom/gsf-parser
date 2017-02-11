@@ -45,6 +45,7 @@ class defaults:
     overlay_when_gsf = str(False)
     event_colors = "basic"
     event_scheme = "default"
+    date_format = "ymd"
 
 # Class that loads, stores and saves settings
 class settings:
@@ -100,6 +101,7 @@ class settings:
         self.event_colors = self.conf.get("gui", "event_colors")
         self.event_scheme = self.conf.get("gui", "event_scheme")
         self.logo_color = self.conf.get("gui", "logo_color")
+        self.date_format = self.conf.get("gui", "date_format")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
         if self.conf.get("realtime", "overlay_when_gsf") == "True":
@@ -145,6 +147,7 @@ class settings:
         self.conf.set("gui", "logo_color", defaults.logo_color)
         self.conf.set("gui", "event_colors", defaults.event_colors)
         self.conf.set("gui", "event_scheme", defaults.event_scheme)
+        self.conf.set("gui", "date_format", defaults.date_format)
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
@@ -183,7 +186,8 @@ class settings:
                   tx_size=defaults.overlay_tx_size,
                   overlay_when_gsf=defaults.overlay_when_gsf,
                   event_colors=defaults.event_colors,
-                  event_scheme=defaults.event_scheme):
+                  event_scheme=defaults.event_scheme,
+                  date_format=defaults.date_format):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -223,6 +227,7 @@ class settings:
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)
         self.conf.set("gui", "event_scheme", event_scheme)
+        self.conf.set("gui", "date_format", date_format)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()

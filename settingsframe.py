@@ -80,6 +80,12 @@ class settings_frame(ttk.Frame):
                                                    value = "custom")
         self.event_scheme_custom_button = ttk.Button(self.gui_frame, text = "Choose colors",
                                                      command = self.set_custom_event_colors)
+        self.date_format_label = ttk.Label(self.gui_frame, text = "\tDate format: ")
+        self.date_format = tk.StringVar()
+        self.date_format_ymd = ttk.Radiobutton(self.gui_frame, text = "YYYY-MM-DD", value = "ymd",
+                                               variable = self.date_format)
+        self.date_format_ydm = ttk.Radiobutton(self.gui_frame, text = "YYYY-DD-MM", value = "ydm",
+                                               variable = self.date_format)
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text = "Parsing settings", justify=tk.LEFT,
                                        font = ("Calibri", 12))
@@ -221,6 +227,9 @@ class settings_frame(ttk.Frame):
         self.event_scheme_custom.grid(column = 3, row = 3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.event_scheme_custom_button.grid(column = 4, row = 3, sticky=tk.N+tk.S+tk.W+tk.E,
                                              padx = 5)
+        self.date_format_label.grid(column = 0, row = 4, sticky = tk.W)
+        self.date_format_ymd.grid(column = 1, row = 4, sticky = tk.W)
+        self.date_format_ydm.grid(column = 2, row = 4, sticky = tk.W)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady = 5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx =5)
@@ -228,8 +237,8 @@ class settings_frame(ttk.Frame):
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.entry_frame.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.privacy_label.grid(column=0, row=0,sticky=tk.W)
-        self.privacy_select_true.grid(column=1, row=0)
-        self.privacy_select_false.grid(column=2, row=0)
+        self.privacy_select_true.grid(column=1, row=0, sticky = tk.W)
+        self.privacy_select_false.grid(column=2, row=0, sticky = tk.W)
         self.privacy_frame.grid(column=0, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
         ### SHARING SETTINGS ###
         self.sharing_label.grid(column=0, row=5, sticky=tk.W, pady = 5)
@@ -324,6 +333,7 @@ class settings_frame(ttk.Frame):
         self.event_colors.set(variables.settings_obj.event_colors)
         self.event_scheme.set(variables.settings_obj.event_scheme)
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
+        self.date_format.set(variables.settings_obj.date_format)
 
     def save_settings(self):
         print "[DEBUG] Save_settings called!"
@@ -363,7 +373,8 @@ class settings_frame(ttk.Frame):
                                     tx_size=self.overlay_text_size_entry.get(),
                                     overlay_when_gsf=self.overlay_when_gsf.get(),
                                     event_colors=self.event_colors.get(),
-                                    event_scheme=self.event_scheme.get())
+                                    event_scheme=self.event_scheme.get(),
+                                    date_format=self.date_format.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
