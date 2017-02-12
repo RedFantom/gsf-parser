@@ -125,10 +125,7 @@ class main_window(tk.Tk):
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
         try:
-            if variables.settings_obj.color == "default":
-                self.style.configure('.', foreground="#236ab2")
-            else:
-                self.style.configure('.', foreground=variables.settings_obj.color)
+            self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:
             self.style.configure('.', foreground='#8B0000')
         if not start:

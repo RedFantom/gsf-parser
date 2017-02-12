@@ -35,7 +35,7 @@ class defaults:
     size = "big"
     # Set the corner the overlay will be displayed in
     pos = "TR"
-    color = "default"
+    color = "#imp236ab2"
     logo_color = "green"
     overlay_bg_color = "white"
     overlay_tr_color = "white"

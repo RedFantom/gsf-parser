@@ -50,7 +50,9 @@ class settings_frame(ttk.Frame):
         self.color = tk.StringVar()
         self.custom_color_entry = ttk.Entry(self.gui_frame, width = 10)
         self.color_options = []
-        self.color_choices = ["default", "darkgreen", "darkblue", "darkred", "black", "custom: "]
+        self.color_choices = ["darkgreen", "darkblue", "darkred", "black", "custom: "]
+        self.color_options.append(ttk.Radiobutton(self.gui_frame, value="#236ab2", text="default", variable=self.color,
+                                                  width=8))
         for color in self.color_choices:
             self.color_options.append(ttk.Radiobutton(self.gui_frame, value = str(color), text = color,
                                                       variable = self.color, width = 8))
