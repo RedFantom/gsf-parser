@@ -31,15 +31,17 @@ class settings_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ### LAY-OUT ###
         ttk.Frame.__init__(self, root_frame)
-        self.frame = widgets.vertical_scroll_frame(self, width=790, height=400)
+        self.frame = widgets.vertical_scroll_frame(self, canvasheight=295, canvaswidth=780)
         self.gui_frame = ttk.Frame(self.frame.interior)
         self.entry_frame = ttk.Frame(self.frame.interior)
         self.privacy_frame = ttk.Frame(self.frame.interior)
         self.server_frame = ttk.Frame(self.frame.interior)
         self.upload_frame = ttk.Frame(self.frame.interior)
         self.realtime_frame = ttk.Frame(self.frame.interior)
-        self.save_frame = ttk.Frame(self.frame.interior)
-        self.license_frame = ttk.Frame(self.frame.interior)
+        self.bottom_frame = ttk.Frame(self)
+        self.save_frame = ttk.Frame(self.bottom_frame)
+        self.license_frame = ttk.Frame(self.bottom_frame)
+        self.top_frame = self.frame
         self.main_window = main_window
         ### GUI SETTINGS ###
         # TODO Add more GUI settings including colors
@@ -175,7 +177,7 @@ class settings_frame(ttk.Frame):
         self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable = self.overlay_when_gsf,
                                                       text = "No", value = False)
         ### MISC ###
-        self.separator = ttk.Separator(self.frame.interior, orient=tk.HORIZONTAL)
+        self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
         self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
         self.default_settings_button = ttk.Button(self.save_frame, text="Defaults", command = self.default_settings)
@@ -235,7 +237,7 @@ class settings_frame(ttk.Frame):
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx =5)
         self.path_entry_button.grid(column = 2, row = 0, sticky = tk.N+tk.S+tk.W+tk.E, padx = 3)
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.entry_frame.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.entry_frame.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W)
         self.privacy_label.grid(column=0, row=0,sticky=tk.W)
         self.privacy_select_true.grid(column=1, row=0, sticky = tk.W)
         self.privacy_select_false.grid(column=2, row=0, sticky = tk.W)
@@ -293,20 +295,23 @@ class settings_frame(ttk.Frame):
         self.overlay_when_gsf_true.grid(column = 1, row = 10, sticky = tk.W)
         self.overlay_when_gsf_false.grid(column = 2, row = 10, sticky = tk.W)
         ### MISC ###
-        self.save_settings_button.grid(column=0, row=0, padx=2)
-        self.discard_settings_button.grid(column=1, row=0, padx=2)
-        self.default_settings_button.grid(column=2, row=0, padx=2)
-        self.save_frame.grid(column=0, row=9, sticky=tk.W)
-        self.license_button.grid(column=1,row=0,sticky=tk.W, padx=5)
-        self.privacy_button.grid(column=2,row=0,sticky=tk.W, padx=5)
-        self.copyright_label.grid(column=0, row=0, sticky=tk.W)
+        self.save_settings_button.grid(column=0, row=1, padx=2)
+        self.discard_settings_button.grid(column=1, row=1, padx=2)
+        self.default_settings_button.grid(column=2, row=1, padx=2)
+        self.save_frame.grid(column=0, row=1, sticky=tk.W)
+        self.license_button.grid(column=1,row=2,sticky=tk.W, padx=5)
+        self.privacy_button.grid(column=2,row=2,sticky=tk.W, padx=5)
+        self.copyright_label.grid(column=0, row=2, sticky=tk.W)
         self.update_label.grid(column=0, row=2, sticky=tk.W)
-        self.thanks_label.grid(column=0,row=1, sticky=tk.W)
-        self.separator.grid(column = 0, row = 10, sticky = tk.N+tk.S+tk.W+tk.E, pady=10)
-        self.license_frame.grid(column=0, row=11, sticky=tk.N+tk.S+tk.W+tk.E, pady = 5)
+        self.thanks_label.grid(column=0,row=3, sticky=tk.W)
+        self.separator.grid(column = 0, row = 0, sticky = tk.N+tk.S+tk.W+tk.E, pady=10)
+        self.license_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W+tk.E, pady = 5)
+        self.save_frame.grid(column=0,row=0)
         ### FINAL FRAME ###
-        self.frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
         self.grid(column=0,row=0,sticky=tk.N+tk.S+tk.W+tk.E)
+        self.top_frame.grid(column=0,row=0, sticky=tk.N+tk.S+tk.W)
+        self.separator.grid(column=0,row=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=10)
+        self.bottom_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W)
 
     def update_settings(self):
         self.path_var.set(variables.settings_obj.cl_path)

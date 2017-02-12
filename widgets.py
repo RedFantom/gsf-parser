@@ -22,13 +22,14 @@ class vertical_scroll_frame(ttk.Frame):
     Author: Not listed
     License: Not listed
 
-    Edited by RedFantom for ttk and normal import
+    Edited by RedFantom for ttk and normal import, and size
     """
-    def __init__(self, parent, *args, **kw):
+    def __init__(self, parent, canvaswidth=780, canvasheight=395, *args, **kw):
         ttk.Frame.__init__(self, parent, *args, **kw)
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
-        canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width = 780, height = 395)
+        canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width = canvaswidth,
+                           height = canvasheight)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         vscrollbar.config(command=canvas.yview)
         def mousewheel(event):

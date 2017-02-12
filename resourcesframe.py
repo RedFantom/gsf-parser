@@ -9,8 +9,8 @@ from widgets import *
 class resources_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.frame = vertical_scroll_frame(self, width=790, height=400)
-        self.frame.grid(sticky=tk.N+tk.S+tk.E+tk.W)
+        self.frame = vertical_scroll_frame(self, width=790, height=300, canvasheight=300)
+        self.frame.grid(column=0, row=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
         self.main_window = main_window
 
         resources = ["GSF: A starting point",
@@ -62,13 +62,13 @@ class resources_frame(ttk.Frame):
             resource_label.bind("<Button-1>", link(resources_links[resource]))
             resource_description = ttk.Label(self.frame.interior, text = resources_descriptions[resource],
                                              justify=tk.LEFT, wraplength = 780)
-            resource_label.grid(column=0, row=set_row,sticky = tk.N+tk.S+tk.W+tk.E, padx = 5)
+            resource_label.grid(column=0, row=set_row,sticky = tk.N+tk.S+tk.W, padx = 5)
             resource_description.grid(column=0, row=set_row + 1, sticky = tk.N+tk.S+tk.W+tk.E, padx = 5)
             self.resource_labels.append(resource_label)
             self.resource_description_labels[resource_label] = resource_description
             set_row+=2
-        self.help_label = ttk.Label(self.frame.interior, text = "Help", font = ("TkDefaultFont", 12))
-        self.explanation_label = ttk.Label(self.frame.interior, text = "In this tab you can find links to all sorts of "+\
+        self.help_label = ttk.Label(self, text = "Help", font = ("Calibri", 12))
+        self.explanation_label = ttk.Label(self, text = "In this tab you can find links to all sorts of "+\
                                                                        "useful resources for SWTOR: GSF. Just click "+\
                                                                        "the text highlighted in blue to open the "+\
                                                                        "resource in your default browser.\n\nIf you "+\
@@ -76,8 +76,8 @@ class resources_frame(ttk.Frame):
                                                                        "be added to this list, please e-mail RedFantom "+\
                                                                        "at redfantom@outlook.com",
                                            justify = tk.LEFT, wraplength = 780)
-        self.help_label.grid(column = 0, row=set_row, sticky =tk.N+tk.S+tk.W, pady=5)
-        self.explanation_label.grid(column = 0, row=set_row+1, sticky = tk.N+tk.S+tk.W+tk.E)
+        self.help_label.grid(column = 0, row=1, sticky =tk.N+tk.S+tk.W, pady=5)
+        self.explanation_label.grid(column = 0, row=2, sticky = tk.N+tk.S+tk.W+tk.E)
 
     @staticmethod
     def open_link(link):
