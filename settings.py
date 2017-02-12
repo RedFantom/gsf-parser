@@ -35,7 +35,7 @@ class defaults:
     size = "big"
     # Set the corner the overlay will be displayed in
     pos = "TR"
-    color = "darkgreen"
+    color = "default"
     logo_color = "green"
     overlay_bg_color = "white"
     overlay_tr_color = "white"
