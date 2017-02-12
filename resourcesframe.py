@@ -9,10 +9,10 @@ from widgets import *
 class resources_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.frame = vertical_scroll_frame(self, width=790, height=300, canvasheight=300)
+        self.frame = vertical_scroll_frame(self, canvasheight=280)
         self.frame.grid(column=0, row=0, columnspan=2, sticky=tk.N+tk.S+tk.E+tk.W)
         self.main_window = main_window
-
+        self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         resources = ["GSF: A starting point",
                      "Stasiepedia",
                      "Despon's GSF School",
@@ -76,8 +76,9 @@ class resources_frame(ttk.Frame):
                                                                        "be added to this list, please e-mail RedFantom "+\
                                                                        "at redfantom@outlook.com",
                                            justify = tk.LEFT, wraplength = 780)
-        self.help_label.grid(column = 0, row=1, sticky =tk.N+tk.S+tk.W, pady=5)
-        self.explanation_label.grid(column = 0, row=2, sticky = tk.N+tk.S+tk.W+tk.E)
+        self.separator.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2, pady=10)
+        self.help_label.grid(column = 0, row=2, sticky =tk.N+tk.S+tk.W, pady=5)
+        self.explanation_label.grid(column = 0, row=3, sticky = tk.N+tk.S+tk.W+tk.E)
 
     @staticmethod
     def open_link(link):
