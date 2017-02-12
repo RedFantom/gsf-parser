@@ -376,6 +376,7 @@ class event_colors(tk.Toplevel):
                 green = int(color_tuple[0][1])
                 blue = int(color_tuple[0][2])
             except TypeError:
+                self.focus_set()
                 return
             foreground_color = '#000000' if (red*0.299 + green*0.587 + blue*0.114) > 186 else "#ffffff"
             self.color_entry_widgets_bg[key].delete(0, tk.END)
@@ -390,6 +391,7 @@ class event_colors(tk.Toplevel):
                 green = int(color_tuple[0][1])
                 blue = int(color_tuple[0][2])
             except TypeError:
+                self.focus_set()
                 return
             foreground_color = '#000000' if (red*0.299 + green*0.587 + blue*0.114) > 186 else "#ffffff"
             self.color_entry_widgets_fg[key].delete(0, tk.END)
