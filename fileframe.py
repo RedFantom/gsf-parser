@@ -66,15 +66,57 @@ class file_frame(ttk.Frame):
         self.spawn_box = tk.Listbox(self)
         self.spawn_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawn_box.yview)
         self.spawn_box.config(yscrollcommand = self.spawn_box_scroll.set)
+
         self.file_box.bind("<Double-Button-1>", self.file_update)
         self.match_box.bind("<Double-Button-1>", self.match_update)
         self.spawn_box.bind("<Double-Button-1>", self.spawn_update)
+        self.file_box.bind("<Return>", self.file_update)
+        self.match_box.bind("<Return>", self.match_update)
+        self.spawn_box.bind("<Return>", self.spawn_update)
+
+        self.file_box.bind("<Enter>", self.bind_file)
+        self.file_box.bind("<Leave>", self.unbind_file)
+        self.match_box.bind("<Enter>", self.bind_match)
+        self.match_box.bind("<Leave>", self.unbind_match)
+        self.spawn_box.bind("<Enter>", self.bind_spawn)
+        self.spawn_box.bind("<Leave>", self.unbind_spawn)
+
         self.statistics_object = statistics.statistics()
         self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
         self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
         self.old_file = 0
         self.old_match = 0
         self.old_spawn = 0
+
+    def scroll_file(self, event):
+        self.file_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_file(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_file)
+        self.file_box.focus()
+
+    def unbind_file(self, event):
+        self.main_window.unbind("<MouseWheel>")
+
+    def scroll_match(self, event):
+        self.match_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_match(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_match)
+        self.match_box.focus()
+
+    def unbind_match(self, event):
+        self.main_window.unbind("<MouseWheel>")
+
+    def scroll_spawn(self, event):
+        self.spawn_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_spawn(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_spawn)
+        self.spawn_box.focus()
+
+    def unbind_spawn(self, event):
+        self.main_window.unbind("<MouseWheel>")
 
     def filters(self):
         """
@@ -291,6 +333,7 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
+            self.match_box.focus()
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
             self.old_file = numbers[0]
@@ -383,6 +426,7 @@ class file_frame(ttk.Frame):
                     color = "white"
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
+             self.spawn_box.focus()
              numbers = self.match_box.curselection()
              self.old_match = numbers[0]
              self.match_box.itemconfig(self.old_match, background="lightgrey")
