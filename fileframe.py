@@ -187,13 +187,13 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
-        if variables.match_timing != None:
+        if variables.match_timing:
             try:
                 index = self.match_timing_strings.index(variables.match_timing)
-                variables.spawn_index = index
-            except:
+            except ValueError:
                 self.spawn_box.delete(0, tk.END)
                 return
+            variables.spawn_index = index
             self.spawn_box.delete(0, tk.END)
             self.spawn_box.insert(tk.END, "All spawns")
             for spawn in variables.spawn_timings[index]:
@@ -207,10 +207,6 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        try:
-            os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
-            return
         self.file_strings = []
         self.files_dict = {}
         self.file_box.delete(0, tk.END)
@@ -239,7 +235,7 @@ class file_frame(ttk.Frame):
                         else:
                             tkMessageBox.showerror("No valid date format setting found.")
                             return
-                    except:
+                    except ValueError:
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
@@ -260,10 +256,6 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        try:
-            os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
-            return
         self.file_strings = []
         self.files_dict = {}
         self.file_box.delete(0, tk.END)
@@ -278,7 +270,7 @@ class file_frame(ttk.Frame):
             self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(variables.settings_obj.cl_path)
-        except:
+        except WindowsError:
             tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             if not silent:
                 self.splash.destroy()
@@ -288,8 +280,7 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-                        # print "[DEBUG] Generated time: ", dt
-                    except:
+                    except ValueError:
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
@@ -341,12 +332,7 @@ class file_frame(ttk.Frame):
             try:
                 variables.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
-                try:
-                    variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
-                except:
-                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                    "This bug has not been fixed. Check out issue #19 in the repository"
-                                                    " for more information.")
+                variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
             except KeyError:
                 tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
                                                 "consult the issues page of the GitHub repository.")
@@ -385,12 +371,7 @@ class file_frame(ttk.Frame):
             try:
                 variables.match_timing = self.match_timing_strings[numbers[0] - 1]
             except TypeError:
-                try:
-                    variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
-                except:
-                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                    "This bug has not been fixed. Check out issue #19 in the repository"
-                                                    " for more information.")
+                variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
             file_cube = variables.file_cube
             (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
              variables.enemydamaget, variables.uncounted) = self.statistics_object.file_statistics(file_cube)
@@ -433,12 +414,7 @@ class file_frame(ttk.Frame):
              try:
                  variables.match_timing = self.match_timing_strings[numbers[0] - 1]
              except TypeError:
-                 try:
-                     variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
-                 except:
-                     tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                     "This bug has not been fixed. Check out issue #19 in the repository"
-                                                     " for more information.")
+                 variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
              self.add_spawns()
         self.main_window.ship_frame.remove_image()
 
@@ -453,10 +429,7 @@ class file_frame(ttk.Frame):
         if self.spawn_box.curselection() == (0,):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
-            try:
-                match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
-            except ValueError:
-                print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
+            match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             for spawn in match:
                 variables.player_numbers.update(parse.determinePlayer(spawn))
             (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
