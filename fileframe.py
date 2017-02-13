@@ -72,13 +72,16 @@ class file_frame(ttk.Frame):
         self.statistics_object = statistics.statistics()
         self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
         self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
+        self.old_file = 0
+        self.old_match = 0
+        self.old_spawn = 0
 
     def filters(self):
         """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         """
+        tkMessageBox.showinfo("Notice", "This button is not yet functional.")
 
-        pass
 
     def grid_widgets(self):
         """
@@ -274,8 +277,10 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.file_box.itemconfig(self.old_file, background="white")
         if self.file_box.curselection() == (0,):
-            print("[DEBUG] All CombatLogs selected")
+            self.old_file = 0
+            self.file_box.itemconfig(self.old_file, background="lightgrey")
             stat_obj = statistics.statistics()
             stats_string = stat_obj.folder_statistics()
             self.main_window.middle_frame.statistics_numbers_var.set(stats_string)
@@ -288,6 +293,8 @@ class file_frame(ttk.Frame):
         else:
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
+            self.old_file = numbers[0]
+            self.file_box.itemconfig(self.old_file, background="lightgrey")
             try:
                 variables.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
@@ -326,9 +333,12 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.match_box.itemconfig(self.old_match, background="white")
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
+            self.old_match = numbers[0]
+            self.match_box.itemconfig(self.old_match, background="lightgrey")
             try:
                 variables.match_timing = self.match_timing_strings[numbers[0] - 1]
             except TypeError:
@@ -374,6 +384,8 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
              numbers = self.match_box.curselection()
+             self.old_match = numbers[0]
+             self.match_box.itemconfig(self.old_match, background="lightgrey")
              try:
                  variables.match_timing = self.match_timing_strings[numbers[0] - 1]
              except TypeError:
@@ -393,7 +405,10 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
+        self.spawn_box.itemconfig(self.old_spawn, background="white")
         if self.spawn_box.curselection() == (0,):
+            self.old_spawn = self.spawn_box.curselection()[0]
+            self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             try:
                 match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             except ValueError:
@@ -436,6 +451,8 @@ class file_frame(ttk.Frame):
             self.main_window.ship_frame.remove_image()
         else:
             numbers = self.spawn_box.curselection()
+            self.old_spawn = numbers[0]
+            self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             try:
                 variables.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
             except TypeError:
