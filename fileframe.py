@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -560,8 +562,8 @@ class ship_frame(ttk.Frame):
         Put the widgets in the right place
         :return:
         """
-        self.ship_image.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.ship_label.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_image.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_label.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.remove_image()
 
     def update_ship(self, ships_list):
@@ -763,11 +765,11 @@ class middle_frame(ttk.Frame):
         self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N + tk.W + tk.E)
         self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N + tk.W + tk.S + tk.E)
         self.events_button.grid(column=0, row=1, sticky=tk.N + tk.W + tk.S + tk.E, columnspan=4, pady=12)
-        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N + tk.W + tk.E)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W + tk.E + tk.S)
         self.enemies_label.grid(column=0, row=0, columnspan=3)
-        self.enemies_listbox.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaged.grid(column=1, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaget.grid(column=2, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.enemies_scroll.grid(column=3, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.enemies_listbox.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)

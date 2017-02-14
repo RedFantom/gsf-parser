@@ -1,4 +1,5 @@
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -18,4 +19,4 @@ class share_frame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame)
         self.label = ttk.Label(self, font=("Calibri", 40),
                                text="Coming soon!", justify=tk.CENTER)
-        self.label.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=250, pady=150)
+        self.label.grid(sticky=tk.N+tk.S+tk.W+tk.E, padx=250, pady=150)

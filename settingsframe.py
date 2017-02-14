@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -190,7 +192,8 @@ class settings_frame(ttk.Frame):
         self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
         self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
-        self.copyright_label = ttk.Label(self.license_frame, text="Copyright (C) 2016 by RedFantom and Daethyra",
+        self.copyright_label = ttk.Label(self.license_frame,
+                                         text="Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania",
                                          justify=tk.LEFT)
         self.thanks_label = ttk.Label(self.license_frame, text="Special thanks to Nightmaregale for bèta testing",
                                       justify=tk.LEFT)
@@ -210,53 +213,53 @@ class settings_frame(ttk.Frame):
 
     def grid_widgets(self):
         ### GUI SETTINGS ###
-        self.gui_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
-        self.gui_frame.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.color_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.gui_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, pady=5)
+        self.gui_frame.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.color_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 0
         for radio in self.color_options:
             set_column += 1
-            radio.grid(column=set_column, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.custom_color_entry.grid(column=set_column + 1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.logo_color_label.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.custom_color_entry.grid(column=set_column + 1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.logo_color_label.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 0
         for radio in self.logo_color_options:
             set_column += 1
-            radio.grid(column=set_column, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_colors_label.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_colors_basic.grid(column=2, row=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_colors_none.grid(column=1, row=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_colors_adv.grid(column=3, row=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_scheme_label.grid(column=0, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_scheme_default.grid(column=1, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_scheme_pastel.grid(column=2, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_scheme_custom.grid(column=3, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.event_scheme_custom_button.grid(column=4, row=3, sticky=tk.N + tk.S + tk.W + tk.E,
+            radio.grid(column=set_column, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_label.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_basic.grid(column=2, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_none.grid(column=1, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_colors_adv.grid(column=3, row=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_label.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_default.grid(column=1, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_pastel.grid(column=2, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_custom.grid(column=3, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.event_scheme_custom_button.grid(column=4, row=3, sticky=tk.N+tk.S+tk.W+tk.E,
                                              padx=5)
         self.date_format_label.grid(column=0, row=4, sticky=tk.W)
         self.date_format_ymd.grid(column=1, row=4, sticky=tk.W)
         self.date_format_ydm.grid(column=2, row=4, sticky=tk.W)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady=5)
-        self.path_entry_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
-        self.path_entry_button.grid(column=2, row=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=3)
-        self.path_entry.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
+        self.path_entry_button.grid(column=2, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=3)
+        self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.entry_frame.grid(column=0, row=3, sticky=tk.N + tk.S + tk.W)
         self.privacy_label.grid(column=0, row=0, sticky=tk.W)
         self.privacy_select_true.grid(column=1, row=0, sticky=tk.W)
         self.privacy_select_false.grid(column=2, row=0, sticky=tk.W)
-        self.privacy_frame.grid(column=0, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.privacy_frame.grid(column=0, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
         ### SHARING SETTINGS ###
         self.sharing_label.grid(column=0, row=5, sticky=tk.W, pady=5)
         self.server_label.grid(column=0, row=0, sticky=tk.W)
         self.server_address_entry.grid(column=1, row=0)
         self.server_colon_label.grid(column=2, row=0)
         self.server_port_entry.grid(column=3, row=0)
-        self.server_frame.grid(column=0, row=6, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.server_frame.grid(column=0, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
         self.auto_upload_label.grid(column=0, row=0)
         self.auto_upload_true.grid(column=1, row=0)
         self.auto_upload_false.grid(column=2, row=0)
-        self.upload_frame.grid(column=0, row=7, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.upload_frame.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
         ### REALTIME SETTINGS ###
         self.overlay_enable_label.grid(column=0, row=1, sticky=tk.W)
         self.overlay_enable_radio_yes.grid(column=1, row=1, sticky=tk.W)
@@ -264,36 +267,36 @@ class settings_frame(ttk.Frame):
         self.overlay_opacity_label.grid(column=0, row=2, sticky=tk.W)
         self.overlay_opacity_input.grid(column=1, row=2, sticky=tk.W)
         self.realtime_settings_label.grid(column=0, row=0, sticky=tk.W, pady=5)
-        self.overlay_size_label.grid(column=0, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_size_radio_big.grid(column=1, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_size_radio_small.grid(column=2, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_position_label.grid(column=0, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_position_radio_tl.grid(column=1, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_position_radio_bl.grid(column=2, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_position_radio_tr.grid(column=3, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_position_radio_br.grid(column=4, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.realtime_frame.grid(column=0, row=8, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_tx_label.grid(column=0, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_bg_label.grid(column=0, row=6, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_tr_label.grid(column=0, row=7, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_font_label.grid(column=0, row=8, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_text_size_label.grid(column=0, row=9, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.overlay_text_size_entry.grid(column=1, row=9, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.overlay_size_label.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_size_radio_big.grid(column=1, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_size_radio_small.grid(column=2, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_label.grid(column=0, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_radio_tl.grid(column=1, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_radio_bl.grid(column=2, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_radio_tr.grid(column=3, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_radio_br.grid(column=4, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.realtime_frame.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_tx_label.grid(column=0, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_bg_label.grid(column=0, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_tr_label.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_font_label.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_label.grid(column=0, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_entry.grid(column=1, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 1
         for radio in self.overlay_tx_color_radios:
-            radio.grid(column=set_column, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         set_column = 1
         for radio in self.overlay_bg_color_radios:
-            radio.grid(column=set_column, row=6, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         set_column = 1
         for radio in self.overlay_tr_color_radios:
-            radio.grid(column=set_column, row=7, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         set_column = 1
         for radio in self.overlay_font_radios:
-            radio.grid(column=set_column, row=8, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         self.overlay_when_gsf_label.grid(column=0, row=10)
         self.overlay_when_gsf_true.grid(column=1, row=10, sticky=tk.W)
@@ -308,13 +311,13 @@ class settings_frame(ttk.Frame):
         self.copyright_label.grid(column=0, row=2, sticky=tk.W)
         self.update_label.grid(column=0, row=2, sticky=tk.W)
         self.thanks_label.grid(column=0, row=3, sticky=tk.W)
-        self.separator.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, pady=10)
-        self.license_frame.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
+        self.separator.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, pady=10)
+        self.license_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W+tk.E, pady=5)
         self.save_frame.grid(column=0, row=0)
         ### FINAL FRAME ###
-        self.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.top_frame.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W)
-        self.separator.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=10)
+        self.separator.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=10)
         self.bottom_frame.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W)
 
     def update_settings(self):
@@ -363,8 +366,9 @@ class settings_frame(ttk.Frame):
         else:
             color = self.color.get()
         if self.overlay_when_gsf.get() and not variables.settings_obj.overlay_when_gsf:
-            help_string = """This setting makes the overlay only appear inside GSF matches. Please note that the overlay will only appear after the
-                             first GSF ability is executed, so the overlay may appear to display a little late, but this is normal behaviour."""
+            help_string = ("""This setting makes the overlay only appear inside GSF matches. Please note that the """
+                           """overlay will only appear after the first GSF ability is executed, so the overlay """
+                           """may appear to display a little late, but this is normal behaviour.""")
             tkMessageBox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
         variables.settings_obj.write_set(cl_path=str(self.path_var.get()),
                                          auto_ident=str(self.privacy_var.get()),
@@ -402,7 +406,8 @@ class settings_frame(ttk.Frame):
     @staticmethod
     def show_license():
         tkMessageBox.showinfo("License",
-                              "This program is licensed under the General Public License Version 3, by GNU. See LICENSE in the installation directory for more details")
+                              "This program is licensed under the General Public License Version 3, by GNU. See "
+                              "LICENSE in the installation directory for more details")
 
     def show_privacy(self):
         if not variables.client_obj.INIT:

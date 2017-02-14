@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -136,14 +138,14 @@ class realtime_frame(ttk.Frame):
         self.upload_results_button.grid(column=1, row=1, padx=5, pady=5)
         self.server_list.config(width=15)
         self.faction_list.config(width=15)
-        self.server_list.grid(column=2, row=1, padx=5, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.faction_list.grid(column=3, row=1, padx=5, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.parsing_bar.grid(column=0, columnspan=1, row=2, padx=5, pady=10, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.uploading_bar.grid(column=1, row=2, padx=5, pady=10, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.server_list.grid(column=2, row=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.faction_list.grid(column=3, row=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.parsing_bar.grid(column=0, columnspan=1, row=2, padx=5, pady=10, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.uploading_bar.grid(column=1, row=2, padx=5, pady=10, sticky=tk.N+tk.S+tk.W+tk.E)
         self.statistics_label_one.grid(column=3, row=2, padx=5, pady=5, sticky=tk.N + tk.W)
         self.statistics_list_label_one.grid(column=2, row=2, padx=5, pady=5, sticky=tk.N + tk.W)
-        self.listbox.grid(column=0, row=3, columnspan=4, padx=5, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.scrollbar.grid(column=5, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.listbox.grid(column=0, row=3, columnspan=4, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.scrollbar.grid(column=5, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.statistics_label_one_text.set("")
         self.statistics_label_one_text.set("")
         self.watching_label.grid(column=0, row=4, columnspan=2, sticky=tk.W)

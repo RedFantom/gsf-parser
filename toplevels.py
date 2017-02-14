@@ -1,5 +1,7 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -233,8 +235,8 @@ class events_view(tk.Toplevel):
         self.listbox = tk.Listbox(self, width=100, height=15, font=("Consolas", 10))
         self.scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scroll.set)
-        self.listbox.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.scroll.grid(column=2, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.listbox.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.scroll.grid(column=2, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.resizable(width=False, height=False)
         for line in spawn:
             event = statistics.print_event(line, variables.spawn_timing, player)
@@ -444,12 +446,12 @@ class event_colors(tk.Toplevel):
             self.color_entry_widgets_fg[key].grid(column=4, row=set_row, sticky=tk.W, padx=5)
             self.color_button_widgets_fg[key].grid(column=5, row=set_row, sticky=tk.W)
             set_row += 1
-        self.separator.grid(column=0, columnspan=6, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
+        self.separator.grid(column=0, columnspan=6, sticky=tk.N+tk.S+tk.W+tk.E, pady=5)
         set_row += 1
         self.cancel_button.grid(column=3, columnspan=2, row=set_row, sticky=tk.N + tk.S + tk.E)
-        self.ok_button.grid(column=5, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.import_button.grid(column=0, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.export_button.grid(column=1, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ok_button.grid(column=5, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.import_button.grid(column=0, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.export_button.grid(column=1, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
 
 
 class filters(tk.Toplevel):

@@ -1,5 +1,7 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 import settings
 import tempfile
@@ -62,7 +64,7 @@ class oob_window(tk.Tk):
                             realtime_settings_frame(self),
                             sharing_frame(self),
                             complete_frame(self)]
-        self.frames_list[0].grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.frames_list[0].grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.current_frame = self.frames_list[0]
         self.new_index = 0
         self.current_frame.grid_widgets()
@@ -77,7 +79,7 @@ class oob_window(tk.Tk):
             self.current_frame.grid_forget()
             self.new_index = self.frames_list.index(self.current_frame) + 1
             self.frames_list[self.new_index].grid(column=0, row=0,
-                                                  sticky=tk.N + tk.S + tk.W + tk.E,
+                                                  sticky=tk.N+tk.S+tk.W+tk.E,
                                                   pady=10)
             self.current_frame = self.frames_list[self.new_index]
             self.current_frame.grid_widgets()
@@ -99,7 +101,7 @@ class oob_window(tk.Tk):
         """
         self.current_frame.grid_forget()
         self.frames_list[self.frames_list.index(self.current_frame) - 1] \
-            .grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            .grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.current_frame = self.frames_list \
             [self.frames_list.index(self.current_frame) - 1]
 
@@ -128,7 +130,7 @@ class oob_window(tk.Tk):
         Grid all widgets for the first time, but do not include
         prev_button, as it cannot be used on the first Frame.
         """
-        self.frames_list[0].grid(column=0, row=0, columnspan=12, sticky=tk.N + tk.S + tk.W + tk.E,
+        self.frames_list[0].grid(column=0, row=0, columnspan=12, sticky=tk.N+tk.S+tk.W+tk.E,
                                  padx=5, pady=5)
         self.next_button.grid(column=11, row=1, sticky=tk.N + tk.S + tk.W)
         if self.new_index != 0 and self.new_index != 7:
@@ -202,10 +204,10 @@ class welcome_frame(ttk.Frame):
         self.logo_label = ttk.Label(self, image=self.green_logo)
 
     def grid_widgets(self):
-        self.welcome_label.grid(row=1, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.explanation_label.grid(row=2, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.logo_label.grid(row=3, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.credits_label.grid(row=4, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.welcome_label.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.explanation_label.grid(row=2, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.logo_label.grid(row=3, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.credits_label.grid(row=4, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
 
 
 class gui_settings_frame(ttk.Frame):
