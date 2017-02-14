@@ -6,9 +6,9 @@
 
 # UI Imports
 try:
-     import mtTkinter as tk
+    import mtTkinter as tk
 except ImportError:
-     import Tkinter as tk
+    import Tkinter as tk
 import ttk
 import tkMessageBox
 # General imports
@@ -26,10 +26,12 @@ import variables
 import parse
 import toplevels
 
+
 class graphs_frame(ttk.Frame):
     """
     A frame containing a place for a graph where the user can view his/her performance over time.
     """
+
     def __init__(self, root, main_window):
         """
         Set-up the plot, check the back-end and create all widgets necessary to display the plot
@@ -43,15 +45,17 @@ class graphs_frame(ttk.Frame):
         self.main_window = main_window
         self.type_graph = tk.StringVar()
         self.type_graph.set("play")
-        self.graph_label = ttk.Label(self, text = "Here you can view various types of graphs of your performance over time.",
-                                     justify = tk.LEFT, font = ("Calibri", 12))
-        self.play_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "play", text = "Matches played")
-        self.dmgd_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgd", text = "Damage dealt")
-        self.dmgt_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgt", text = "Damage taken")
-        self.hrec_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "hrec", text = "Healing received")
-        self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies")
-        # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies damage dealt to")
-        self.update_button = ttk.Button(self, command = self.update_graph, text = "Update graph")
+        self.graph_label = ttk.Label(self,
+                                     text="Here you can view various types of graphs of your performance over time.",
+                                     justify=tk.LEFT, font=("Calibri", 12))
+        self.play_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="play", text="Matches played")
+        self.dmgd_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgd", text="Damage dealt")
+        self.dmgt_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgt", text="Damage taken")
+        self.hrec_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hrec", text="Healing received")
+        self.enem_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="enem", text="Enemies")
+        # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem",
+        # text = "Enemies damage dealt to")
+        self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
         self.figure, self.axes = pyplot.subplots(figsize=(8.3, 4.2))
         # pyplot.ion()
         self.canvas = FigureCanvasTkAgg(self.figure, self)
@@ -73,14 +77,17 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
-                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except: continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except:
+                    continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
                 with open(file, "r") as file_obj:
@@ -92,29 +99,33 @@ class graphs_frame(ttk.Frame):
                     matches_played_date[file_date] += len(file_cube)
                 variables.files_done += 1
                 self.splash_screen.update_progress()
-            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()), color=variables.settings_obj.color)
+            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()),
+                       color=variables.settings_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Matches played")
             pyplot.ylabel("Amount of matches")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
-            self.figure.subplots_adjust(bottom = 0.35)
+            self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "dmgd":
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
-                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except: continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except:
+                    continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
                 with open(file, "r") as file_obj:
@@ -140,29 +151,33 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.settings_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                        color=variables.settings_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average damage dealt per match")
             pyplot.ylabel("Amount of damage")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
-            self.figure.subplots_adjust(bottom = 0.35)
+            self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "dmgt":
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
-                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except: continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except:
+                    continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
                 with open(file, "r") as file_obj:
@@ -188,29 +203,33 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.settings_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                        color=variables.settings_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average damage taken per match")
             pyplot.ylabel("Amount of damage")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
-            self.figure.subplots_adjust(bottom = 0.35)
+            self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "hrec":
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
-                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except: continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except:
+                    continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
                 with open(file, "r") as file_obj:
@@ -235,15 +254,16 @@ class graphs_frame(ttk.Frame):
                 except ZeroDivisionError:
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
-            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key = lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.settings_obj.color)
+            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                        color=variables.settings_obj.color)
             self.axes.xaxis_date()
             pyplot.title("Average healing received per match")
             pyplot.ylabel("Amount of healing")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
-            self.figure.subplots_adjust(bottom = 0.35)
+            self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "enem":
@@ -251,15 +271,18 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
             enem_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
                     continue
-                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except: continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except:
+                    continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
                 with open(file, "r") as file_obj:
@@ -287,35 +310,35 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_enem_date.items(), key=lambda t: t[0]))
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.settings_obj.color)
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                        color=variables.settings_obj.color)
             # self.axes.xaxis_date()
             pyplot.title("Average enemies damage dealt to per match")
             pyplot.ylabel("Amount of enemies")
             pyplot.xlabel("Date")
             pyplot.xticks(rotation='vertical')
             pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
-            self.figure.subplots_adjust(bottom = 0.35)
+            self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
         else:
             tkMessageBox.showinfo("Notice", "No correct graph type selected!")
         self.axes.set_ylim(bottom=0.)
 
-
     def grid_widgets(self):
         """
         Put all widgets in the right place
         :return:
         """
-        self.graph_label.grid(column = 0, row = 0, rowspan = 1, columnspan = 2, sticky = tk.W, pady = 5)
-        self.play_graph_radio.grid(column = 0, row = 1, sticky = tk.W)
-        self.dmgd_graph_radio.grid(column = 0, row = 2, sticky = tk.W)
-        self.dmgt_graph_radio.grid(column = 0, row = 3, sticky = tk.W)
-        self.hrec_graph_radio.grid(column = 0, row = 4, sticky = tk.W)
-        self.enem_graph_radio.grid(column = 0, row = 5, sticky = tk.W)
-        self.update_button.grid(column = 0, row = 19, sticky =tk.W + tk.E + tk.N + tk.S)
-        self.canvasw.grid(column = 1, row = 1, rowspan = 20, sticky = tk.N + tk.W, padx = 10)
-        self.toolbar.grid(column = 1, row = 21, sticky =tk.N + tk.W)
+        self.graph_label.grid(column=0, row=0, rowspan=1, columnspan=2, sticky=tk.W, pady=5)
+        self.play_graph_radio.grid(column=0, row=1, sticky=tk.W)
+        self.dmgd_graph_radio.grid(column=0, row=2, sticky=tk.W)
+        self.dmgt_graph_radio.grid(column=0, row=3, sticky=tk.W)
+        self.hrec_graph_radio.grid(column=0, row=4, sticky=tk.W)
+        self.enem_graph_radio.grid(column=0, row=5, sticky=tk.W)
+        self.update_button.grid(column=0, row=19, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N + tk.W, padx=10)
+        self.toolbar.grid(column=1, row=21, sticky=tk.N + tk.W)
 
     def close(self):
         """
@@ -335,4 +358,3 @@ class graphs_frame(ttk.Frame):
         self.figure.clear()
         self.canvasw.destroy()
         self.toolbar.destroy()
-

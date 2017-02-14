@@ -2,16 +2,18 @@
 # This code was written by others. For the credits, see the block-comment in each class. This file is excluded from the copyright of RedFantom
 # and Daethyra, but the code in this file IS redistributed under the license found in LICENSE.
 import ttk
+
 try:
-     import mtTkinter as tk
+    import mtTkinter as tk
 except ImportError:
-     import Tkinter as tk
+    import Tkinter as tk
 import platform
 import calendar
 import tkFont
 import re
 from PIL import Image, ImageTk
 import os
+
 
 # Vertically scrollable frame with built-in scrollbar
 # Widgets should be placed in instance.interior!
@@ -25,33 +27,41 @@ class vertical_scroll_frame(ttk.Frame):
 
     Edited by RedFantom for ttk and normal import, and size
     """
+
     def __init__(self, parent, canvaswidth=780, canvasheight=395, *args, **kw):
         ttk.Frame.__init__(self, parent, *args, **kw)
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
-        canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width = canvaswidth,
-                           height = canvasheight)
+        canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width=canvaswidth,
+                           height=canvasheight)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         vscrollbar.config(command=canvas.yview)
+
         def mousewheel(event):
             print "[DEBUG] Being scrolled"
-            canvas.yview_scroll(-1*(event.delta / 100), "units")
+            canvas.yview_scroll(-1 * (event.delta / 100), "units")
+
         canvas.bind("<MouseWheel>", mousewheel)
         canvas.xview_moveto(0)
         canvas.yview_moveto(0)
         self.interior = interior = ttk.Frame(canvas)
         interior_id = canvas.create_window(0, 0, window=interior, anchor=tk.NW)
+
         def _configure_interior(event):
             size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
             canvas.config(scrollregion="0 0 %s %s" % size)
             if interior.winfo_reqwidth() != canvas.winfo_width():
                 canvas.config(width=interior.winfo_reqwidth())
+
         interior.bind('<Configure>', _configure_interior)
+
         def _configure_canvas(event):
             if interior.winfo_reqwidth() != canvas.winfo_width():
                 canvas.itemconfigure(interior_id, width=canvas.winfo_width())
+
         canvas.bind('<Configure>', _configure_canvas)
         scrolling_area(parent).add_scrolling(canvas, yscrollbar=vscrollbar)
+
 
 # Cross-platform scrollable area class
 class scrolling_area(object):
@@ -65,6 +75,7 @@ class scrolling_area(object):
     - Added platform error
     """
     OS = platform.system()
+
     def __init__(self, root, factor=2):
         self.activeArea = None
         if type(factor) == int:
@@ -127,6 +138,7 @@ class scrolling_area(object):
                 scrollbar.bind('<Enter>', lambda event, scrollbar=scrollbar: self.mouseWheel_bind(scrollbar))
                 scrollbar.bind('<Leave>', lambda event: self.mouseWheel_unbind())
 
+
 class Calendar(ttk.Frame):
     """
     ttk Widget that enables a calender within a frame, allowing the user to select dates.
@@ -153,21 +165,21 @@ class Calendar(ttk.Frame):
         sel_fg = kw.pop('selectforeground', '#05640e')
 
         self._date = self.datetime(year, month, 1)
-        self._selection = None # no date selected
+        self._selection = None  # no date selected
 
         ttk.Frame.__init__(self, master, **kw)
 
         self._cal = self.get_calendar(locale, fwday)
 
         # self.__setup_styles()       # creates custom styles
-        self.__place_widgets()      # pack/grid used widgets
-        self.__config_calendar()    # adjust calendar columns and setup tags
+        self.__place_widgets()  # pack/grid used widgets
+        self.__config_calendar()  # adjust calendar columns and setup tags
         # configure a canvas, and proper bindings, for selecting dates
         self.__setup_selection(sel_bg, sel_fg)
 
         # store items ids, used for insertion later
         self._items = [self._calendar.insert('', 'end', values='')
-                            for _ in range(6)]
+                       for _ in range(6)]
         # insert dates in the currently empty calendar
         self._build_calendar()
 
@@ -213,8 +225,8 @@ class Calendar(ttk.Frame):
         rbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\right.png")
         lbtn_tkimg = ImageTk.PhotoImage(lbtn_img)
         rbtn_tkimg = ImageTk.PhotoImage(rbtn_img)
-        lbtn = ttk.Button(hframe, command=self._prev_month, image = lbtn_tkimg)
-        rbtn = ttk.Button(hframe, command=self._next_month, image = rbtn_tkimg)
+        lbtn = ttk.Button(hframe, command=self._prev_month, image=lbtn_tkimg)
+        rbtn = ttk.Button(hframe, command=self._next_month, image=rbtn_tkimg)
         self._header = ttk.Label(hframe, width=15, anchor='center')
         # the calendar
         self._calendar = ttk.Treeview(hframe, show='', selectmode='none', height=7)
@@ -236,12 +248,12 @@ class Calendar(ttk.Frame):
         maxwidth = max(font.measure(col) for col in cols)
         for col in cols:
             self._calendar.column(col, width=maxwidth, minwidth=maxwidth,
-                anchor='e')
+                                  anchor='e')
 
     def __setup_selection(self, sel_bg, sel_fg):
         self._font = tkFont.Font()
         self._canvas = canvas = tk.Canvas(self._calendar,
-            background=sel_bg, borderwidth=0, highlightthickness=0)
+                                          background=sel_bg, borderwidth=0, highlightthickness=0)
         canvas.text = canvas.create_text(0, 0, fill=sel_fg, anchor='w')
 
         canvas.bind('<ButtonPress-1>', lambda evt: canvas.place_forget())
@@ -292,15 +304,15 @@ class Calendar(ttk.Frame):
             return
 
         item_values = widget.item(item)['values']
-        if not len(item_values): # row is empty for this month
+        if not len(item_values):  # row is empty for this month
             return
 
         text = item_values[int(column[1]) - 1]
-        if not text: # date is empty
+        if not text:  # date is empty
             return
 
         bbox = widget.bbox(item, column)
-        if not bbox: # calendar not visible yet
+        if not bbox:  # calendar not visible yet
             return
 
         # update and then show selection
@@ -314,7 +326,7 @@ class Calendar(ttk.Frame):
 
         self._date = self._date - self.timedelta(days=1)
         self._date = self.datetime(self._date.year, self._date.month, 1)
-        self._build_calendar() # reconstuct calendar
+        self._build_calendar()  # reconstuct calendar
 
     def _next_month(self):
         """Update calendar to show the next month."""
@@ -324,7 +336,7 @@ class Calendar(ttk.Frame):
         self._date = self._date + self.timedelta(
             days=calendar.monthrange(year, month)[1] + 1)
         self._date = self.datetime(self._date.year, self._date.month, 1)
-        self._build_calendar() # reconstruct calendar
+        self._build_calendar()  # reconstruct calendar
 
     @staticmethod
     def get_calendar(locale, fwday):
@@ -349,6 +361,7 @@ class Calendar(ttk.Frame):
         year, month = self._date.year, self._date.month
         return self.datetime(year, month, int(self._selection[0]))
 
+
 class ToggledFrame(ttk.Frame):
     """
     A frame with a toggle button to show or hide the contents. Edited by RedFantom for image support instead of a '+'
@@ -357,6 +370,7 @@ class ToggledFrame(ttk.Frame):
     License: None
     Source: http://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
     """
+
     def __init__(self, parent, text="", *args, **options):
         ttk.Frame.__init__(self, parent, *args, **options)
         self.show = tk.IntVar()
@@ -376,10 +390,10 @@ class ToggledFrame(ttk.Frame):
     def toggle(self):
         if bool(self.show.get()):
             self.sub_frame.pack(fill="x", expand=1)
-            self.toggle_button.configure(image = self.open)
+            self.toggle_button.configure(image=self.open)
         else:
             self.sub_frame.forget()
-            self.toggle_button.configure(image = self.closed)
+            self.toggle_button.configure(image=self.closed)
 
 
 class HoverInfo(tk.Menu):

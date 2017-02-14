@@ -11,6 +11,7 @@ import threading
 import ssl
 import time
 
+
 class client_conn:
     """
     A class that connects to a remote server as specified in the settings_obj
@@ -18,6 +19,7 @@ class client_conn:
     Operates following the protocol as described in PROTOCOL
     Has support for a splash screen from the module overlay
     """
+
     # TODO Add functionality to get leaderboards
     def __init__(self):
         self.connecting = True
@@ -139,7 +141,8 @@ class client_conn:
             return
         if self.send("KILLEDBY") == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
@@ -173,7 +176,8 @@ class client_conn:
         if self.send("SERVER=%s" % serv) == -1: return
         if self.send("FACT=%s" % fact) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
@@ -199,9 +203,10 @@ class client_conn:
         if self.send("NEWCOM") == -1: return
         if self.send("LOGSTR") == -1: return
         if self.send("SERVER=%s" % serv) == -1: return
-        if self.send("FACTION=%s" % fact) == -1 : return
+        if self.send("FACTION=%s" % fact) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
@@ -210,15 +215,18 @@ class client_conn:
         if self.send("LEN=%s" % len(lines)) == -1: return
         if self.send(hashlib.sha512(lines)) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message == "DUPLICATE":
             self.duplicate()
             return
-        elif message != "ACK": return
+        elif message != "ACK":
+            return
         for line in lines:
             if self.send(line) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "RECV":
             self.unexpected()
             return
@@ -240,14 +248,16 @@ class client_conn:
         if self.send("SERVER=%s" % serv) == -1: return
         if self.send("FACT=%s" % fact) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
         if self.send(name) == -1: return
         if self.send(hashlib.sha512(ID)) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "ACK":
             self.unexpected()
             return
@@ -268,7 +278,8 @@ class client_conn:
             return
         if self.send("KILLEDBYS") == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
@@ -277,7 +288,8 @@ class client_conn:
         if self.send(hashlib.sha512(ID_self)) == -1: return
         if self.send(hashlib.sha512(ID_kill)) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "ACK":
             self.unexpected()
             return
@@ -294,13 +306,15 @@ class client_conn:
             return
         if self.send("FEEDBACK") == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "READY":
             self.unexpected()
             return
         if self.send(fb) == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "ACK":
             self.unexpected()
             return
@@ -392,7 +406,8 @@ class client_conn:
         self.closing = True
         if self.send("STOPCN") == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "CLOSED":
             self.unexpected()
             self.conn.close()
@@ -411,6 +426,7 @@ class client_conn:
     """
     Methods for displaying various error messages to the user.
     """
+
     @staticmethod
     def timeout():
         tkMessageBox.showerror("Error", "The connection timed out.")
@@ -472,12 +488,14 @@ class client_conn:
         wrapped = ssl.wrap_socket(sock)
         return wrapped
 
+
 class realtime_conn(threading.Thread):
     """
     UNFINISHED!
     This class will run in the background, sending real-time data to the server
     and retrieving data as well.
     """
+
     def __init__(self):
         threading.Thread.__init__(self)
         self.init_conn()
@@ -492,7 +510,7 @@ class realtime_conn(threading.Thread):
             self.conn.connect(self.address)
         except ssl.SSLError:
             tkMessageBox.showerror("Error", "An encryption error occurred while connecting to the server.")
-            self.INIT=False
+            self.INIT = False
             return
         if self.send("INIT") == -1: return
         self.INIT = False
@@ -500,7 +518,8 @@ class realtime_conn(threading.Thread):
         self.TIME_OUT = 4
         self.conn.settimeout(self.TIME_OUT)
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message == "INIT":
             self.INIT = True
             return
@@ -560,7 +579,8 @@ class realtime_conn(threading.Thread):
     def close(self):
         if self.send("STOPCN") == -1: return
         message = self.recv(self.BUFF)
-        if message == -1: return
+        if message == -1:
+            return
         elif message != "CLOSED":
             self.unexpected()
             self.conn.close()

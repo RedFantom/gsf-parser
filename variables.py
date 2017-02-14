@@ -24,27 +24,27 @@ color_scheme = settings.color_schemes()
 
 FLAG = False
 
-files_done              = 0
-abilities               = None
-damagetaken             = None
-damagedealt             = None
-selfdamage              = None
-healingreceived         = None
-enemies                 = None
-criticalcount           = None
-criticalluck            = None
-hitcount                = None
-enemydamaged            = None
-enemydamaget            = None
-match_timings           = None
-spawn_timings           = None
-enemies_names           = None
-deaths                  = None
+files_done = 0
+abilities = None
+damagetaken = None
+damagedealt = None
+selfdamage = None
+healingreceived = None
+enemies = None
+criticalcount = None
+criticalluck = None
+hitcount = None
+enemydamaged = None
+enemydamaget = None
+match_timings = None
+spawn_timings = None
+enemies_names = None
+deaths = None
 
-file_cube              = None
-player_numbers         = {}
-player_name            = None
-rt_name                = None
+file_cube = None
+player_numbers = {}
+player_name = None
+rt_name = None
 
 file_name = None
 user_name = None

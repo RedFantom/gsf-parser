@@ -6,6 +6,7 @@ import tempfile
 import os
 import sys
 import widgets
+
 try:
     import mtTkinter as tk
 except ImportError:
@@ -14,6 +15,7 @@ import ttk
 import tkMessageBox
 import ConfigParser
 from PIL import Image, ImageTk
+
 
 class oob_window(tk.Tk):
     """
@@ -40,17 +42,17 @@ class oob_window(tk.Tk):
             self.style.theme_use("plastik")
         except:
             pass
-        self.next_button = ttk.Button(self, text = "Next",
-                                      command = self.next_button_cb,
-                                      width = 20)
-        self.prev_button = ttk.Button(self, text = "Previous",
-                                      command = self.prev_button_cb,
+        self.next_button = ttk.Button(self, text="Next",
+                                      command=self.next_button_cb,
                                       width=20)
-        self.comp_button = ttk.Button(self, text = "Finish",
-                                      command = self.comp_button_cb,
+        self.prev_button = ttk.Button(self, text="Previous",
+                                      command=self.prev_button_cb,
                                       width=20)
-        self.cancel_button = ttk.Button(self, text = "Cancel",
-                                        command = self.cancel_button_cb,
+        self.comp_button = ttk.Button(self, text="Finish",
+                                      command=self.comp_button_cb,
+                                      width=20)
+        self.cancel_button = ttk.Button(self, text="Cancel",
+                                        command=self.cancel_button_cb,
                                         width=20)
         self.frames_list = [welcome_frame(self),
                             gui_settings_frame(self),
@@ -60,7 +62,7 @@ class oob_window(tk.Tk):
                             realtime_settings_frame(self),
                             sharing_frame(self),
                             complete_frame(self)]
-        self.frames_list[0].grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.frames_list[0].grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_frame = self.frames_list[0]
         self.new_index = 0
         self.current_frame.grid_widgets()
@@ -75,8 +77,8 @@ class oob_window(tk.Tk):
             self.current_frame.grid_forget()
             self.new_index = self.frames_list.index(self.current_frame) + 1
             self.frames_list[self.new_index].grid(column=0, row=0,
-                                             sticky=tk.N+tk.S+tk.W+tk.E,
-                                             pady = 10)
+                                                  sticky=tk.N + tk.S + tk.W + tk.E,
+                                                  pady=10)
             self.current_frame = self.frames_list[self.new_index]
             self.current_frame.grid_widgets()
         except IndexError:
@@ -97,9 +99,9 @@ class oob_window(tk.Tk):
         """
         self.current_frame.grid_forget()
         self.frames_list[self.frames_list.index(self.current_frame) - 1] \
-            .grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            .grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_frame = self.frames_list \
-                            [self.frames_list.index(self.current_frame) - 1]
+            [self.frames_list.index(self.current_frame) - 1]
 
     def comp_button_cb(self):
         """
@@ -115,10 +117,10 @@ class oob_window(tk.Tk):
         confirmation first.
         """
         if tkMessageBox.askyesno("Cancel", "Are you sure you want to cancel "
-                                 "the setup wizard? The GSF Parser will start "
-                                 "with all settings on default. Your previous "
-                                 "settings, if any, will be lost permanently. "
-                                 "You will not see this screen again."):
+                                           "the setup wizard? The GSF Parser will start "
+                                           "with all settings on default. Your previous "
+                                           "settings, if any, will be lost permanently. "
+                                           "You will not see this screen again."):
             self.destroy()
 
     def grid_widgets(self):
@@ -126,9 +128,9 @@ class oob_window(tk.Tk):
         Grid all widgets for the first time, but do not include
         prev_button, as it cannot be used on the first Frame.
         """
-        self.frames_list[0].grid(column=0, row=0, columnspan=12, sticky=tk.N+tk.S+tk.W+tk.E,
+        self.frames_list[0].grid(column=0, row=0, columnspan=12, sticky=tk.N + tk.S + tk.W + tk.E,
                                  padx=5, pady=5)
-        self.next_button.grid(column=11, row=1, sticky=tk.N+tk.S+tk.W)
+        self.next_button.grid(column=11, row=1, sticky=tk.N + tk.S + tk.W)
         if self.new_index != 0 and self.new_index != 7:
             self.prev_button.grid(column=10, row=1, sticky=tk.S)
 
@@ -154,6 +156,7 @@ class oob_window(tk.Tk):
         """
         self.prev_button.grid_forget()
 
+
 class welcome_frame(ttk.Frame):
     """
     This class provides the first frame that is shown when opening the OOB
@@ -163,8 +166,8 @@ class welcome_frame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master, width=800, height=400)
-        self.welcome_label = ttk.Label(self, text = "Welcome to the GSF Parser!",
-                                       font = ("Calibri", 12))
+        self.welcome_label = ttk.Label(self, text="Welcome to the GSF Parser!",
+                                       font=("Calibri", 12))
         self.explanation_text = "This is version v3.0.0 of the GSF Parser, " \
                                 "containing lots of new features added since " \
                                 "v2.0.2 and various bugfixes and stability " \
@@ -173,36 +176,37 @@ class welcome_frame(ttk.Frame):
                                 "settings where possible and set the defaults " \
                                 "for newly introduced settings. If this is a " \
                                 "fresh installation, don't worry, we'll explain " \
-                                "everything along the way.\n\n "\
+                                "everything along the way.\n\n " \
                                 "We hope you enjoy using the GSF Parser and " \
                                 "it will help you during your fights in the " \
                                 "skies.\n\n" \
                                 "Have fun flying!\nRedFantom and Daethyra\n\n\n"
-        self.credits_text =     "\nWith special thanks to Nightmaregale for " \
-                                "beta-testing and to Pyril for providing the "\
-                                "GSF Server database model.\n\n" \
-                                "Created with:"\
-                                " Python 2.7" \
-                                ", PyInstaller" \
-                                ", Tkinter with ttk extenstions" \
-                                ", mtTkinter" \
-                                ", the tile-themes Tcl package" \
-                                " and widgets by Miguel Martinez Lopez and Onlyjus."
-        self.explanation_label = ttk.Label(self, text = self.explanation_text,
-                                           justify = tk.LEFT, wraplength = 800)
-        self.credits_label = ttk.Label(self, text = self.credits_text,
-                                           justify = tk.LEFT, wraplength = 600)
+        self.credits_text = "\nWith special thanks to Nightmaregale for " \
+                            "beta-testing and to Pyril for providing the " \
+                            "GSF Server database model.\n\n" \
+                            "Created with:" \
+                            " Python 2.7" \
+                            ", PyInstaller" \
+                            ", Tkinter with ttk extenstions" \
+                            ", mtTkinter" \
+                            ", the tile-themes Tcl package" \
+                            " and widgets by Miguel Martinez Lopez and Onlyjus."
+        self.explanation_label = ttk.Label(self, text=self.explanation_text,
+                                           justify=tk.LEFT, wraplength=800)
+        self.credits_label = ttk.Label(self, text=self.credits_text,
+                                       justify=tk.LEFT, wraplength=600)
         self.green_logo_img = Image.open(os.path.dirname(__file__) + \
-                                         "\\assets\\logos\\logo_green.png").\
-                                         resize((200, 93), Image.ANTIALIAS)
+                                         "\\assets\\logos\\logo_green.png"). \
+            resize((200, 93), Image.ANTIALIAS)
         self.green_logo = ImageTk.PhotoImage(self.green_logo_img)
-        self.logo_label = ttk.Label(self, image = self.green_logo)
+        self.logo_label = ttk.Label(self, image=self.green_logo)
 
     def grid_widgets(self):
-        self.welcome_label.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.explanation_label.grid(row=2, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.logo_label.grid(row=3, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.credits_label.grid(row=4, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.welcome_label.grid(row=1, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.explanation_label.grid(row=2, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.logo_label.grid(row=3, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.credits_label.grid(row=4, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+
 
 class gui_settings_frame(ttk.Frame):
     """
@@ -217,6 +221,7 @@ class gui_settings_frame(ttk.Frame):
     def grid_widgets(self):
         pass
 
+
 class fileparsing_frame(ttk.Frame):
     """
     This is the third frame to show in the OOB wizard, explaining the features
@@ -230,6 +235,7 @@ class fileparsing_frame(ttk.Frame):
     def grid_widgets(self):
         pass
 
+
 class fileparsing_settings_frame(ttk.Frame):
     """
     This fourth frame shows and explains all settings there are to set for the
@@ -242,6 +248,7 @@ class fileparsing_settings_frame(ttk.Frame):
     def grid_widgets(self):
         pass
 
+
 class realtime_frame(ttk.Frame):
     """
     This is the fifth frame, explaining the features of real-time parsing and
@@ -250,6 +257,7 @@ class realtime_frame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master, width=800, height=400)
+
 
 class realtime_settings_frame(ttk.Frame):
     """
@@ -262,6 +270,7 @@ class realtime_settings_frame(ttk.Frame):
 
     def grid_widgets(self):
         pass
+
 
 class sharing_frame(ttk.Frame):
     """
@@ -276,6 +285,7 @@ class sharing_frame(ttk.Frame):
     def grid_widgets(self):
         pass
 
+
 class complete_frame(ttk.Frame):
     """
     The eight and last frame of the OOB wizard giving the complete message and
@@ -288,6 +298,7 @@ class complete_frame(ttk.Frame):
 
     def grid_widgets(self):
         pass
+
 
 class settings_importer(object):
     """

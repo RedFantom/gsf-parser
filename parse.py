@@ -7,11 +7,12 @@ from datetime import datetime
 from decimal import Decimal
 from abilities import *
 
+
 # Function that splits the lines it gets into new lists of lines according
 # to the matches and returns the timings of these matches along with them
 def splitter(lines, playerList):
     # Create empty lists for appending
-    file_cube= []
+    file_cube = []
     match = []
     spawn = []
     spawn_timingsMatrix = []
@@ -29,7 +30,7 @@ def splitter(lines, playerList):
         source = elements[3]
         target = elements[5]
         # If "@" is not in source, then the ability is an in-match ability
-        if("@" not in source and "@" not in target):
+        if ("@" not in source and "@" not in target):
             # If the match hadn't started, it has now started and the the spawn
             # must be saved. The time of the spawn and the time the match has
             # started are also saved.
@@ -97,10 +98,10 @@ def splitter(lines, playerList):
             # If the previous line was a match-line and the next line is a match line,
             # The match continues and the line gets skipped altogether
             try:
-                if(not "@" in re.split(r"[\[\]]", lines[index -1])[3] and
-                   not "@" in re.split(r"[\[\]]", lines[index + 1])[3] and
-                   not "Safe Login" in re.split(r"[\[\]]", line)[7]):
-                        continue
+                if (not "@" in re.split(r"[\[\]]", lines[index - 1])[3] and
+                        not "@" in re.split(r"[\[\]]", lines[index + 1])[3] and
+                        not "Safe Login" in re.split(r"[\[\]]", line)[7]):
+                    continue
             except IndexError:
                 continue
             # If a match had started, then now it has ended
@@ -158,6 +159,7 @@ def splitter(lines, playerList):
     # [match][spawn]. For the spawns, only the start times are recorded.
     return file_cube, match_timings, spawn_timings
 
+
 def parse_spawn(spawn, player):
     abilities = {}
     damagetaken = 0
@@ -200,16 +202,17 @@ def parse_spawn(spawn, player):
                             abilities[ability] += 1
                 elif ability != "" and "Ion Railgun" not in ability:
                     if ability not in abilities:
-                       abilities[ability] = 1
+                        abilities[ability] = 1
                     else:
-                       abilities[ability] += 1
-            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[line - 1] and "Ion Railgun" in spawn[line - 1]:
-                    if source != target:
-                        if ability not in abilities:
-                            abilities[ability] = 1
-                        else:
-                            abilities[ability] += 1
-                            
+                        abilities[ability] += 1
+            if "Damage" in effect and "Ion Railgun" in ability and line > 0 and "AbilityActivate" in spawn[
+                        line - 1] and "Ion Railgun" in spawn[line - 1]:
+                if source != target:
+                    if ability not in abilities:
+                        abilities[ability] = 1
+                    else:
+                        abilities[ability] += 1
+
         if "kinetic" in event:
             # Takes damagestring and split after the pattern (stuff in here) and take the second element
             # containing the "stuff in here"
@@ -225,13 +228,13 @@ def parse_spawn(spawn, player):
                     criticalcount += 1
                 damagedealt += int(damagestring.replace("*", ""))
                 hitcount += 1
-                if(target not in enemies and target not in player):
+                if target not in enemies and target not in player:
                     enemies.append(target)
-                if(target not in enemydamaget and target not in player):
+                if target not in enemydamaget and target not in player:
                     enemydamaget[target] = int(damagestring.replace("*", ""))
-                elif(target in enemydamaget and target not in player):
+                elif target in enemydamaget and target not in player:
                     enemydamaget[target] += int(damagestring.replace("*", ""))
-                if(target not in enemydamaged and target not in player):
+                if target not in enemydamaged and target not in player:
                     enemydamaged[target] = 0
             else:
                 damagetaken += int(damagestring.replace("*", ""))
@@ -253,9 +256,9 @@ def parse_spawn(spawn, player):
             selfdamage += int(damagestring.replace("*", ""))
         line += 1
     ships_list = ["Legion", "Razorwire", "Decimus",
-                 "Mangler", "Dustmaker", "Jurgoran",
-                 "Bloodmark", "Blackbolt", "Sting",
-                 "Imperium", "Quell", "Rycer"]
+                  "Mangler", "Dustmaker", "Jurgoran",
+                  "Bloodmark", "Blackbolt", "Sting",
+                  "Imperium", "Quell", "Rycer"]
     amount_secondaries = 0
     for key in abilities:
         if key.strip() not in excluded_abilities:
@@ -322,8 +325,8 @@ def parse_spawn(spawn, player):
             enemies, criticalcount, criticalluck, hitcount, ships_list, enemydamaged,
             enemydamaget)
 
-def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
+def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
     # Per spawn variables
     abilities_spawn = {}
     damagetaken_spawn = 0
@@ -367,14 +370,14 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
     # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
     engine_cooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
-                       'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
-                       'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
+                        'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
+                        'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
     shield_cooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
-                       'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
-                       'Fortress Shield': 30}
+                        'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
+                        'Fortress Shield': 30}
     system_cooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
-                       'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
-                       'Blaster Overcharge': 60, 'EMP Field': 60}
+                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
+                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
     for match in file:
         for spawn in match:
@@ -412,9 +415,9 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                                 abilities_spawn[ability] += 1
                     elif ability != "":
                         if ability not in abilities_spawn:
-                           abilities_spawn[ability] = 1
+                            abilities_spawn[ability] = 1
                         else:
-                           abilities_spawn[ability] += 1
+                            abilities_spawn[ability] += 1
 
                 if "kinetic" in event:
                     # Takes damagestring and split after the pattern (stuff in here) and take the second element
@@ -434,13 +437,13 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
                         damagedealt_spawn += int(damagestring.replace("*", ""))
                         hitcount_spawn += 1
 
-                        if(target not in enemies and target not in player):
+                        if target not in enemies and target not in player:
                             enemies_spawn.append(target)
-                        if(target not in enemydamaget and target not in player):
+                        if target not in enemydamaget and target not in player:
                             enemydamaget[target] = int(damagestring.replace("*", ""))
-                        elif(target in enemydamaget and target not in player):
+                        elif target in enemydamaget and target not in player:
                             enemydamaget[target] += int(damagestring.replace("*", ""))
-                        if(target not in enemydamaged and target not in player):
+                        if target not in enemydamaged and target not in player:
                             enemydamaged[target] = 0
                     else:
                         damagetaken_spawn += int(damagestring.replace("*", ""))
@@ -521,7 +524,7 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
     # match_timings is a list of datetimes
     # spawn_timings is a matrix of datetimes
     return (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
-           criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings)
+            criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings)
 
 
 def abilityUsage(abilitiesOccurrences, match_timingsList, spawn_timingsMatrix):
@@ -587,6 +590,7 @@ def determineShip(abilitiesDictionary):
 
     return shipsList
 
+
 # Returns the player's ID numbers
 def determinePlayer(lines):
     """
@@ -618,6 +622,7 @@ def determinePlayer(lines):
     # Return the playerOccurrences dictionary with the ID's and their respective occurrences
     return playerOccurrences
 
+
 # TODO: make ready for file_cube
 def determineDeaths(matches):
     playerIDs = []
@@ -637,6 +642,7 @@ def determineDeaths(matches):
         tempDeaths = []
     return deaths
 
+
 # Returns the player name
 def determinePlayerName(lines):
     """
@@ -654,6 +660,7 @@ def determinePlayerName(lines):
         else:
             continue
 
+
 # Debugging purposes
 if __name__ == "__main__":
 
@@ -662,7 +669,10 @@ if __name__ == "__main__":
     player = determinePlayer(lines)
     file, match_timingsList, spawn_timingsMatrix = splitter(lines, player)
     (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
-    criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse_file(file, player, match_timingsList, spawn_timingsMatrix)
+     criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = parse_file(file,
+                                                                                                                   player,
+                                                                                                                   match_timingsList,
+                                                                                                                   spawn_timingsMatrix)
     for list in abilities:
         for dict in list:
             print determineShip(dict)

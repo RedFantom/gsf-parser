@@ -15,6 +15,7 @@ import parse
 import realtime
 import toplevels
 
+
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
     with open(file_name, "r") as file_obj:
@@ -28,6 +29,7 @@ def check_gsf(file_name):
         raise
     return False
 
+
 # Class to calculate various statistics from files, and even folders
 class statistics:
     # Calculate the statistics for a whole folder
@@ -36,7 +38,7 @@ class statistics:
         # Add a CombatLogs in a folder with GSF matches to a list of names
         self.file_list = []
         for file_name in os.listdir(os.getcwd()):
-            if(file_name.endswith(".txt") and check_gsf(file_name)):
+            if file_name.endswith(".txt") and check_gsf(file_name):
                 self.file_list.append(file_name)
 
         # Define all variables needed to store the statistics
@@ -148,8 +150,9 @@ class statistics:
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
         # Return all statistics calculated
-        statistics_string = ("- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" + damage_ratio_string +
-                             str(total_selfdmg) + "\n" + str(total_hrecvd) + """\n-\n-\n-\n-\n-\n-""")
+        statistics_string = (
+        "- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" + damage_ratio_string +
+        str(total_selfdmg) + "\n" + str(total_hrecvd) + """\n-\n-\n-\n-\n-\n-""")
         return statistics_string
 
     @staticmethod
@@ -253,28 +256,30 @@ class statistics:
                     uncounted += 1
         total_killsassists = 0
         for (key, value) in total_abilities.iteritems():
-            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
             elif (len(key.strip()) < 8):
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif(len(key.strip()) > 18):
+            elif (len(key.strip()) > 18):
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
-                 total_killsassists += 1
+                total_killsassists += 1
         total_criticalluck = round(total_criticalluck * 100, 2)
         deaths = 0
         for match in file_cube:
             deaths += len(match)
         try:
-            damage_ratio_string = str(str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
+            damage_ratio_string = str(
+                str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
-        statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
-                             damage_ratio_string +
-                             str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
-                             str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
-                             str(total_criticalluck) + "%" + "\n" + str(deaths) + "\n-\n-")
+        statistics_string = (
+        str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
+        damage_ratio_string +
+        str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
+        str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
+        str(total_criticalluck) + "%" + "\n" + str(deaths) + "\n-\n-")
 
         return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
 
@@ -296,7 +301,8 @@ class statistics:
         abilities_string = "Ability\t\t\tTimes used\n\n"
         for spawn in match:
             (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-             criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, variables.player_numbers)
+             criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn,
+                                                                                                 variables.player_numbers)
             total_abilitiesdict.update(abilitiesdict)
             total_damagetaken += damagetaken
             total_damagedealt += damagedealt
@@ -326,11 +332,11 @@ class statistics:
                 else:
                     total_shipsdict[ship] = 1
         for (key, value) in total_abilitiesdict.iteritems():
-            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
             elif (len(key.strip()) < 8):
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif(len(key.strip()) > 18):
+            elif (len(key.strip()) > 18):
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
@@ -341,9 +347,10 @@ class statistics:
         except ZeroDivisionError:
             total_criticalluck = 0
         total_shipsdict["Uncounted"] = ships_uncounted
-        delta = datetime.datetime.strptime(realtime.line_to_dictionary(match[len(match)-1][len(match[len(match)-1])-1]) \
-                                               ['time'][:-4].strip(), "%H:%M:%S") - \
-                                               datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
+        delta = datetime.datetime.strptime(
+            realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1]) \
+                ['time'][:-4].strip(), "%H:%M:%S") - \
+                datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -351,20 +358,23 @@ class statistics:
         except ZeroDivisionError:
             dps = 0
         try:
-            damage_ratio_string = str(str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
+            damage_ratio_string = str(
+                str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
         statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
                              str(total_damagetaken) + "\n" + damage_ratio_string +
                              str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
-                             str(total_criticalluck) + "%" + "\n" + str(len(match) -1) + "\n" + string + "\n" + str(dps))
+                             str(total_criticalluck) + "%" + "\n" + str(len(match) - 1) + "\n" + string + "\n" + str(
+            dps))
         return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
 
     @staticmethod
     def spawn_statistics(spawn):
         (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, variables.player_numbers)
+         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn,
+                                                                                             variables.player_numbers)
         killsassists = 0
         for enemy in enemies:
             if enemydamaget[enemy] > 0:
@@ -376,11 +386,11 @@ class statistics:
                 ship_components.append(key)
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
         for (key, value) in abilitiesdict.iteritems():
-            if(len(key.strip()) >= 8 and len(key.strip()) <= 18):
+            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
             elif (len(key.strip()) < 8):
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif(len(key.strip()) > 18):
+            elif (len(key.strip()) > 18):
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for component in ship_components:
             if component in abilities.primaries:
@@ -417,7 +427,7 @@ class statistics:
             del comps[comps.index("Shield")]
         if "System" in comps:
             del comps[comps.index("System")]
-        last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) -1])
+        last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) - 1])
         timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
         delta = timing - datetime.datetime.strptime(variables.spawn_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
@@ -430,14 +440,16 @@ class statistics:
             damage_ratio_string = str(str(round(float(damagedealt) / float(damagetaken), 1)) + " : 1") + "\n"
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
-        statistics_string = (str(killsassists) + " enemies"+ "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
+        statistics_string = (str(killsassists) + " enemies" + "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
                              damage_ratio_string +
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
         return abilities_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
+
 colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
+
 
 def pretty_event(line_dict, start_of_match, active_id):
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
@@ -448,7 +460,7 @@ def pretty_event(line_dict, start_of_match, active_id):
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     except TypeError:
-        string = "00:00" + 4*" "
+        string = "00:00" + 4 * " "
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
@@ -462,7 +474,7 @@ def pretty_event(line_dict, start_of_match, active_id):
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
-        string += "System" + (8+4) * " "
+        string += "System" + (8 + 4) * " "
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] == active_id:
@@ -551,6 +563,7 @@ def pretty_event(line_dict, start_of_match, active_id):
         fg_color = variables.color_scheme['default'][1]
     variables.insert_queue.put((string, bg_color, fg_color))
 
+
 def print_event(line_dict, start_of_match, player):
     line_dict_new = None
     try:
@@ -570,7 +583,7 @@ def print_event(line_dict, start_of_match, player):
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     except TypeError:
-        string = "00:00" + 4*" "
+        string = "00:00" + 4 * " "
     except:
         print "[DEBUG] An unknown error occurred while doing the delta thing"
         return
@@ -584,7 +597,7 @@ def print_event(line_dict, start_of_match, player):
         else:
             string += "You" + " " * (11 + 4)
     elif line_dict['source'] == "":
-        string += "System" + (8+4) * " "
+        string += "System" + (8 + 4) * " "
     else:
         string += line_dict["source"] + (4 + 14 - len(line_dict['source'])) * " "
     if line_dict['destination'] in player:

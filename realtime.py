@@ -65,10 +65,10 @@ class Parser(object):
         self.crit_nr = 0
         self.is_match = False
 
-        self.spawn_callback = spawn_callback # Function to call when a new spawn is detected
-        self.match_callback = match_callback # Function to call when the end of a match is detected
-        self.new_match_callback = new_match_callback # Function to call when a new match is detected
-        self.insert = insert # Function to call when a new line is parsed to insert it into the events box of the UI
+        self.spawn_callback = spawn_callback  # Function to call when a new spawn is detected
+        self.match_callback = match_callback  # Function to call when the end of a match is detected
+        self.new_match_callback = new_match_callback  # Function to call when a new match is detected
+        self.insert = insert  # Function to call when a new line is parsed to insert it into the events box of the UI
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
@@ -86,7 +86,7 @@ class Parser(object):
         self.hold = 0
         self.hold_list = []
 
-        self.spawns = 0 # The amount of spawns so far
+        self.spawns = 0  # The amount of spawns so far
 
     def __enter__(self):
         return self
