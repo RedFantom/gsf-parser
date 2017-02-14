@@ -49,6 +49,7 @@ class graphs_frame(ttk.Frame):
         self.dmgd_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgd", text = "Damage dealt")
         self.dmgt_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "dmgt", text = "Damage taken")
         self.hrec_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "hrec", text = "Healing received")
+        self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies")
         # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem", text = "Enemies damage dealt to")
         self.update_button = ttk.Button(self, command = self.update_graph, text = "Update graph")
         self.figure, self.axes = pyplot.subplots(figsize=(8.3, 4.2))
@@ -245,6 +246,57 @@ class graphs_frame(ttk.Frame):
             self.figure.subplots_adjust(bottom = 0.35)
             self.canvas.show()
             self.splash_screen.destroy()
+        elif self.type_graph.get() == "enem":
+            # TODO: Finish this mode for accuracy
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window, max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            matches_played_date = {}
+            enem_per_date = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try: file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except: continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                amount_enem = []
+                print sum(len(spawn) for spawn in (match for match in results_tuple[5]))
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = sum(len(spawn) for spawn in (match for match in results_tuple[5]))
+                else:
+                    matches_played_date[file_date] += sum(len(spawn) for spawn in (match for match in results_tuple[5]))
+                if file_date not in enem_per_date:
+                    enem_per_date[file_date] = len(amount_enem)
+                else:
+                    enem_per_date[file_date] += len(amount_enem)
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_enem_date = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_enem_date[key] = round(enem_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    pass
+            avg_dmg_date = OrderedDict(sorted(avg_enem_date.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()), color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Average enemies damage dealt to per match")
+            pyplot.ylabel("Amount of enemies")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom = 0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
         else:
             tkMessageBox.showinfo("Notice", "No correct graph type selected!")
         self.axes.set_ylim(bottom=0.)
@@ -260,7 +312,8 @@ class graphs_frame(ttk.Frame):
         self.dmgd_graph_radio.grid(column = 0, row = 2, sticky = tk.W)
         self.dmgt_graph_radio.grid(column = 0, row = 3, sticky = tk.W)
         self.hrec_graph_radio.grid(column = 0, row = 4, sticky = tk.W)
-        self.update_button.grid(column = 0, row = 6, sticky =tk.W + tk.E + tk.N + tk.S)
+        self.enem_graph_radio.grid(column = 0, row = 5, sticky = tk.W)
+        self.update_button.grid(column = 0, row = 19, sticky =tk.W + tk.E + tk.N + tk.S)
         self.canvasw.grid(column = 1, row = 1, rowspan = 20, sticky = tk.N + tk.W, padx = 10)
         self.toolbar.grid(column = 1, row = 21, sticky =tk.N + tk.W)
 
