@@ -1,4 +1,4 @@
---- Thranta Squadron GSF CombatLog Parser ---
+### Thranta Squadron GSF CombatLog Parser
 
 Written by RedFantom, Wing Commander of Thranta Squadron, Daethyra,
 Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta
@@ -7,7 +7,7 @@ Squadron. Source is available on the [GitHub repo](https://github.com/RedFantom/
 This program is available under the GNU GPLv3 License:
 
     Thranta Squadron GSF Parser: A parser for SWTOR:GSF
-    Copyright (C) 2016  RedFantom, Daethyra and Sprigellania
+    Copyright (C) 2016-2017  RedFantom, Daethyra and Sprigellania
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
