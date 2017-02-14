@@ -1,6 +1,8 @@
-# This file contains utility code NOT written by RedFantom or Daethyra, though it may have been edited to suit a particular purpose better
-# This code was written by others. For the credits, see the block-comment in each class. This file is excluded from the copyright of RedFantom
-# and Daethyra, but the code in this file IS redistributed under the license found in LICENSE.
+# This file contains utility code NOT written by RedFantom or Daethyra, though it may have been edited to suit a
+# particular purpose better. This code was written by others. For the credits, see the block-comment in each class.
+# This file is excluded from the copyright of RedFantom, Daethyra and Sprigellania, but the code in this file
+# IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
+# software.
 import ttk
 
 try:
