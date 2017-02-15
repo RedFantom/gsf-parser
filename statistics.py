@@ -34,14 +34,15 @@ def check_gsf(file_name):
 
 # Class to calculate various statistics from files, and even folders
 class statistics:
+
     # Calculate the statistics for a whole folder
-    # TODO Finish folder statistics
-    def folder_statistics(self):
+    @staticmethod
+    def folder_statistics():
         # Add a CombatLogs in a folder with GSF matches to a list of names
-        self.file_list = []
+        file_list = []
         for file_name in os.listdir(os.getcwd()):
             if file_name.endswith(".txt") and check_gsf(file_name):
-                self.file_list.append(file_name)
+                file_list.append(file_name)
 
         # Define all variables needed to store the statistics
         total_ddealt = 0
@@ -54,28 +55,30 @@ class statistics:
         mostplayedship = None
         match_count = 0
         match_timings = None
-
-        razor_count = 0
-        legion_count = 0
-        decimus_count = 0
-        bloodmark_count = 0
-        sting_count = 0
-        blackbolt_count = 0
-        mangler_count = 0
-        dustmaker_count = 0
-        jurgoran_count = 0
-        imperium_count = 0
-        quell_count = 0
-        rycer_count = 0
-
+        total_hitcount = 0
+        total_criticalcount = 0
+        total_deaths = 0
+        total_abilities = {}
+        abilities_string = ""
+        total_shipsdict = {}
+        for ship in abilities.ships:
+            total_shipsdict[ship] = 0
+        total_abilities = {}
+        total_enemies = []
+        total_enemydamaged = {}
+        total_enemydamaget = {}
+        total_timeplayed = None
+        start_time = None
+        end_time = None
         criticalnumber = 0
         criticaltotal = 0
+        uncounted = 0
 
         player_names = []
-        splash = toplevels.splash_screen(variables.main_window, max=len(self.file_list))
+        splash = toplevels.splash_screen(variables.main_window, max=len(file_list))
         # Start looping through the files
         variables.files_done = 0
-        for name in self.file_list:
+        for name in file_list:
             variables.files_done += 1
             splash.update_progress()
             with open(name, "r") as file_object:
@@ -85,39 +88,75 @@ class statistics:
                 player_names.append(name)
             player_numbers = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_numbers)
-            for matrix in file_cube:
-                match_count += 1
-                for spawn in matrix:
-                    ships_possible = parse.determineShip(spawn)
-                    if len(ships_possible) == 1:
-                        if ships_possible[0] == "Razorwire":
-                            razor_count += 1
-                        elif ships_possible[0] == "Legion":
-                            legion_count += 1
-                        elif ships_possible[0] == "Decimus":
-                            decimus_count += 1
-                        elif ships_possible[0] == "Bloodmark":
-                            bloodmark_count += 1
-                        elif ships_possible[0] == "Sting":
-                            sting_count += 1
-                        elif ships_possible[0] == "Blackbolt":
-                            blackbolt_count += 1
-                        elif ships_possible[0] == "Mangler":
-                            mangler_count += 1
-                        elif ships_possible[0] == "Dustmaker":
-                            dustmaker_count += 1
-                        elif ships_possible[0] == "Jurgoran":
-                            jurgoran_count += 1
-                        elif ships_possible[0] == "Imperium":
-                            imperium_count += 1
-                        elif ships_possible[0] == "Quell":
-                            quell_count += 1
-                        elif ships_possible[0] == "Rycer":
-                            rycer_count += 1
+            first = True
+            for timing in match_timings:
+                if first:
+                    first = False
+                    start_time = timing
+                elif not first:
+                    first = True
+                    end_time = timing
+                    if not total_timeplayed:
+                        total_timeplayed = (end_time - start_time)
+                    else:
+                        total_timeplayed += (end_time - start_time)
             # Then get the useful information out of the matches
             (abilitiesdict, damagetaken, damagedealt, selfdamage, healingreceived, enemies,
              criticalcount, criticalluck, hitcount, enemydamaged, enemydamaget, match_timings,
              spawn_timings) = parse.parse_file(file_cube, player_numbers, match_timings, spawn_timings)
+            for match in abilitiesdict:
+                match_count += 1
+                for spawn_abs in match:
+                    ships_possible = parse.determineShip(spawn_abs)
+                    for key, value in spawn_abs.iteritems():
+                        if key not in total_abilities:
+                            total_abilities[key] = value
+                        else:
+                            total_abilities[key] += value
+                    if len(ships_possible) == 1:
+                        if ships_possible[0] == "Razorwire":
+                            total_shipsdict["Razorwire"] += 1
+                        elif ships_possible[0] == "Legion":
+                            total_shipsdict["Legion"] += 1
+                        elif ships_possible[0] == "Decimus":
+                            total_shipsdict["Decimus"] += 1
+                        elif ships_possible[0] == "Bloodmark":
+                            total_shipsdict["Bloodmark"] += 1
+                        elif ships_possible[0] == "Sting":
+                            total_shipsdict["Sting"] += 1
+                        elif ships_possible[0] == "Blackbolt":
+                            total_shipsdict["Blackbolt"] += 1
+                        elif ships_possible[0] == "Mangler":
+                            total_shipsdict["Mangler"] += 1
+                        elif ships_possible[0] == "Dustmaker":
+                            total_shipsdict["Dustmaker"] += 1
+                        elif ships_possible[0] == "Jurgoran":
+                            total_shipsdict["Jurgoran"] += 1
+                        elif ships_possible[0] == "Imperium":
+                            total_shipsdict["Imperium"] += 1
+                        elif ships_possible[0] == "Quell":
+                            total_shipsdict["Quell"] += 1
+                        elif ships_possible[0] == "Rycer":
+                            total_shipsdict["Rycer"] += 1
+                        else:
+                            raise ValueError("Ship is not valid: %s" % ships_possible[0])
+                    else:
+                        uncounted += 1
+            for matrix in enemies:
+                for list in matrix:
+                    for item in list:
+                        if item not in total_enemies:
+                            total_enemies.append(item)
+            for key, value in enemydamaged.iteritems():
+                if key in total_enemydamaged:
+                    total_enemydamaged[key] += value
+                else:
+                    total_enemydamaged[key] = value
+            for key, value in enemydamaget.iteritems():
+                if key in total_enemydamaget:
+                    total_enemydamaget[key] += value
+                else:
+                    total_enemydamaget[key] = value
             for list in damagetaken:
                 for number in list:
                     total_ddealt += number
@@ -134,28 +173,66 @@ class statistics:
                 for number in list:
                     criticalnumber += 1
                     criticaltotal += number
-            file_object.close()
-        start_time = False
-        previous_time = None
-        for datetime in match_timings:
-            if not start_time:
-                previous_time = datetime
-                continue
-            else:
-                total_timeplayed += datetime - previous_time
-                previous_time = datetime
-                continue
-        (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed, 60)
-        splash.destroy()
+            for list in abilitiesdict:
+                for dict in list:
+                    for key, value in dict.iteritems():
+                        if key in total_abilities:
+                            total_abilities[key] += value
+                        else:
+                            total_abilities[key] = value
+            for list in hitcount:
+                total_hitcount += sum(list)
+            for list in criticalcount:
+                total_criticalcount += sum(list)
+            total_deaths += sum([len(list) for list in criticalluck])
+        for (key, value) in total_abilities.iteritems():
+            if 8 <= len(key.strip()) <= 18:
+                abilities_string = abilities_string + key.strip() + "\t\t%03d\n" % value
+            elif len(key.strip()) < 8:
+                abilities_string = abilities_string + key.strip() + "\t\t\t%03d\n" % value
+            elif len(key.strip()) > 18:
+                abilities_string = abilities_string + key.strip() + "\t%03d\n" % value
+        (total_timeplayed_minutes, total_timeplayed_seconds) = divmod(total_timeplayed.seconds, 60)
+        try:
+            total_dps = round(total_ddealt / total_timeplayed.seconds, 1)
+        except ZeroDivisionError:
+            total_dps = 0
+        try:
+            total_criticalluck = decimal.Decimal(float(total_criticalcount / total_hitcount))
+        except ZeroDivisionError:
+            total_criticalluck = 0
+        total_criticalluck = round(total_criticalluck * 100, 2)
         try:
             damage_ratio_string = str(str(round(float(total_ddealt) / float(total_dtaken), 1)) + " : 1") + "\n"
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
+        total_killassists = 0
+        for value in total_enemydamaget.itervalues():
+            if value > 0:
+                total_killassists += 1
+        splash.destroy()
         # Return all statistics calculated
         statistics_string = (
-        "- enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" + damage_ratio_string +
-        str(total_selfdmg) + "\n" + str(total_hrecvd) + """\n-\n-\n-\n-\n-\n-""")
-        return statistics_string
+            str(total_killassists) + " enemies" + "\n" + str(total_ddealt) + "\n" + str(total_dtaken) + "\n" +
+            damage_ratio_string + str(total_selfdmg) + "\n" + str(total_hrecvd) + "\n" +
+            str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
+            str(total_criticalluck) + "%\n" + str(total_deaths) + "\n" +
+            str(total_timeplayed_minutes) + ":" + str(total_timeplayed_seconds) + "\n" +
+            str(total_dps))
+        abilities_string = "Ability\t\t\tTimes used\n\n"
+        for (key, value) in total_abilities.iteritems():
+            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif 8 <= len(key.strip()) <= 18:
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif len(key.strip()) < 8:
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif len(key.strip()) > 18:
+                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
+        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+                total_enemydamaget, uncounted)
 
     @staticmethod
     def file_statistics(file_cube):
@@ -215,7 +292,7 @@ class statistics:
                 total_hitcount += amount
         try:
             total_criticalluck = decimal.Decimal(float(total_criticalcount / total_hitcount))
-        except:
+        except ZeroDivisionError:
             total_criticalluck = 0
         total_enemydamaged = enemydamaged
         total_enemydamaget = enemydamaget
@@ -258,11 +335,11 @@ class statistics:
                     uncounted += 1
         total_killsassists = 0
         for (key, value) in total_abilities.iteritems():
-            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
+            if 8 <= len(key.strip()) <= 18:
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif (len(key.strip()) < 8):
+            elif len(key.strip()) < 8:
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif (len(key.strip()) > 18):
+            elif len(key.strip()) > 18:
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
@@ -277,13 +354,13 @@ class statistics:
         except ZeroDivisionError:
             damage_ratio_string = "0.0 : 1\n"
         statistics_string = (
-        str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" + str(total_damagetaken) + "\n" +
-        damage_ratio_string +
-        str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
-        str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
-        str(total_criticalluck) + "%" + "\n" + str(deaths) + "\n-\n-")
-
-        return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget, uncounted
+            str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
+            str(total_damagetaken) + "\n" + damage_ratio_string + str(total_selfdamage) + "\n" +
+            str(total_healingrecv) + "\n" + str(total_hitcount) + "\n" +
+            str(total_criticalcount) + "\n" + str(total_criticalluck) + "%" +
+            "\n" + str(deaths) + "\n-\n-")
+        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+                total_enemydamaget, uncounted)
 
     @staticmethod
     def match_statistics(match):
@@ -334,11 +411,11 @@ class statistics:
                 else:
                     total_shipsdict[ship] = 1
         for (key, value) in total_abilitiesdict.iteritems():
-            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
+            if 8 <= len(key.strip()) <= 18:
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif (len(key.strip()) < 8):
+            elif len(key.strip()) < 8:
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif (len(key.strip()) > 18):
+            elif len(key.strip()) > 18:
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:

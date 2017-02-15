@@ -15,6 +15,7 @@ import ttk
 import tkMessageBox
 from PIL import Image, ImageTk
 # General imports
+import operator
 import os
 import re
 from datetime import datetime
@@ -316,16 +317,44 @@ class file_frame(ttk.Frame):
         if self.file_box.curselection() == (0,):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
-            stat_obj = statistics.statistics()
-            stats_string = stat_obj.folder_statistics()
-            self.main_window.middle_frame.statistics_numbers_var.set(stats_string)
-            self.main_window.middle_frame.abilities_label_var.set(
-                "Abilities is currently not available for a whole folder.")
-            self.main_window.ship_frame.ship_label_var.set("Ships currently not available for a whole folder.")
+            (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+             total_enemydamaget, uncounted) = statistics.statistics.folder_statistics()
+            self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
+            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
+            ships_string = "Ships used:\t\tCount:\n"
+            for ship in abilities.ships_strings:
+                try:
+                    ships_string += ship + "\t\t" + str(total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                except KeyError:
+                    ships_string += ship + "\t\t0\n"
+            ships_string += "Uncounted\t\t" + str(uncounted)
+            self.main_window.ship_frame.ship_label_var.set(ships_string)
+            color = "white"
+            for enemy in total_enemies:
+                if enemy == "":
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                elif re.search('[a-zA-Z]', enemy):
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                else:
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, total_enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, total_enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
+                if color == "white":
+                    color = "lightgrey"
+                else:
+                    color = "white"
+            self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
+            most_used_ship = max(total_shipsdict.iteritems(), key=operator.itemgetter(1))[0]
+            self.main_window.ship_frame.update_ship([most_used_ship])
+            self.main_window.ship_frame.update()
         else:
             self.match_box.focus()
             # Find the file name of the file selected in the list of file names
@@ -349,7 +378,7 @@ class file_frame(ttk.Frame):
             variables.file_cube, variables.match_timings, variables.spawn_timings = parse.splitter(lines, player)
             # Start adding the matches from the file to the listbox
             self.add_matches()
-        self.main_window.ship_frame.remove_image()
+            self.main_window.ship_frame.remove_image()
 
     def match_update(self, instance):
         """
@@ -607,10 +636,8 @@ class ship_frame(ttk.Frame):
             self.img = self.img.resize((300, 180), Image.ANTIALIAS)
             self.pic = ImageTk.PhotoImage(self.img)
             self.ship_image.config(image=self.pic)
-        except IOError:
-            raise IOError
-        except tk.TclError:
-            pass
+        except tk.TclError as e:
+            print e
 
     def remove_image(self):
         """
