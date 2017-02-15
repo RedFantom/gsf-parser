@@ -436,9 +436,9 @@ class statistics:
             total_criticalluck = 0
         total_shipsdict["Uncounted"] = ships_uncounted
         delta = datetime.datetime.strptime(
-            realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1]) \
-                ['time'][:-4].strip(), "%H:%M:%S") - \
-                datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
+            realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1])
+            ['time'][:-4].strip(), "%H:%M:%S") - \
+            datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -456,7 +456,8 @@ class statistics:
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) - 1) + "\n" + string + "\n" + str(
             dps))
-        return abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged, total_enemydamaget
+        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+                total_enemydamaget)
 
     @staticmethod
     def spawn_statistics(spawn):
@@ -474,11 +475,15 @@ class statistics:
                 ship_components.append(key)
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
         for (key, value) in abilitiesdict.iteritems():
-            if (len(key.strip()) >= 8 and len(key.strip()) <= 18):
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif (len(key.strip()) < 8):
+            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif (len(key.strip()) > 18):
+            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif 8 <= len(key.strip()) <= 18:
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif len(key.strip()) < 8:
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif len(key.strip()) > 18:
                 abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for component in ship_components:
             if component in abilities.primaries:
