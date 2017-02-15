@@ -336,11 +336,16 @@ class statistics:
         total_killsassists = 0
         for (key, value) in total_abilities.iteritems():
             if 8 <= len(key.strip()) <= 18:
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif len(key.strip()) < 8:
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif len(key.strip()) > 18:
-                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
+                if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
+                    abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+                elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
+                    abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+                elif 8 <= len(key.strip()) <= 18:
+                    abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+                elif len(key.strip()) < 8:
+                    abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+                elif len(key.strip()) > 18:
+                    abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
                 total_killsassists += 1
@@ -411,7 +416,11 @@ class statistics:
                 else:
                     total_shipsdict[ship] = 1
         for (key, value) in total_abilitiesdict.iteritems():
-            if 8 <= len(key.strip()) <= 18:
+            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
+                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
+            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
+                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
+            elif 8 <= len(key.strip()) <= 18:
                 abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
             elif len(key.strip()) < 8:
                 abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
