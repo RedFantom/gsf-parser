@@ -763,6 +763,13 @@ class middle_frame(ttk.Frame):
     """
 
     def enemies_listbox_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_damaged.yview() != self.enemies_listbox.yview():
             self.enemies_damaged.yview_moveto(args[0])
         if self.enemies_damaget.yview() != self.enemies_listbox.yview():
@@ -770,6 +777,13 @@ class middle_frame(ttk.Frame):
         self.enemies_scroll.set(*args)
 
     def enemies_damaged_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_listbox.yview() != self.enemies_damaged.yview():
             self.enemies_listbox.yview_moveto(args[0])
         if self.enemies_damaget.yview() != self.enemies_damaged.yview():
@@ -777,6 +791,13 @@ class middle_frame(ttk.Frame):
         self.enemies_scroll.set(*args)
 
     def enemies_damaget_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_listbox.yview() != self.enemies_damaget.yview():
             self.enemies_listbox.yview_moveto(args[0])
         if self.enemies_damaged.yview() != self.enemies_damaget.yview():
@@ -788,13 +809,13 @@ class middle_frame(ttk.Frame):
         Put all widgets in the right place
         :return:
         """
-        self.abilities_label.grid(column=0, row=2, columnspan=4, sticky=tk.N + tk.W)
-        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N + tk.W + tk.E)
-        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N + tk.W + tk.S + tk.E)
-        self.events_button.grid(column=0, row=1, sticky=tk.N + tk.W + tk.S + tk.E, columnspan=4, pady=12)
+        self.abilities_label.grid(column=0, row=2, columnspan=4, sticky=tk.N+tk.W)
+        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N+tk.W+tk.E)
+        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N+tk.W + tk.S + tk.E)
+        self.events_button.grid(column=0, row=1, sticky=tk.N+tk.W + tk.S + tk.E, columnspan=4, pady=12)
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N + tk.W + tk.E)
-        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W + tk.E + tk.S)
+        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N+tk.W+tk.E)
+        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W+tk.E+tk.S)
         self.enemies_label.grid(column=0, row=0, columnspan=3)
         self.enemies_listbox.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)

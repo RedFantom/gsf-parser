@@ -129,7 +129,8 @@ class LogStalker(threading.Thread):
 
     @classmethod
     def open(cls, file):
-        """Wrapper around open().
+        """
+        Wrapper around open().
         By default files are opened in binary mode and readlines()
         will return bytes on both Python 2 and 3.
         This means callback() will deal wirh a list of bytes.
@@ -207,7 +208,8 @@ class LogStalker(threading.Thread):
                 self.watch(fname)
 
     def readlines(self, file):
-        """Read file lines since last access until EOF is reached and
+        """
+        Read file lines since last access until EOF is reached and
         incove callback.
         """
         while True:

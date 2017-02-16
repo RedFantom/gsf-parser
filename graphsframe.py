@@ -338,9 +338,9 @@ class graphs_frame(ttk.Frame):
         self.dmgt_graph_radio.grid(column=0, row=3, sticky=tk.W)
         self.hrec_graph_radio.grid(column=0, row=4, sticky=tk.W)
         self.enem_graph_radio.grid(column=0, row=5, sticky=tk.W)
-        self.update_button.grid(column=0, row=19, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N + tk.W, padx=10)
-        self.toolbar.grid(column=1, row=21, sticky=tk.N + tk.W)
+        self.update_button.grid(column=0, row=19, sticky=tk.W+tk.E + tk.N + tk.S)
+        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
+        self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)
 
     def close(self):
         """

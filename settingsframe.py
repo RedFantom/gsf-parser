@@ -200,11 +200,21 @@ class settings_frame(ttk.Frame):
         self.update_settings()
 
     def set_custom_event_colors(self):
+        """
+        Opens a Toplevel to show the settings for the colors of the events
+        view. See toplevel.event_colors for more information.
+        :return: None
+        """
         self.color_toplevel = toplevels.event_colors(variables.main_window)
         self.color_toplevel.grid_widgets()
         self.color_toplevel.focus_set()
 
     def set_directory_dialog(self):
+        """
+        Open a tkFileDialog to ask the user for the directory of the CombatLogs
+        so the user does not have to enter the full path manually.
+        :return: None
+        """
         directory = tkFileDialog.askdirectory(initialdir=self.path_var.get(), mustexist=True,
                                               parent=self.main_window, title="GSF Parser: Choosing directory")
         if directory == "":
@@ -212,6 +222,11 @@ class settings_frame(ttk.Frame):
         self.path_var.set(directory)
 
     def grid_widgets(self):
+        """
+        Put all the widgets created in the __init__ function in their respective
+        places.
+        :return: None
+        """
         ### GUI SETTINGS ###
         self.gui_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, pady=5)
         self.gui_frame.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -321,6 +336,11 @@ class settings_frame(ttk.Frame):
         self.bottom_frame.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W)
 
     def update_settings(self):
+        """
+        Read the settings from the settigns_obj in the variables
+        module and update the settings shown in the GUI accordingly.
+        :return: None
+        """
         self.path_var.set(variables.settings_obj.cl_path)
         self.privacy_var.set(bool(variables.settings_obj.auto_ident))
         self.server_address_entry.delete(0, tk.END)
@@ -348,6 +368,12 @@ class settings_frame(ttk.Frame):
         self.date_format.set(variables.settings_obj.date_format)
 
     def save_settings(self):
+        """
+        Save the settings found in the widgets of the settings to the
+        settings_obj in the variables module
+        Some settings are checked before the writing occurs
+        :return: None
+        """
         print "[DEBUG] Save_settings called!"
         if str(
                 self.color.get()) == variables.settings_obj.color and self.logo_color.get() == variables.settings_obj.logo_color:
@@ -397,19 +423,39 @@ class settings_frame(ttk.Frame):
         variables.color_scheme.set_scheme(self.event_scheme.get())
 
     def discard_settings(self):
+        """
+        Discard the changes to the settings by reloading the settings
+        from the settings_obj
+        :return: None
+        """
         self.update_settings()
 
     def default_settings(self):
+        """
+        Write the default settings to the settings_obj found in the
+        settings.defaults class and then update the settings shown
+        :return: None
+        """
         variables.settings_obj.write_def()
         self.update_settings()
 
     @staticmethod
     def show_license():
+        """
+        Show that this software is available under GNU GPLv3
+        :return: None
+        """
         tkMessageBox.showinfo("License",
                               "This program is licensed under the General Public License Version 3, by GNU. See "
                               "LICENSE in the installation directory for more details")
 
     def show_privacy(self):
+        """
+        A function that is not actually working yet, as the GSF-Server is
+        not yet available, but this will show the privacy statement of the
+        selected GSF-Server in a Toplevel
+        :return: None
+        """
         if not variables.client_obj.INIT:
             tkMessageBox.showerror("Error", "The connection to the server was not initialized correctly.")
             return
