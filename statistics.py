@@ -545,6 +545,19 @@ colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
 
 
 def pretty_event(line_dict, start_of_match, active_id):
+    """
+    Turns a line_dict from realtime.line_to_dictionary() into a formatted line that can be
+    inserted into the real-time events Listbox. Also provides the appropriate back- and
+    foreground colors based on the settings found in the variables.color_scheme dictionary-like
+    object. Function output is like this:
+    xx:xx   source  target  ability effect
+    timestamp ID    ID      name    damage/activate
+    :param line_dict: The return of a realtime.line_to_dictionary()
+    :param start_of_match: A datetime object containing the time of the start of the match
+    :param active_id: A string containing the active ID number of the player
+    :return: Does not return anything, but does put the line into the queue for adding
+             to the listbox
+    """
     timing = datetime.datetime.strptime(line_dict['time'][:-4], "%H:%M:%S")
     bg_color = None
     fg_color = None
@@ -658,6 +671,18 @@ def pretty_event(line_dict, start_of_match, active_id):
 
 
 def print_event(line_dict, start_of_match, player):
+    """
+    Turns a line_dict from realtime.line_to_dictionary() into a formatted line that can be
+    inserted into the events Listbox of the Toplevel. Also provides the appropriate back- and
+    foreground colors based on the settings found in the variables.color_scheme dictionary-like
+    object. Function output is like this:
+    xx:xx   source  target  ability effect
+    timestamp ID    ID      name    damage/activate
+    :param line_dict: dictionary of realtime.line_to_dictionary()
+    :param start_of_match: datetime object that represents the start of the match
+    :param player: LIST of ID numbers of the player
+    :return:
+    """
     line_dict_new = None
     try:
         line_dict_new = realtime.line_to_dictionary(line_dict)
