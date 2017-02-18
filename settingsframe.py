@@ -181,11 +181,13 @@ class settings_frame(ttk.Frame):
                                                      text="Yes", value=True)
         self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_when_gsf,
                                                       text="No", value=False)
-        self.realtime_timeout_label = tk.Label(self.realtime_frame, text="\tRealtime parsing timeout: ")
+        self.realtime_timeout_label = ttk.Label(self.realtime_frame, text="\tRealtime parsing timeout: ")
         self.realtime_timeout = tk.StringVar()
-        self.realtime_timeout_entry = ttk.Entry(self.realtime_frame, variable=self.realtime_timeout, width=4)
+        self.realtime_timeout_entry = ttk.Entry(self.realtime_frame, textvariable=self.realtime_timeout, width=10)
         self.realtime_timeout_help_button = ttk.Button(self.realtime_frame, text="Help",
-                                                       command=self.realtime_timeout_help_button)
+                                                       command=self.show_timeout_help)
+        self.realtime_timeout_help_label = ttk.Label(self.realtime_frame, text="Only change this if you are "
+                                                                               "experiencing performance issues!")
         ### MISC ###
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -207,8 +209,11 @@ class settings_frame(ttk.Frame):
     def show_timeout_help(self):
         tkMessageBox.showinfo("Help", "This is the setting for the sleep timeout for realtime parsing. "
                                       "Lowering this value will allow faster detection of change, but "
-                                      "it will also require more processing power and IO usage. Please "
-                                      "do not change this value if you do not know what that means.")
+                                      "it will also require more processing power and IO usage. Increasing "
+                                      "this value will reduce processing power requirements and IO usage. "
+                                      "Please do not change this value unless you are experiencing performance "
+                                      "issues that you can relate to the usage of the GSF Parser on a low-end "
+                                      "system.")
 
     def set_custom_event_colors(self):
         """
@@ -330,6 +335,8 @@ class settings_frame(ttk.Frame):
         self.realtime_timeout_label.grid(column=0, row=11, sticky=tk.W)
         self.realtime_timeout_entry.grid(column=1, row=11, sticky=tk.W)
         self.realtime_timeout_help_button.grid(column=2, row=11, sticky=tk.W)
+        self.realtime_timeout_help_label.grid(column=3, row=11, sticky=tk.W, columnspan=5,
+                                              padx=5)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=1, padx=2)
         self.discard_settings_button.grid(column=1, row=1, padx=2)
