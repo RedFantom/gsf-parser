@@ -11,7 +11,7 @@ class TestParseFunctions(unittest.TestCase):
     def test_determinePlayer(self):
         with open("CombatLog.txt") as log:
             self.assertEqual(parse.determinePlayer(log.readlines()),
-                             ["20373000057112", "20477000009562"])
+                             {'20477000009562': 3, '20373000057112': 7})
 
     def test_splitter(self):
         with open("CombatLog.txt") as log:
