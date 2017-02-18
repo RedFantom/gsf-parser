@@ -4,25 +4,29 @@ from datetime import datetime
 
 
 class TestParseFunctions(unittest.TestCase):
+    def setUp(self):
+        with open("CombatLog.txt", "r") as log:
+            self.lines = log.readlines()
+
     def test_determinePlayerName(self):
-        with open("CombatLog.txt") as log:
-            self.assertEqual(parse.determinePlayerName(log.readlines()), "Redfantom")
+        self.assertEqual(parse.determinePlayerName(self.lines), "Redfantom")
 
     def test_determinePlayer(self):
-        with open("CombatLog.txt") as log:
-            self.assertEqual(parse.determinePlayer(log.readlines()),
+        self.assertEqual(parse.determinePlayer(self.lines),
                              {'20477000009562': 3, '20373000057112': 7})
 
     def test_splitter(self):
-        with open("CombatLog.txt") as log:
-            player = parse.determinePlayer(log.readlines())
-            file_cube, match_timings, spawn_timings = parse.splitter(log.readlines(), player)
-            self.assertTrue(isinstance(file_cube, list))
-            self.assertTrue(isinstance(match_timings, list))
-            self.assertTrue(isinstance(spawn_timings, list))
-            self.assertTrue(isinstance(file_cube[0], list))
-            self.assertTrue(isinstance(file_cube[0][0], list))
-            self.assertTrue(isinstance(match_timings[0], datetime.datetime))
+        player = parse.determinePlayer(self.lines)
+        file_cube, match_timings, spawn_timings = parse.splitter(self.lines, player)
+        print file_cube
+        print match_timings
+        print spawn_timings
+        self.assertTrue(isinstance(file_cube, list))
+        self.assertTrue(isinstance(match_timings, list))
+        self.assertTrue(isinstance(spawn_timings, list))
+        self.assertTrue(isinstance(file_cube[0], list))
+        self.assertTrue(isinstance(file_cube[0][0], list))
+        self.assertTrue(isinstance(match_timings[0], datetime))
 
 
 unittest.main()
