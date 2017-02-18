@@ -85,7 +85,7 @@ class LogStalker(threading.Thread):
                 with open(self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
-            time.sleep(0.1)
+            time.sleep(variables.settings_obj.timeout)
 
     def read_from_file(self):
         """

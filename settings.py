@@ -39,16 +39,29 @@ class defaults:
     size = "big"
     # Set the corner the overlay will be displayed in
     pos = "TR"
+    # Set the text color of the parser
     color = "#236ab2"
+    # Set the logo color
     logo_color = "green"
+    # Overlay background color
     overlay_bg_color = "white"
+    # Overlay color that is displayed as transparent
     overlay_tr_color = "white"
+    # Overlay text color
     overlay_tx_color = "yellow"
+    # Overlay text font
     overlay_tx_font = "Calibri"
+    # Overlay text size
     overlay_tx_size = "12"
+    # Only display overlay when a GSF match is running
     overlay_when_gsf = str(False)
+    # Set the timeout for reading from file for realtime
+    timeout = 0.1
+    # Event color options
     event_colors = "basic"
+    # Event color scheme
     event_scheme = "default"
+    # The date format for in the files Listbox
     date_format = "ymd"
 
 
@@ -102,6 +115,7 @@ class settings:
         self.opacity = float(self.conf.get("realtime", "opacity"))
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
+        self.timeout = float(self.conf.get("realtime", "timeout"))
         self.color = self.conf.get("gui", "color")
         self.event_colors = self.conf.get("gui", "event_colors")
         self.event_scheme = self.conf.get("gui", "event_scheme")
@@ -156,6 +170,7 @@ class settings:
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
+        self.conf.set("realtime", "timeout", defaults.timeout)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -190,6 +205,7 @@ class settings:
                   tx_font=defaults.overlay_tx_font,
                   tx_size=defaults.overlay_tx_size,
                   overlay_when_gsf=defaults.overlay_when_gsf,
+                  timeout=defaults.timeout,
                   event_colors=defaults.event_colors,
                   event_scheme=defaults.event_scheme,
                   date_format=defaults.date_format):
@@ -228,6 +244,7 @@ class settings:
         self.conf.set("realtime", "overlay_tx_font", tx_font)
         self.conf.set("realtime", "overlay_tx_size", tx_size)
         self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
+        self.conf.set("realtime", "timeout", timeout)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)

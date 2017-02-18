@@ -431,6 +431,10 @@ class settings_importer(object):
         except ConfigParser.NoOptionError:
             self.event_colors = settings.defaults.event_colors
         try:
+            self.event_scheme = self.conf.get("gui", "event_scheme")
+        except ConfigParser.NoOptionError:
+            self.event_scheme = settings.defaults.event_scheme
+        try:
             self.logo_color = self.conf.get("gui", "logo_color")
         except ConfigParser.NoOptionError:
             self.logo_color = settings.defaults.logo_color
