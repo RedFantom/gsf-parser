@@ -1,4 +1,4 @@
-### Thranta Squadron GSF CombatLog Parser
+### Thranta Squadron GSF CombatLog Parser [![Build Status](https://travis-ci.org/RedFantom/GSF-Parser.svg?branch=master)](https://travis-ci.org/RedFantom/GSF-Parser)
 
 Written by RedFantom, Wing Commander of Thranta Squadron, Daethyra,
 Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta

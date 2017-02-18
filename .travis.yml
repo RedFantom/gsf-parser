@@ -1,0 +1,11 @@
+language: python
+python:
+    "2.7"
+before_install:
+    - pip install matplotlib
+    - pip install numpy
+    - pip install pillow
+    - pip install pyinstaller
+script:
+    - python testing.py
+    - pyinstaller main.py
