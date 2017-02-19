@@ -24,5 +24,6 @@ if __name__ == "__main__":
         if variables.settings_obj.version != "v2.2.1":
             print "[DEBUG] OOB not completed successfully, exiting..."
         main_window = gui.main_window()
+        main_window.mainloop()
     else:
         tkMessageBox.showerror("Fatal error", "Unix is not supported")

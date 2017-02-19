@@ -107,7 +107,6 @@ class main_window(tk.Tk):
         self.splash.destroy()
         # Start the main loop
         variables.main_window = self
-        self.mainloop()
 
     def on_close(self):
         variables.FLAG = False
