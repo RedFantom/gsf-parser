@@ -31,6 +31,9 @@ def splitter(lines, playerList):
         timestring = elements[1]
         source = elements[3]
         target = elements[5]
+        # Issue #47 in repo
+        if "setLevel" in line:
+            continue
         # If "@" is not in source, then the ability is an in-match ability
         if ("@" not in source and "@" not in target):
             # If the match hadn't started, it has now started and the the spawn
