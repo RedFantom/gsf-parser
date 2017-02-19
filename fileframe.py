@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
 try:
-     import mtTkinter as tk
+    import mtTkinter as tk
 except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
 from PIL import Image, ImageTk
 # General imports
+import operator
 import os
 import re
 from datetime import datetime
@@ -23,6 +26,7 @@ import statistics
 import abilities
 import toplevels
 import widgets
+
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -53,32 +57,76 @@ class file_frame(ttk.Frame):
         :param root_frame:
         :param main_window:
         """
-        ttk.Frame.__init__(self, root_frame, width = 200, height = 420)
+        ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
         self.file_box = tk.Listbox(self)
-        self.file_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL)
-        self.file_box_scroll.config(command = self.file_box.yview)
-        self.file_box.config(yscrollcommand = self.file_box_scroll.set)
+        self.file_box_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.file_box_scroll.config(command=self.file_box.yview)
+        self.file_box.config(yscrollcommand=self.file_box_scroll.set)
         self.match_box = tk.Listbox(self)
-        self.match_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL)
-        self.match_box_scroll.config(command = self.match_box.yview)
-        self.match_box.config(yscrollcommand = self.match_box_scroll.set)
+        self.match_box_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.match_box_scroll.config(command=self.match_box.yview)
+        self.match_box.config(yscrollcommand=self.match_box_scroll.set)
         self.spawn_box = tk.Listbox(self)
-        self.spawn_box_scroll = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.spawn_box.yview)
-        self.spawn_box.config(yscrollcommand = self.spawn_box_scroll.set)
+        self.spawn_box_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.spawn_box.yview)
+        self.spawn_box.config(yscrollcommand=self.spawn_box_scroll.set)
+
         self.file_box.bind("<Double-Button-1>", self.file_update)
         self.match_box.bind("<Double-Button-1>", self.match_update)
         self.spawn_box.bind("<Double-Button-1>", self.spawn_update)
+        self.file_box.bind("<Return>", self.file_update)
+        self.match_box.bind("<Return>", self.match_update)
+        self.spawn_box.bind("<Return>", self.spawn_update)
+
+        self.file_box.bind("<Enter>", self.bind_file)
+        self.file_box.bind("<Leave>", self.unbind_file)
+        self.match_box.bind("<Enter>", self.bind_match)
+        self.match_box.bind("<Leave>", self.unbind_match)
+        self.spawn_box.bind("<Enter>", self.bind_spawn)
+        self.spawn_box.bind("<Leave>", self.unbind_spawn)
+
         self.statistics_object = statistics.statistics()
-        self.refresh_button = ttk.Button(self, text = "Refresh", command = self.add_files_cb)
-        self.filters_button = ttk.Button(self, text = "Filters", command = self.filters)
+        self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files_cb)
+        self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
+        self.old_file = 0
+        self.old_match = 0
+        self.old_spawn = 0
+
+    def scroll_file(self, event):
+        self.file_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_file(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_file)
+        self.file_box.focus()
+
+    def unbind_file(self, event):
+        self.main_window.unbind("<MouseWheel>")
+
+    def scroll_match(self, event):
+        self.match_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_match(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_match)
+        self.match_box.focus()
+
+    def unbind_match(self, event):
+        self.main_window.unbind("<MouseWheel>")
+
+    def scroll_spawn(self, event):
+        self.spawn_box.yview_scroll(-1 * (event.delta / 100), "units")
+
+    def bind_spawn(self, event):
+        self.main_window.bind("<MouseWheel>", self.scroll_spawn)
+        self.spawn_box.focus()
+
+    def unbind_spawn(self, event):
+        self.main_window.unbind("<MouseWheel>")
 
     def filters(self):
         """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         """
-
-        pass
+        tkMessageBox.showinfo("Notice", "This button is not yet functional.")
 
     def grid_widgets(self):
         """
@@ -86,18 +134,17 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        self.file_box.config(height = 6)
-        self.match_box.config(height = 6)
-        self.spawn_box.config(height = 6)
-        self.file_box.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
-        self.file_box_scroll.grid(column = 2, row = 0, rowspan =8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.match_box.grid(column = 0, row =8, columnspan = 2, padx = 5, pady = 5)
-        self.match_box_scroll.grid(column = 2, row = 8, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.spawn_box.grid(column = 0, row = 16, columnspan = 2, padx = 5, pady = 5)
-        self.spawn_box_scroll.grid(column = 2, row = 16, columnspan = 1, sticky = tk.N + tk.S, pady = 5)
-        self.refresh_button.grid(column = 0, columnspan = 3, row = 17, rowspan = 1, sticky = tk.N + tk.S + tk.E + tk.W)
-        self.filters_button.grid(column = 0, columnspan = 3, row = 18, rowspan = 1, sticky = tk.N + tk.S + tk.E + tk.W)
-
+        self.file_box.config(height=6)
+        self.match_box.config(height=6)
+        self.spawn_box.config(height=6)
+        self.file_box.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
+        self.file_box_scroll.grid(column=2, row=0, rowspan=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.match_box.grid(column=0, row=8, columnspan=2, padx=5, pady=5)
+        self.match_box_scroll.grid(column=2, row=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.spawn_box.grid(column=0, row=16, columnspan=2, padx=5, pady=5)
+        self.spawn_box_scroll.grid(column=2, row=16, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky=tk.N + tk.S + tk.E + tk.W)
+        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky=tk.N + tk.S + tk.E + tk.W)
 
     def add_matches(self):
         """
@@ -142,13 +189,13 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
-        if variables.match_timing != None:
+        if variables.match_timing:
             try:
                 index = self.match_timing_strings.index(variables.match_timing)
-                variables.spawn_index = index
-            except:
+            except ValueError:
                 self.spawn_box.delete(0, tk.END)
                 return
+            variables.spawn_index = index
             self.spawn_box.delete(0, tk.END)
             self.spawn_box.insert(tk.END, "All spawns")
             for spawn in variables.spawn_timings[index]:
@@ -162,10 +209,6 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        try:
-            os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
-            return
         self.file_strings = []
         self.files_dict = {}
         self.file_box.delete(0, tk.END)
@@ -187,8 +230,15 @@ class file_frame(ttk.Frame):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
                     try:
-                        dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-                    except:
+                        if variables.settings_obj.date_format == "ymd":
+                            dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
+                        elif variables.settings_obj.date_format == "ydm":
+                            dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime(
+                                "%Y-%d-%m   %H:%M:%S")
+                        else:
+                            tkMessageBox.showerror("No valid date format setting found.")
+                            return
+                    except ValueError:
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
@@ -209,10 +259,6 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        try:
-            os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
-            return
         self.file_strings = []
         self.files_dict = {}
         self.file_box.delete(0, tk.END)
@@ -227,7 +273,7 @@ class file_frame(ttk.Frame):
             self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(variables.settings_obj.cl_path)
-        except:
+        except WindowsError:
             tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             if not silent:
                 self.splash.destroy()
@@ -237,8 +283,7 @@ class file_frame(ttk.Frame):
                 if statistics.check_gsf(file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-                        # print "[DEBUG] Generated time: ", dt
-                    except:
+                    except ValueError:
                         dt = file
                     self.files_dict[dt] = file
                     self.file_strings.append(dt)
@@ -268,29 +313,58 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.file_box.itemconfig(self.old_file, background="white")
         if self.file_box.curselection() == (0,):
-            print("[DEBUG] All CombatLogs selected")
-            stat_obj = statistics.statistics()
-            stats_string = stat_obj.folder_statistics()
-            self.main_window.middle_frame.statistics_numbers_var.set(stats_string)
-            self.main_window.middle_frame.abilities_label_var.set("Abilities is currently not available for a whole folder.")
-            self.main_window.ship_frame.ship_label_var.set("Ships currently not available for a whole folder.")
+            self.old_file = 0
+            self.file_box.itemconfig(self.old_file, background="lightgrey")
+            (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+             total_enemydamaget, uncounted) = statistics.statistics.folder_statistics()
+            self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
+            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
             self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
             self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
+            ships_string = "Ships used:\t\tCount:\n"
+            for ship in abilities.ships_strings:
+                try:
+                    ships_string += ship + "\t\t" + str(total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                except KeyError:
+                    ships_string += ship + "\t\t0\n"
+            ships_string += "Uncounted\t\t" + str(uncounted)
+            self.main_window.ship_frame.ship_label_var.set(ships_string)
+            color = "white"
+            for enemy in total_enemies:
+                if enemy == "":
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                elif re.search('[a-zA-Z]', enemy):
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                else:
+                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
+                self.main_window.middle_frame.enemies_damaged.insert(tk.END, total_enemydamaged[enemy])
+                self.main_window.middle_frame.enemies_damaget.insert(tk.END, total_enemydamaget[enemy])
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
+                if color == "white":
+                    color = "lightgrey"
+                else:
+                    color = "white"
+            self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
+            most_used_ship = max(total_shipsdict.iteritems(), key=operator.itemgetter(1))[0]
+            self.main_window.ship_frame.update_ship([most_used_ship])
+            self.main_window.ship_frame.update()
         else:
+            self.match_box.focus()
             # Find the file name of the file selected in the list of file names
             numbers = self.file_box.curselection()
+            self.old_file = numbers[0]
+            self.file_box.itemconfig(self.old_file, background="lightgrey")
             try:
                 variables.file_name = self.files_dict[self.file_strings[numbers[0] - 1]]
             except TypeError:
-                try:
-                    variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
-                except:
-                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                    "This bug has not been fixed. Check out issue #19 in the repository"
-                                                    " for more information.")
+                variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
             except KeyError:
                 tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
                                                 "consult the issues page of the GitHub repository.")
@@ -304,7 +378,7 @@ class file_frame(ttk.Frame):
             variables.file_cube, variables.match_timings, variables.spawn_timings = parse.splitter(lines, player)
             # Start adding the matches from the file to the listbox
             self.add_matches()
-        self.main_window.ship_frame.remove_image()
+            self.main_window.ship_frame.remove_image()
 
     def match_update(self, instance):
         """
@@ -320,20 +394,19 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.match_box.itemconfig(self.old_match, background="white")
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
+            self.old_match = numbers[0]
+            self.match_box.itemconfig(self.old_match, background="lightgrey")
             try:
                 variables.match_timing = self.match_timing_strings[numbers[0] - 1]
             except TypeError:
-                try:
-                    variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
-                except:
-                    tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                    "This bug has not been fixed. Check out issue #19 in the repository"
-                                                    " for more information.")
+                variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
             file_cube = variables.file_cube
-            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
+            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies,
+             variables.enemydamaged,
              variables.enemydamaget, variables.uncounted) = self.statistics_object.file_statistics(file_cube)
             self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
@@ -367,17 +440,15 @@ class file_frame(ttk.Frame):
                     color = "white"
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
-             numbers = self.match_box.curselection()
-             try:
-                 variables.match_timing = self.match_timing_strings[numbers[0] - 1]
-             except TypeError:
-                 try:
-                     variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
-                 except:
-                     tkMessageBox.showerror("Error", "The parser encountered a bug known as #19 in the repository. "
-                                                     "This bug has not been fixed. Check out issue #19 in the repository"
-                                                     " for more information.")
-             self.add_spawns()
+            self.spawn_box.focus()
+            numbers = self.match_box.curselection()
+            self.old_match = numbers[0]
+            self.match_box.itemconfig(self.old_match, background="lightgrey")
+            try:
+                variables.match_timing = self.match_timing_strings[numbers[0] - 1]
+            except TypeError:
+                variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
+            self.add_spawns()
         self.main_window.ship_frame.remove_image()
 
     def spawn_update(self, instance):
@@ -387,14 +458,15 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
+        self.spawn_box.itemconfig(self.old_spawn, background="white")
         if self.spawn_box.curselection() == (0,):
-            try:
-                match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
-            except ValueError:
-                print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
+            self.old_spawn = self.spawn_box.curselection()[0]
+            self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
+            match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             for spawn in match:
                 variables.player_numbers.update(parse.determinePlayer(spawn))
-            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies, variables.enemydamaged,
+            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies,
+             variables.enemydamaged,
              variables.enemydamaget) = self.statistics_object.match_statistics(match)
             self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
@@ -419,9 +491,9 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
                 self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
                 self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
-                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background = color)
-                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background = color)
-                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background = color)
+                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
+                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
                 if color == "white":
                     color = "lightgrey"
                 else:
@@ -430,11 +502,13 @@ class file_frame(ttk.Frame):
             self.main_window.ship_frame.remove_image()
         else:
             numbers = self.spawn_box.curselection()
+            self.old_spawn = numbers[0]
+            self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             try:
                 variables.spawn_timing = self.spawn_timing_strings[numbers[0] - 1]
             except TypeError:
                 try:
-                    variables.spawn_timing = self.spawn_timing_strings[int(numbers[0]) -1]
+                    variables.spawn_timing = self.spawn_timing_strings[int(numbers[0]) - 1]
                 except:
                     tkMessageBox.showerror("Error",
                                            "The parser encountered a bug known as #19 in the repository. "
@@ -448,7 +522,8 @@ class file_frame(ttk.Frame):
             spawn = match[self.spawn_timing_strings.index(variables.spawn_timing)]
             variables.spawn = spawn
             variables.player_numbers = parse.determinePlayer(spawn)
-            (variables.abilities_string, variables.statistics_string, variables.ships_list, variables.ships_comps, variables.enemies,
+            (variables.abilities_string, variables.statistics_string, variables.ships_list, variables.ships_comps,
+             variables.enemies,
              variables.enemydamaged, variables.enemydamaget) = self.statistics_object.spawn_statistics(spawn)
             self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
@@ -482,6 +557,7 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.events_button.state(["!disabled"])
             self.main_window.ship_frame.update_ship(variables.ships_list)
 
+
 class ship_frame(ttk.Frame):
     """
     Simple frame with a picture and a string containing information about the ships
@@ -504,10 +580,10 @@ class ship_frame(ttk.Frame):
         Create all labels and variables
         :param root_frame:
         """
-        ttk.Frame.__init__(self, root_frame, width = 300, height = 410)
+        ttk.Frame.__init__(self, root_frame, width=300, height=410)
         self.ship_label_var = tk.StringVar()
         self.ship_label_var.set("No match or spawn selected yet.")
-        self.ship_label = ttk.Label(self, textvariable = self.ship_label_var, justify = tk.LEFT, wraplength = 495)
+        self.ship_label = ttk.Label(self, textvariable=self.ship_label_var, justify=tk.LEFT, wraplength=495)
         self.ship_image = ttk.Label(self)
 
     def grid_widgets(self):
@@ -515,8 +591,8 @@ class ship_frame(ttk.Frame):
         Put the widgets in the right place
         :return:
         """
-        self.ship_image.grid(column = 0, row = 0, sticky =tk.N+tk.S+tk.W+tk.E)
-        self.ship_label.grid(column = 0, row = 1, sticky =tk.N+tk.S+tk.W+tk.E)
+        self.ship_image.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_label.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.remove_image()
 
     def update_ship(self, ships_list):
@@ -533,7 +609,8 @@ class ship_frame(ttk.Frame):
                 self.set_image(os.path.dirname(__file__) + "\\assets\\img\\default.png")
             except IOError:
                 print "[DEBUG] File not found."
-                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
+                tkMessageBox.showerror("Error",
+                                       "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
         elif len(ships_list) == 0:
             raise ValueError("Ships_list == 0")
@@ -543,7 +620,8 @@ class ship_frame(ttk.Frame):
                 self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png")
             except IOError:
                 print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png"
-                tkMessageBox.showerror("Error", "The specified picture can not be found. Is the assets folder copied correctly?")
+                tkMessageBox.showerror("Error",
+                                       "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
         return
 
@@ -555,13 +633,11 @@ class ship_frame(ttk.Frame):
         """
         try:
             self.img = Image.open(file)
-            self.img = self.img.resize((300,180), Image.ANTIALIAS)
+            self.img = self.img.resize((300, 180), Image.ANTIALIAS)
             self.pic = ImageTk.PhotoImage(self.img)
             self.ship_image.config(image=self.pic)
-        except IOError:
-            raise IOError
-        except tk.TclError:
-            pass
+        except tk.TclError as e:
+            print e
 
     def remove_image(self):
         """
@@ -570,7 +646,7 @@ class ship_frame(ttk.Frame):
         """
         try:
             self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
-                                                     "\\assets\\img\\default.png").resize((300,180),Image.ANTIALIAS))
+                                                     "\\assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return
@@ -578,6 +654,7 @@ class ship_frame(ttk.Frame):
             self.ship_image.config(image=self.pic)
         except tk.TclError:
             pass
+
 
 class middle_frame(ttk.Frame):
     """
@@ -614,6 +691,7 @@ class middle_frame(ttk.Frame):
     | ability              |\/| |
     -----------------------------
     """
+
     def __init__(self, root_frame, main_window):
         """
         Set up all widgets and variables. StringVars can be manipulated by the file frame,
@@ -624,42 +702,42 @@ class middle_frame(ttk.Frame):
         """
         ttk.Frame.__init__(self, root_frame)
         self.window = main_window
-        self.notebook = ttk.Notebook(self, width = 300, height = 310)
+        self.notebook = ttk.Notebook(self, width=300, height=310)
         self.stats_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
-        self.notebook.add(self.stats_frame, text = "Statistics")
-        self.notebook.add(self.enemies_frame, text = "Enemies")
-        self.events_frame = ttk.Frame(self, width = 300)
-        self.events_button = ttk.Button(self.events_frame, text = "Show events for spawn", command=self.show_events,
-                                        state=tk.DISABLED, width = 43)
+        self.notebook.add(self.stats_frame, text="Statistics")
+        self.notebook.add(self.enemies_frame, text="Enemies")
+        self.events_frame = ttk.Frame(self, width=300)
+        self.events_button = ttk.Button(self.events_frame, text="Show events for spawn", command=self.show_events,
+                                        state=tk.DISABLED, width=43)
         self.statistics_label_var = tk.StringVar()
         string = "Damage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\nHealing received:\n" + \
-                  "Hitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
+                 "Hitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
         self.statistics_label_var.set(string)
-        self.statistics_label = ttk.Label(self.stats_frame, textvariable = self.statistics_label_var, justify = tk.LEFT,
-                                          wraplength = 145)
+        self.statistics_label = ttk.Label(self.stats_frame, textvariable=self.statistics_label_var, justify=tk.LEFT,
+                                          wraplength=145)
         self.statistics_numbers_var = tk.StringVar()
         self.statistics_label.setvar()
-        self.statistics_numbers = ttk.Label(self.stats_frame, textvariable = self.statistics_numbers_var,
-                                            justify = tk.LEFT, wraplength = 145)
-        self.enemies_label = ttk.Label(self.enemies_frame, text = "Name\t          Damage taken\t      Damage dealt\n")
-        self.enemies_listbox = tk.Listbox(self.enemies_frame, width = 17, height = 17)
-        self.enemies_damaget = tk.Listbox(self.enemies_frame, width = 14, height = 17)
-        self.enemies_damaged = tk.Listbox(self.enemies_frame, width = 14, height = 17)
-        self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient = tk.VERTICAL,)
-        self.enemies_scroll.config(command = self.enemies_scroll_yview)
-        self.enemies_listbox.config(yscrollcommand = self.enemies_listbox_scroll)
-        self.enemies_damaget.config(yscrollcommand = self.enemies_damaget_scroll)
-        self.enemies_damaged.config(yscrollcommand = self.enemies_damaged_scroll)
+        self.statistics_numbers = ttk.Label(self.stats_frame, textvariable=self.statistics_numbers_var,
+                                            justify=tk.LEFT, wraplength=145)
+        self.enemies_label = ttk.Label(self.enemies_frame, text="Name\t          Damage taken\t      Damage dealt\n")
+        self.enemies_listbox = tk.Listbox(self.enemies_frame, width=17, height=17)
+        self.enemies_damaget = tk.Listbox(self.enemies_frame, width=14, height=17)
+        self.enemies_damaged = tk.Listbox(self.enemies_frame, width=14, height=17)
+        self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL, )
+        self.enemies_scroll.config(command=self.enemies_scroll_yview)
+        self.enemies_listbox.config(yscrollcommand=self.enemies_listbox_scroll)
+        self.enemies_damaget.config(yscrollcommand=self.enemies_damaget_scroll)
+        self.enemies_damaged.config(yscrollcommand=self.enemies_damaged_scroll)
         self.abilities_scrollable_frame = widgets.vertical_scroll_frame(self.notebook)
         self.abilities_frame = self.abilities_scrollable_frame.interior
-        self.notebook.add(self.abilities_scrollable_frame, text = "Abilities")
+        self.notebook.add(self.abilities_scrollable_frame, text="Abilities")
         self.abilities_label_var = tk.StringVar()
-        self.abilities_label = ttk.Label(self.abilities_frame, textvariable = self.abilities_label_var,
-                                         justify = tk.LEFT, wraplength = 295)
-        self.notice_label = ttk.Label(self.stats_frame, text = "\n\n\n\nThe damage dealt for bombers can not be" +
-                " accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
-                                      justify = tk.LEFT, wraplength = 290)
+        self.abilities_label = ttk.Label(self.abilities_frame, textvariable=self.abilities_label_var,
+                                         justify=tk.LEFT, wraplength=295)
+        self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be" +
+                                                             " accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
+                                      justify=tk.LEFT, wraplength=290)
 
     def show_events(self):
         """
@@ -683,7 +761,15 @@ class middle_frame(ttk.Frame):
     three listboxes synchronized in order to show the correct damage for the
     correct enemy.
     """
+
     def enemies_listbox_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_damaged.yview() != self.enemies_listbox.yview():
             self.enemies_damaged.yview_moveto(args[0])
         if self.enemies_damaget.yview() != self.enemies_listbox.yview():
@@ -691,6 +777,13 @@ class middle_frame(ttk.Frame):
         self.enemies_scroll.set(*args)
 
     def enemies_damaged_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_listbox.yview() != self.enemies_damaged.yview():
             self.enemies_listbox.yview_moveto(args[0])
         if self.enemies_damaget.yview() != self.enemies_damaged.yview():
@@ -698,6 +791,13 @@ class middle_frame(ttk.Frame):
         self.enemies_scroll.set(*args)
 
     def enemies_damaget_scroll(self, *args):
+        """
+        A function to automatically scroll all three listboxes of the enemies
+        tab together in synchronization when using the Scrollbar as well as
+        the MouseWheel
+        :param args: A pointer for Tkinter compatibility
+        :return:
+        """
         if self.enemies_listbox.yview() != self.enemies_damaget.yview():
             self.enemies_listbox.yview_moveto(args[0])
         if self.enemies_damaged.yview() != self.enemies_damaget.yview():
@@ -709,15 +809,15 @@ class middle_frame(ttk.Frame):
         Put all widgets in the right place
         :return:
         """
-        self.abilities_label.grid(column = 0, row = 2, columnspan = 4, sticky = tk.N + tk.W)
-        self.notebook.grid(column = 0, row = 0, columnspan = 4, sticky = tk.N  + tk.W + tk.E)
-        self.events_frame.grid(column = 0, row = 1, columnspan = 4, sticky=tk.N+tk.W+tk.S+tk.E)
-        self.events_button.grid(column = 0, row = 1,sticky=tk.N+tk.W+tk.S+tk.E, columnspan = 4, pady = 12)
-        self.statistics_label.grid(column = 0, row = 2, columnspan = 2, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.statistics_numbers.grid(column = 2, row = 2, columnspan = 2, sticky = tk.N + tk.W + tk.E)
-        self.notice_label.grid(column = 0, row = 3, columnspan = 4, sticky = tk.W+tk.E+tk.S)
-        self.enemies_label.grid(column = 0, row = 0, columnspan = 3)
-        self.enemies_listbox.grid(column = 0, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaged.grid(column = 1, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_damaget.grid(column = 2, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.enemies_scroll.grid(column = 3, row = 1, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.abilities_label.grid(column=0, row=2, columnspan=4, sticky=tk.N+tk.W)
+        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N+tk.W+tk.E)
+        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N+tk.W + tk.S + tk.E)
+        self.events_button.grid(column=0, row=1, sticky=tk.N+tk.W + tk.S + tk.E, columnspan=4, pady=12)
+        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N+tk.W+tk.E)
+        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W+tk.E+tk.S)
+        self.enemies_label.grid(column=0, row=0, columnspan=3)
+        self.enemies_listbox.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)

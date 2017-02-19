@@ -1,5 +1,7 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # Written by Daethyra, edited by RedFantom
@@ -127,7 +129,8 @@ class LogStalker(threading.Thread):
 
     @classmethod
     def open(cls, file):
-        """Wrapper around open().
+        """
+        Wrapper around open().
         By default files are opened in binary mode and readlines()
         will return bytes on both Python 2 and 3.
         This means callback() will deal wirh a list of bytes.
@@ -205,7 +208,8 @@ class LogStalker(threading.Thread):
                 self.watch(fname)
 
     def readlines(self, file):
-        """Read file lines since last access until EOF is reached and
+        """
+        Read file lines since last access until EOF is reached and
         incove callback.
         """
         while True:
@@ -219,7 +223,8 @@ class LogStalker(threading.Thread):
             file = self.open(fname)
             fid = self.get_file_id(os.stat(fname))
         except IOError:
-            tkMessageBox.showerror("Error", "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
+            tkMessageBox.showerror("Error",
+                                   "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
             variables.main_window.on_close()
         except EnvironmentError as err:
             if err.errno != errno.ENOENT:

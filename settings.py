@@ -1,5 +1,7 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
@@ -10,6 +12,8 @@ import ConfigParser
 import tempfile
 import collections
 import ast
+
+
 # Own modules
 # import variables
 
@@ -35,22 +39,37 @@ class defaults:
     size = "big"
     # Set the corner the overlay will be displayed in
     pos = "TR"
-    color = "darkgreen"
+    # Set the text color of the parser
+    color = "#236ab2"
+    # Set the logo color
     logo_color = "green"
+    # Overlay background color
     overlay_bg_color = "white"
+    # Overlay color that is displayed as transparent
     overlay_tr_color = "white"
+    # Overlay text color
     overlay_tx_color = "yellow"
+    # Overlay text font
     overlay_tx_font = "Calibri"
+    # Overlay text size
     overlay_tx_size = "12"
+    # Only display overlay when a GSF match is running
     overlay_when_gsf = str(False)
+    # Set the timeout for reading from file for realtime
+    timeout = 0.1
+    # Event color options
     event_colors = "basic"
+    # Event color scheme
     event_scheme = "default"
+    # The date format for in the files Listbox
+    date_format = "ymd"
+
 
 # Class that loads, stores and saves settings
 class settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name = "settings.ini",
-                 directory = tempfile.gettempdir()):
+    def __init__(self, file_name="settings.ini",
+                 directory=tempfile.gettempdir()):
         try:
             os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
         except WindowsError:
@@ -68,7 +87,7 @@ class settings:
         else:
             self.write_def()
             self.read_set()
-        # variables.path = self.cl_path
+            # variables.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
@@ -96,10 +115,12 @@ class settings:
         self.opacity = float(self.conf.get("realtime", "opacity"))
         self.size = self.conf.get("realtime", "size")
         self.pos = self.conf.get("realtime", "pos")
+        self.timeout = float(self.conf.get("realtime", "timeout"))
         self.color = self.conf.get("gui", "color")
         self.event_colors = self.conf.get("gui", "event_colors")
         self.event_scheme = self.conf.get("gui", "event_scheme")
         self.logo_color = self.conf.get("gui", "logo_color")
+        self.date_format = self.conf.get("gui", "date_format")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
         if self.conf.get("realtime", "overlay_when_gsf") == "True":
@@ -114,7 +135,7 @@ class settings:
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
                                             "check if this folder exists: %s"
-                                            % self.cl_path)
+                                   % self.cl_path)
 
     # Write the defaults settings found in the class defaults to a pickle in a
     # file
@@ -145,9 +166,11 @@ class settings:
         self.conf.set("gui", "logo_color", defaults.logo_color)
         self.conf.set("gui", "event_colors", defaults.event_colors)
         self.conf.set("gui", "event_scheme", defaults.event_scheme)
+        self.conf.set("gui", "date_format", defaults.date_format)
         self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
+        self.conf.set("realtime", "timeout", defaults.timeout)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -159,7 +182,7 @@ class settings:
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
                                             "check if this folder exists: %s"
-                                            % self.cl_path)
+                                   % self.cl_path)
 
     # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always
@@ -182,8 +205,10 @@ class settings:
                   tx_font=defaults.overlay_tx_font,
                   tx_size=defaults.overlay_tx_size,
                   overlay_when_gsf=defaults.overlay_when_gsf,
+                  timeout=defaults.timeout,
                   event_colors=defaults.event_colors,
-                  event_scheme=defaults.event_scheme):
+                  event_scheme=defaults.event_scheme,
+                  date_format=defaults.date_format):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -219,10 +244,12 @@ class settings:
         self.conf.set("realtime", "overlay_tx_font", tx_font)
         self.conf.set("realtime", "overlay_tx_size", tx_size)
         self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
+        self.conf.set("realtime", "timeout", timeout)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)
         self.conf.set("gui", "event_scheme", event_scheme)
+        self.conf.set("gui", "date_format", date_format)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()
@@ -234,7 +261,8 @@ class settings:
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
                                             "check if this folder exists: %s"
-                                            % self.cl_path)
+                                   % self.cl_path)
+
 
 class color_schemes:
     def __init__(self):
@@ -277,16 +305,16 @@ class color_schemes:
         try:
             return list(self.current_scheme[key])
         except KeyError:
-            tkMessageBox.showerror("Error", "The requested color for %s was not found, "\
-                                   "did you alter the event_colors.ini file?" % key)
+            tkMessageBox.showerror("Error", "The requested color for %s was not found, " \
+                                            "did you alter the event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
         except TypeError:
             tkMessageBox.showerror("Error", "The requested color for %s was could not be " \
-                                   "type changed into a list. Did you alter the " \
-                                   "event_colors.ini file?" % key)
+                                            "type changed into a list. Did you alter the " \
+                                            "event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
 
-    def set_scheme(self, name, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+    def set_scheme(self, name, custom_file=tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
         if name == "default":
             self.current_scheme = self.default_colors
         elif name == "pastel":
@@ -300,7 +328,7 @@ class color_schemes:
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
-    def write_custom(self, custom_file = tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+    def write_custom(self, custom_file=tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
         cp = ConfigParser.RawConfigParser()
         try:
             cp.add_section("colors")
@@ -310,4 +338,3 @@ class color_schemes:
             cp.set('colors', key, value)
         with open(custom_file, "w") as file_obj:
             cp.write(file_obj)
-

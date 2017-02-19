@@ -1,5 +1,7 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # Written by Daethyra, edited by RedFantom
@@ -65,10 +67,10 @@ class Parser(object):
         self.crit_nr = 0
         self.is_match = False
 
-        self.spawn_callback = spawn_callback # Function to call when a new spawn is detected
-        self.match_callback = match_callback # Function to call when the end of a match is detected
-        self.new_match_callback = new_match_callback # Function to call when a new match is detected
-        self.insert = insert # Function to call when a new line is parsed to insert it into the events box of the UI
+        self.spawn_callback = spawn_callback  # Function to call when a new spawn is detected
+        self.match_callback = match_callback  # Function to call when the end of a match is detected
+        self.new_match_callback = new_match_callback  # Function to call when a new match is detected
+        self.insert = insert  # Function to call when a new line is parsed to insert it into the events box of the UI
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
@@ -86,7 +88,7 @@ class Parser(object):
         self.hold = 0
         self.hold_list = []
 
-        self.spawns = 0 # The amount of spawns so far
+        self.spawns = 0  # The amount of spawns so far
 
     def __enter__(self):
         return self
@@ -122,9 +124,6 @@ class Parser(object):
             self.dprint("[DEBUG] out of match, skip")
             return
 
-        # Insert the line (or the pretty version of it) into the events box of real-time parsing
-        self.insert(line, variables.rt_timing, self.active_id)
-
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
@@ -152,6 +151,9 @@ class Parser(object):
                 self.active_ids.append(self.active_id)
 
         self.dprint("[DEBUG] active id \'", self.active_id, "\'")
+
+        # Insert the line (or the pretty version of it) into the events box of real-time parsing
+        self.insert(line, variables.rt_timing, self.active_id)
 
         # if the active player id is emtpy, it is impossible to determine if
         # player is target or source, thus put this line on hold and return.

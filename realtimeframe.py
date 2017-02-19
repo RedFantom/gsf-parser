@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
-# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # UI imports
 try:
-     import mtTkinter as tk
+    import mtTkinter as tk
 except ImportError:
-     import Tkinter as tk
+    import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkSimpleDialog
@@ -21,6 +23,7 @@ import realtime
 import stalking_alt
 import toplevels
 import statistics
+
 
 class realtime_frame(ttk.Frame):
     """
@@ -42,23 +45,24 @@ class realtime_frame(ttk.Frame):
     | Watching string                                                        |
     --------------------------------------------------------------------------
     """
+
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
         self.parser = None
         self.overlay = None
         self.main_window = main_window
-        self.listbox = tk.Listbox(self, width = 105, height = 15)
-        self.scrollbar = ttk.Scrollbar(self, orient = tk.VERTICAL, command = self.listbox.yview)
-        self.listbox.config(yscrollcommand=self.scrollbar.set, font = ("Consolas", 10))
-        self.statistics_list_label_one = ttk.Label(self, justify = tk.LEFT, text = "Damage dealt:\nDamage taken:\n"+\
-                                                   "Selfdamage:\nHealing received:\nSpawns:")
-        self.statistics_list_label_two = ttk.Label(self, justify = tk.LEFT, text = "Abilities:")
+        self.listbox = tk.Listbox(self, width=105, height=15)
+        self.scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
+        self.listbox.config(yscrollcommand=self.scrollbar.set, font=("Consolas", 10))
+        self.statistics_list_label_one = ttk.Label(self, justify=tk.LEFT, text="Damage dealt:\nDamage taken:\n" + \
+                                                                               "Selfdamage:\nHealing received:\nSpawns:")
+        self.statistics_list_label_two = ttk.Label(self, justify=tk.LEFT, text="Abilities:")
         self.statistics_label_one_text = tk.StringVar()
         self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
-        self.start_parsing_button = ttk.Button(self, text = "Start real-time parsing", command=self.start_parsing,
-                                               width = 25)
-        self.upload_results_button = ttk.Button(self, text = "Start uploading events", command= self.upload_events,
-                                                width = 25)
+        self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.start_parsing,
+                                               width=25)
+        self.upload_results_button = ttk.Button(self, text="Start uploading events", command=self.upload_events,
+                                                width=25)
         self.server = tk.StringVar()
         self.faction = tk.StringVar()
         self.faction_list = ttk.OptionMenu(self, self.faction,
@@ -66,30 +70,30 @@ class realtime_frame(ttk.Frame):
                                            "Imperial Faction",
                                            "Republic Faction")
         self.server_list = ttk.OptionMenu(self, self.server,
-                                         "Select a server",
-                                         "The Bastion",
-                                         "Begeren Colony",
-                                         "The Harbinger",
-                                         "The Shadowlands",
-                                         "Jung Ma",
-                                         "The Ebon Hawk",
-                                         "Prophecy of the Five",
-                                         "Jedi Covenant",
-                                         "T3-M4",
-                                         "Darth Nihilus",
-                                         "The Tomb of Freedon Nadd",
-                                         "Jar'kai Sword",
-                                         "The Progenitor",
-                                         "Vanjervalis Chain",
-                                         "Battle Meditation",
-                                         "Mantle of the Force",
-                                         "The Red Eclipse")
+                                          "Select a server",
+                                          "The Bastion",
+                                          "Begeren Colony",
+                                          "The Harbinger",
+                                          "The Shadowlands",
+                                          "Jung Ma",
+                                          "The Ebon Hawk",
+                                          "Prophecy of the Five",
+                                          "Jedi Covenant",
+                                          "T3-M4",
+                                          "Darth Nihilus",
+                                          "The Tomb of Freedon Nadd",
+                                          "Jar'kai Sword",
+                                          "The Progenitor",
+                                          "Vanjervalis Chain",
+                                          "Battle Meditation",
+                                          "Mantle of the Force",
+                                          "The Red Eclipse")
         self.parsing = False
         self.parse = []
-        self.parsing_bar = ttk.Progressbar(self, orient = tk.HORIZONTAL, mode = "indeterminate")
-        self.uploading_bar = ttk.Progressbar(self, orient = tk.HORIZONTAL, mode = "indeterminate")
+        self.parsing_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
+        self.uploading_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
         self.watching_stringvar = tk.StringVar()
-        self.watching_label = ttk.Label(self, textvariable = self.watching_stringvar, justify = tk.LEFT)
+        self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
         self.watching_stringvar.set("Watching no CombatLog...")
 
     def start_parsing(self):
@@ -124,28 +128,27 @@ class realtime_frame(ttk.Frame):
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")
         return
-        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you "+\
-                                            "want the character you're playing now to belong to in the database. Enter"+\
-                                            "nothing or the name of the character you're currently playing on to "+\
+        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you " + \
+                                            "want the character you're playing now to belong to in the database. Enter" + \
+                                            "nothing or the name of the character you're currently playing on to " + \
                                             "create a new main character.")
 
-
     def grid_widgets(self):
-        self.start_parsing_button.grid(column = 0, row = 1, padx = 5, pady = 5)
-        self.upload_results_button.grid(column = 1, row = 1, padx = 5, pady = 5)
-        self.server_list.config(width = 15)
-        self.faction_list.config(width = 15)
-        self.server_list.grid(column = 2, row = 1, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.faction_list.grid(column = 3, row = 1, padx = 5, pady = 5, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.parsing_bar.grid(column = 0, columnspan = 1, row = 2, padx = 5, pady = 10, sticky = tk.N + tk.S + tk.W + tk.E)
-        self.uploading_bar.grid(column =1, row=2, padx=5,pady=10,sticky=tk.N + tk.S + tk.W + tk.E)
-        self.statistics_label_one.grid(column = 3, row = 2, padx = 5, pady = 5, sticky = tk.N + tk.W)
-        self.statistics_list_label_one.grid(column = 2, row = 2, padx = 5, pady =5, sticky = tk.N + tk.W)
-        self.listbox.grid(column = 0, row = 3, columnspan = 4, padx = 5, pady = 5, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.scrollbar.grid(column = 5, row = 3, sticky = tk.N + tk.S + tk.W + tk.E)
+        self.start_parsing_button.grid(column=0, row=1, padx=5, pady=5)
+        self.upload_results_button.grid(column=1, row=1, padx=5, pady=5)
+        self.server_list.config(width=15)
+        self.faction_list.config(width=15)
+        self.server_list.grid(column=2, row=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.faction_list.grid(column=3, row=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.parsing_bar.grid(column=0, columnspan=1, row=2, padx=5, pady=10, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.uploading_bar.grid(column=1, row=2, padx=5, pady=10, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.statistics_label_one.grid(column=3, row=2, padx=5, pady=5, sticky=tk.N+tk.W)
+        self.statistics_list_label_one.grid(column=2, row=2, padx=5, pady=5, sticky=tk.N+tk.W)
+        self.listbox.grid(column=0, row=3, columnspan=4, padx=5, pady=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.scrollbar.grid(column=5, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
         self.statistics_label_one_text.set("")
         self.statistics_label_one_text.set("")
-        self.watching_label.grid(column = 0, row = 4, columnspan = 2, sticky = tk.W)
+        self.watching_label.grid(column=0, row=4, columnspan=2, sticky=tk.W)
 
     def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, spawns):
         damage_done = 0
@@ -225,10 +228,10 @@ class realtime_frame(ttk.Frame):
                 items = variables.insert_queue.get()
                 if isinstance(items, tuple):
                     self.listbox.insert(tk.END, items[0])
-                    self.listbox.itemconfig(tk.END, bg = items[1], fg = items[2])
+                    self.listbox.itemconfig(tk.END, bg=items[1], fg=items[2])
                 else:
                     self.listbox.insert(tk.END, items)
-                    self.listbox.itemconfig(tk.END, bg = "black", fg = "white")
+                    self.listbox.itemconfig(tk.END, bg="black", fg="white")
                 time.sleep(0.1)
             except:
                 print "[DEBUG] Error adding line to listbox"

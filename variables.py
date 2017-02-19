@@ -1,5 +1,7 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron and Daethyra, Squadron Leader of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom and Daethyra
+﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
 # For license see LICENSE
 
 # abilities is a matrix of dictionaries
@@ -24,27 +26,27 @@ color_scheme = settings.color_schemes()
 
 FLAG = False
 
-files_done              = 0
-abilities               = None
-damagetaken             = None
-damagedealt             = None
-selfdamage              = None
-healingreceived         = None
-enemies                 = None
-criticalcount           = None
-criticalluck            = None
-hitcount                = None
-enemydamaged            = None
-enemydamaget            = None
-match_timings           = None
-spawn_timings           = None
-enemies_names           = None
-deaths                  = None
+files_done = 0
+abilities = None
+damagetaken = None
+damagedealt = None
+selfdamage = None
+healingreceived = None
+enemies = None
+criticalcount = None
+criticalluck = None
+hitcount = None
+enemydamaged = None
+enemydamaget = None
+match_timings = None
+spawn_timings = None
+enemies_names = None
+deaths = None
 
-file_cube              = None
-player_numbers         = {}
-player_name            = None
-rt_name                = None
+file_cube = None
+player_numbers = {}
+player_name = None
+rt_name = None
 
 file_name = None
 user_name = None
