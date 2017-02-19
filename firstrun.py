@@ -316,7 +316,7 @@ class settings_importer(object):
         self.file_name = self.directory + "\\GSF Parser\\settings.ini"
         try:
             os.makedirs(self.directory, True)
-        except WindowsError:
+        except OSError:
             self.first_install = True
         if "settings.ini" not in os.listdir(self.directory):
             self.first_install = True

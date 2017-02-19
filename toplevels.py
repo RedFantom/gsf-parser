@@ -38,7 +38,7 @@ class splash_screen(tk.Toplevel):
         self.progress_bar.pack()
         try:
             list = os.listdir(variables.settings_obj.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
             return
         except:
@@ -178,7 +178,7 @@ class boot_splash(tk.Toplevel):
         self.progress_bar.pack()
         try:
             directory = os.listdir(window.default_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "Error accessing directory set in settings. Please check your settings.")
             directory = []
         files = []

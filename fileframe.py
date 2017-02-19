@@ -222,7 +222,7 @@ class file_frame(ttk.Frame):
         self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             self.splash.destroy()
             return
@@ -273,7 +273,7 @@ class file_frame(ttk.Frame):
             self.splash = toplevels.splash_screen(self.main_window)
         try:
             os.chdir(variables.settings_obj.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
             if not silent:
                 self.splash.destroy()

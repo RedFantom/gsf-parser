@@ -72,7 +72,7 @@ class settings:
                  directory=tempfile.gettempdir()):
         try:
             os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
-        except WindowsError:
+        except OSError:
             pass
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
         self.file_name = directory.replace("\\temp", "") + \
@@ -130,7 +130,7 @@ class settings:
         print "[DEBUG] Settings read"
         try:
             os.chdir(self.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "An error occurred while changing "
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
@@ -177,7 +177,7 @@ class settings:
         self.read_set()
         try:
             os.chdir(self.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "An error occurred while changing "
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
@@ -256,7 +256,7 @@ class settings:
         print "[DEBUG] Settings written"
         try:
             os.chdir(self.cl_path)
-        except WindowsError:
+        except OSError:
             tkMessageBox.showerror("Error", "An error occurred while changing "
                                             "the directory to the specified "
                                             "CombatLogs directory. Please "
