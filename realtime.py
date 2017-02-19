@@ -124,9 +124,6 @@ class Parser(object):
             self.dprint("[DEBUG] out of match, skip")
             return
 
-        # Insert the line (or the pretty version of it) into the events box of real-time parsing
-        self.insert(line, variables.rt_timing, self.active_id)
-
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
@@ -154,6 +151,9 @@ class Parser(object):
                 self.active_ids.append(self.active_id)
 
         self.dprint("[DEBUG] active id \'", self.active_id, "\'")
+
+        # Insert the line (or the pretty version of it) into the events box of real-time parsing
+        self.insert(line, variables.rt_timing, self.active_id)
 
         # if the active player id is emtpy, it is impossible to determine if
         # player is target or source, thus put this line on hold and return.
