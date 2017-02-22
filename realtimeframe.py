@@ -112,7 +112,8 @@ class realtime_frame(ttk.Frame):
             self.start_parsing_button.configure(text="Stop real-time parsing")
         elif self.parsing:
             print "[DEBUG] Detected Windows version: ", platform.release()
-            if platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1":
+            if (platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1"
+                and platform.release() != "post2008server"):
                 self.main_window.file_select_frame.add_files_cb()
             self.parsing = False
             variables.FLAG = False
