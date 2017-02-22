@@ -313,7 +313,8 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-        self.file_box.itemconfig(self.old_file, background="white")
+        for index, filestring in enumerate(self.file_box.get(0, tk.END)):
+            self.file_box.itemconfig(index, background="white")
         if self.file_box.curselection() == (0,):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
@@ -394,7 +395,8 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-        self.match_box.itemconfig(self.old_match, background="white")
+        for index, matchstring in enumerate(self.match_box.get(0, tk.END)):
+            self.match_box.itemconfig(index, background="white")
         if self.match_box.curselection() == (0,):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
@@ -458,7 +460,8 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
-        self.spawn_box.itemconfig(self.old_spawn, background="white")
+        for index, spawnstring in enumerate(self.spawn_box.get(0, tk.END)):
+            self.spawn_box.itemconfig(index, background="white")
         if self.spawn_box.curselection() == (0,):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
