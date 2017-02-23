@@ -320,7 +320,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         for index, filestring in enumerate(self.file_box.get(0, tk.END)):
             self.file_box.itemconfig(index, background="white")
-        if self.file_box.curselection() == (0,):
+        if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
             (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
@@ -402,7 +402,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         for index, matchstring in enumerate(self.match_box.get(0, tk.END)):
             self.match_box.itemconfig(index, background="white")
-        if self.match_box.curselection() == (0,):
+        if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
             self.old_match = numbers[0]
@@ -467,7 +467,7 @@ class file_frame(ttk.Frame):
         """
         for index, spawnstring in enumerate(self.spawn_box.get(0, tk.END)):
             self.spawn_box.itemconfig(index, background="white")
-        if self.spawn_box.curselection() == (0,):
+        if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
