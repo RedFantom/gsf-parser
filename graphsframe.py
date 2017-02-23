@@ -43,7 +43,7 @@ class graphs_frame(ttk.Frame):
         """
         ttk.Frame.__init__(self, root)
         if matplotlib.get_backend() != "TkAgg":
-            raise
+            raise ValueError("Backend is not TkAgg")
         self.main_window = main_window
         self.type_graph = tk.StringVar()
         self.type_graph.set("play")
@@ -55,6 +55,11 @@ class graphs_frame(ttk.Frame):
         self.dmgt_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgt", text="Damage taken")
         self.hrec_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hrec", text="Healing received")
         self.enem_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="enem", text="Enemies")
+        self.crit_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="critluck", text="Critical luck")
+        self.hitc_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hitcount", text="Hitcount")
+        self.spawn_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="spawn", text="Spawn length")
+        self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match", text="Match length")
+        self.death_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="deaths", text="Deaths")
         # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem",
         # text = "Enemies damage dealt to")
         self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
@@ -88,7 +93,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 try:
                     file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except:
+                except ValueError:
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
@@ -126,7 +131,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 try:
                     file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except:
+                except ValueError:
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
@@ -178,7 +183,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 try:
                     file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except:
+                except ValueError:
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
@@ -230,7 +235,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 try:
                     file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except:
+                except ValueError:
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
@@ -283,7 +288,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 try:
                     file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except:
+                except ValueError:
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
@@ -298,9 +303,9 @@ class graphs_frame(ttk.Frame):
                 else:
                     matches_played_date[file_date] += len(file_cube)
                 if file_date not in enem_per_date:
-                    enem_per_date[file_date] = sum(len(spawn) for spawn in (match for match in results_tuple[5]))
+                    enem_per_date[file_date] = sum([len(spawn) for spawn in (match for match in results_tuple[5])])
                 else:
-                    enem_per_date[file_date] += sum(len(spawn) for spawn in (match for match in results_tuple[5]))
+                    enem_per_date[file_date] += sum([len(spawn) for spawn in (match for match in results_tuple[5])])
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_enem_date = {}
@@ -322,6 +327,294 @@ class graphs_frame(ttk.Frame):
             self.figure.subplots_adjust(bottom=0.35)
             self.canvas.show()
             self.splash_screen.destroy()
+        elif self.type_graph.get() == "critluck":
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            matches_played_date = {}
+            hitcount_per_date = {}
+            critcount_per_date = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except ValueError:
+                    continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in hitcount_per_date:
+                    hitcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
+                    critcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[6]))
+                else:
+                    hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
+                    critcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[6]))
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_crit_luck = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_crit_luck[key] = float(critcount_per_date[key]) / float(hitcount_per_date[key])
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    pass
+            avg_crit_luck = OrderedDict(sorted(avg_crit_luck.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                        color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Average percentage critical hits per day")
+            pyplot.ylabel("Percentage critical hits")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom=0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "hitcount":
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            matches_played_date = {}
+            hitcount_per_date = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except ValueError:
+                    continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in hitcount_per_date:
+                    hitcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
+                else:
+                    hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_hit_match = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_hit_match[key] = round(hitcount_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    pass
+            avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                        color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Average hitcount per match per day")
+            pyplot.ylabel("Amount of hits")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom=0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "spawn":
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            spawns_played_date = {}
+            spawn_length_per_date = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except ValueError:
+                    continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                if file_date in spawns_played_date:
+                    spawns_played_date[file_date] += sum(len(match) for match in file_cube)
+                else:
+                    spawns_played_date[file_date] = sum(len(match) for match in file_cube)
+                start = True
+                spawns_length = 0
+                start_timing = None
+                for match in spawn_timings:
+                    for timing in match:
+                        if start:
+                            start = False
+                            start_timing = timing
+                        else:
+                            start = True
+                            spawns_length += (timing - start_timing).seconds
+                if file_date in spawn_length_per_date:
+                    spawn_length_per_date[file_date] += spawns_length
+                else:
+                    spawn_length_per_date[file_date] = spawns_length
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_spawn_min = {}
+            for key, value in spawns_played_date.iteritems():
+                try:
+                    avg_spawn_min[key] = round((float(spawn_length_per_date[key]) / float(value)) / 60, 2)
+                    if avg_spawn_min[key] == 0:
+                        del avg_spawn_min[key]
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    pass
+            avg_crit_luck = OrderedDict(sorted(avg_spawn_min.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                        color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Length of average spawn per day")
+            pyplot.ylabel("Spawn length in minutes")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom=0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "match":
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            matches_played_date = {}
+            match_length_day = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except ValueError:
+                    continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                print match_timings
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                match_length = 0
+                start = True
+                start_timing = None
+                for timing in match_timings:
+                    if start:
+                        start_timing = timing
+                        start = False
+                    else:
+                        match_length += (timing - start_timing).seconds
+                        start = True
+                if file_date in match_length_day:
+                    match_length_day[file_date] += match_length
+                else:
+                    match_length_day[file_date] = match_length
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_match_min = {}
+            for key, value in matches_played_date.iteritems():
+                print match_length_day[key]
+                print value
+                try:
+                    avg_match_min[key] = round((float(match_length_day[key]) / float(value)) / 60, 2)
+                    if avg_match_min[key] == 0:
+                        del avg_match_min[key]
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    pass
+            avg_crit_luck = OrderedDict(sorted(avg_match_min.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                        color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Length of average match per day")
+            pyplot.ylabel("Match length in minutes")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom=0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
+        elif self.type_graph.get() == "deaths":
+            files_dates = {}
+            datetimes = []
+            variables.files_done = 0
+            self.splash_screen = toplevels.splash_screen(self.main_window,
+                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
+                                                         title="Calculating graph...")
+            matches_played_date = {}
+            deaths_per_date = {}
+            for file in os.listdir(variables.settings_obj.cl_path):
+                if not file.endswith(".txt"):
+                    continue
+                try:
+                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
+                except ValueError:
+                    continue
+                datetimes.append(file_date)
+                files_dates[file] = file_date
+                with open(file, "r") as file_obj:
+                    lines = file_obj.readlines()
+                player = parse.determinePlayer(lines)
+                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
+                if file_date not in matches_played_date:
+                    matches_played_date[file_date] = len(file_cube)
+                else:
+                    matches_played_date[file_date] += len(file_cube)
+                if file_date not in deaths_per_date:
+                    deaths_per_date[file_date] = sum((len(match) - 1) for match in file_cube)
+                else:
+                    deaths_per_date[file_date] += sum((len(match) - 1) for match in file_cube)
+                variables.files_done += 1
+                self.splash_screen.update_progress()
+            avg_hit_match = {}
+            for key, value in matches_played_date.iteritems():
+                try:
+                    avg_hit_match[key] = round(deaths_per_date[key] / value, 0)
+                except ZeroDivisionError:
+                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    pass
+            avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
+            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                        color=variables.settings_obj.color)
+            # self.axes.xaxis_date()
+            pyplot.title("Average amount of deaths per match per day")
+            pyplot.ylabel("Amount of deaths")
+            pyplot.xlabel("Date")
+            pyplot.xticks(rotation='vertical')
+            pyplot.gca().xaxis.set_major_locator(matdates.MonthLocator())
+            self.figure.subplots_adjust(bottom=0.35)
+            self.canvas.show()
+            self.splash_screen.destroy()
         else:
             tkMessageBox.showinfo("Notice", "No correct graph type selected!")
         self.axes.set_ylim(bottom=0.)
@@ -337,6 +630,11 @@ class graphs_frame(ttk.Frame):
         self.dmgt_graph_radio.grid(column=0, row=3, sticky=tk.W)
         self.hrec_graph_radio.grid(column=0, row=4, sticky=tk.W)
         self.enem_graph_radio.grid(column=0, row=5, sticky=tk.W)
+        self.crit_graph_radio.grid(column=0, row=6, sticky=tk.W)
+        self.hitc_graph_radio.grid(column=0, row=7, sticky=tk.W)
+        self.spawn_graph_radio.grid(column=0, row=8, sticky=tk.W)
+        self.match_graph_radio.grid(column=0, row=9, sticky=tk.W)
+        self.death_graph_radio.grid(column=0, row=10, sticky=tk.W)
         self.update_button.grid(column=0, row=19, sticky=tk.W+tk.E + tk.N + tk.S)
         self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
         self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)
