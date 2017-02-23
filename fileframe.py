@@ -313,7 +313,6 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
-
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -830,3 +829,4 @@ class middle_frame(ttk.Frame):
         self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        
