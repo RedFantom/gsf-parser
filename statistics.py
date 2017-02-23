@@ -1,4 +1,4 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Written by RedFantom, Wing Commander of Thranta Squadron,
 # Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
@@ -212,11 +212,11 @@ class statistics:
             # And own damage taken...
             for list in damagetaken:
                 for number in list:
-                    total_ddealt += number
+                    total_dtaken += number
             # Own damage dealt...
             for list in damagedealt:
                 for number in list:
-                    total_dtaken += number
+                    total_ddealt += number
             # Own healing received...
             for list in healingreceived:
                 for number in list:
