@@ -39,8 +39,11 @@ class splash_screen(tk.Toplevel):
         try:
             list = os.listdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            os.chdir(variables.settings_obj.cl_path)
         except:
             print "[DEBUG] Running on UNIX, functionality disabled"
             return
@@ -179,8 +182,13 @@ class boot_splash(tk.Toplevel):
         try:
             directory = os.listdir(window.default_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Error accessing directory set in settings. Please check your settings.")
-            directory = []
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
+            directory = os.listdir(os.getcwd())
         files = []
         for file in directory:
             if file.endswith(".txt"):

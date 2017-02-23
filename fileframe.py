@@ -13,6 +13,7 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
+import tkFileDialog
 from PIL import Image, ImageTk
 # General imports
 import operator
@@ -223,9 +224,12 @@ class file_frame(ttk.Frame):
         try:
             os.chdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
-            self.splash.destroy()
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
@@ -274,10 +278,12 @@ class file_frame(ttk.Frame):
         try:
             os.chdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
-            if not silent:
-                self.splash.destroy()
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
