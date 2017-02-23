@@ -10,6 +10,7 @@ before_install:
     - pip install numpy
     - pip install pillow
     - pip install pyinstaller
+    - sudo apt-get install python-tk
 script:
     - sudo python testing.py
     - pyinstaller main.py
