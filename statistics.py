@@ -745,7 +745,11 @@ def pretty_event(line_dict, start_of_match, active_id):
         return
     string += ability + (26 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
-        string += "Damage  " + line_dict['amount'].replace("\n", "")
+        if "*" in line_dict['amount']:
+            string += "Damage  " + line_dict['amount'].replace("\n", "").replace("*", "") + \
+                      (8 - len(line_dict['amount'])) * " " + "Critical"
+        else:
+            string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
             if variables.settings_obj.event_colors == "basic":
                 if line_dict['source'] == active_id:
@@ -880,7 +884,11 @@ def print_event(line_dict, start_of_match, player):
         return
     string += ability + (26 - len(ability)) * " "
     if "Damage" in line_dict['effect']:
-        string += "Damage  " + line_dict['amount'].replace("\n", "")
+        if "*" in line_dict['amount']:
+            string += "Damage  " + line_dict['amount'].replace("\n", "").replace("*", "") + \
+                      (8 - len(line_dict['amount'])) * " " + "Critical"
+        else:
+            string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] in player:
             if variables.settings_obj.event_colors == "basic":
                 if line_dict['source'] in player:
