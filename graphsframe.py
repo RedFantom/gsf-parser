@@ -106,6 +106,7 @@ class graphs_frame(ttk.Frame):
                     matches_played_date[file_date] += len(file_cube)
                 variables.files_done += 1
                 self.splash_screen.update_progress()
+            pyplot.ylim(ymin=0, ymax=matches_played_date[max(matches_played_date, key=matches_played_date.get)] + 2)
             pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()),
                        color=variables.settings_obj.color)
             self.axes.xaxis_date()
@@ -158,6 +159,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
             pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
                         color=variables.settings_obj.color)
             self.axes.xaxis_date()
@@ -210,6 +212,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
             pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
                         color=variables.settings_obj.color)
             self.axes.xaxis_date()
@@ -262,6 +265,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 10)
             pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
                         color=variables.settings_obj.color)
             self.axes.xaxis_date()
@@ -274,7 +278,6 @@ class graphs_frame(ttk.Frame):
             self.canvas.show()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "enem":
-            # TODO: Finish this mode for accuracy
             files_dates = {}
             datetimes = []
             variables.files_done = 0
@@ -323,6 +326,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_enem_date.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
             pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -378,6 +382,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_crit_luck.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
             pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -430,6 +435,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
             pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -494,6 +500,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_spawn_min.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
             pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -560,6 +567,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_match_min.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
             pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -611,6 +619,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
+            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)]+2)
             pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                         color=variables.settings_obj.color)
             # self.axes.xaxis_date()
@@ -624,7 +633,6 @@ class graphs_frame(ttk.Frame):
             self.splash_screen.destroy()
         else:
             tkMessageBox.showinfo("Notice", "No correct graph type selected!")
-        self.axes.set_ylim(bottom=0.)
 
     def grid_widgets(self):
         """
