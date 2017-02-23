@@ -297,15 +297,22 @@ class graphs_frame(ttk.Frame):
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
                 results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                print sum(len(spawn) for spawn in (match for match in results_tuple[5]))
                 if file_date not in matches_played_date:
                     matches_played_date[file_date] = len(file_cube)
                 else:
                     matches_played_date[file_date] += len(file_cube)
-                if file_date not in enem_per_date:
-                    enem_per_date[file_date] = sum([len(spawn) for spawn in (match for match in results_tuple[5])])
+                total_enemies_dt = []
+                for match_matrix in results_tuple[5]:
+                    for spawn_list in match_matrix:
+                        for enem in spawn_list:
+                            if results_tuple[10][enem] > 0:
+                                total_enemies_dt.append(enem)
+                total_enemies_dt = set(total_enemies_dt)
+                amount_enem = len(total_enemies_dt)
+                if file_date in enem_per_date:
+                    enem_per_date[file_date] += amount_enem
                 else:
-                    enem_per_date[file_date] += sum([len(spawn) for spawn in (match for match in results_tuple[5])])
+                    enem_per_date[file_date] = amount_enem
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_enem_date = {}
