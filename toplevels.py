@@ -85,7 +85,7 @@ class overlay(tk.Toplevel):
                 tkMessageBox.showerror("Error",
                                        "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
         print "[DEBUG] Setting overlay font to: ", (
-        variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
+            variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
         if variables.settings_obj.size == "big":
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
                                         justify=tk.LEFT, font=(
@@ -131,6 +131,13 @@ class overlay(tk.Toplevel):
             pos_c = "+%s+0" % (int(variables.screen_w) - int(w_req))
         elif variables.settings_obj.pos == "BR":
             pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req), int(variables.screen_h) - int(h_req))
+        elif variables.settings_obj.pos == "UC":
+            pos_c = "+0+%s" % int(0.25 * variables.screen_h)
+        elif variables.settings_obj.pos == "NQ":
+            pos_c = "+%s+%s" % (int(variables.screen_w * 0.25), int(variables.screen_h) - int(h_req))
+        elif variables.settings_obj.pos == "UT":
+            pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req),
+                                variables.screen_h - int(0.75 * variables.screen_h))
         else:
             raise ValueError("vars.settings_obj.pos not valid")
         self.wm_geometry("%sx%s" % (int(w_req), int(h_req)) + pos_c)

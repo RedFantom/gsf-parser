@@ -149,6 +149,12 @@ class settings_frame(ttk.Frame):
                                                          value="TR", text="Top right")
         self.overlay_position_radio_br = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_position_var,
                                                          value="BR", text="Bottom right")
+        self.overlay_position_radio_ut = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_position_var,
+                                                         value="UT", text="Under targeting computer")
+        self.overlay_position_radio_uc = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_position_var,
+                                                         value="UC", text="Under chat box")
+        self.overlay_position_radio_nq = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_position_var,
+                                                         value="NQ", text="Left from quickbar")
         self.overlay_color_options = ["white", "black", "yellow", "green", "blue", "red"]
         self.overlay_bg_color_radios = []
         self.overlay_bg_color = tk.StringVar()
@@ -306,36 +312,39 @@ class settings_frame(ttk.Frame):
         self.overlay_position_radio_bl.grid(column=2, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_position_radio_tr.grid(column=3, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
         self.overlay_position_radio_br.grid(column=4, row=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_position_radio_ut.grid(column=1, row=5, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
+        self.overlay_position_radio_uc.grid(column=5, row=4, sticky=tk.N+tk.S+tk.W)
+        self.overlay_position_radio_nq.grid(column=4, row=5, sticky=tk.N+tk.S+tk.W, columnspan=2)
         self.realtime_frame.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_tx_label.grid(column=0, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_bg_label.grid(column=0, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_tr_label.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_font_label.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_text_size_label.grid(column=0, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.overlay_text_size_entry.grid(column=1, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_tx_label.grid(column=0, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_bg_label.grid(column=0, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_tr_label.grid(column=0, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_font_label.grid(column=0, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_label.grid(column=0, row=10, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.overlay_text_size_entry.grid(column=1, row=10, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 1
         for radio in self.overlay_tx_color_radios:
-            radio.grid(column=set_column, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
-            set_column += 1
-        set_column = 1
-        for radio in self.overlay_bg_color_radios:
             radio.grid(column=set_column, row=6, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         set_column = 1
-        for radio in self.overlay_tr_color_radios:
+        for radio in self.overlay_bg_color_radios:
             radio.grid(column=set_column, row=7, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
         set_column = 1
-        for radio in self.overlay_font_radios:
+        for radio in self.overlay_tr_color_radios:
             radio.grid(column=set_column, row=8, sticky=tk.N+tk.S+tk.W+tk.E)
             set_column += 1
-        self.overlay_when_gsf_label.grid(column=0, row=10)
-        self.overlay_when_gsf_true.grid(column=1, row=10, sticky=tk.W)
-        self.overlay_when_gsf_false.grid(column=2, row=10, sticky=tk.W)
-        self.realtime_timeout_label.grid(column=0, row=11, sticky=tk.W)
-        self.realtime_timeout_entry.grid(column=1, row=11, sticky=tk.W)
-        self.realtime_timeout_help_button.grid(column=2, row=11, sticky=tk.W)
-        self.realtime_timeout_help_label.grid(column=3, row=11, sticky=tk.W, columnspan=5,
+        set_column = 1
+        for radio in self.overlay_font_radios:
+            radio.grid(column=set_column, row=9, sticky=tk.N+tk.S+tk.W+tk.E)
+            set_column += 1
+        self.overlay_when_gsf_label.grid(column=0, row=11)
+        self.overlay_when_gsf_true.grid(column=1, row=11, sticky=tk.W)
+        self.overlay_when_gsf_false.grid(column=2, row=11, sticky=tk.W)
+        self.realtime_timeout_label.grid(column=0, row=12, sticky=tk.W)
+        self.realtime_timeout_entry.grid(column=1, row=12, sticky=tk.W)
+        self.realtime_timeout_help_button.grid(column=2, row=12, sticky=tk.W)
+        self.realtime_timeout_help_label.grid(column=3, row=12, sticky=tk.W, columnspan=5,
                                               padx=5)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=1, padx=2)

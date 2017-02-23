@@ -82,3 +82,6 @@ spawn = None
 rt_timing = None
 
 insert_queue = Queue.Queue()
+
+screen_w = 0
+screen_h = 0
