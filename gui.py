@@ -42,13 +42,13 @@ class main_window(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.finished = False
         self.style = ttk.Style()
-        self.update_style(start=True)
         self.set_icon()
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
         variables.path = variables.settings_obj.cl_path
+        self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class

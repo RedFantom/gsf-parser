@@ -104,7 +104,10 @@ class Parser(object):
         if not line:
             print "[DEBUG] Line is of NoneType"
             # Should be return for #20?
-            pass
+            return
+
+        if "SetLevel" in line:
+            return
 
         # If first line of the file, save the player name
         if self.player_name == '' and '@' in line['source']:

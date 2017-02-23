@@ -6,6 +6,7 @@
 
 # UI imports
 import tkMessageBox
+import tkFileDialog
 # General imports
 import os
 import ConfigParser
@@ -22,8 +23,7 @@ class defaults:
     # Version to display in settings tab
     version = "2.2.1"
     # Path to get the CombatLogs from
-    cl_path = os.path.expanduser("~") + \
-              "\\Documents\\Star Wars - The Old Republic\\CombatLogs"
+    cl_path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
@@ -71,12 +71,13 @@ class settings:
     def __init__(self, file_name="settings.ini",
                  directory=tempfile.gettempdir()):
         try:
-            os.makedirs(directory.replace("\\temp", "") + "\\GSF Parser", True)
+            os.makedirs((directory.replace("\\temp", "") + "\\GSF Parser").replace("\\", "/"), True)
         except OSError:
             pass
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
-        self.file_name = directory.replace("\\temp", "") + \
-                         "\\GSF Parser\\" + file_name
+        self.directory = self.directory.replace("\\", "/")
+        self.file_name = directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
+        self.file_name = self.file_name.replace("\\", "/")
         self.conf = ConfigParser.RawConfigParser()
         # variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
@@ -128,14 +129,6 @@ class settings:
         else:
             self.overlay_when_gsf = False
         print "[DEBUG] Settings read"
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
 
     # Write the defaults settings found in the class defaults to a pickle in a
     # file
@@ -175,14 +168,6 @@ class settings:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
         self.read_set()
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
 
     # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always
@@ -254,14 +239,20 @@ class settings:
             self.conf.write(settings_file_object)
         self.read_set()
         print "[DEBUG] Settings written"
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
+
+    def write_settings_dict(self, settings_dict):
+        """
+        :param settings_dict: Dictonary of settings with {cat_set_tuple: value} with
+                              cat_set_tuple as (section, setting)
+        :return: None
+        """
+        for cat_set_tuple, value in settings_dict.iteritems():
+            try:
+                self.conf.set(cat_set_tuple[0], cat_set_tuple[1], value)
+            except ConfigParser.NoSectionError:
+                tkMessageBox.showerror("Error", "This section does not exist: %s" % cat_set_tuple[0])
+        with open(self.file_name, "w") as settings_file_object:
+            self.conf.write(settings_file_object)
 
 
 class color_schemes:
@@ -305,16 +296,17 @@ class color_schemes:
         try:
             return list(self.current_scheme[key])
         except KeyError:
-            tkMessageBox.showerror("Error", "The requested color for %s was not found, " \
+            tkMessageBox.showerror("Error", "The requested color for %s was not found, "
                                             "did you alter the event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
         except TypeError:
-            tkMessageBox.showerror("Error", "The requested color for %s was could not be " \
-                                            "type changed into a list. Did you alter the " \
+            tkMessageBox.showerror("Error", "The requested color for %s was could not be "
+                                            "type changed into a list. Did you alter the "
                                             "event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
 
-    def set_scheme(self, name, custom_file=tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+    def set_scheme(self, name, custom_file=(tempfile.gettempdir().replace("temp", "GSF Parser") +
+                                            "\\event_colors.ini").replace("\\", "/")):
         if name == "default":
             self.current_scheme = self.default_colors
         elif name == "pastel":
@@ -328,7 +320,8 @@ class color_schemes:
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
-    def write_custom(self, custom_file=tempfile.gettempdir().replace("temp", "GSF Parser") + "\\event_colors.ini"):
+    def write_custom(self, custom_file=(tempfile.gettempdir().replace("temp", "GSF Parser") +
+                                        "\\event_colors.ini").replace("\\", "/")):
         cp = ConfigParser.RawConfigParser()
         try:
             cp.add_section("colors")
