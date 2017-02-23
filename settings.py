@@ -6,6 +6,7 @@
 
 # UI imports
 import tkMessageBox
+import tkFileDialog
 # General imports
 import os
 import ConfigParser
@@ -128,14 +129,6 @@ class settings:
         else:
             self.overlay_when_gsf = False
         print "[DEBUG] Settings read"
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
 
     # Write the defaults settings found in the class defaults to a pickle in a
     # file
@@ -175,14 +168,6 @@ class settings:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
         self.read_set()
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
 
     # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always
@@ -254,14 +239,6 @@ class settings:
             self.conf.write(settings_file_object)
         self.read_set()
         print "[DEBUG] Settings written"
-        try:
-            os.chdir(self.cl_path)
-        except OSError:
-            tkMessageBox.showerror("Error", "An error occurred while changing "
-                                            "the directory to the specified "
-                                            "CombatLogs directory. Please "
-                                            "check if this folder exists: %s"
-                                   % self.cl_path)
 
     def write_settings_dict(self, settings_dict):
         """
