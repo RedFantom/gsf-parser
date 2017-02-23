@@ -307,14 +307,13 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
-
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.file_box.itemconfig(self.old_file, background="white")
-        if self.file_box.curselection() == (0,):
+        if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
             (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
@@ -395,7 +394,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.match_box.itemconfig(self.old_match, background="white")
-        if self.match_box.curselection() == (0,):
+        if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
             self.old_match = numbers[0]
@@ -459,7 +458,7 @@ class file_frame(ttk.Frame):
         :return:
         """
         self.spawn_box.itemconfig(self.old_spawn, background="white")
-        if self.spawn_box.curselection() == (0,):
+        if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
@@ -821,3 +820,4 @@ class middle_frame(ttk.Frame):
         self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        
