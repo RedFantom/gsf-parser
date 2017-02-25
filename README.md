@@ -4,7 +4,9 @@
 
 Written by RedFantom, Wing Commander of Thranta Squadron, Daethyra,
 Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta
-Squadron. Source is available on the [GitHub repo](https://github.com/RedFantom/GSF-Parser)
+Squadron. Source is available on the [GitHub repo](https://github.com/RedFantom/GSF-Parser). You can get the most 
+recent build of the GSF Parser by pulling the build of the `development` branch [here](https://ci.appveyor.com/api/projects/RedFantom/GSF-Parser/artifacts/GSF_Parser_AppVeyor.zip).
+
 
 This program is available under the GNU GPLv3 License:
 
