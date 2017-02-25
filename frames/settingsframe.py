@@ -14,9 +14,8 @@ except ImportError:
 import ttk
 import tkMessageBox
 import tkFileDialog
-# General imports
 import re
-# Own modules
+
 import variables
 import toplevels
 import widgets

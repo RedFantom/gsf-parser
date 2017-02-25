@@ -14,15 +14,12 @@ except ImportError:
 import ttk
 import tkMessageBox
 import tkSimpleDialog
-# General imports
 import time
 import platform
-# Own modules
+
 import variables
-import realtime
-import stalking_alt
+from parsing import stalking_alt, realtime, statistics
 import toplevels
-import statistics
 
 
 class realtime_frame(ttk.Frame):

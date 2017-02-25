@@ -4,13 +4,14 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 
-import parse
 import os
 import datetime
 import tkFileDialog
 import tkMessageBox
 import Tkinter as tk
 import ttk
+
+from parsing import parse
 
 
 # Function that returns True if a file contains any GSF events

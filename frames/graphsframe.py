@@ -13,19 +13,19 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
-# General imports
+
 import matplotlib
+
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib import pyplot
 from matplotlib import dates as matdates
-from matplotlib.figure import Figure
 import os
 import datetime
 from collections import OrderedDict
 # Own modules
 import variables
-import parse
+from parsing import parse
 import toplevels
 
 

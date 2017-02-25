@@ -12,10 +12,12 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import collections
-import widgets
-from PIL import Image
 import os
+
+from PIL import Image
 from PIL.ImageTk import PhotoImage
+
+import widgets
 
 
 class builds_frame(ttk.Frame):

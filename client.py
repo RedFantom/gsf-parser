@@ -5,13 +5,13 @@
 # For license see LICENSE
 
 import socket
-import variables
-import toplevels
 import tkMessageBox
 import hashlib
 import threading
 import ssl
-import time
+
+import variables
+import toplevels
 
 
 class client_conn:

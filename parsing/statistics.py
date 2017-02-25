@@ -6,11 +6,10 @@
 
 # UI imports
 import tkMessageBox
-# General imports
 import os
 import decimal
 import datetime
-# Own modules
+
 import variables
 import abilities
 import parse

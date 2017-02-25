@@ -12,19 +12,13 @@ try:
 except ImportError:
     import Tkinter as tk
 import ttk
-# General imports
 import os
-# Own modules
+
 import variables
 import client
-import toplevels
 import main
-import fileframe
-import realtimeframe
-import settingsframe
-import sharingframe
-import graphsframe
-import resourcesframe
+from frames import fileframe, resourcesframe, sharingframe, graphsframe, settingsframe, realtimeframe
+import toplevels
 
 
 # Class that contains all code to start the parser

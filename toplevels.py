@@ -9,22 +9,21 @@ try:
     import mtTkinter as tk
 except ImportError:
     import Tkinter as tk
-from PIL import ImageTk, Image
 import ttk
 import tkMessageBox
 import tkColorChooser
 import tkFileDialog
-# General imports
 import os
 import sys
 import tempfile
 import collections
 import struct
-# Own modules
+
+from PIL import ImageTk, Image
+
 import variables
-import statistics
-import widgets
-import abilities
+from parsing import statistics, abilities
+import frames.widgets
 
 
 class splash_screen(tk.Toplevel):
@@ -481,7 +480,7 @@ class filters(tk.Toplevel):
         self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
         print "[DEBUG] Setting up Type filters"
-        self.type_frame = widgets.ToggledFrame(self, text="Type")
+        self.type_frame = frames.widgets.ToggledFrame(self, text="Type")
         self.type_variable = tk.StringVar()
         self.type_variable.set("any")
         self.any_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Any", variable=self.type_variable,
@@ -493,16 +492,16 @@ class filters(tk.Toplevel):
         self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns", variable=self.type_variable,
                                             value="spawns")
         print "[DEBUG] Setting up date filters"
-        self.dateframe = widgets.ToggledFrame(self, text="Date")
-        self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
+        self.dateframe = frames.widgets.ToggledFrame(self, text="Date")
+        self.start_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
         print "[DEBUG] Setting up components filters"
-        self.components_frame = widgets.ToggledFrame(self, text="Components")
-        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
-        self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
-        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
-        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
-        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
+        self.components_frame = frames.widgets.ToggledFrame(self, text="Components")
+        self.primaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
+        self.secondaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
+        self.engines_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
+        self.shields_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
+        self.systems_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
         self.primaries_tickboxes = {}
         self.primaries_tickboxes_vars = {}
         self.secondaries_tickboxes = {}
@@ -540,7 +539,7 @@ class filters(tk.Toplevel):
             self.systems_tickboxes_vars[system_chk] = system_var
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
-        self.ships_frame = widgets.ToggledFrame(self, text="Ships")
+        self.ships_frame = frames.widgets.ToggledFrame(self, text="Ships")
         print "[DEBUG] Setting up buttons"
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter_files)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)

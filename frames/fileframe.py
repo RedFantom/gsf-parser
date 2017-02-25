@@ -14,17 +14,15 @@ except ImportError:
 import ttk
 import tkMessageBox
 import tkFileDialog
-from PIL import Image, ImageTk
-# General imports
 import operator
 import os
 import re
 from datetime import datetime
-# Own modules
+
+from PIL import Image, ImageTk
+
 import variables
-import parse
-import statistics
-import abilities
+from parsing import statistics, parse, abilities
 import toplevels
 import widgets
 
@@ -614,7 +612,7 @@ class ship_frame(ttk.Frame):
         if len(ships_list) > 1:
             print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\default.png")
+                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png")
             except IOError:
                 print "[DEBUG] File not found."
                 tkMessageBox.showerror("Error",
@@ -625,9 +623,11 @@ class ship_frame(ttk.Frame):
         else:
             print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png")
+                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\" + ships_list[0]
+                               + ".png")
             except IOError:
-                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png"
+                print "[DEBUG] File not found: ", os.path.dirname(__file__).replace("frames", "") + "assets\\img\\" \
+                                                  + ships_list[0] + ".png"
                 tkMessageBox.showerror("Error",
                                        "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
@@ -653,8 +653,9 @@ class ship_frame(ttk.Frame):
         :return:
         """
         try:
-            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
-                                                     "\\assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
+            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)).
+                                                     replace("frames", "") +
+                                                     "assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return
@@ -743,8 +744,9 @@ class middle_frame(ttk.Frame):
         self.abilities_label_var = tk.StringVar()
         self.abilities_label = ttk.Label(self.abilities_frame, textvariable=self.abilities_label_var,
                                          justify=tk.LEFT, wraplength=295)
-        self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be" +
-                                                             " accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
+        self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be " +
+                                                             "accurately calculated due to CombatLog limitations, "
+                                                             "as damage dealt by bombs is not recorded.",
                                       justify=tk.LEFT, wraplength=290)
 
     def show_events(self):

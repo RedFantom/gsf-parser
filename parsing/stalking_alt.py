@@ -7,10 +7,11 @@
 # Fully new stalking_alt.py file written by RedFantom as a test for solving the problems with
 # the earlier stalking_alt.py file
 import os
-import variables
 import threading
 import time
 from datetime import datetime
+
+import variables
 import realtime
 
 

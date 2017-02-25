@@ -1,0 +1,24 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python27-x64"
+install:
+  - "%PYTHON%\\python.exe -m pip install matplotlib numpy opencv-python pillow mock pyinstaller configparser"
+build: off
+test_script:
+  - "%PYTHON%\\python.exe testing.py"
+  - "%PYTHON%\\Scripts\\pyinstaller.exe main.py --clean --windowed --icon=assets/logos/icon_green.ico"
+  - "cd dist/main"
+  - "rename main.exe parser.exe"
+  - "cd .."
+  - "cd .."
+  - "cp %PYTHON%\\Lib\\lib-tk\\FileDialog.pyc dist/main/FileDialog.pyc"
+  - "cp %PYTHON%\\Lib\\lib-tk\\Dialog.pyc dist/main/Dialog.pyc"
+  - "cp %PYTHON%\\Lib\\lib-tk\\tkColorChooser.py dist/main/tkColorChooser.py"
+  - "cp %PYTHON%\\Lib\\site-packages\\configparser.pyc dist/main/ConfigParser.pyc"
+  - "cp LICENSE dist/main/LICENSE.txt"
+  - "cp README.md dist/main/README.txt"
+  - "7z a C:\\projects\\gsf-parser\\GSF_Parser_AppVeyor.zip dist/main/*"
+artifacts:
+  - path: GSF_Parser_AppVeyor.zip
+    name: GSF-Parser

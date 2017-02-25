@@ -7,10 +7,11 @@
 # Written by Daethyra, edited by RedFantom
 
 from decimal import Decimal
-from stalking import LogStalker
 import datetime
-import variables
 import re
+
+from parsing.stalking import LogStalker
+import variables
 
 
 class Parser(object):
