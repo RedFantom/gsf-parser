@@ -117,10 +117,12 @@ class TestParseFunctions(unittest.TestCase):
 if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
+            time.sleep(2)
             self.window = gui.main_window()
             time.sleep(2)
 
         def tearDown(self):
+            time.sleep(2)
             self.window.destroy()
             time.sleep(2)
 
@@ -165,9 +167,39 @@ if sys.platform == "win32":
             self.window.realtime_frame.start_parsing_button.invoke()
             self.window.update()
             self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
+            self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
+                             "Watching: combat_2017-02-26_12_00_00_000000.txt")
             self.window.realtime_frame.start_parsing_button.invoke()
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
+
+        '''
+        Cannot be used until issue/optimization #35 is solved
+
+        def test_graphs_frame(self):
+            self.window.notebook.select(self.window.graphs_frame)
+            self.window.graphs_frame.update_button.invoke()
+            self.window.update()
+            for widget in self.window.graphs_frame.children.values():
+                if isinstance(widget, tk.Radiobutton):
+                    widget.select()
+                    self.window.graphs_frame.update_button.invoke()
+                    self.window.update()
+        '''
+
+        def test_settings_frame(self):
+            self.window.notebook.select(self.window.settings_tab_frame)
+            self.window.settings_frame.save_settings_button.invoke()
+            self.window.settings_frame.discard_settings_button.invoke()
+            self.window.settings_frame.default_settings_button.invoke()
+            for widget in self.window.settings_frame.children.values():
+                if isinstance(widget, tk.Radiobutton):
+                    widget.select()
+                if isinstance(widget, tk.Button):
+                    widget.invoke()
+                if isinstance(widget, tk.Entry):
+                    widget.delete(0, tk.END)
+                    widget.insert(0, "value")
 
 
 class TestVision(unittest.TestCase):
@@ -213,4 +245,4 @@ if __name__ == "__main__":
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
-    unittest.main()
+    unittest.main(exit=False)
