@@ -5,10 +5,12 @@ environment:
     - PYTHON: "C:\\Python27"
     - PYTHON: "C:\\Python27-x64"
 install:
-  - "%PYTHON%\\python.exe -m pip install matplotlib numpy opencv-python pillow mock pyinstaller configparser"
+  - "%PYTHON%\\python.exe -m pip install matplotlib numpy opencv-python pillow mock pyinstaller configparser codecov coverage"
 build: off
 test_script:
   - "%PYTHON%\\python.exe testing.py"
+after_test:
+  - "%PYTHON%\\Scripts\\coverage.exe run testing.py"
   - "%PYTHON%\\Scripts\\pyinstaller.exe main.py --clean --windowed --icon=assets/logos/icon_green.ico"
   - "cd dist/main"
   - "rename main.exe parser.exe"
@@ -22,6 +24,7 @@ test_script:
   - "cp LICENSE dist/main/LICENSE.txt"
   - "cp README.md dist/main/README.txt"
   - "7z a C:\\projects\\gsf-parser\\GSF_Parser_AppVeyor.zip dist/main/*"
+  - "%PYTHON%\\Scripts\\codecov.exe"
 artifacts:
   - path: GSF_Parser_AppVeyor.zip
     name: GSF-Parser
