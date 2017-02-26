@@ -15,11 +15,13 @@ import gui
 import Tkinter as tk
 import tkMessageBox
 import time
+from parsing import stalking_alt as stalking
+from parsing import realtime
 
 
-class TestParseFunctions(unittest.TestCase):
+class TestFileParsing(unittest.TestCase):
     def setUp(self):
-        with open("os/CombatLog.txt", "r") as log:
+        with open("logs/CombatLog.txt", "r") as log:
             self.lines = log.readlines()
 
     def test_determinePlayerName(self):
@@ -113,6 +115,55 @@ class TestParseFunctions(unittest.TestCase):
         self.assertEqual(stats_tuple[11], {"20477000009356": 1400,
                                            "20477000009322": 0})
 
+
+class TestRealtimeParsing(unittest.TestCase):
+    def setUp(self):
+        with open("logs/CombatLog.txt", "r") as log:
+            self.lines = log.readlines()
+        self.stalking_lines = []
+        self.stalker = stalking.LogStalker(callback=self.line_callback)
+        self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
+                                   match_callback=self.match_callback,
+                                   new_match_callback=self.new_match_callback,
+                                   insert=self.insert)
+
+    def tearDown(self):
+        self.stalker.FLAG = False
+        time.sleep(2)
+        self.assertFalse(self.stalker.is_alive())
+
+    def test_realtime_parsing(self):
+        pass
+
+    def test_stalking(self):
+        log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                        replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
+        for line in self.lines:
+            log.write(line)
+            time.sleep(0.5)
+            self.assertTrue(line in self.stalking_lines)
+        log.close()
+
+    def insert(self, *args):
+        pass
+
+    def line_callback(self, lines):
+        for line in lines:
+            self.rlt.parse(line, False)
+
+    def stalking_callback(self, lines):
+        for line in lines:
+            self.stalking_lines.append(line)
+
+    def spawn_callback(self, *args):
+        self.spawn = True
+
+    def match_callback(self, *args):
+        self.match = False
+        self.spawn = False
+
+    def new_match_callback(self, *args):
+        self.match = True
 
 if sys.platform == "win32":
     class TestUI(unittest.TestCase):
@@ -240,7 +291,7 @@ if __name__ == "__main__":
             pass
         with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
                         replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
-            with open(os.getcwd() + "/CombatLog.txt", "r") as source_log:
+            with open(os.getcwd() + "/logs/CombatLog.txt", "r") as source_log:
                 target_log.writelines(source_log.readlines())
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
