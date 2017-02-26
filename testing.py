@@ -12,7 +12,6 @@ from PIL import Image
 import mock
 import sys
 import gui
-print "Importing Tkinter"
 import Tkinter as tk
 
 
@@ -114,9 +113,6 @@ class TestParseFunctions(unittest.TestCase):
 
 
 if sys.platform == "win32":
-    print "Creating TestUI class"
-
-
     class TestUI(unittest.TestCase):
         def setUp(self):
             self.window = gui.main_window()
@@ -194,6 +190,8 @@ def grab():
 
 if __name__ == "__main__":
     print "\n"
+    if sys.platform == "win32":
+        os.makedirs((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").
+                    replace("\\", "/"))
     from parsing import parse, vision
-    print "Starting unittest"
     unittest.main()
