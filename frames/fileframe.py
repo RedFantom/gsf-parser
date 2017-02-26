@@ -157,7 +157,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         self.main_window.ship_frame.ship_label_var.set("")
-        with open(variables.file_name, "r") as file:
+        with open(variables.settings_obj.cl_path + "/" + variables.file_name, "r") as file:
             variables.player_name = parse.determinePlayerName(file.readlines())
         self.spawn_box.delete(0, tk.END)
         self.match_timing_strings = []
@@ -220,17 +220,18 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
         self.splash = toplevels.splash_screen(self.main_window)
         try:
+            old_path = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
+            os.chdir(old_path)
         except OSError:
             tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
                                             "choose another folder.")
             folder = tkFileDialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-            os.chdir(variables.settings_obj.cl_path)
-        for file in os.listdir(os.getcwd()):
+        for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(file):
+                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         if variables.settings_obj.date_format == "ymd":
                             dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
@@ -274,17 +275,18 @@ class file_frame(ttk.Frame):
         if not silent:
             self.splash = toplevels.splash_screen(self.main_window)
         try:
+            old_cwd = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
+            os.chdir(old_cwd)
         except OSError:
             tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
                                             "choose another folder.")
             folder = tkFileDialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-            os.chdir(variables.settings_obj.cl_path)
-        for file in os.listdir(os.getcwd()):
+        for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(file):
+                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
                     except ValueError:
@@ -373,7 +375,7 @@ class file_frame(ttk.Frame):
                 tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
                                                 "consult the issues page of the GitHub repository.")
             # Read all the lines from the selected file
-            with open(variables.file_name, "rU") as clicked_file:
+            with open(variables.settings_obj.cl_path + "/" + variables.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
             # PARSING STARTS
             # Get the player ID numbers from the list of lines

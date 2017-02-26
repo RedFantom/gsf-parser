@@ -42,7 +42,7 @@ class splash_screen(tk.Toplevel):
                                             "choose another folder.")
             folder = tkFileDialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
-            os.chdir(variables.settings_obj.cl_path)
+            list = os.listdir(variables.settings_obj.cl_path)
         except:
             print "[DEBUG] Running on UNIX, functionality disabled"
             return

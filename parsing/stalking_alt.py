@@ -83,7 +83,7 @@ class LogStalker(threading.Thread):
                 if self.stringvar:
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
-                with open(self.current_file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
             time.sleep(variables.settings_obj.timeout)

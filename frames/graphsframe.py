@@ -97,7 +97,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                     file_cube, match_timings, spawn_timings = parse.splitter(lines, parse.determinePlayer(lines))
                 if file_date not in matches_played_date:
@@ -136,7 +136,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -189,7 +189,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -242,7 +242,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -295,7 +295,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -357,7 +357,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -412,7 +412,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -465,7 +465,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -530,7 +530,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -597,7 +597,7 @@ class graphs_frame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
