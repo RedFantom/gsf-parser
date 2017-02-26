@@ -27,13 +27,16 @@ This program is available under the GNU GPLv3 License:
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  
-Created with:
-PyInstaller
-Inno Setup
-Tkinter
-mtTkinter
-tile-themes
+
+### Project dependencies
+This project uses multiple dependencies, all of which are needed to run the GSF Parser correctly correctly from Source Code.
+- [mtTkinter](http://tkinter.unpythonic.net/wiki/mtTkinter) by Allen B. Taylor, LGPL
+- [tile-themes](http://tkinter.unpythonic.net/wiki/mtTkinter) from the tkTable project, BSD License
+- matplotlib, `pip install matplotlib`
+- mock, `pip install mock`
+- pillow, `pip install pillow`
+- numpy, `pip install numpy`
+- OpenCV-Python (version 3 or greater), `pip install opencv-python` on Windows and `sudo apt-get install python-opencv` on Debian based-systems
 
 The creators of this sotware do not own Star Wars or any related trademarks. All
 trademarks are property of their respective owners.
