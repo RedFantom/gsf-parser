@@ -147,6 +147,7 @@ if sys.platform == "win32":
             self.window.file_select_frame.refresh_button.invoke()
             self.window.update()
             self.assertEqual(self.window.file_select_frame.file_box.get(0), "All CombatLogs")
+            self.assertEqual(self.window.file_select_frame.file_box.get(1), "2017-02-26   12:00")
 
         def test_custom_color_toplevel(self):
             self.window.settings_frame.event_scheme_custom_button.invoke()
@@ -202,6 +203,10 @@ if __name__ == "__main__":
                         replace("\\", "/"))
         except OSError:
             pass
+        with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                        replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
+            with open(os.getcwd() + "/CombatLog.txt", "r") as source_log:
+                target_log.writelines(source_log.readlines())
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
