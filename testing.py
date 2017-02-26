@@ -13,6 +13,7 @@ import mock
 import sys
 import gui
 import Tkinter as tk
+import tkMessageBox
 
 
 class TestParseFunctions(unittest.TestCase):
@@ -188,10 +189,20 @@ class TestVision(unittest.TestCase):
 def grab():
     return Image.open(os.getcwd() + "/assets/vision/testing.png")
 
+
+def messagebox(title, message):
+    pass
+
+
 if __name__ == "__main__":
     print "\n"
     if sys.platform == "win32":
-        os.makedirs((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").
-                    replace("\\", "/"))
+        try:
+            os.makedirs((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").
+                        replace("\\", "/"))
+        except OSError:
+            pass
+        tkMessageBox.showerror = messagebox
+        tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
     unittest.main()
