@@ -11,6 +11,9 @@ import os
 from PIL import Image
 import mock
 import sys
+import gui
+import Tkinter as tk
+import tkMessageBox
 
 
 class TestParseFunctions(unittest.TestCase):
@@ -110,8 +113,63 @@ class TestParseFunctions(unittest.TestCase):
                                            "20477000009322": 0})
 
 
+if sys.platform == "win32":
+    class TestUI(unittest.TestCase):
+        def setUp(self):
+            self.window = gui.main_window()
+
+        def tearDown(self):
+            self.window.destroy()
+
+        def test_instances(self):
+            self.assertIsInstance(self.window, tk.Tk)
+            for item in self.window.children.values():
+                self.assertIsInstance(item, tk.Widget)
+
+        def test_main_window(self):
+            self.window.update()
+
+        def test_notebook(self):
+            self.window.notebook.select(self.window.file_tab_frame)
+            self.window.update()
+            self.window.notebook.select(self.window.graphs_frame)
+            self.window.update()
+            self.window.notebook.select(self.window.realtime_tab_frame)
+            self.window.update()
+            self.window.notebook.select(self.window.share_tab_frame)
+            self.window.update()
+            self.window.notebook.select(self.window.resources_frame)
+            self.window.update()
+            self.window.notebook.select(self.window.settings_tab_frame)
+            self.window.update()
+
+        def test_file_adding(self):
+            self.window.file_select_frame.refresh_button.invoke()
+            self.window.update()
+            self.assertEqual(self.window.file_select_frame.file_box.get(0), "All CombatLogs")
+            self.assertEqual(self.window.file_select_frame.file_box.get(1), "2017-02-26   12:00")
+
+        def test_custom_color_toplevel(self):
+            self.window.settings_frame.event_scheme_custom_button.invoke()
+            self.window.update()
+            self.assertIsInstance(self.window.settings_frame.color_toplevel, tk.Toplevel)
+            self.window.update()
+            self.window.settings_frame.color_toplevel.destroy()
+
+        def test_realtime_parsing_button(self):
+            self.window.update()
+            self.window.update()
+            self.window.realtime_frame.start_parsing_button.invoke()
+            self.window.update()
+            self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
+            self.window.realtime_frame.start_parsing_button.invoke()
+            self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
+            self.window.update()
+
+
 class TestVision(unittest.TestCase):
     def test_get_pointer_position(self):
+        os.chdir(os.path.realpath(os.path.dirname(__file__)))
         example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
         if sys.platform == "win32":
             with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
@@ -132,7 +190,24 @@ class TestVision(unittest.TestCase):
 def grab():
     return Image.open(os.getcwd() + "/assets/vision/testing.png")
 
+
+def messagebox(title, message):
+    pass
+
+
 if __name__ == "__main__":
     print "\n"
+    if sys.platform == "win32":
+        try:
+            os.makedirs((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").
+                        replace("\\", "/"))
+        except OSError:
+            pass
+        with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                        replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
+            with open(os.getcwd() + "/CombatLog.txt", "r") as source_log:
+                target_log.writelines(source_log.readlines())
+        tkMessageBox.showerror = messagebox
+        tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
     unittest.main()
