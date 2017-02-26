@@ -95,7 +95,7 @@ class LogStalker(threading.Thread):
         :return: list of lines
         """
         self.lines = []
-        with open(self.current_file, "rb") as file_obj:
+        with open(variables.settings_obj.cl_path + "/" + self.current_file, "rb") as file_obj:
             lines_temp = file_obj.readlines()[self.read_so_far:]
         try:
             line_temp = lines_temp[-1]
