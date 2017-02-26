@@ -19,8 +19,11 @@ before_install:
     - sudo pip install pillow
     - sudo pip install mock
     - sudo pip install pyscreenshot
+    - sudo pip install codecov
     - sudo apt-get install python-opencv
     - cd /home/travis/build/RedFantom/GSF-Parser
 script:
   - sudo python testing.py
   - pyinstaller main.py
+after_install:
+  - codecov
