@@ -16,6 +16,7 @@ test_script:
   - "cp %PYTHON%\\Lib\\lib-tk\\Dialog.pyc dist/main/Dialog.pyc"
   - "cp %PYTHON%\\Lib\\lib-tk\\tkColorChooser.py dist/main/tkColorChooser.py"
   - "cp %PYTHON%\\Lib\\site-packages\\configparser.pyc dist/main/ConfigParser.pyc"
+  - "cp assets dist/main/assets"
   - "cp LICENSE dist/main/LICENSE.txt"
   - "cp README.md dist/main/README.txt"
   - "7z a C:\\projects\\gsf-parser\\GSF_Parser_AppVeyor.zip dist/main/*"
