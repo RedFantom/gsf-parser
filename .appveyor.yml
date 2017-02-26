@@ -10,7 +10,7 @@ build: off
 test_script:
   - "%PYTHON%\\python.exe testing.py"
 after_test:
-  - "coverage run testing.py"
+  - "%PYTHON%\\Scripts\\coverage.exe run testing.py"
   - "%PYTHON%\\Scripts\\pyinstaller.exe main.py --clean --windowed --icon=assets/logos/icon_green.ico"
   - "cd dist/main"
   - "rename main.exe parser.exe"
