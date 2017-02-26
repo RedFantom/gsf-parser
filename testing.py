@@ -19,7 +19,7 @@ import time
 
 class TestParseFunctions(unittest.TestCase):
     def setUp(self):
-        with open("CombatLog.txt", "r") as log:
+        with open("os/CombatLog.txt", "r") as log:
             self.lines = log.readlines()
 
     def test_determinePlayerName(self):
