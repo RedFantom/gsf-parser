@@ -14,6 +14,7 @@ import sys
 import gui
 import Tkinter as tk
 import tkMessageBox
+import time
 
 
 class TestParseFunctions(unittest.TestCase):
@@ -117,9 +118,11 @@ if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
             self.window = gui.main_window()
+            time.sleep(2)
 
         def tearDown(self):
             self.window.destroy()
+            time.sleep(2)
 
         def test_instances(self):
             self.assertIsInstance(self.window, tk.Tk)
