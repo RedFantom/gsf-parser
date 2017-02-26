@@ -116,55 +116,6 @@ class TestFileParsing(unittest.TestCase):
                                            "20477000009322": 0})
 
 
-class TestRealtimeParsing(unittest.TestCase):
-    def setUp(self):
-        with open("logs/CombatLog.txt", "r") as log:
-            self.lines = log.readlines()
-        self.stalking_lines = []
-        self.stalker = stalking.LogStalker(callback=self.line_callback)
-        self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
-                                   match_callback=self.match_callback,
-                                   new_match_callback=self.new_match_callback,
-                                   insert=self.insert)
-
-    def tearDown(self):
-        self.stalker.FLAG = False
-        time.sleep(2)
-        self.assertFalse(self.stalker.is_alive())
-
-    def test_realtime_parsing(self):
-        pass
-
-    def test_stalking(self):
-        log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
-                        replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
-        for line in self.lines:
-            log.write(line)
-            time.sleep(0.5)
-            self.assertTrue(line in self.stalking_lines)
-        log.close()
-
-    def insert(self, *args):
-        pass
-
-    def line_callback(self, lines):
-        for line in lines:
-            self.rlt.parse(line, False)
-
-    def stalking_callback(self, lines):
-        for line in lines:
-            self.stalking_lines.append(line)
-
-    def spawn_callback(self, *args):
-        self.spawn = True
-
-    def match_callback(self, *args):
-        self.match = False
-        self.spawn = False
-
-    def new_match_callback(self, *args):
-        self.match = True
-
 if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
@@ -251,6 +202,56 @@ if sys.platform == "win32":
                 if isinstance(widget, tk.Entry):
                     widget.delete(0, tk.END)
                     widget.insert(0, "value")
+
+
+    class TestRealtimeParsing(unittest.TestCase):
+        def setUp(self):
+            with open("logs/CombatLog.txt", "r") as log:
+                self.lines = log.readlines()
+            self.stalking_lines = []
+            self.stalker = stalking.LogStalker(callback=self.line_callback)
+            self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
+                                       match_callback=self.match_callback,
+                                       new_match_callback=self.new_match_callback,
+                                       insert=self.insert)
+
+        def tearDown(self):
+            self.stalker.FLAG = False
+            time.sleep(2)
+            self.assertFalse(self.stalker.is_alive())
+
+        def test_realtime_parsing(self):
+            pass
+
+        def test_stalking(self):
+            log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                            replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
+            for line in self.lines:
+                log.write(line)
+                time.sleep(0.5)
+                self.assertTrue(line in self.stalking_lines)
+            log.close()
+
+        def insert(self, *args):
+            pass
+
+        def line_callback(self, lines):
+            for line in lines:
+                self.rlt.parse(line, False)
+
+        def stalking_callback(self, lines):
+            for line in lines:
+                self.stalking_lines.append(line)
+
+        def spawn_callback(self, *args):
+            self.spawn = True
+
+        def match_callback(self, *args):
+            self.match = False
+            self.spawn = False
+
+        def new_match_callback(self, *args):
+            self.match = True
 
 
 class TestVision(unittest.TestCase):
