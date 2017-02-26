@@ -24,7 +24,7 @@ after_test:
   - "cp LICENSE dist/main/LICENSE.txt"
   - "cp README.md dist/main/README.txt"
   - "7z a C:\\projects\\gsf-parser\\GSF_Parser_AppVeyor.zip dist/main/*"
-  - "%PYTHON%\\codecov.exe"
+  - "%PYTHON%\\Scripts\\codecov.exe"
 artifacts:
   - path: GSF_Parser_AppVeyor.zip
     name: GSF-Parser
