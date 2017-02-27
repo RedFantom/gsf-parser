@@ -27,6 +27,6 @@ before_install:
 script:
   - sudo python testing.py
   - pyinstaller main.py
-after_install:
+after_success:
   - sudo coverage run testing.py
   - codecov
