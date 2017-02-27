@@ -21,6 +21,7 @@ before_install:
     - sudo pip install pyscreenshot
     - sudo pip install codecov
     - sudo pip install coverage
+    - sudo pip install mttkinter
     - sudo apt-get install python-opencv
     - cd /home/travis/build/RedFantom/GSF-Parser
 script:
