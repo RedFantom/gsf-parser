@@ -30,7 +30,7 @@ This program is available under the GNU GPLv3 License:
 
 ### Project dependencies
 This project uses multiple dependencies, all of which are needed to run the GSF Parser correctly correctly from Source Code.
-- [mtTkinter](http://tkinter.unpythonic.net/wiki/mtTkinter) by Allen B. Taylor, LGPL
+- [mtTkinter](https://github.com/RedFantom/mtTkinter) by Allen B. Taylor, LGPL, published by RedFantom on PyPI, `pip install mttkinter`
 - [tile-themes](http://tkinter.unpythonic.net/wiki/mtTkinter) from the tkTable project, BSD License
 - matplotlib, `pip install matplotlib`
 - mock, `pip install mock`
