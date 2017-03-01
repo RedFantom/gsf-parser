@@ -751,6 +751,7 @@ class middle_frame(ttk.Frame):
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
                                                command=self.enemies_treeview.yview)
         self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
+        self.abilities_scrollable_frame = widgets.vertical_scroll_frame(self.notebook)
         self.abilities_frame = self.abilities_scrollable_frame.interior
         self.notebook.add(self.abilities_scrollable_frame, text="Abilities")
         self.abilities_label_var = tk.StringVar()
