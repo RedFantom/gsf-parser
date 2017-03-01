@@ -337,24 +337,18 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=("System",
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy,
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy[6:],
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
-                if number == "odd":
-                    number = "even"
-                else:
-                    number = "odd"
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             most_used_ship = max(shipsdict.iteritems(), key=operator.itemgetter(1))[0]
             self.main_window.ship_frame.update_ship([most_used_ship])
@@ -427,24 +421,18 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=("System",
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy,
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy[6:],
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
-                if number == "odd":
-                    number = "even"
-                else:
-                    number = "odd"
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
             self.spawn_box.focus()
@@ -492,24 +480,18 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=("System",
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy,
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy[6:],
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
-                if number == "odd":
-                    number = "even"
-                else:
-                    number = "odd"
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             self.main_window.ship_frame.remove_image()
         else:
@@ -551,24 +533,18 @@ class file_frame(ttk.Frame):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=("System",
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy,
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
+                                                                                  str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=(enemy[6:],
                                                                                   str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])),
-                                                                          tags=(number,))
-                if number == "odd":
-                    number = "even"
-                else:
-                    number = "odd"
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.state(["!disabled"])
             self.main_window.ship_frame.update_ship(ships_list)
 
@@ -742,10 +718,15 @@ class middle_frame(ttk.Frame):
                                                                           "Damage taken"),
                                              displaycolumns=("Enemy name/ID", "Damage dealt", "Damage taken"),
                                              height=14)
+        tree_columns = ("Enemy name/ID", "Damage dealt", "Damage taken")
+        for column in tree_columns:
+            self.enemies_treeview.heading(column, text=column,
+                                          command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                    column, False))
         self.enemies_treeview["show"] = "headings"
-        self.enemies_treeview.column("Enemy name/ID", width=145, stretch=False)
-        self.enemies_treeview.column("Damage taken", width=70, stretch=False)
-        self.enemies_treeview.column("Damage dealt", width=70, stretch=False)
+        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False)
+        self.enemies_treeview.column("Damage taken", width=80, stretch=False)
+        self.enemies_treeview.column("Damage dealt", width=80, stretch=False)
         self.enemies_treeview.tag_configure("odd", background="lightgrey")
         self.enemies_treeview.tag_configure("even", background="white")
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
@@ -783,4 +764,11 @@ class middle_frame(ttk.Frame):
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W+tk.E+tk.S)
         self.enemies_treeview.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+
+    def treeview_sort_column(self, treeview, column, reverse):
+        l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
+        l.sort(key=lambda t: int(t[0]), reverse=reverse)
+        for index, (val, k) in enumerate(l):
+            treeview.move(k, '', index)
+        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse))
 
