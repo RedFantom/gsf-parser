@@ -211,7 +211,8 @@ class file_frame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_treeview.delete(*self.main_window.abilities_treeview.get_children(""))
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children(""))
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
