@@ -180,7 +180,8 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children(""))
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
@@ -210,7 +211,7 @@ class file_frame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.abilities_treeview.delete(*self.main_window.abilities_treeview.get_children(""))
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
@@ -263,7 +264,8 @@ class file_frame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_label_var.set("")
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
@@ -312,16 +314,18 @@ class file_frame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         for index, filestring in enumerate(self.file_box.get(0, tk.END)):
             self.file_box.itemconfig(index, background="white")
         if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
-            (abilities_string, statistics_string, shipsdict, enemies, enemydamaged,
+            (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
              enemydamaget, uncounted) = statistics.statistics.folder_statistics()
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
@@ -331,7 +335,6 @@ class file_frame(ttk.Frame):
                     ships_string += ship + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            number = "odd"
             for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
@@ -393,6 +396,8 @@ class file_frame(ttk.Frame):
             self.match_box.itemconfig(index, background="white")
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
@@ -403,9 +408,10 @@ class file_frame(ttk.Frame):
             except TypeError:
                 variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
             file_cube = variables.file_cube
-            (abilities_string, statistics_string, shipsdict, enemies,
+            (abilities_dict, statistics_string, shipsdict, enemies,
              enemydamaged, enemydamaget, uncounted) = self.statistics_object.file_statistics(file_cube)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
@@ -415,7 +421,6 @@ class file_frame(ttk.Frame):
                     ships_string += ship + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            number = "odd"
             for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
@@ -457,15 +462,18 @@ class file_frame(ttk.Frame):
             self.spawn_box.itemconfig(index, background="white")
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             for spawn in match:
                 variables.player_numbers.update(parse.determinePlayer(spawn))
-            (abilities_string, statistics_string, shipsdict, enemies,
+            (abilities_dict, statistics_string, shipsdict, enemies,
              enemydamaged, enemydamaget) = self.statistics_object.match_statistics(match)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
@@ -474,7 +482,6 @@ class file_frame(ttk.Frame):
                 except KeyError:
                     ships_string += ship + "\t\t0\n"
             ships_string += "Uncounted\t\t%s" % shipsdict["Uncounted"]
-            number = "odd"
             for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
@@ -516,9 +523,10 @@ class file_frame(ttk.Frame):
             spawn = match[self.spawn_timing_strings.index(variables.spawn_timing)]
             variables.spawn = spawn
             variables.player_numbers = parse.determinePlayer(spawn)
-            (abilities_string, statistics_string, ships_list, ships_comps,
+            (abilities_dict, statistics_string, ships_list, ships_comps,
              enemies, enemydamaged, enemydamaget) = self.statistics_object.spawn_statistics(spawn)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Possible ships used:\n"
             for ship in ships_list:
@@ -527,7 +535,6 @@ class file_frame(ttk.Frame):
             for component in ships_comps:
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            number = "odd"
             for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
@@ -731,17 +738,25 @@ class middle_frame(ttk.Frame):
         self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor=tk.W)
         self.enemies_treeview.column("Damage taken", width=80, stretch=False, anchor=tk.E)
         self.enemies_treeview.column("Damage dealt", width=80, stretch=False, anchor=tk.E)
-        self.enemies_treeview.tag_configure("odd", background="lightgrey")
-        self.enemies_treeview.tag_configure("even", background="white")
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
                                                command=self.enemies_treeview.yview)
         self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
-        self.abilities_scrollable_frame = widgets.vertical_scroll_frame(self.notebook)
-        self.abilities_frame = self.abilities_scrollable_frame.interior
-        self.notebook.add(self.abilities_scrollable_frame, text="Abilities")
-        self.abilities_label_var = tk.StringVar()
-        self.abilities_label = ttk.Label(self.abilities_frame, textvariable=self.abilities_label_var,
-                                         justify=tk.LEFT, wraplength=295)
+        self.abilities_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.abilities_frame, text="Abilities")
+        self.abilities_treeview = ttk.Treeview(self.abilities_frame, columns=("Ability", "Times used"),
+                                               displaycolumns=("Ability", "Times used"), height=14)
+        self.abilities_treeview.column("Ability", width=200, stretch=False, anchor=tk.W)
+        self.abilities_treeview.column("Times used", width=85, stretch=False, anchor=tk.E)
+        self.abilities_treeview.heading("Ability", text="Ability",
+                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
+                                                                                  "Ability", False, "str"))
+        self.abilities_treeview.heading("Times used", text="Times used",
+                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
+                                                                                  "Times used", False, "int"))
+        self.abilities_treeview["show"] = "headings"
+        self.abilities_scrollbar = ttk.Scrollbar(self.abilities_frame, orient=tk.VERTICAL,
+                                                 command=self.abilities_treeview.yview)
+        self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
         self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be " +
                                                              "accurately calculated due to CombatLog limitations, "
                                                              "as damage dealt by bombs is not recorded.",
@@ -759,7 +774,8 @@ class middle_frame(ttk.Frame):
         Put all widgets in the right place
         :return:
         """
-        self.abilities_label.grid(column=0, row=2, columnspan=4, sticky=tk.N+tk.W)
+        self.abilities_treeview.grid(column=0, row=0, sticky=tk.N+tk.W)
+        self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N+tk.W+tk.E)
         self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N+tk.W + tk.S + tk.E)
         self.events_button.grid(column=0, row=1, sticky=tk.N+tk.W + tk.S + tk.E, columnspan=4, pady=12)

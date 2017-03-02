@@ -72,18 +72,10 @@ class statistics:
         total_dtaken = 0
         total_hrecvd = 0
         total_selfdmg = 0
-        # TODO: Some of the variables are not yet implemented
-        total_timeplayed = 0
-        avg_criticalluck = None
-        avg_matchtime = None
-        mostplayedship = None
         match_count = 0
-        match_timings = None
         total_hitcount = 0
         total_criticalcount = 0
         total_deaths = 0
-        total_abilities = {}
-        abilities_string = ""
         total_shipsdict = {}
         for ship in abilities.ships:
             total_shipsdict[ship] = 0
@@ -93,9 +85,6 @@ class statistics:
         total_enemydamaget = {}
         total_timeplayed = None
         start_time = None
-        end_time = None
-        criticalnumber = 0
-        criticaltotal = 0
         uncounted = 0
         # TODO: Add the names of all GSF characters found in the folder to the fileframe
         # TODO: interface as an addtional statistic
@@ -298,22 +287,8 @@ class statistics:
             str(total_criticalluck) + "%\n" + str(total_deaths) + "\n" +
             str(total_timeplayed_minutes) + ":" + str(total_timeplayed_seconds) + "\n" +
             str(total_dps))
-        # Start making the abilities string with the right formatt
-        # TODO: Put this into a Treeview widget in the file_frame and upodate this accordingly
-        abilities_string = "Ability\t\t\tTimes used\n\n"
-        for (key, value) in total_abilities.iteritems():
-            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif 8 <= len(key.strip()) <= 18:
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif len(key.strip()) < 8:
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif len(key.strip()) > 18:
-                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         # Return all the stuff
-        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+        return (total_abilities, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
                 total_enemydamaget, uncounted)
 
     @staticmethod
@@ -357,12 +332,7 @@ class statistics:
         total_healingrecv = 0
         total_enemies = []
         total_criticalcount = 0
-        total_criticalluck = 0
         total_hitcount = 0
-        total_enemydamaged = {}
-        total_enemydamaget = {}
-        total_match_timings = None
-        total_spawn_timings = None
 
         for mat in abs:
             for dic in mat:
@@ -400,9 +370,6 @@ class statistics:
             total_criticalluck = 0
         total_enemydamaged = enemydamaged
         total_enemydamaget = enemydamaget
-
-        abilities_string = "Ability\t\t\tTimes used\n\n"
-        statistics_string = ""
         total_shipsdict = {}
         uncounted = 0
         for ship in abilities.ships:
@@ -438,18 +405,6 @@ class statistics:
                 else:
                     uncounted += 1
         total_killsassists = 0
-        for (key, value) in total_abilities.iteritems():
-            if 8 <= len(key.strip()) <= 18:
-                if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
-                    abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-                elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
-                    abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-                elif 8 <= len(key.strip()) <= 18:
-                    abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-                elif len(key.strip()) < 8:
-                    abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-                elif len(key.strip()) > 18:
-                    abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
                 total_killsassists += 1
@@ -468,7 +423,7 @@ class statistics:
             str(total_healingrecv) + "\n" + str(total_hitcount) + "\n" +
             str(total_criticalcount) + "\n" + str(total_criticalluck) + "%" +
             "\n" + str(deaths) + "\n-\n-")
-        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+        return (total_abilities, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
                 total_enemydamaget, uncounted)
 
     @staticmethod
@@ -507,7 +462,6 @@ class statistics:
         total_enemydamaget = {}
         total_killsassists = 0
         ships_uncounted = 0
-        abilities_string = "Ability\t\t\tTimes used\n\n"
         for spawn in match:
             (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
              criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn,
@@ -540,17 +494,6 @@ class statistics:
                     total_shipsdict[ship] += 1
                 else:
                     total_shipsdict[ship] = 1
-        for (key, value) in total_abilitiesdict.iteritems():
-            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif 8 <= len(key.strip()) <= 18:
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif len(key.strip()) < 8:
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif len(key.strip()) > 18:
-                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for enemy in total_enemies:
             if total_enemydamaget[enemy] > 0:
                 total_killsassists += 1
@@ -581,7 +524,7 @@ class statistics:
                              str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +
                              str(total_criticalluck) + "%" + "\n" + str(len(match) - 1) + "\n" + string + "\n" + str(
             dps))
-        return (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
+        return (total_abilitiesdict, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
                 total_enemydamaget)
 
     @staticmethod
@@ -614,23 +557,11 @@ class statistics:
         for enemy in enemies:
             if enemydamaget[enemy] > 0:
                 killsassists += 1
-        abilities_string = "Ability\t\t\tTimes used\n\n"
         ship_components = []
         for key in abilitiesdict:
             if key in abilities.components:
                 ship_components.append(key)
         comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
-        for (key, value) in abilitiesdict.iteritems():
-            if key.strip() == "Lockdown" or key.strip() == "EMP Field" or key.strip() == "Snap Turn":
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif key.strip() == "Targeting Telemetry" or key.strip() == "Quick-Charge Shield":
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif 8 <= len(key.strip()) <= 18:
-                abilities_string = abilities_string + key.strip() + "\t\t%02d\n" % value
-            elif len(key.strip()) < 8:
-                abilities_string = abilities_string + key.strip() + "\t\t\t%02d\n" % value
-            elif len(key.strip()) > 18:
-                abilities_string = abilities_string + key.strip() + "\t%02d\n" % value
         for component in ship_components:
             if component in abilities.primaries:
                 if "Rycer" in ships_list:
@@ -684,7 +615,7 @@ class statistics:
                              str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
-        return abilities_string, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+        return abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
 
 # Name of the columns for the pretty event printing functions
 # TODO: make them visible for the user in some good format
