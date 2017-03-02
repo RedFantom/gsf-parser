@@ -73,7 +73,7 @@ class main_window(tk.Tk):
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
+        self.middle_frame.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E, padx=5, pady=5)
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
