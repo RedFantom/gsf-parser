@@ -718,11 +718,15 @@ class middle_frame(ttk.Frame):
                                                                           "Damage taken"),
                                              displaycolumns=("Enemy name/ID", "Damage dealt", "Damage taken"),
                                              height=14)
-        tree_columns = ("Enemy name/ID", "Damage dealt", "Damage taken")
-        for column in tree_columns:
-            self.enemies_treeview.heading(column, text=column,
-                                          command=lambda: self.treeview_sort_column(self.enemies_treeview,
-                                                                                    column, False))
+        self.enemies_treeview.heading("Enemy name/ID", text="Enemy name/ID",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Enemy name/ID", False, "str"))
+        self.enemies_treeview.heading("Damage dealt", text="Damage dealt",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Damage dealt", False, "int"))
+        self.enemies_treeview.heading("Damage taken", text="Damage taken",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Damage taken", False, "int"))
         self.enemies_treeview["show"] = "headings"
         self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False)
         self.enemies_treeview.column("Damage taken", width=80, stretch=False)
@@ -765,10 +769,16 @@ class middle_frame(ttk.Frame):
         self.enemies_treeview.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
 
-    def treeview_sort_column(self, treeview, column, reverse):
+    def treeview_sort_column(self, treeview, column, reverse, type):
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
-        l.sort(key=lambda t: int(t[0]), reverse=reverse)
+        if type == "int":
+            l.sort(key=lambda t: int(t[0]), reverse=reverse)
+        elif type == "str":
+            l.sort(key=lambda t: t[0], reverse=reverse)
+        else:
+            raise NotImplementedError
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
-        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse))
+        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
+
 
