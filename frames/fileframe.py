@@ -345,7 +345,7 @@ class file_frame(ttk.Frame):
                                                                                   str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy[6:],
+                                                                          values=(enemy,
                                                                                   str(enemydamaged[enemy]),
                                                                                   str(enemydamaget[enemy])))
 
@@ -429,7 +429,7 @@ class file_frame(ttk.Frame):
                                                                                   str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy[6:],
+                                                                          values=(enemy,
                                                                                   str(enemydamaged[enemy]),
                                                                                   str(enemydamaget[enemy])))
 
@@ -488,7 +488,7 @@ class file_frame(ttk.Frame):
                                                                                   str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy[6:],
+                                                                          values=(enemy,
                                                                                   str(enemydamaged[enemy]),
                                                                                   str(enemydamaget[enemy])))
 
@@ -541,7 +541,7 @@ class file_frame(ttk.Frame):
                                                                                   str(enemydamaget[enemy])))
                 else:
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy[6:],
+                                                                          values=(enemy,
                                                                                   str(enemydamaged[enemy]),
                                                                                   str(enemydamaget[enemy])))
 
@@ -728,9 +728,9 @@ class middle_frame(ttk.Frame):
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Damage taken", False, "int"))
         self.enemies_treeview["show"] = "headings"
-        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False)
-        self.enemies_treeview.column("Damage taken", width=80, stretch=False)
-        self.enemies_treeview.column("Damage dealt", width=80, stretch=False)
+        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor=tk.W)
+        self.enemies_treeview.column("Damage taken", width=80, stretch=False, anchor=tk.E)
+        self.enemies_treeview.column("Damage dealt", width=80, stretch=False, anchor=tk.E)
         self.enemies_treeview.tag_configure("odd", background="lightgrey")
         self.enemies_treeview.tag_configure("even", background="white")
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
