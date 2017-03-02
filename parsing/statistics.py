@@ -63,9 +63,9 @@ class statistics:
 
         # Add a CombatLogs in a folder with GSF matches to a list of names
         file_list = []
-        for file_name in os.listdir(os.getcwd()):
-            if file_name.endswith(".txt") and check_gsf(file_name):
-                file_list.append(file_name)
+        for file_name in os.listdir(variables.settings_obj.cl_path):
+            if file_name.endswith(".txt") and check_gsf(variables.settings_obj.cl_path + "/" + file_name):
+                file_list.append(variables.settings_obj.cl_path + "/" + file_name)
 
         # Define all variables needed to store the statistics
         total_ddealt = 0
