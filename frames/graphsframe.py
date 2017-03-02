@@ -18,7 +18,7 @@ import matplotlib
 
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib import pyplot
+from matplotlib.figure import Figure
 from matplotlib import dates as matdates
 import os
 import datetime
@@ -63,9 +63,10 @@ class graphs_frame(ttk.Frame):
         # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem",
         # text = "Enemies damage dealt to")
         self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
-        self.figure, self.axes = pyplot.subplots(figsize=(8.3, 4.2))
+        self.figure = Figure(figsize=(8.3, 4.2))
         # pyplot.ion()
         self.canvas = FigureCanvasTkAgg(self.figure, self)
+        self.canvas.show()
         self.canvasw = self.canvas.get_tk_widget()
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
         self.toolbar.update()
