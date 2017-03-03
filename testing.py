@@ -119,14 +119,14 @@ class TestFileParsing(unittest.TestCase):
 if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
-            time.sleep(2)
+            time.sleep(4)
             self.window = gui.main_window()
-            time.sleep(2)
+            time.sleep(4)
 
         def tearDown(self):
-            time.sleep(2)
+            time.sleep(4)
             self.window.destroy()
-            time.sleep(2)
+            time.sleep(4)
 
         def test_instances(self):
             self.assertIsInstance(self.window, tk.Tk)
@@ -199,7 +199,7 @@ if sys.platform == "win32":
                     widget.delete(0, tk.END)
                     widget.insert(0, "value")
 
-
+    '''
     class TestRealtimeParsing(unittest.TestCase):
         def setUp(self):
             with open("logs/CombatLog.txt", "r") as log:
@@ -248,6 +248,7 @@ if sys.platform == "win32":
 
         def new_match_callback(self, *args):
             self.match = True
+    '''
 
 
 class TestVision(unittest.TestCase):
