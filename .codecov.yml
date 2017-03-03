@@ -1,0 +1,5 @@
+codecov:
+  url: "https://www.github.com/"
+  slug: "RedFantom/GSF-Parser"
+  branch: master
+comment: false
