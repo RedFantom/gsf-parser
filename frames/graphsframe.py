@@ -13,10 +13,7 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
-
 import matplotlib
-
-matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 from matplotlib import dates as matdates
@@ -27,6 +24,7 @@ from collections import OrderedDict
 import variables
 from parsing import parse
 import toplevels
+matplotlib.use('TkAgg')
 
 
 class graphs_frame(ttk.Frame):
@@ -60,17 +58,13 @@ class graphs_frame(ttk.Frame):
         self.spawn_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="spawn", text="Spawn length")
         self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match", text="Match length")
         self.death_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="deaths", text="Deaths")
-        # self.enem_graph_radio = ttk.Radiobutton(self, variable = self.type_graph, value = "enem",
-        # text = "Enemies damage dealt to")
         self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
         self.figure = Figure(figsize=(8.3, 4.2))
-        # pyplot.ion()
         self.canvas = FigureCanvasTkAgg(self.figure, self)
-        self.canvas.show()
         self.canvasw = self.canvas.get_tk_widget()
+        self.tkcanvas = self.canvas._tkcanvas
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
         self.toolbar.update()
-        self.figure.clear()
 
     def update_graph(self):
         """
@@ -81,6 +75,7 @@ class graphs_frame(ttk.Frame):
         :return:
         """
         self.figure.clear()
+        self.axes = self.figure.add_subplot(111)
         if self.type_graph.get() == "play":
             files_dates = {}
             datetimes = []
@@ -107,17 +102,18 @@ class graphs_frame(ttk.Frame):
                     matches_played_date[file_date] += len(file_cube)
                 variables.files_done += 1
                 self.splash_screen.update_progress()
-            pyplot.ylim(ymin=0, ymax=matches_played_date[max(matches_played_date, key=matches_played_date.get)] + 2)
-            pyplot.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()),
-                       color=variables.settings_obj.color)
+            self.axes.set_ylim(ymin=0, ymax=matches_played_date[
+                                                max(matches_played_date, key=matches_played_date.get)] + 2)
+            self.axes.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()),
+                          color=variables.settings_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Matches played")
-            pyplot.ylabel("Amount of matches")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_title("Matches played")
+            self.axes.set_ylabel("Amount of matches")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "dmgd":
             files_dates = {}
@@ -160,17 +156,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
-                        color=variables.settings_obj.color)
+            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
+            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                           color=variables.settings_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Average damage dealt per match")
-            pyplot.ylabel("Amount of damage")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_title("Average damage dealt per match")
+            self.axes.set_ylabel("Amount of damage")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "dmgt":
             files_dates = {}
@@ -213,17 +209,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
-                        color=variables.settings_obj.color)
+            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
+            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                           color=variables.settings_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Average damage taken per match")
-            pyplot.ylabel("Amount of damage")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_title("Average damage taken per match")
+            self.axes.set_ylabel("Amount of damage")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "hrec":
             files_dates = {}
@@ -266,17 +262,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 10)
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
-                        color=variables.settings_obj.color)
+            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
+            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                           color=variables.settings_obj.color)
             self.axes.xaxis_date()
-            pyplot.title("Average healing received per match")
-            pyplot.ylabel("Amount of healing")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_title("Average healing received per match")
+            self.axes.set_ylabel("Amount of healing")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "enem":
             files_dates = {}
@@ -327,17 +323,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
                     pass
             avg_dmg_date = OrderedDict(sorted(avg_enem_date.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
-            pyplot.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Average enemies damage dealt to per match")
-            pyplot.ylabel("Amount of enemies")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
+            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Average enemies damage dealt to per match")
+            self.axes.set_ylabel("Amount of enemies")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "critluck":
             files_dates = {}
@@ -383,17 +379,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_crit_luck.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
-            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Average percentage critical hits per day")
-            pyplot.ylabel("Percentage critical hits")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
+            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Average percentage critical hits per day")
+            self.axes.set_ylabel("Percentage critical hits")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "hitcount":
             files_dates = {}
@@ -436,17 +432,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
-            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Average hitcount per match per day")
-            pyplot.ylabel("Amount of hits")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
+            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Average hitcount per match per day")
+            self.axes.set_ylabel("Amount of hits")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "spawn":
             files_dates = {}
@@ -501,17 +497,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_spawn_min.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
-            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Length of average spawn per day")
-            pyplot.ylabel("Spawn length in minutes")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
+            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Length of average spawn per day")
+            self.axes.set_ylabel("Spawn length in minutes")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "match":
             files_dates = {}
@@ -568,17 +564,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_match_min.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
-            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Length of average match per day")
-            pyplot.ylabel("Match length in minutes")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
+            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Length of average match per day")
+            self.axes.set_ylabel("Match length in minutes")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         elif self.type_graph.get() == "deaths":
             files_dates = {}
@@ -620,17 +616,17 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
-            pyplot.ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)]+2)
-            pyplot.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
-                        color=variables.settings_obj.color)
-            # self.axes.xaxis_date()
-            pyplot.title("Average amount of deaths per match per day")
-            pyplot.ylabel("Amount of deaths")
-            pyplot.xlabel("Date")
-            pyplot.xticks(rotation='vertical')
-            pyplot.gca().xaxis.set_major_locator(matdates.AutoDateLocator())
-            self.figure.subplots_adjust(bottom=0.35)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)]+2)
+            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+                           color=variables.settings_obj.color)
+            self.axes.xaxis_date()
+            self.axes.set_title("Average amount of deaths per match per day")
+            self.axes.set_ylabel("Amount of deaths")
+            self.axes.set_xlabel("Date")
+            self.toolbar.update()
             self.canvas.show()
+            self.figure.autofmt_xdate(bottom=0.25)
+            self.figure.canvas.draw()
             self.splash_screen.destroy()
         else:
             tkMessageBox.showinfo("Notice", "No correct graph type selected!")
@@ -653,23 +649,5 @@ class graphs_frame(ttk.Frame):
         self.death_graph_radio.grid(column=0, row=10, sticky=tk.W)
         self.update_button.grid(column=0, row=19, sticky=tk.W+tk.E + tk.N + tk.S)
         self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
+        self.tkcanvas.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
         self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)
-
-    def close(self):
-        """
-        Try to close as much as possible
-        A known bug makes it impossible for the plot to be
-        closed correctly. This bug is in the matplotlib library
-        :return:
-        """
-        print "[DEBUG] Close() of graphs_frame called"
-        # Plots are not correctly closed, threads keep running in the background
-        # This is a known bug to matplotlib and Tkinter: TkAgg
-        pyplot.cla()
-        pyplot.clf()
-        pyplot.close()
-        pyplot.close('all')
-        pyplot.plot()
-        self.figure.clear()
-        self.canvasw.destroy()
-        self.toolbar.destroy()
