@@ -33,7 +33,6 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.finished = False
         self.style = ttk.Style()
         self.set_icon()
@@ -101,14 +100,6 @@ class main_window(tk.Tk):
         self.splash.destroy()
         # Start the main loop
         variables.main_window = self
-
-    def on_close(self):
-        variables.FLAG = False
-        self.graphs_frame.close()
-        self.destroy()
-        # Due to a bug in matplotlib, not all plots are closed when using pyplot.close('all')
-        # Terminating the process manually is required
-        os.kill(os.getpid(), 9)
 
     def update_style(self, start=False):
         try:
