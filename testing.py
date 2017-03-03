@@ -175,9 +175,6 @@ if sys.platform == "win32":
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
 
-        '''
-        Cannot be used until issue/optimization #35 is solved
-
         def test_graphs_frame(self):
             self.window.notebook.select(self.window.graphs_frame)
             self.window.graphs_frame.update_button.invoke()
@@ -187,7 +184,6 @@ if sys.platform == "win32":
                     widget.select()
                     self.window.graphs_frame.update_button.invoke()
                     self.window.update()
-        '''
 
         def test_settings_frame(self):
             self.window.notebook.select(self.window.settings_tab_frame)
