@@ -17,6 +17,8 @@ import tkMessageBox
 import time
 from parsing import stalking_alt as stalking
 from parsing import realtime
+import threading
+import variables
 
 
 class TestFileParsing(unittest.TestCase):
@@ -119,14 +121,12 @@ class TestFileParsing(unittest.TestCase):
 if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
-            time.sleep(4)
             self.window = gui.main_window()
-            time.sleep(4)
 
         def tearDown(self):
-            time.sleep(4)
+            variables.FLAG = False
+            self.window.update()
             self.window.destroy()
-            time.sleep(4)
 
         def test_instances(self):
             self.assertIsInstance(self.window, tk.Tk)
@@ -172,6 +172,7 @@ if sys.platform == "win32":
             self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
                              "Watching: combat_2017-02-26_12_00_00_000000.txt")
             self.window.realtime_frame.start_parsing_button.invoke()
+            time.sleep(5)
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
 
@@ -295,3 +296,4 @@ if __name__ == "__main__":
         tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
     unittest.main(exit=False)
+    print threading.enumerate()
