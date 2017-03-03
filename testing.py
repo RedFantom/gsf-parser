@@ -15,11 +15,15 @@ import gui
 import Tkinter as tk
 import tkMessageBox
 import time
+from parsing import stalking_alt as stalking
+from parsing import realtime
+import threading
+import variables
 
 
-class TestParseFunctions(unittest.TestCase):
+class TestFileParsing(unittest.TestCase):
     def setUp(self):
-        with open("CombatLog.txt", "r") as log:
+        with open("logs/CombatLog.txt", "r") as log:
             self.lines = log.readlines()
 
     def test_determinePlayerName(self):
@@ -118,11 +122,11 @@ if sys.platform == "win32":
     class TestUI(unittest.TestCase):
         def setUp(self):
             self.window = gui.main_window()
-            time.sleep(2)
 
         def tearDown(self):
+            variables.FLAG = False
+            self.window.update()
             self.window.destroy()
-            time.sleep(2)
 
         def test_instances(self):
             self.assertIsInstance(self.window, tk.Tk)
@@ -159,15 +163,95 @@ if sys.platform == "win32":
             self.window.update()
             self.window.settings_frame.color_toplevel.destroy()
 
+        '''
         def test_realtime_parsing_button(self):
             self.window.update()
             self.window.update()
             self.window.realtime_frame.start_parsing_button.invoke()
             self.window.update()
             self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
+            self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
+                             "Watching: combat_2017-02-26_12_00_00_000000.txt")
             self.window.realtime_frame.start_parsing_button.invoke()
+            time.sleep(5)
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
+        '''
+
+        def test_graphs_frame(self):
+            graphs = ("play", "dmgd", "dmgt", "hrec", "enem", "critluck", "hitcount", "spawn", "match", "deaths")
+            self.window.notebook.select(self.window.graphs_frame)
+            self.window.graphs_frame.update_button.invoke()
+            self.window.update()
+            for graph in graphs:
+                self.window.graphs_frame.type_graph.set(graph)
+                self.window.graphs_frame.update_button.invoke()
+                self.window.update()
+
+        def test_settings_frame(self):
+            self.window.notebook.select(self.window.settings_tab_frame)
+            self.window.settings_frame.save_settings_button.invoke()
+            self.window.settings_frame.discard_settings_button.invoke()
+            self.window.settings_frame.default_settings_button.invoke()
+            for widget in self.window.settings_frame.children.values():
+                if isinstance(widget, tk.Radiobutton):
+                    widget.select()
+                if isinstance(widget, tk.Button):
+                    widget.invoke()
+                if isinstance(widget, tk.Entry):
+                    widget.delete(0, tk.END)
+                    widget.insert(0, "value")
+
+    '''
+    class TestRealtimeParsing(unittest.TestCase):
+        def setUp(self):
+            with open("logs/CombatLog.txt", "r") as log:
+                self.lines = log.readlines()
+            self.stalking_lines = []
+            self.stalker = stalking.LogStalker(callback=self.line_callback)
+            self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
+                                       match_callback=self.match_callback,
+                                       new_match_callback=self.new_match_callback,
+                                       insert=self.insert)
+
+        def tearDown(self):
+            self.stalker.FLAG = False
+            time.sleep(2)
+            self.assertFalse(self.stalker.is_alive())
+
+        def test_realtime_parsing(self):
+            pass
+
+        def test_stalking(self):
+            log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                            replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
+            for line in self.lines:
+                log.write(line)
+                time.sleep(0.5)
+                self.assertTrue(line in self.stalking_lines)
+            log.close()
+
+        def insert(self, *args):
+            pass
+
+        def line_callback(self, lines):
+            for line in lines:
+                self.rlt.parse(line, False)
+
+        def stalking_callback(self, lines):
+            for line in lines:
+                self.stalking_lines.append(line)
+
+        def spawn_callback(self, *args):
+            self.spawn = True
+
+        def match_callback(self, *args):
+            self.match = False
+            self.spawn = False
+
+        def new_match_callback(self, *args):
+            self.match = True
+    '''
 
 
 class TestVision(unittest.TestCase):
@@ -208,7 +292,7 @@ if __name__ == "__main__":
             pass
         with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
                         replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
-            with open(os.getcwd() + "/CombatLog.txt", "r") as source_log:
+            with open(os.getcwd() + "/logs/CombatLog.txt", "r") as source_log:
                 target_log.writelines(source_log.readlines())
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
