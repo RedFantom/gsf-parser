@@ -179,14 +179,14 @@ if sys.platform == "win32":
         '''
 
         def test_graphs_frame(self):
+            graphs = ("play", "dmgd", "dmgt", "hrec", "enem", "critluck", "hitcount", "spawn", "match", "deaths")
             self.window.notebook.select(self.window.graphs_frame)
             self.window.graphs_frame.update_button.invoke()
             self.window.update()
-            for widget in self.window.graphs_frame.children.values():
-                if isinstance(widget, tk.Radiobutton):
-                    widget.select()
-                    self.window.graphs_frame.update_button.invoke()
-                    self.window.update()
+            for graph in graphs:
+                self.window.graphs_frame.type_graph.set(graph)
+                self.window.graphs_frame.update_button.invoke()
+                self.window.update()
 
         def test_settings_frame(self):
             self.window.notebook.select(self.window.settings_tab_frame)
