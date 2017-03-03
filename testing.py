@@ -163,6 +163,7 @@ if sys.platform == "win32":
             self.window.update()
             self.window.settings_frame.color_toplevel.destroy()
 
+        '''
         def test_realtime_parsing_button(self):
             self.window.update()
             self.window.update()
@@ -175,6 +176,7 @@ if sys.platform == "win32":
             time.sleep(5)
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
+        '''
 
         def test_graphs_frame(self):
             self.window.notebook.select(self.window.graphs_frame)
@@ -295,5 +297,4 @@ if __name__ == "__main__":
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
     from parsing import parse, vision
-    unittest.main(exit=False)
-    print threading.enumerate()
+    unittest.main()
