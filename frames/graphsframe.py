@@ -16,7 +16,7 @@ import tkMessageBox
 import matplotlib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-from matplotlib import dates as matdates
+import platform
 import os
 import datetime
 from collections import OrderedDict
@@ -59,7 +59,10 @@ class graphs_frame(ttk.Frame):
         self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match", text="Match length")
         self.death_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="deaths", text="Deaths")
         self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
-        self.figure = Figure(figsize=(8.3, 4.2))
+        if platform.release() == "7" or platform.release() == "8" or platform.release() == "8.1":
+            self.figure = Figure(figsize=(8.3, 4.2))
+        else:
+            self.figure = Figure(figsize=(6.7, 3.35))
         self.canvas = FigureCanvasTkAgg(self.figure, self)
         self.canvasw = self.canvas.get_tk_widget()
         self.tkcanvas = self.canvas._tkcanvas
