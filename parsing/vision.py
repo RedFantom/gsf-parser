@@ -11,18 +11,25 @@ except ImportError:
     import testing as ImageGrab
 import os
 import numpy
-import time
 import math
 
 
-def get_pointer_position():
+def get_cv2_screen():
+    """
+    Gets a screenshot in cv2 format
+    :return: cv2 screenshot array
+    """
+    screen_pil = ImageGrab.grab()
+    return pillow_to_numpy(screen_pil)
+
+
+def get_pointer_position(screen):
     """
     Gets the position of the targeting pointer on the screen
+    :param screen: A cv2 array of a screenshot image
     :return: A tuple with the coordinates of the top left corner of the pointer
     """
     pointer = cv2.imread(os.getcwd() + "/assets/vision/pointer.png")
-    screen_pil = ImageGrab.grab()
-    screen = pillow_to_numpy(screen_pil)
     results = cv2.matchTemplate(screen, pointer, cv2.TM_CCOEFF_NORMED)
     # TODO: Validate results before returning
     return numpy.unravel_index(results.argmax(), results.shape)
@@ -91,3 +98,15 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):
     :return:
     """
     return round(degrees * tracking_penalty - upgrade_c, 1)
+
+
+def get_timer_status(screen):
+    """
+    Determines the state of the spawn countdown timer
+    :param screen: A cv2 array of the screenshot
+    :return: An int of how many seconds are left
+    """
+    folder = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/") + "/assets/timers"
+    for img in os.listdir(folder):
+        pass
+
