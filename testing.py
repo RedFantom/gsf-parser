@@ -253,24 +253,23 @@ if sys.platform == "win32":
             self.match = True
     '''
 
-
-class TestVision(unittest.TestCase):
-    def test_get_pointer_position(self):
-        os.chdir(os.path.realpath(os.path.dirname(__file__)))
-        example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
-        with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
-            self.assertEqual(vision.pillow_to_numpy(example_image), vision.get_cv2_screen())
-        example_screen = vision.pillow_to_numpy(example_image)
-        coordinates = vision.get_pointer_position(example_screen)
-        self.assertEqual(coordinates, (491, 914))
-        mid_coord = vision.get_pointer_middle(coordinates)
-        self.assertEqual(mid_coord, (513, 936))
-        distance = vision.get_distance_from_center(mid_coord)
-        self.assertEqual(distance, 597.18)
-        tracking_degrees = vision.get_tracking_degrees(distance, 20, 0.1)
-        self.assertEqual(tracking_degrees, 2.99)
-        tracking_penalty = vision.get_tracking_penalty(tracking_degrees, 2)
-        self.assertEqual(tracking_penalty, 6.0)
+    class TestVision(unittest.TestCase):
+        def test_get_pointer_position(self):
+            os.chdir(os.path.realpath(os.path.dirname(__file__)))
+            example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
+            with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
+                self.assertEqual(vision.pillow_to_numpy(example_image).all(), vision.get_cv2_screen().all())
+            example_screen = vision.pillow_to_numpy(example_image)
+            coordinates = vision.get_pointer_position(example_screen)
+            self.assertEqual(coordinates, (491, 914))
+            mid_coord = vision.get_pointer_middle(coordinates)
+            self.assertEqual(mid_coord, (513, 936))
+            distance = vision.get_distance_from_center(mid_coord)
+            self.assertEqual(distance, 597.18)
+            tracking_degrees = vision.get_tracking_degrees(distance, 20, 0.1)
+            self.assertEqual(tracking_degrees, 2.99)
+            tracking_penalty = vision.get_tracking_penalty(tracking_degrees, 2)
+            self.assertEqual(tracking_penalty, 6.0)
 
 
 def grab():
