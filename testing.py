@@ -259,7 +259,7 @@ class TestVision(unittest.TestCase):
         os.chdir(os.path.realpath(os.path.dirname(__file__)))
         example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
         with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
-            self.assertEqual(vision.pillow_to_numpy(example_image), vision.get_cv2_screen())
+            self.assertEqual(vision.pillow_to_numpy(example_image).all(), vision.get_cv2_screen().all())
         example_screen = vision.pillow_to_numpy(example_image)
         coordinates = vision.get_pointer_position(example_screen)
         self.assertEqual(coordinates, (491, 914))
