@@ -53,7 +53,7 @@ def get_pointer_middle(coordinates, size=(44, 44)):
     """
     if size[0] % 2 == 1 or size[1] % 2 == 1 or size[0] != size[1]:
         raise ValueError("The pointer image is of an invalid size.")
-    return (coordinates[0] + size[0] / 2, coordinates[1] + size[1] / 2)
+    return coordinates[0] + size[0] / 2, coordinates[1] + size[1] / 2
 
 
 def pillow_to_numpy(pillow):
@@ -63,6 +63,7 @@ def pillow_to_numpy(pillow):
     """
     imagefile = numpy.array(pillow)
     return imagefile[:, :, ::-1].copy()
+
 
 def numpy_to_pillow(array):
     pillow = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
@@ -125,6 +126,7 @@ def get_timer_status_cv2(screen):
     for img in os.listdir(folder):
         pass
 
+
 def get_timer_status_ocr(screen):
     """
     Determines the state of the spawn countdown timer by performing
@@ -141,3 +143,125 @@ def get_timer_status_ocr(screen):
         screen_cv2 = pillow_to_numpy(screen)
     pass
 
+
+def get_enemy_brackets(screen):
+    """
+    Determines the amount and places of the red brackets of the enemies on
+    the screen using template matching, at the default size.
+    :param screen: cv2 array of screenshot
+    :return: list of (x, y) tuples
+    """
+    pass
+
+
+def get_targeting_computer_pos(screen):
+    """
+    Determines the position of the targeting computer on the screen using
+    template matching.
+    :param screen: cv2 array of screenshot
+    :return: (x, y) tuple
+    """
+    pass
+
+
+def get_targeting_computer_shiptype(screen):
+    """
+    Perform OCR on a screenshot to determine the ship type of the enemy player
+    currently targeted by the user.
+    :param screen: cv2 array of screenshot
+    :return: string of ship type
+    """
+    pass
+
+
+def get_targeting_computer_targetname(screen):
+    """
+    Perform OCR on a screenshot to determine the name of the enemy player
+    currently targeted by the user.
+    :param screen: cv2 array of screenshot
+    :return: string of player name
+    """
+    pass
+
+
+def get_power_management(screen):
+    """
+    Uses template matching to determine how the user has divided the power
+    among the different ship components.
+    :param screen: cv2 array of screenshot
+    :return: int 1, 2, 3, 4
+             1: power to weapons
+             2: power to shields
+             3: power to engines
+             4: power to all
+    """
+    pass
+
+
+def get_ship_health_hull(screen):
+    """
+    Uses the PIL library to determine the color of the ship icon in the UI
+    to make an approximation of the ship hull health.
+
+    Red:            01%-20%
+    Orange:         21%-40%
+    Yellow:         41%-60%
+    Green:          61%-80%
+    Bright green:   81%-100%
+
+    :param screen: cv2 array of screenshot or pillow object
+    :return: int with percentage
+    """
+    pass
+
+
+def get_ship_health_forwardshields(screen):
+    """
+    Uses the PIL library to determine the color of the ship icon in the UI
+    to make an approximation of the ship shield health.
+
+    Two elements, each with their own color. Each color represents 10%
+    Red, orange, yellow, green, bright green and blue when power to shields
+    is enabled to make for total of 110% shield power.
+
+    :param screen: cv2 array of screenshot or pillow object
+    :return: int with percentage
+    """
+    pass
+
+
+def get_ship_health_rearshields(screen):
+    """
+    Uses the PIL library to determine the color of the ship icon in the UI
+    to make an approximation of the ship shield health.
+
+    Two elements, each with their own color. Each color represents 10%
+    Red, orange, yellow, green, bright green and blue when power to shields
+    is enabled to make for total of 110% shield power.
+
+    :param screen: cv2 array of screenshot or pillow object
+    :return: int with percentage
+    """
+    pass
+
+
+def get_leftbutton_pressed():
+    """
+    Wrapper around win32api.GetKeyState for left button state
+    :return: boolean, True when pressed
+    """
+    if win32api.GetKeyState(0x01) >= 0:
+        return True
+    else:
+        return False
+
+
+def get_rightbutton_pressed():
+    """
+    Wrapper around win32api.GetKeyState for right button state
+    :return: boolean, True when pressed
+    """
+    if win32api.GetKeyState(0x02) >= 0:
+        return True
+    else:
+        return False
