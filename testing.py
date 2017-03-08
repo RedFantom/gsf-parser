@@ -260,7 +260,7 @@ if sys.platform == "win32":
             with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
                 self.assertEqual(vision.pillow_to_numpy(example_image).all(), vision.get_cv2_screen().all())
             example_screen = vision.pillow_to_numpy(example_image)
-            coordinates = vision.get_pointer_position(example_screen)
+            coordinates = vision.get_pointer_position_cv2(example_screen)
             self.assertEqual(coordinates, (491, 914))
             mid_coord = vision.get_pointer_middle(coordinates)
             self.assertEqual(mid_coord, (513, 936))
