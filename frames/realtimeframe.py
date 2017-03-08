@@ -149,7 +149,7 @@ class realtime_frame(ttk.Frame):
         self.statistics_label_one_text.set("")
         self.watching_label.grid(column=0, row=4, columnspan=2, sticky=tk.W)
 
-    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, spawns):
+    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, enemies, spawns):
         damage_done = 0
         damage_taken = 0
         selfdamage = 0
@@ -173,6 +173,7 @@ class realtime_frame(ttk.Frame):
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
                                            str(selfdamage) + "\n" +
+                                           str(enemies) + "\n" +
                                            str(spawns))
             elif variables.settings_obj.size == "small":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
@@ -197,9 +198,10 @@ class realtime_frame(ttk.Frame):
             self.selfdamage = self.parser.spawn_selfdmg
             self.healing = self.parser.spawn_healing_rcvd
             self.abilities = self.parser.tmp_abilities
+            self.enemies = self.parser.recent_enemies
             self.spawns = self.parser.active_ids
             self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities,
-                              len(self.spawns))
+                              len(self.enemies), len(self.spawns))
         for obj in self.parse:
             obj.close()
 

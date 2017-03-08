@@ -86,7 +86,8 @@ class overlay(tk.Toplevel):
         print "[DEBUG] Setting overlay font to: ", (
             variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
         if variables.settings_obj.size == "big":
-            self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
+            self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
+                                                   "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
                                         justify=tk.LEFT, font=(
                 variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
                                         foreground=variables.settings_obj.overlay_tx_color,
@@ -115,7 +116,7 @@ class overlay(tk.Toplevel):
 
     def update_position(self):
         if variables.settings_obj.size == "big":
-            h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 5
+            h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 6
             w_req = ((int(variables.settings_obj.overlay_tx_size) / 1.5) + 2) * (14 + 6)
         elif variables.settings_obj.size == "small":
             h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 4
