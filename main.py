@@ -5,18 +5,16 @@
 # For license see LICENSE
 import sys
 import tkMessageBox
-
 import gui
 
 
 def new_window():
     main_window = gui.main_window()
+    main_window.mainloop()
 
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        # oob = firstrun.oob_window()
-        # oob.mainloop()
         import variables
 
         if variables.settings_obj.version != "v2.2.1":
