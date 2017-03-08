@@ -110,9 +110,11 @@ class Parser(object):
         if "SetLevel" in line:
             return
 
+        time_now = datetime.datetime.now()
         for enemy, time in self.recent_enemies.iteritems():
             # Remove enemies that weren't registered in last ten seconds
-            pass
+            if (time_now - time).seconds >= 10:
+                del self.recent_enemies[enemy]
 
         # If first line of the file, save the player name
         if self.player_name == '' and '@' in line['source']:
