@@ -12,6 +12,8 @@ except ImportError:
 import os
 import numpy
 import math
+import win32gui
+import win32api
 
 
 def get_cv2_screen():
@@ -23,7 +25,7 @@ def get_cv2_screen():
     return pillow_to_numpy(screen_pil)
 
 
-def get_pointer_position(screen):
+def get_pointer_position_cv2(screen):
     """
     Gets the position of the targeting pointer on the screen
     :param screen: A cv2 array of a screenshot image
@@ -33,6 +35,14 @@ def get_pointer_position(screen):
     results = cv2.matchTemplate(screen, pointer, cv2.TM_CCOEFF_NORMED)
     # TODO: Validate results before returning
     return numpy.unravel_index(results.argmax(), results.shape)
+
+
+def get_pointer_position_win32():
+    """
+    Gets the position of the targeting pointer with win32gui
+    :return: coordinates of pointer
+    """
+    return win32gui.GetCursorPos()
 
 
 def get_pointer_middle(coordinates, size=(44, 44)):
