@@ -33,7 +33,6 @@ def get_pointer_position_cv2(screen):
     """
     pointer = cv2.imread(os.getcwd() + "/assets/vision/pointer.png")
     results = cv2.matchTemplate(screen, pointer, cv2.TM_CCOEFF_NORMED)
-    # TODO: Validate results before returning
     return numpy.unravel_index(results.argmax(), results.shape)
 
 
@@ -64,6 +63,10 @@ def pillow_to_numpy(pillow):
     """
     imagefile = numpy.array(pillow)
     return imagefile[:, :, ::-1].copy()
+
+def numpy_to_pillow(array):
+    pillow = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(pillow)
 
 
 '''
@@ -110,13 +113,31 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):
     return round(degrees * tracking_penalty - upgrade_c, 1)
 
 
-def get_timer_status(screen):
+def get_timer_status_cv2(screen):
     """
-    Determines the state of the spawn countdown timer
+    Determines the state of the spawn countdown timer by performing
+    template matching on the cv2 array of a screenshot to find a match
+    for one of the timers in the folder.
     :param screen: A cv2 array of the screenshot
     :return: An int of how many seconds are left
     """
     folder = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/") + "/assets/timers"
     for img in os.listdir(folder):
         pass
+
+def get_timer_status_ocr(screen):
+    """
+    Determines the state of the spawn countdown timer by performing
+    OCR on the characters found in a certain section of the screen, that
+    is found by performing template matching.
+    :param screen: cv2 array of the screenshot
+    :return:
+    """
+    if not isinstance(screen, Image):
+        screen_pil = numpy_to_pillow(screen)
+        screen_cv2 = screen
+    else:
+        screen_pil = screen
+        screen_cv2 = pillow_to_numpy(screen)
+    pass
 
