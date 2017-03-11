@@ -205,10 +205,10 @@ def get_power_management(screen):
     power_mgmt = 4
     weapon_rgb = screen_pil.getpixel(weapon_cds)
     engine_rgb = screen_pil.getpixel(engine_cds)
-    shield_rgb = screen.getpixel(shield_cds)
-    weapon_power = ((value > 50) for value in weapon_rgb)
-    engine_power = ((value > 50) for value in engine_rgb)
-    shield_power = ((value > 50) for value in shield_rgb)
+    shield_rgb = screen_pil.getpixel(shield_cds)
+    weapon_power = list((value > 50) for value in weapon_rgb)
+    engine_power = list((value > 50) for value in engine_rgb)
+    shield_power = list((value > 50) for value in shield_rgb)
     if True in weapon_power:
         power_mgmt = 1
     if True in engine_power:

@@ -273,6 +273,12 @@ if sys.platform == "win32":
             tracking_penalty = vision.get_tracking_penalty(tracking_degrees, 2)
             self.assertEqual(tracking_penalty, 6.0)
 
+        def test_vision(self):
+            os.chdir(os.path.realpath(os.path.dirname(__file__)))
+            example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
+            example_screen = vision.pillow_to_numpy(example_image)
+            self.assertEqual(vision.get_power_management(example_screen), 3)
+
 
 def grab():
     return Image.open(os.getcwd() + "/assets/vision/testing.png")
