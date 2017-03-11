@@ -19,6 +19,7 @@ from parsing import stalking_alt as stalking
 from parsing import realtime
 import threading
 import variables
+from parsing import parse
 
 
 class TestFileParsing(unittest.TestCase):
@@ -119,6 +120,9 @@ class TestFileParsing(unittest.TestCase):
 
 
 if sys.platform == "win32":
+    from parsing import vision
+
+
     class TestUI(unittest.TestCase):
         def setUp(self):
             self.window = gui.main_window()
@@ -294,5 +298,4 @@ if __name__ == "__main__":
                 target_log.writelines(source_log.readlines())
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
-    from parsing import parse, vision
     unittest.main()
