@@ -17,7 +17,6 @@ import tkMessageBox
 import time
 from parsing import stalking_alt as stalking
 from parsing import realtime
-from parsing import parse
 import threading
 import variables
 
@@ -120,8 +119,6 @@ class TestFileParsing(unittest.TestCase):
 
 
 if sys.platform == "win32":
-    from parsing import vision
-
     class TestUI(unittest.TestCase):
         def setUp(self):
             self.window = gui.main_window()
@@ -166,7 +163,6 @@ if sys.platform == "win32":
             self.window.update()
             self.window.settings_frame.color_toplevel.destroy()
 
-        '''
         def test_realtime_parsing_button(self):
             self.window.update()
             self.window.update()
@@ -174,12 +170,11 @@ if sys.platform == "win32":
             self.window.update()
             self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
             self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
-                             "Watching: combat_2017-02-26_12_00_00_000000.txt")
+                             "Watching: combat_2017-04-27_12_00_00_000000.txt")
             self.window.realtime_frame.start_parsing_button.invoke()
             time.sleep(5)
             self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
             self.window.update()
-        '''
 
         def test_graphs_frame(self):
             graphs = ("play", "dmgd", "dmgt", "hrec", "enem", "critluck", "hitcount", "spawn", "match", "deaths")
@@ -205,7 +200,6 @@ if sys.platform == "win32":
                     widget.delete(0, tk.END)
                     widget.insert(0, "value")
 
-    '''
     class TestRealtimeParsing(unittest.TestCase):
         def setUp(self):
             with open("logs/CombatLog.txt", "r") as log:
@@ -216,6 +210,7 @@ if sys.platform == "win32":
                                        match_callback=self.match_callback,
                                        new_match_callback=self.new_match_callback,
                                        insert=self.insert)
+            self.stalker.start()
 
         def tearDown(self):
             self.stalker.FLAG = False
@@ -225,14 +220,17 @@ if sys.platform == "win32":
         def test_realtime_parsing(self):
             pass
 
+        '''
         def test_stalking(self):
             log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
-                            replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
+                        replace("\\", "/") + "combat_2017-04-27_12_00_00_000000.txt", "w")
             for line in self.lines:
+                print "Wrote: ", line.replace("\n", "")
                 log.write(line)
-                time.sleep(0.5)
+                time.sleep(5.0)
                 self.assertTrue(line in self.stalking_lines)
             log.close()
+        '''
 
         def insert(self, *args):
             pass
@@ -243,6 +241,7 @@ if sys.platform == "win32":
 
         def stalking_callback(self, lines):
             for line in lines:
+                print "Read: ", line.replace("\n", "")
                 self.stalking_lines.append(line)
 
         def spawn_callback(self, *args):
@@ -254,7 +253,7 @@ if sys.platform == "win32":
 
         def new_match_callback(self, *args):
             self.match = True
-    '''
+
 
     class TestVision(unittest.TestCase):
         def test_get_pointer_position(self):
@@ -297,4 +296,5 @@ if __name__ == "__main__":
                 target_log.writelines(source_log.readlines())
         tkMessageBox.showerror = messagebox
         tkMessageBox.showinfo = messagebox
+    from parsing import parse, vision
     unittest.main()
