@@ -195,7 +195,31 @@ def get_power_management(screen):
              3: power to engines
              4: power to all
     """
-    pass
+    image = cv2.imread(os.getcwd() + "/assets/vision/power_management.png")
+    screen_pil = numpy_to_pillow(screen)
+    results = cv2.matchTemplate(screen, image, cv2.TM_CCOEFF_NORMED)
+    x, y = numpy.unravel_index(results.argmax(), results.shape)
+    weapon_cds = (x + 10, y - 50)
+    shield_cds = (x + 32, y - 50)
+    engine_cds = (x + 54, y - 50)
+    power_mgmt = 4
+    weapon_rgb = screen_pil.getpixel(weapon_cds)
+    engine_rgb = screen_pil.getpixel(engine_cds)
+    shield_rgb = screen.getpixel(shield_cds)
+    weapon_power = ((value > 50) for value in weapon_rgb)
+    engine_power = ((value > 50) for value in engine_rgb)
+    shield_power = ((value > 50) for value in shield_rgb)
+    if True in weapon_power:
+        power_mgmt = 1
+    if True in engine_power:
+        if power_mgmt != 4:
+            raise ValueError("Power management was already set.")
+        power_mgmt = 3
+    if True in shield_power:
+        if power_mgmt != 4:
+            raise ValueError("Power management was already set.")
+        power_mgmt = 2
+    return power_mgmt
 
 
 def get_ship_health_hull(screen):
