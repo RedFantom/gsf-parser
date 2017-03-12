@@ -190,3 +190,16 @@ rep_ships = {"Legion": "Warcarrier",
 # to make the printing look the same for every ship.
 ships_strings = ["Legion\t", "Decimus\t", "Razorwire\t", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark",
                  "Blackbolt\t", "Sting\t", "Imperium\t", "Rycer\t", "Quell\t"]
+
+rep_strings = {"Legion\t": "Warcarrier",
+             "Razorwire\t": "Rampart Mark Four",
+             "Decimus\t": "Sledgehammer",
+             "Mangler\t": "Quarrel\t",
+             "Jurgoran\t": "Condor\t",
+             "Dustmaker": "Comet Breaker",
+             "Rycer\t": "Star Guard",
+             "Imperium\t": "Clarion\t",
+             "Quell\t": "Pike\t",
+             "Sting\t": "Flashfire\t",
+             "Bloodmark": "Spearpoint",
+             "Blackbolt\t": "Novadive\t"}
