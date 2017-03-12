@@ -13,6 +13,7 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
+import tkFileDialog
 from PIL import Image, ImageTk
 # General imports
 import operator
@@ -26,7 +27,6 @@ import statistics
 import abilities
 import toplevels
 import widgets
-
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -223,9 +223,12 @@ class file_frame(ttk.Frame):
         try:
             os.chdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
-            self.splash.destroy()
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
@@ -274,10 +277,12 @@ class file_frame(ttk.Frame):
         try:
             os.chdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Folder not valid: " + variables.settings_obj.cl_path)
-            if not silent:
-                self.splash.destroy()
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
         for file in os.listdir(os.getcwd()):
             if file.endswith(".txt"):
                 if statistics.check_gsf(file):
@@ -307,14 +312,14 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
-
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-        self.file_box.itemconfig(self.old_file, background="white")
-        if self.file_box.curselection() == (0,):
+        for index, filestring in enumerate(self.file_box.get(0, tk.END)):
+            self.file_box.itemconfig(index, background="white")
+        if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
             (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
@@ -328,11 +333,16 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
                 try:
-                    ships_string += ship + "\t\t" + str(total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
+                    ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
+
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             color = "white"
             for enemy in total_enemies:
@@ -394,8 +404,9 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
         self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-        self.match_box.itemconfig(self.old_match, background="white")
-        if self.match_box.curselection() == (0,):
+        for index, matchstring in enumerate(self.match_box.get(0, tk.END)):
+            self.match_box.itemconfig(index, background="white")
+        if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
             self.old_match = numbers[0]
@@ -412,10 +423,16 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
+
                 try:
-                    ships_string += ship + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
+                    ships_string += name + "\t\t0\n"
+
             ships_string += "Uncounted\t\t" + str(variables.uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -458,8 +475,9 @@ class file_frame(ttk.Frame):
         :param instance: for Tkinter callback
         :return:
         """
-        self.spawn_box.itemconfig(self.old_spawn, background="white")
-        if self.spawn_box.curselection() == (0,):
+        for index, spawnstring in enumerate(self.spawn_box.get(0, tk.END)):
+            self.spawn_box.itemconfig(index, background="white")
+        if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
@@ -472,10 +490,15 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
+
                 try:
-                    ships_string += ship + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
+                    ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t%s" % variables.total_shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
@@ -529,7 +552,12 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
             ships_string = "Possible ships used:\n"
             for ship in variables.ships_list:
-                ships_string += str(ship) + "\n"
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_ships[ship]
+                else:
+                    name = ship
+
+                ships_string += str(name) + "\n"
             ships_string += "\t\t\t\t\t\t\nWith the components:\n"
             for component in variables.ships_comps:
                 ships_string += component + "\n"
@@ -617,9 +645,12 @@ class ship_frame(ttk.Frame):
         else:
             print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png")
+                if variables.settings_obj.faction == "republic":
+                    img = abilities.rep_ships[ships_list[0]]
+                else:
+                    img = ships_list[0]
+                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + img + ".png")
             except IOError:
-                print "[DEBUG] File not found: ", os.path.dirname(__file__) + "\\assets\\img\\" + ships_list[0] + ".png"
                 tkMessageBox.showerror("Error",
                                        "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
@@ -821,3 +852,4 @@ class middle_frame(ttk.Frame):
         self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+
