@@ -165,7 +165,7 @@ excluded_abilities = ["Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Lo
                       "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
                       "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
                       "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
-                      "Plasma Burn", "Plasma Warheads", "Space Exhaustion"]
+                      "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable"]
 
 # All ships with their Imperial Faction names available in GSF
 ships = ["Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting",
