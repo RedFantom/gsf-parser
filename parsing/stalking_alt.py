@@ -7,10 +7,11 @@
 # Fully new stalking_alt.py file written by RedFantom as a test for solving the problems with
 # the earlier stalking_alt.py file
 import os
-import variables
 import threading
 import time
 from datetime import datetime
+
+import variables
 import realtime
 
 
@@ -82,7 +83,7 @@ class LogStalker(threading.Thread):
                 if self.stringvar:
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
-                with open(self.current_file, "r") as file_obj:
+                with open(variables.settings_obj.cl_path + "/" + self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
             time.sleep(variables.settings_obj.timeout)
@@ -94,7 +95,7 @@ class LogStalker(threading.Thread):
         :return: list of lines
         """
         self.lines = []
-        with open(self.current_file, "rb") as file_obj:
+        with open(variables.settings_obj.cl_path + "/" + self.current_file, "rb") as file_obj:
             lines_temp = file_obj.readlines()[self.read_so_far:]
         try:
             line_temp = lines_temp[-1]

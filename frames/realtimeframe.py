@@ -8,21 +8,18 @@
 
 # UI imports
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkSimpleDialog
-# General imports
 import time
 import platform
-# Own modules
+
 import variables
-import realtime
-import stalking_alt
+from parsing import stalking_alt, realtime, statistics
 import toplevels
-import statistics
 
 
 class realtime_frame(ttk.Frame):
@@ -111,7 +108,9 @@ class realtime_frame(ttk.Frame):
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
         elif self.parsing:
-            if platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1":
+            print "[DEBUG] Detected Windows version: ", platform.release()
+            if (platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1"
+                and platform.release().lower() != "post2008Server".lower()):
                 self.main_window.file_select_frame.add_files_cb()
             self.parsing = False
             variables.FLAG = False

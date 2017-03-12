@@ -5,13 +5,13 @@
 # For license see LICENSE
 
 import socket
-import variables
-import toplevels
 import tkMessageBox
 import hashlib
 import threading
 import ssl
-import time
+
+import variables
+import toplevels
 
 
 class client_conn:
@@ -212,7 +212,7 @@ class client_conn:
         elif message != "READY":
             self.unexpected()
             return
-        with open(file_name, "r") as file_obj:
+        with open(variables.settings_obj.cl_path + "/" + file_name, "r") as file_obj:
             lines = file_obj.readlines()
         if self.send("LEN=%s" % len(lines)) == -1: return
         if self.send(hashlib.sha512(lines)) == -1: return

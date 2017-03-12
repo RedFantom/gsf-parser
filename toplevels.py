@@ -6,25 +6,24 @@
 
 # UI imports
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
     import Tkinter as tk
-from PIL import ImageTk, Image
 import ttk
 import tkMessageBox
 import tkColorChooser
 import tkFileDialog
-# General imports
 import os
 import sys
 import tempfile
 import collections
 import struct
-# Own modules
+
+from PIL import ImageTk, Image
+
 import variables
-import statistics
-import widgets
-import abilities
+from parsing import statistics, abilities
+import frames.widgets
 
 
 class splash_screen(tk.Toplevel):
@@ -39,8 +38,11 @@ class splash_screen(tk.Toplevel):
         try:
             list = os.listdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "The directory set in the settings cannot be accessed.")
-            return
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            list = os.listdir(variables.settings_obj.cl_path)
         except:
             print "[DEBUG] Running on UNIX, functionality disabled"
             return
@@ -82,7 +84,7 @@ class overlay(tk.Toplevel):
                 tkMessageBox.showerror("Error",
                                        "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
         print "[DEBUG] Setting overlay font to: ", (
-        variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
+            variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
         if variables.settings_obj.size == "big":
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing recv:\nSelfdamage:\nSpawns:",
                                         justify=tk.LEFT, font=(
@@ -128,6 +130,13 @@ class overlay(tk.Toplevel):
             pos_c = "+%s+0" % (int(variables.screen_w) - int(w_req))
         elif variables.settings_obj.pos == "BR":
             pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req), int(variables.screen_h) - int(h_req))
+        elif variables.settings_obj.pos == "UC":
+            pos_c = "+0+%s" % int(0.25 * variables.screen_h)
+        elif variables.settings_obj.pos == "NQ":
+            pos_c = "+%s+%s" % (int(variables.screen_w * 0.25), int(variables.screen_h) - int(h_req))
+        elif variables.settings_obj.pos == "UT":
+            pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req),
+                                variables.screen_h - int(0.75 * variables.screen_h))
         else:
             raise ValueError("vars.settings_obj.pos not valid")
         self.wm_geometry("%sx%s" % (int(w_req), int(h_req)) + pos_c)
@@ -179,8 +188,13 @@ class boot_splash(tk.Toplevel):
         try:
             directory = os.listdir(window.default_path)
         except OSError:
-            tkMessageBox.showerror("Error", "Error accessing directory set in settings. Please check your settings.")
-            directory = []
+            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
+                                            "choose another folder.")
+            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
+            variables.settings_obj.read_set()
+            os.chdir(variables.settings_obj.cl_path)
+            directory = os.listdir(os.getcwd())
         files = []
         for file in directory:
             if file.endswith(".txt"):
@@ -466,7 +480,7 @@ class filters(tk.Toplevel):
         self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
         print "[DEBUG] Setting up Type filters"
-        self.type_frame = widgets.ToggledFrame(self, text="Type")
+        self.type_frame = frames.widgets.ToggledFrame(self, text="Type")
         self.type_variable = tk.StringVar()
         self.type_variable.set("any")
         self.any_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Any", variable=self.type_variable,
@@ -478,16 +492,16 @@ class filters(tk.Toplevel):
         self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns", variable=self.type_variable,
                                             value="spawns")
         print "[DEBUG] Setting up date filters"
-        self.dateframe = widgets.ToggledFrame(self, text="Date")
-        self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
+        self.dateframe = frames.widgets.ToggledFrame(self, text="Date")
+        self.start_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
         print "[DEBUG] Setting up components filters"
-        self.components_frame = widgets.ToggledFrame(self, text="Components")
-        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
-        self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
-        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
-        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
-        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
+        self.components_frame = frames.widgets.ToggledFrame(self, text="Components")
+        self.primaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
+        self.secondaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
+        self.engines_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
+        self.shields_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
+        self.systems_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
         self.primaries_tickboxes = {}
         self.primaries_tickboxes_vars = {}
         self.secondaries_tickboxes = {}
@@ -525,7 +539,7 @@ class filters(tk.Toplevel):
             self.systems_tickboxes_vars[system_chk] = system_var
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
-        self.ships_frame = widgets.ToggledFrame(self, text="Ships")
+        self.ships_frame = frames.widgets.ToggledFrame(self, text="Ships")
         print "[DEBUG] Setting up buttons"
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter_files)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
