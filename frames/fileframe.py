@@ -337,7 +337,6 @@ class file_frame(ttk.Frame):
                 except KeyError:
                     ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
-
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
                 if enemy == "":
@@ -497,7 +496,7 @@ class file_frame(ttk.Frame):
                     ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t%s" % shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            for enemy in variables.enemies:
+            for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                           values=("System",
@@ -819,3 +818,4 @@ class middle_frame(ttk.Frame):
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
         treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
+

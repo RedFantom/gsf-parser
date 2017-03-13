@@ -412,6 +412,7 @@ class settings_frame(ttk.Frame):
         self.realtime_timeout.set(variables.settings_obj.timeout)
         self.faction.set(variables.settings_obj.faction)
 
+
     def save_settings(self):
         """
         Save the settings found in the widgets of the settings to the

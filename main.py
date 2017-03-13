@@ -10,6 +10,7 @@ import gui
 
 def new_window():
     main_window = gui.main_window()
+    main_window.mainloop()
 
 
 if __name__ == "__main__":
