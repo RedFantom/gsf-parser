@@ -7,15 +7,18 @@
 # For license see LICENSE
 
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
+    print "mtTkinter not found, please use 'pip install mttkinter'"
     import Tkinter as tk
 import ttk
 import collections
-import widgets
-from PIL import Image
 import os
+
+from PIL import Image
 from PIL.ImageTk import PhotoImage
+
+import widgets
 
 
 class builds_frame(ttk.Frame):

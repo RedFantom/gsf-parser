@@ -52,14 +52,6 @@ file_name = None
 user_name = None
 statisticsfile = False
 
-abilities_string = None
-events_string = None
-statistics_string = None
-allies_string = None
-enemies_string = None
-ships_list = None
-ships_comps = None
-
 user_path = None
 privacy = None
 server_address = None
@@ -82,3 +74,6 @@ spawn = None
 rt_timing = None
 
 insert_queue = Queue.Queue()
+
+screen_w = 0
+screen_h = 0

@@ -23,31 +23,36 @@ class resources_frame(ttk.Frame):
                      "Dulfy GSF New Player Guide",
                      "Dulfy Ships and Components Guide",
                      "GSF Forums on SWTOR.com",
-                     "GSF Discord Server"
+                     "GSF Discord Server",
+                     "GSF Parser GitHub Repository"
                      ]
         resources_descriptions = {
             "GSF: A starting point":
-                "A guide by comprehensive Pyril with information ranging from the interface to" +
-                "the components and controls. Originally created for Thranta Squadron, but useful" +
+                "A guide by comprehensive Pyril with information ranging from the interface to " +
+                "the components and controls. Originally created for Thranta Squadron, but useful " +
                 "for and available to everyone.",
             "Stasiepedia":
-                "A very extensive guide to everything there is in GSF, including advisory builds for every" +
-                "ship. Written in 2014, but still up-to-date due to the lack of updates for GSF. A trusted" +
+                "A very extensive guide to everything there is in GSF, including advisory builds for every " +
+                "ship. Written in 2014, but still up-to-date due to the lack of updates for GSF. A trusted " +
                 "source of information for many Veteran pilots.",
             "Despon's GSF School":
-                "A YouTube channel with videos about important topics within GSF and a very" +
-                "experienced host. After throwing various types of event to help Rookies learn how" +
+                "A YouTube channel with videos about important topics within GSF and a very " +
+                "experienced host. After throwing various types of event to help Rookies learn how " +
                 "to play GSF, he has started this YouTube channel, and with success.",
             "Thranta Squadron Event Calendar":
-                "An interactive calendar containing all events of the GSF community on" +
-                "different servers. This calendar is being kept up-to-date with the GSF" +
+                "An interactive calendar containing all events of the GSF community on " +
+                "different servers. This calendar is being kept up-to-date with the GSF " +
                 "forums and it includes times in UTC and server locations.",
-            "Dulfy GSF New Player Guide": "A guide for new players by the popular resource site Dulfy.",
+            "Dulfy GSF New Player Guide": "A guide for new players by the popular resource site Dulfy. ",
             "Dulfy Ships and Components Guide":
-                "An in-depth guide on ships and components by the popular resource site Dulfy.",
+                "An in-depth guide on ships and components by the popular resource site Dulfy. ",
             "GSF Forums on SWTOR.com":
-                "A place where subscribers who play GSF gather and discuss all sorts of things including events.",
-            "GSF Discord Server": "A voice server created by Dakhath for anyone playing GSF for the Discord platform."
+                "A place where subscribers who play GSF gather and discuss all sorts of things including events. ",
+            "GSF Discord Server": "A voice server created by Dakhath for anyone playing GSF for the Discord platform. ",
+            "GSF Parser GitHub Repository":
+                "This is where ou can find the source code of the GSF Parser, but you can also look here to see what " +
+                "current issues are known or add an issue if you find one. Also check out the alpha builds in the " +
+                "development branch if this interests you."
         }
         resources_links = {
             "GSF: A starting point": "https://www.thrantasquadron.tk/guide",
@@ -59,7 +64,8 @@ class resources_frame(ttk.Frame):
                 "http://dulfy.net/2013/11/11/swtor-galactic-starfighter-ships-and-components-guide/",
             "GSF Forums on SWTOR.com": "http://www.swtor.com/community/forumdisplay.php?f=419",
             "GSF Discord Server":
-                "https://www.reddit.com/r/swtor/comments/5dbi93/i_made_a_discord_server_for_anyone_still_playing/"
+                "https://www.reddit.com/r/swtor/comments/5dbi93/i_made_a_discord_server_for_anyone_still_playing/",
+            "GSF Parser GitHub Repository": "https://wwww.github.com/RedFantom/GSF-Parser"
         }
         self.resource_labels = []
         self.resource_description_labels = {}

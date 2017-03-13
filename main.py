@@ -3,12 +3,9 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import os
 import sys
-import firstrun
-import gui
 import tkMessageBox
-import settings
+import gui
 
 
 def new_window():
@@ -17,8 +14,6 @@ def new_window():
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        # oob = firstrun.oob_window()
-        # oob.mainloop()
         import variables
 
         if variables.settings_obj.version != "v2.2.1":

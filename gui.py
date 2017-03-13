@@ -8,23 +8,17 @@
 
 # UI imports
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
     import Tkinter as tk
 import ttk
-# General imports
 import os
-# Own modules
+
 import variables
 import client
-import toplevels
 import main
-import fileframe
-import realtimeframe
-import settingsframe
-import sharingframe
-import graphsframe
-import resourcesframe
+from frames import fileframe, resourcesframe, sharingframe, graphsframe, settingsframe, realtimeframe
+import toplevels
 
 
 # Class that contains all code to start the parser
@@ -39,16 +33,15 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.finished = False
         self.style = ttk.Style()
-        self.update_style(start=True)
         self.set_icon()
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
         variables.path = variables.settings_obj.cl_path
+        self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings_obj.cl_path
         # Set window properties and create a splash screen from the splash_screen class
@@ -79,7 +72,7 @@ class main_window(tk.Tk):
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
+        self.middle_frame.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E, padx=5, pady=5)
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
@@ -107,14 +100,6 @@ class main_window(tk.Tk):
         self.splash.destroy()
         # Start the main loop
         variables.main_window = self
-
-    def on_close(self):
-        variables.FLAG = False
-        self.graphs_frame.close()
-        self.destroy()
-        # Due to a bug in matplotlib, not all plots are closed when using pyplot.close('all')
-        # Terminating the process manually is required
-        os.kill(os.getpid(), 9)
 
     def update_style(self, start=False):
         try:

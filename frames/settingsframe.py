@@ -8,15 +8,14 @@
 
 # UI imports
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkFileDialog
-# General imports
 import re
-# Own modules
+
 import variables
 import toplevels
 import widgets

@@ -7,10 +7,10 @@
 # Written by Daethyra, edited by RedFantom
 
 from decimal import Decimal
-from stalking import LogStalker
 import datetime
-import variables
 import re
+from parsing.stalking import LogStalker
+import variables
 
 
 class Parser(object):
@@ -74,6 +74,7 @@ class Parser(object):
 
         self.abilities, self.dmg_done, self.dmg_taken = [], [], []
         self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
+        self.recent_enemies = {}
 
         self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd = [], [], []
         self.tmp_selfdmg = []
@@ -104,6 +105,13 @@ class Parser(object):
         if not line:
             print "[DEBUG] Line is of NoneType"
             # Should be return for #20?
+            return
+
+        if "SetLevel" in line:
+            return
+
+        for enemy, time in self.recent_enemies.iteritems():
+            # Remove enemies that weren't registered in last ten seconds
             pass
 
         # If first line of the file, save the player name
@@ -214,6 +222,7 @@ class Parser(object):
                 self.active_id = ''
                 self.spawns = 1
                 self.active_ids = []
+                self.recent_enemies.clear()
                 return
 
             # Start parsing
@@ -237,6 +246,8 @@ class Parser(object):
                     else:
                         self.spawn_dmg_taken.append(int(line['amount'].replace('*', '')))
                         self.dprint("[DEBUG] damage taken", self.spawn_dmg_taken)
+                        self.recent_enemies[line['destination']] = \
+                            datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
             if line['ability'] in self.tmp_abilities:
                 self.tmp_abilities[line['ability']] += 1

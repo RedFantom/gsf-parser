@@ -7,7 +7,9 @@
 import re
 from datetime import datetime
 from decimal import Decimal
+
 from abilities import *
+import realtime
 
 
 # Function that splits the lines it gets into new lists of lines according
@@ -595,6 +597,16 @@ def determineShip(abilitiesDictionary):
 
     return shipsList
 
+
+def get_amount_enemies(spawn, player):
+    enemies = []
+    for line in spawn:
+        line_dict = realtime.line_to_dictionary(line)
+        if line_dict['source'] not in player and line_dict['source'] not in enemies:
+            enemies.append(line_dict['source'])
+        if line_dict['destination'] not in player and line_dict['destination'] not in enemies:
+            enemies.append(line_dict['destination'])
+    return len(enemies)
 
 # Returns the player's ID numbers
 def determinePlayer(lines):

@@ -8,25 +8,22 @@
 
 # UI imports
 try:
-    import mtTkinter as tk
+    import mttkinter.mtTkinter as tk
 except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
 import tkFileDialog
-from PIL import Image, ImageTk
-# General imports
 import operator
 import os
 import re
 from datetime import datetime
-# Own modules
+from PIL import Image, ImageTk
 import variables
-import parse
-import statistics
-import abilities
+from parsing import statistics, parse, abilities
 import toplevels
 import widgets
+
 
 # Class for the _frame in the fileTab of the parser
 class file_frame(ttk.Frame):
@@ -153,12 +150,10 @@ class file_frame(ttk.Frame):
         """
 
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_label_var.set("")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
-        with open(variables.file_name, "r") as file:
+        with open(variables.settings_obj.cl_path + "/" + variables.file_name, "r") as file:
             variables.player_name = parse.determinePlayerName(file.readlines())
         self.spawn_box.delete(0, tk.END)
         self.match_timing_strings = []
@@ -183,10 +178,10 @@ class file_frame(ttk.Frame):
         :return:
         """
 
-        self.main_window.middle_frame.abilities_label_var.set("")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children(""))
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
         if variables.match_timing:
@@ -214,24 +209,25 @@ class file_frame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_label_var.set("")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children(""))
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         self.splash = toplevels.splash_screen(self.main_window)
         try:
+            old_path = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
+            os.chdir(old_path)
         except OSError:
             tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
                                             "choose another folder.")
             folder = tkFileDialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-            os.chdir(variables.settings_obj.cl_path)
-        for file in os.listdir(os.getcwd()):
+        for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(file):
+                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         if variables.settings_obj.date_format == "ymd":
                             dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
@@ -267,25 +263,26 @@ class file_frame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_label_var.set("")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         if not silent:
             self.splash = toplevels.splash_screen(self.main_window)
         try:
+            old_cwd = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
+            os.chdir(old_cwd)
         except OSError:
             tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
                                             "choose another folder.")
             folder = tkFileDialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-            os.chdir(variables.settings_obj.cl_path)
-        for file in os.listdir(os.getcwd()):
+        for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(file):
+                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
                     except ValueError:
@@ -314,22 +311,20 @@ class file_frame(ttk.Frame):
         """
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         for index, filestring in enumerate(self.file_box.get(0, tk.END)):
             self.file_box.itemconfig(index, background="white")
         if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
-            (abilities_string, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
-             total_enemydamaget, uncounted) = statistics.statistics.folder_statistics()
+            (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
+             enemydamaget, uncounted) = statistics.statistics.folder_statistics()
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
-            self.main_window.middle_frame.abilities_label_var.set(abilities_string)
-            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
@@ -338,31 +333,31 @@ class file_frame(ttk.Frame):
                 else:
                     name = ship
                 try:
-                    ships_string += name + "\t\t" + str(total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
 
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            color = "white"
-            for enemy in total_enemies:
+            for enemy in enemies:
                 if enemy == "":
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=("System",
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 else:
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, total_enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, total_enemydamaget[enemy])
-                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
-                if color == "white":
-                    color = "lightgrey"
-                else:
-                    color = "white"
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
-            most_used_ship = max(total_shipsdict.iteritems(), key=operator.itemgetter(1))[0]
+            most_used_ship = max(shipsdict.iteritems(), key=operator.itemgetter(1))[0]
             self.main_window.ship_frame.update_ship([most_used_ship])
             self.main_window.ship_frame.update()
         else:
@@ -379,7 +374,7 @@ class file_frame(ttk.Frame):
                 tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
                                                 "consult the issues page of the GitHub repository.")
             # Read all the lines from the selected file
-            with open(variables.file_name, "rU") as clicked_file:
+            with open(variables.settings_obj.cl_path + "/" + variables.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
             # PARSING STARTS
             # Get the player ID numbers from the list of lines
@@ -401,11 +396,12 @@ class file_frame(ttk.Frame):
 
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
         for index, matchstring in enumerate(self.match_box.get(0, tk.END)):
             self.match_box.itemconfig(index, background="white")
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
@@ -416,11 +412,11 @@ class file_frame(ttk.Frame):
             except TypeError:
                 variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
             file_cube = variables.file_cube
-            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies,
-             variables.enemydamaged,
-             variables.enemydamaget, variables.uncounted) = self.statistics_object.file_statistics(file_cube)
-            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
+            (abilities_dict, statistics_string, shipsdict, enemies,
+             enemydamaged, enemydamaget, uncounted) = self.statistics_object.file_statistics(file_cube)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
+            self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
                 if variables.settings_obj.faction == "republic":
@@ -432,29 +428,25 @@ class file_frame(ttk.Frame):
                     ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += name + "\t\t0\n"
-
             ships_string += "Uncounted\t\t" + str(variables.uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            color = "white"
-            for enemy in variables.enemies:
+            for enemy in enemies:
                 if enemy == "":
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=("System",
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 else:
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
-                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
-                if color == "white":
-                    color = "lightgrey"
-                else:
-                    color = "white"
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
             self.spawn_box.focus()
@@ -477,17 +469,21 @@ class file_frame(ttk.Frame):
         """
         for index, spawnstring in enumerate(self.spawn_box.get(0, tk.END)):
             self.spawn_box.itemconfig(index, background="white")
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
             match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             for spawn in match:
                 variables.player_numbers.update(parse.determinePlayer(spawn))
-            (variables.abilities_string, variables.statistics_string, variables.total_shipsdict, variables.enemies,
-             variables.enemydamaged,
-             variables.enemydamaget) = self.statistics_object.match_statistics(match)
-            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
+            (abilities_dict, statistics_string, shipsdict, enemies,
+             enemydamaged, enemydamaget) = self.statistics_object.match_statistics(match)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
+            self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
                 if variables.settings_obj.faction == "republic":
@@ -496,31 +492,28 @@ class file_frame(ttk.Frame):
                     name = ship
 
                 try:
-                    ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += name + "\t\t0\n"
-            ships_string += "Uncounted\t\t%s" % variables.total_shipsdict["Uncounted"]
+            ships_string += "Uncounted\t\t%s" % shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            color = "white"
             for enemy in variables.enemies:
                 if enemy == "":
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=("System",
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 else:
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
-                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
-                if color == "white":
-                    color = "lightgrey"
-                else:
-                    color = "white"
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             self.main_window.ship_frame.remove_image()
         else:
@@ -545,13 +538,13 @@ class file_frame(ttk.Frame):
             spawn = match[self.spawn_timing_strings.index(variables.spawn_timing)]
             variables.spawn = spawn
             variables.player_numbers = parse.determinePlayer(spawn)
-            (variables.abilities_string, variables.statistics_string, variables.ships_list, variables.ships_comps,
-             variables.enemies,
-             variables.enemydamaged, variables.enemydamaget) = self.statistics_object.spawn_statistics(spawn)
-            self.main_window.middle_frame.abilities_label_var.set(variables.abilities_string)
-            self.main_window.middle_frame.statistics_numbers_var.set(variables.statistics_string)
+            (abilities_dict, statistics_string, ships_list, ships_comps,
+             enemies, enemydamaged, enemydamaget) = self.statistics_object.spawn_statistics(spawn)
+            for key, value in abilities_dict.iteritems():
+                self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
+            self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Possible ships used:\n"
-            for ship in variables.ships_list:
+            for ship in ships_list:
                 if variables.settings_obj.faction == "republic":
                     name = abilities.rep_ships[ship]
                 else:
@@ -559,31 +552,28 @@ class file_frame(ttk.Frame):
 
                 ships_string += str(name) + "\n"
             ships_string += "\t\t\t\t\t\t\nWith the components:\n"
-            for component in variables.ships_comps:
+            for component in ships_comps:
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
-            self.main_window.middle_frame.enemies_listbox.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaged.delete(0, tk.END)
-            self.main_window.middle_frame.enemies_damaget.delete(0, tk.END)
-            color = "white"
-            for enemy in variables.enemies:
+            for enemy in enemies:
                 if enemy == "":
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, "System")
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=("System",
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy)
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
                 else:
-                    self.main_window.middle_frame.enemies_listbox.insert(tk.END, enemy[6:])
-                self.main_window.middle_frame.enemies_damaged.insert(tk.END, variables.enemydamaged[enemy])
-                self.main_window.middle_frame.enemies_damaget.insert(tk.END, variables.enemydamaget[enemy])
-                self.main_window.middle_frame.enemies_damaget.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_listbox.itemconfig(tk.END, background=color)
-                self.main_window.middle_frame.enemies_damaged.itemconfig(tk.END, background=color)
-                if color == "white":
-                    color = "lightgrey"
-                else:
-                    color = "white"
+                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                          values=(enemy,
+                                                                                  str(enemydamaged[enemy]),
+                                                                                  str(enemydamaget[enemy])))
+
             self.main_window.middle_frame.events_button.state(["!disabled"])
-            self.main_window.ship_frame.update_ship(variables.ships_list)
+            self.main_window.ship_frame.update_ship(ships_list)
 
 
 class ship_frame(ttk.Frame):
@@ -634,7 +624,8 @@ class ship_frame(ttk.Frame):
         if len(ships_list) > 1:
             print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\default.png")
+                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png".
+                               replace("\\", "/"))
             except IOError:
                 print "[DEBUG] File not found."
                 tkMessageBox.showerror("Error",
@@ -649,7 +640,8 @@ class ship_frame(ttk.Frame):
                     img = abilities.rep_ships[ships_list[0]]
                 else:
                     img = ships_list[0]
-                self.set_image(os.path.dirname(__file__) + "\\assets\\img\\" + img + ".png")
+                self.set_image(os.path.dirname(__file__).replace("frames", "") +
+                               ("\\assets\\img\\" + img + ".png").replace("\\", "/"))
             except IOError:
                 tkMessageBox.showerror("Error",
                                        "The specified picture can not be found. Is the assets folder copied correctly?")
@@ -676,8 +668,9 @@ class ship_frame(ttk.Frame):
         :return:
         """
         try:
-            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)) + \
-                                                     "\\assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
+            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)).
+                                                     replace("frames", "") +
+                                                     "assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
         except IOError:
             print "[DEBUG] default.png can not be opened."
             return
@@ -751,23 +744,45 @@ class middle_frame(ttk.Frame):
         self.statistics_label.setvar()
         self.statistics_numbers = ttk.Label(self.stats_frame, textvariable=self.statistics_numbers_var,
                                             justify=tk.LEFT, wraplength=145)
-        self.enemies_label = ttk.Label(self.enemies_frame, text="Name\t          Damage taken\t      Damage dealt\n")
-        self.enemies_listbox = tk.Listbox(self.enemies_frame, width=17, height=17)
-        self.enemies_damaget = tk.Listbox(self.enemies_frame, width=14, height=17)
-        self.enemies_damaged = tk.Listbox(self.enemies_frame, width=14, height=17)
-        self.enemies_scroll = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL, )
-        self.enemies_scroll.config(command=self.enemies_scroll_yview)
-        self.enemies_listbox.config(yscrollcommand=self.enemies_listbox_scroll)
-        self.enemies_damaget.config(yscrollcommand=self.enemies_damaget_scroll)
-        self.enemies_damaged.config(yscrollcommand=self.enemies_damaged_scroll)
-        self.abilities_scrollable_frame = widgets.vertical_scroll_frame(self.notebook)
-        self.abilities_frame = self.abilities_scrollable_frame.interior
-        self.notebook.add(self.abilities_scrollable_frame, text="Abilities")
-        self.abilities_label_var = tk.StringVar()
-        self.abilities_label = ttk.Label(self.abilities_frame, textvariable=self.abilities_label_var,
-                                         justify=tk.LEFT, wraplength=295)
-        self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be" +
-                                                             " accurately calculated due to CombatLog limitations, as damage dealt by bombs is not recorded.",
+        self.enemies_treeview = ttk.Treeview(self.enemies_frame, columns=("Enemy name/ID", "Damage dealt",
+                                                                          "Damage taken"),
+                                             displaycolumns=("Enemy name/ID", "Damage dealt", "Damage taken"),
+                                             height=14)
+        self.enemies_treeview.heading("Enemy name/ID", text="Enemy name/ID",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Enemy name/ID", False, "str"))
+        self.enemies_treeview.heading("Damage dealt", text="Damage dealt",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Damage dealt", False, "int"))
+        self.enemies_treeview.heading("Damage taken", text="Damage taken",
+                                      command=lambda: self.treeview_sort_column(self.enemies_treeview,
+                                                                                "Damage taken", False, "int"))
+        self.enemies_treeview["show"] = "headings"
+        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor=tk.W)
+        self.enemies_treeview.column("Damage taken", width=80, stretch=False, anchor=tk.E)
+        self.enemies_treeview.column("Damage dealt", width=80, stretch=False, anchor=tk.E)
+        self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
+                                               command=self.enemies_treeview.yview)
+        self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
+        self.abilities_frame = ttk.Frame(self.notebook)
+        self.notebook.add(self.abilities_frame, text="Abilities")
+        self.abilities_treeview = ttk.Treeview(self.abilities_frame, columns=("Ability", "Times used"),
+                                               displaycolumns=("Ability", "Times used"), height=14)
+        self.abilities_treeview.column("Ability", width=200, stretch=False, anchor=tk.W)
+        self.abilities_treeview.column("Times used", width=85, stretch=False, anchor=tk.E)
+        self.abilities_treeview.heading("Ability", text="Ability",
+                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
+                                                                                  "Ability", False, "str"))
+        self.abilities_treeview.heading("Times used", text="Times used",
+                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
+                                                                                  "Times used", False, "int"))
+        self.abilities_treeview["show"] = "headings"
+        self.abilities_scrollbar = ttk.Scrollbar(self.abilities_frame, orient=tk.VERTICAL,
+                                                 command=self.abilities_treeview.yview)
+        self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
+        self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be " +
+                                                             "accurately calculated due to CombatLog limitations, "
+                                                             "as damage dealt by bombs is not recorded.",
                                       justify=tk.LEFT, wraplength=290)
 
     def show_events(self):
@@ -777,79 +792,30 @@ class middle_frame(ttk.Frame):
         """
         self.toplevel = toplevels.events_view(self.window, variables.spawn, variables.player_numbers)
 
-    def enemies_scroll_yview(self, *args):
-        """
-        Combine the scrolling of three listboxes into one
-        :param args:
-        :return:
-        """
-        self.enemies_listbox.yview(*args)
-        self.enemies_damaged.yview(*args)
-        self.enemies_damaget.yview(*args)
-
-    """
-    Three functions, all with the same goal: keeping the scroll point of the
-    three listboxes synchronized in order to show the correct damage for the
-    correct enemy.
-    """
-
-    def enemies_listbox_scroll(self, *args):
-        """
-        A function to automatically scroll all three listboxes of the enemies
-        tab together in synchronization when using the Scrollbar as well as
-        the MouseWheel
-        :param args: A pointer for Tkinter compatibility
-        :return:
-        """
-        if self.enemies_damaged.yview() != self.enemies_listbox.yview():
-            self.enemies_damaged.yview_moveto(args[0])
-        if self.enemies_damaget.yview() != self.enemies_listbox.yview():
-            self.enemies_damaget.yview_moveto(args[0])
-        self.enemies_scroll.set(*args)
-
-    def enemies_damaged_scroll(self, *args):
-        """
-        A function to automatically scroll all three listboxes of the enemies
-        tab together in synchronization when using the Scrollbar as well as
-        the MouseWheel
-        :param args: A pointer for Tkinter compatibility
-        :return:
-        """
-        if self.enemies_listbox.yview() != self.enemies_damaged.yview():
-            self.enemies_listbox.yview_moveto(args[0])
-        if self.enemies_damaget.yview() != self.enemies_damaged.yview():
-            self.enemies_damaget.yview_moveto(args[0])
-        self.enemies_scroll.set(*args)
-
-    def enemies_damaget_scroll(self, *args):
-        """
-        A function to automatically scroll all three listboxes of the enemies
-        tab together in synchronization when using the Scrollbar as well as
-        the MouseWheel
-        :param args: A pointer for Tkinter compatibility
-        :return:
-        """
-        if self.enemies_listbox.yview() != self.enemies_damaget.yview():
-            self.enemies_listbox.yview_moveto(args[0])
-        if self.enemies_damaged.yview() != self.enemies_damaget.yview():
-            self.enemies_damaged.yview_moveto(args[0])
-        self.enemies_scroll.set(*args)
-
     def grid_widgets(self):
         """
         Put all widgets in the right place
         :return:
         """
-        self.abilities_label.grid(column=0, row=2, columnspan=4, sticky=tk.N+tk.W)
+        self.abilities_treeview.grid(column=0, row=0, sticky=tk.N+tk.W)
+        self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N+tk.W+tk.E)
         self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N+tk.W + tk.S + tk.E)
         self.events_button.grid(column=0, row=1, sticky=tk.N+tk.W + tk.S + tk.E, columnspan=4, pady=12)
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N+tk.W+tk.E)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W+tk.E+tk.S)
-        self.enemies_label.grid(column=0, row=0, columnspan=3)
-        self.enemies_listbox.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.enemies_damaged.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.enemies_damaget.grid(column=2, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.enemies_scroll.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_treeview.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
 
+    def treeview_sort_column(self, treeview, column, reverse, type):
+        l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
+        if type == "int":
+            l.sort(key=lambda t: int(t[0]), reverse=reverse)
+        elif type == "str":
+            l.sort(key=lambda t: t[0], reverse=reverse)
+        else:
+            raise NotImplementedError
+        for index, (val, k) in enumerate(l):
+            treeview.move(k, '', index)
+        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
