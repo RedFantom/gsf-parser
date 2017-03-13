@@ -30,8 +30,8 @@ class TestFileParsing(unittest.TestCase):
         self.assertEqual(parse.determinePlayerName(self.lines), "Redfantom")
 
     def test_determinePlayer(self):
-        self.assertEqual(parse.determinePlayer(self.lines),
-                         {'20477000009562': 3, '20373000057112': 7})
+        self.assertDictEqual(parse.determinePlayer(self.lines),
+                             {'20477000009562': 3, '20373000057112': 8})
 
     def test_splitter(self):
         player = parse.determinePlayer(self.lines)
@@ -61,7 +61,7 @@ class TestFileParsing(unittest.TestCase):
         self.assertIsInstance(stats_tuple[9], list)    # ships_list
         self.assertIsInstance(stats_tuple[10], dict)   # enemydamaged
         self.assertIsInstance(stats_tuple[11], dict)   # enemydamaget
-        self.assertEqual(len(stats_tuple[0]), 3)
+        self.assertEqual(len(stats_tuple[0]), 4)
         self.assertTrue("Cluster Missiles" in stats_tuple[0])
         self.assertTrue("Nullify" in stats_tuple[0])
         self.assertTrue("Charged Plating" in stats_tuple[0])
