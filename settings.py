@@ -96,17 +96,17 @@ class settings:
         self.conf.read(self.file_name)
         self.version = self.conf.get("misc", "version")
         self.cl_path = self.conf.get("parsing", "cl_path")
-        if self.conf.get("parsing", "auto_ident") == "True":
+        if self.conf.get("parsing", "auto_ident") == "True" or self.conf.get("parsing", "auto_ident") == 1:
             self.auto_ident = True
         else:
             self.auto_ident = False
         self.server_address = self.conf.get("sharing", "server_address")
         self.server_port = int(self.conf.get("sharing", "server_port"))
-        if self.conf.get("sharing", "auto_upl") == "True":
+        if self.conf.get("sharing", "auto_upl") == "True" or self.conf.get("sharing", "auto_upl") == 1:
             self.auto_upl = True
         else:
             self.auto_upl = False
-        if self.conf.get("realtime", "overlay") == "True":
+        if self.conf.get("realtime", "overlay") == "True" or self.conf.get("realtime", "overlay") == 1:
             self.overlay = True
         else:
             self.overlay = False
@@ -124,7 +124,8 @@ class settings:
         self.date_format = self.conf.get("gui", "date_format")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
-        if self.conf.get("realtime", "overlay_when_gsf") == "True":
+        if self.conf.get("realtime", "overlay_when_gsf") == "True" or \
+           self.conf.get("realtime", "overlay_when_gsf") == 1:
             self.overlay_when_gsf = True
         else:
             self.overlay_when_gsf = False
