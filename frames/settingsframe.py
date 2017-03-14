@@ -92,6 +92,15 @@ class settings_frame(ttk.Frame):
                                                variable=self.date_format)
         self.date_format_ydm = ttk.Radiobutton(self.gui_frame, text="YYYY-DD-MM", value="ydm",
                                                variable=self.date_format)
+        self.faction_label = ttk.Label(self.gui_frame, text="\tFaction: ")
+        self.faction = tk.StringVar()
+        self.faction_choices = ["Imperial", "Republic"]
+        self.faction_options = []
+        self.faction.set(variables.settings_obj.faction)
+        for faction in self.faction_choices:
+            self.faction_options.append(ttk.Radiobutton(self.gui_frame, value=str(faction).lower(), text=faction,
+                                                        variable=self.faction, width=8))
+
         ### PARSING SETTINGS ###
         self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
@@ -275,6 +284,11 @@ class settings_frame(ttk.Frame):
         self.date_format_label.grid(column=0, row=4, sticky=tk.W)
         self.date_format_ymd.grid(column=1, row=4, sticky=tk.W)
         self.date_format_ydm.grid(column=2, row=4, sticky=tk.W)
+        self.faction_label.grid(column=0, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
+        set_column = 0
+        for radio in self.faction_options:
+            set_column += 1
+            radio.grid(column=set_column, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady=5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
@@ -396,6 +410,8 @@ class settings_frame(ttk.Frame):
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         self.date_format.set(variables.settings_obj.date_format)
         self.realtime_timeout.set(variables.settings_obj.timeout)
+        self.faction.set(variables.settings_obj.faction)
+
 
     def save_settings(self):
         """
@@ -446,7 +462,8 @@ class settings_frame(ttk.Frame):
                                          timeout=self.realtime_timeout.get(),
                                          event_colors=self.event_colors.get(),
                                          event_scheme=self.event_scheme.get(),
-                                         date_format=self.date_format.get())
+                                         date_format=self.date_format.get(),
+                                         faction=self.faction.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
