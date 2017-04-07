@@ -31,6 +31,8 @@ spawn_dictionary["clicks"] = clicks_dict
     clicks_dict[datetime_obj] = (left, right)
 spawn_dictionary["keys"] = keys_dict
     keys_dict[datetime_obj] = keyname
+spawn_dictionary["health"] = health_dict
+    health_dict[datetime_obj] = (hull, shieldsf, shieldsr), all ints
 
 
 The realtime screen parsing uses Queue objects to communicate with other parts of the program. This is required because
@@ -51,6 +53,13 @@ exit_queue:         This Queue object is checked to see if the ScreenParser shou
                     must first be completed. A list of expected data:
                     - True                                  keep running
                     - False                                 exit ASAP
+query_queue         This Queue object is for communication between the process and the realtime parsing thread in the
+                    main process so the main process can receive data and display it in the overlay. A list of
+                    expected data:
+                    - "power_mgmt"                          return int power_mgmt
+                    - "tracking"                            return int tracking degrees
+                    - "health"                              return (hull, shieldsf, shieldsr), all ints
+return_queue        The Queue in which the data requested from the query_queue is returned.
 _internal_queue:    This Queue object is for internal communication between the various Thread objects running in this
                     Process object. A list of expected data:
                     - ("keypress", *args)                   key pressed
@@ -68,43 +77,90 @@ class FileHandler(object):
 
 
 class ScreenParser(mp.Process):
-    def __init__(self, data_queue, exit_queue):
+    def __init__(self, data_queue, exit_queue, query_queue, return_queue, rgb=False):
         mp.Process.__init__(self)
+        self.query_queue = query_queue
         self.data_queue = data_queue
         self.exit_queue = exit_queue
         self._internal_queue = Queue()
+        self.return_queue = return_queue
         directory = tempfile.gettempdir()
         self.pickle_name = directory.replace("\\temp", "") + "\\GSF Parser\\rltdata.db"
         try:
             self.data_dictionary = pickle.load(self.pickle_name)
-        except:
+        except OSError:
             self.data_dictionary = {}
-        self.file = ""
-        self.file_dict = {}
+        # String of filename
+        self._file = ""
+        # Datetime objects of start timings
+        self._match = None
+        self._spawn = None
+        # Dictionaries to store temporary data
+        self._file_dict = {}
+        self._match_dict = {}
+        self._spawn_dict = {}
+        # More dictionaries to store temporary data
+        self._power_mgmt_dict = {}
+        self._cursor_pos_dict = {}
+        self._tracking_dict = {}
+        self._clicks_dict = {}
+        self._keys_dict = {}
+        self._health_dict = {}
+        # Listeners for keyboard and mouse input
         self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
         self._ms_listener = pynput.mouse.Listener(on_press=self.on_press_ms, on_release=self.on_release_ms)
         self._current_match = None
         self._current_spawn = None
 
     def run(self):
+        # Start the listeners for keyboard and mouse input
         self._kb_listener.start()
         self._ms_listener.start()
+        # Start the loop to parse the screen data
         while True:
+            # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
+            # for terminating the process intirely by saving all the data collected.
             if not self.exit_queue.empty():
                 if not self.exit_queue.get():
                     break
-            if not self.data_queue.empty():
+            # While data_queue is not empty, process the data in it
+            while not self.data_queue.empty():
                 data = self.data_queue.get()
-                if not isinstance(data, tuple):
+                # (data[0], data[1], data[2])
+                if not isinstance(data, tuple) or not len(data) is 2 or not len(data) is 3:
                     raise ValueError("Unexpected data received: ", str(data))
-                if data[0] == "file" and self.file is not data[1]:
-                    self.data_dictionary[self.file] = self.file_dict
+                # ("file", filename)
+                elif data[0] == "file" and self.file is not data[1]:
+                    self.data_dictionary[self.file] = self._file_dict
                     self.file = data[1]
-                    self.file_dict.clear()
-                if data[0] == "match" and not data[1] and not self.is_match:
+                    self._file_dict.clear()
+                # ("match", False, datetime)
+                elif data[0] == "match" and not data[1] and not self.is_match:
+                    if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
+                        self._match_dict[self._spawn] = self._spawn_dict
+                        self.data_dictionary[self._file][self._match] = self._match_dict
+                        self._match_dict.clear()
+                        self._spawn_dict.clear()
+                    self._file_dict[self._match] = self._match_dict
+                    self._match_dict.clear()
                     self.is_match = False
-                if data[0] == "match" and data[1] and not self.is_match:
-                    pass
+                # ("match", True, datetime)
+                elif data[0] == "match" and data[1] and not self.is_match:
+                    if not self._match:
+                        raise ValueError("Expected self._match to have value")
+                    self._match = data[2]
+                    if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
+                        self._match_dict[self._spawn] = self._spawn_dict
+                        self.data_dictionary[self._file][self._match] = self._match_dict
+                        self._match_dict.clear()
+                        self._spawn_dict.clear()
+                # ("spawn", datetime)
+                elif data[0] == "spawn":
+                    self._match_dict[self._spawn] = self._spawn_dict
+                    self._spawn_dict.clear()
+                    self._spawn = data[1]
+                else:
+                    raise ValueError("Unexpected data received: ", str(data))
             screen = vision.get_cv2_screen()
             pointer_cds = vision.get_pointer_position_win32()
             power_mgmt = vision.get_power_management(screen)
@@ -112,8 +168,22 @@ class ScreenParser(mp.Process):
             health_shields_f = vision.get_ship_health_forwardshields(screen)
             health_shields_r = vision.get_ship_health_rearshields(screen)
             current_time = datetime.now()
+            self._cursor_pos_dict[current_time] = pointer_cds
+            self._power_mgmt_dict[current_time] = power_mgmt
+            self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
+
             while not self._internal_queue.empty():
                 pass
+            while not self.query_queue.empty():
+                command = self.query_queue.get()
+                if command == "power_mgmt":
+                    self.return_queue.put(power_mgmt)
+                elif command == "health":
+                    self.return_queue.put((health_hull, health_shields_f, health_shields_r))
+                elif command == "tracking":
+                    # TODO: Calculate tracking _degrees_ and return int value
+                    pass
+        # TODO: Save the current _spawn_dict and _match_dict to the file
 
     def on_press_kb(self, *args):
         self._internal_queue.put(("keypress", args))
@@ -128,7 +198,7 @@ class ScreenParser(mp.Process):
         self.__exit__()
 
     def __exit__(self):
-        self.data_dictionary[self.file] = self.file_dict
+        self.data_dictionary[self.file] = self._file_dict
         pickle.dump(self.data_dictionary, self.pickle_name)
 
 
