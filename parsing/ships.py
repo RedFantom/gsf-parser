@@ -16,6 +16,10 @@ import components.magazines
 
 
 class Ship(object):
+    """
+    component: (category, name, upgrade_level)
+    """
+
     def __init__(self):
         self.components = {'primary': None,
                            'secondary': None,
@@ -33,9 +37,6 @@ class Ship(object):
         pass
 
     def __getitem__(self, item):
-        pass
-
-    def update_modifiers(self):
         pass
 
 
