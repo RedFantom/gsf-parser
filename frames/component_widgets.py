@@ -17,8 +17,14 @@ class ComponentWidget(ttk.Frame):
     def __init__(self, parent, data_dictionary):
         ttk.Frame.__init__(self, parent)
         self.data_dictionary = data_dictionary
-        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons",
-                                                 "imperial"))
+        if settings.faction == "imperial":
+            self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons",
+                                                     "imperial"))
+        elif settings.faction == "republic":
+            self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons",
+                                                     "republic"))
+        else:
+            raise ValueError("Unexpected value for faction found.")
 
     def __getitem__(self, key):
         return self.data_dictionary[key]
