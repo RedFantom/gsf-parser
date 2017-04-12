@@ -20,6 +20,7 @@ from parsing import realtime
 import threading
 import variables
 from parsing import parse
+from parsing import vision
 
 
 class TestFileParsing(unittest.TestCase):
@@ -31,8 +32,8 @@ class TestFileParsing(unittest.TestCase):
         self.assertEqual(parse.determinePlayerName(self.lines), "Redfantom")
 
     def test_determinePlayer(self):
-        self.assertEqual(parse.determinePlayer(self.lines),
-                         {'20477000009562': 3, '20373000057112': 7})
+        self.assertDictEqual(parse.determinePlayer(self.lines),
+                             {'20477000009562': 3, '20373000057112': 8})
 
     def test_splitter(self):
         player = parse.determinePlayer(self.lines)
@@ -62,7 +63,7 @@ class TestFileParsing(unittest.TestCase):
         self.assertIsInstance(stats_tuple[9], list)    # ships_list
         self.assertIsInstance(stats_tuple[10], dict)   # enemydamaged
         self.assertIsInstance(stats_tuple[11], dict)   # enemydamaget
-        self.assertEqual(len(stats_tuple[0]), 3)
+        self.assertEqual(len(stats_tuple[0]), 4)
         self.assertTrue("Cluster Missiles" in stats_tuple[0])
         self.assertTrue("Nullify" in stats_tuple[0])
         self.assertTrue("Charged Plating" in stats_tuple[0])
@@ -119,70 +120,72 @@ class TestFileParsing(unittest.TestCase):
                                            "20477000009322": 0})
 
 
-if sys.platform == "win32":
-    from parsing import vision
+class TestUI(unittest.TestCase):
+    def setUp(self):
+        self.window = gui.main_window()
 
+    def tearDown(self):
+        variables.FLAG = False
+        self.window.update()
+        self.window.destroy()
 
-    class TestUI(unittest.TestCase):
-        def setUp(self):
-            self.window = gui.main_window()
+    def test_instances(self):
+        self.assertIsInstance(self.window, tk.Tk)
+        for item in self.window.children.values():
+            self.assertIsInstance(item, tk.Widget)
 
-        def tearDown(self):
-            variables.FLAG = False
-            self.window.update()
-            self.window.destroy()
+    def test_main_window(self):
+        self.window.update()
 
-        def test_instances(self):
-            self.assertIsInstance(self.window, tk.Tk)
-            for item in self.window.children.values():
-                self.assertIsInstance(item, tk.Widget)
+    def test_notebook(self):
+        self.window.notebook.select(self.window.file_tab_frame)
+        self.window.update()
+        self.window.notebook.select(self.window.graphs_frame)
+        self.window.update()
+        self.window.notebook.select(self.window.realtime_tab_frame)
+        self.window.update()
+        self.window.notebook.select(self.window.share_tab_frame)
+        self.window.update()
+        self.window.notebook.select(self.window.resources_frame)
+        self.window.update()
+        self.window.notebook.select(self.window.settings_tab_frame)
+        self.window.update()
 
-        def test_main_window(self):
-            self.window.update()
+    def test_file_adding(self):
+        self.window.file_select_frame.refresh_button.invoke()
+        self.window.update()
+        self.assertEqual(self.window.file_select_frame.file_box.get(0), "All CombatLogs")
+        self.assertEqual(self.window.file_select_frame.file_box.get(1), "2017-02-26   12:00")
 
-        def test_notebook(self):
-            self.window.notebook.select(self.window.file_tab_frame)
-            self.window.update()
-            self.window.notebook.select(self.window.graphs_frame)
-            self.window.update()
-            self.window.notebook.select(self.window.realtime_tab_frame)
-            self.window.update()
-            self.window.notebook.select(self.window.share_tab_frame)
-            self.window.update()
-            self.window.notebook.select(self.window.resources_frame)
-            self.window.update()
-            self.window.notebook.select(self.window.settings_tab_frame)
-            self.window.update()
+    def test_custom_color_toplevel(self):
+        self.window.settings_frame.event_scheme_custom_button.invoke()
+        self.window.update()
+        self.assertIsInstance(self.window.settings_frame.color_toplevel, tk.Toplevel)
+        self.window.update()
+        self.window.settings_frame.color_toplevel.destroy()
 
-        def test_file_adding(self):
-            self.window.file_select_frame.refresh_button.invoke()
-            self.window.update()
-            self.assertEqual(self.window.file_select_frame.file_box.get(0), "All CombatLogs")
-            self.assertEqual(self.window.file_select_frame.file_box.get(1), "2017-02-26   12:00")
+    '''
+    def test_realtime_parsing_button(self):
+        self.window.update()
+        self.window.update()
+        self.window.realtime_frame.start_parsing_button.invoke()
+        self.window.update()
+        self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
+        self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
+                         "Watching: combat_2017-02-26_12_00_00_000000.txt")
+        self.window.realtime_frame.start_parsing_button.invoke()
+        time.sleep(5)
+        self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
+        self.window.update()
+    '''
 
-        def test_custom_color_toplevel(self):
-            self.window.settings_frame.event_scheme_custom_button.invoke()
-            self.window.update()
-            self.assertIsInstance(self.window.settings_frame.color_toplevel, tk.Toplevel)
-            self.window.update()
-            self.window.settings_frame.color_toplevel.destroy()
-
-        def test_realtime_parsing_button(self):
-            self.window.update()
-            self.window.update()
-            self.window.realtime_frame.start_parsing_button.invoke()
-            self.window.update()
-            self.assertTrue(self.window.realtime_frame.stalker_obj.is_alive())
-            self.assertEqual(self.window.realtime_frame.watching_stringvar.get(),
-                             "Watching: combat_2017-04-27_12_00_00_000000.txt")
-            self.window.realtime_frame.start_parsing_button.invoke()
-            time.sleep(5)
-            self.assertFalse(self.window.realtime_frame.stalker_obj.is_alive())
-            self.window.update()
-
-        def test_graphs_frame(self):
-            graphs = ("play", "dmgd", "dmgt", "hrec", "enem", "critluck", "hitcount", "spawn", "match", "deaths")
-            self.window.notebook.select(self.window.graphs_frame)
+    def test_graphs_frame(self):
+        graphs = ("play", "dmgd", "dmgt", "hrec", "enem", "critluck", "hitcount", "spawn", "match", "deaths")
+        self.window.notebook.select(self.window.graphs_frame)
+        self.window.graphs_frame.update_button.invoke()
+        self.window.update()
+        for graph in graphs:
+            self.window.graphs_frame.type_graph.set(graph)
             self.window.graphs_frame.update_button.invoke()
             self.window.update()
             for graph in graphs:
@@ -190,98 +193,151 @@ if sys.platform == "win32":
                 self.window.graphs_frame.update_button.invoke()
                 self.window.update()
 
-        def test_settings_frame(self):
-            self.window.notebook.select(self.window.settings_tab_frame)
-            self.window.settings_frame.save_settings_button.invoke()
-            self.window.settings_frame.discard_settings_button.invoke()
-            self.window.settings_frame.default_settings_button.invoke()
-            for widget in self.window.settings_frame.children.values():
-                if isinstance(widget, tk.Radiobutton):
-                    widget.select()
-                if isinstance(widget, tk.Button):
-                    widget.invoke()
-                if isinstance(widget, tk.Entry):
-                    widget.delete(0, tk.END)
-                    widget.insert(0, "value")
-
-    class TestRealtimeParsing(unittest.TestCase):
-        def setUp(self):
-            with open("logs/CombatLog.txt", "r") as log:
-                self.lines = log.readlines()
-            self.stalking_lines = []
-            self.stalker = stalking.LogStalker(callback=self.line_callback)
-            self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
-                                       match_callback=self.match_callback,
-                                       new_match_callback=self.new_match_callback,
-                                       insert=self.insert)
-            self.stalker.start()
-
-        def tearDown(self):
-            self.stalker.FLAG = False
-            time.sleep(2)
-            self.assertFalse(self.stalker.is_alive())
-
-        def test_realtime_parsing(self):
-            pass
-
-        '''
-        def test_stalking(self):
-            log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
-                        replace("\\", "/") + "combat_2017-04-27_12_00_00_000000.txt", "w")
-            for line in self.lines:
-                print "Wrote: ", line.replace("\n", "")
-                log.write(line)
-                time.sleep(5.0)
-                self.assertTrue(line in self.stalking_lines)
-            log.close()
-        '''
-
-        def insert(self, *args):
-            pass
-
-        def line_callback(self, lines):
-            for line in lines:
-                self.rlt.parse(line, False)
-
-        def stalking_callback(self, lines):
-            for line in lines:
-                print "Read: ", line.replace("\n", "")
-                self.stalking_lines.append(line)
-
-        def spawn_callback(self, *args):
-            self.spawn = True
-
-        def match_callback(self, *args):
-            self.match = False
-            self.spawn = False
-
-        def new_match_callback(self, *args):
-            self.match = True
+    def test_settings_frame(self):
+        self.window.notebook.select(self.window.settings_tab_frame)
+        self.window.settings_frame.save_settings_button.invoke()
+        self.window.settings_frame.discard_settings_button.invoke()
+        self.window.settings_frame.default_settings_button.invoke()
+        for widget in self.window.settings_frame.children.values():
+            if isinstance(widget, tk.Radiobutton):
+                widget.select()
+            if isinstance(widget, tk.Button):
+                widget.invoke()
+            if isinstance(widget, tk.Entry):
+                widget.delete(0, tk.END)
+                widget.insert(0, "value")
 
 
-    class TestVision(unittest.TestCase):
-        def test_get_pointer_position(self):
-            os.chdir(os.path.realpath(os.path.dirname(__file__)))
-            example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
-            with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
-                self.assertEqual(vision.pillow_to_numpy(example_image).all(), vision.get_cv2_screen().all())
-            example_screen = vision.pillow_to_numpy(example_image)
-            coordinates = vision.get_pointer_position_cv2(example_screen)
-            self.assertEqual(coordinates, (491, 914))
-            mid_coord = vision.get_pointer_middle(coordinates)
-            self.assertEqual(mid_coord, (513, 936))
-            distance = vision.get_distance_from_center(mid_coord)
-            self.assertEqual(distance, 597.18)
-            tracking_degrees = vision.get_tracking_degrees(distance, 20, 0.1)
-            self.assertEqual(tracking_degrees, 2.99)
-            tracking_penalty = vision.get_tracking_penalty(tracking_degrees, 2)
-            self.assertEqual(tracking_penalty, 6.0)
+class TestRealtimeParsing(unittest.TestCase):
+    def setUp(self):
+        with open("logs/CombatLog.txt", "r") as log:
+            self.lines = log.readlines()
+        self.stalking_lines = []
+        self.stalker = stalking.LogStalker(callback=self.line_callback)
+        self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
+                                   match_callback=self.match_callback,
+                                   new_match_callback=self.new_match_callback,
+                                   insert=self.insert)
+        self.stalker.start()
 
-        def test_vision(self):
-            os.chdir(os.path.realpath(os.path.dirname(__file__)))
-            example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
-            example_screen = vision.pillow_to_numpy(example_image)
-            self.assertEqual(vision.get_power_management(example_screen), 3)
+    def tearDown(self):
+        self.stalker.FLAG = False
+        time.sleep(2)
+        self.assertFalse(self.stalker.is_alive())
+
+    def test_realtime_parsing(self):
+        pass
+
+    '''
+    def test_stalking(self):
+        log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                    replace("\\", "/") + "combat_2017-04-27_12_00_00_000000.txt", "w")
+        for line in self.lines:
+            print "Wrote: ", line.replace("\n", "")
+            log.write(line)
+            time.sleep(5.0)
+            self.assertTrue(line in self.stalking_lines)
+        log.close()
+    '''
+
+    def insert(self, *args):
+        pass
+
+    def line_callback(self, lines):
+        for line in lines:
+            self.rlt.parse(line, False)
+
+    def stalking_callback(self, lines):
+        for line in lines:
+            print "Read: ", line.replace("\n", "")
+            self.stalking_lines.append(line)
+
+    def spawn_callback(self, *args):
+        self.spawn = True
+
+    def match_callback(self, *args):
+        self.match = False
+        self.spawn = False
+
+    def new_match_callback(self, *args):
+        self.match = True
+
+
+'''
+class TestRealtimeParsing(unittest.TestCase):
+    def setUp(self):
+        with open("logs/CombatLog.txt", "r") as log:
+            self.lines = log.readlines()
+        self.stalking_lines = []
+        self.stalker = stalking.LogStalker(callback=self.line_callback)
+        self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
+                                   match_callback=self.match_callback,
+                                   new_match_callback=self.new_match_callback,
+                                   insert=self.insert)
+
+    def tearDown(self):
+        self.stalker.FLAG = False
+        time.sleep(2)
+        self.assertFalse(self.stalker.is_alive())
+
+    def test_realtime_parsing(self):
+        pass
+
+    def test_stalking(self):
+        log = open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
+                        replace("\\", "/") + "combat_2017-02-27_12_00_00_000000.txt", "w")
+        for line in self.lines:
+            log.write(line)
+            time.sleep(0.5)
+            self.assertTrue(line in self.stalking_lines)
+        log.close()
+
+    def insert(self, *args):
+        pass
+
+    def line_callback(self, lines):
+        for line in lines:
+            self.rlt.parse(line, False)
+
+    def stalking_callback(self, lines):
+        for line in lines:
+            self.stalking_lines.append(line)
+
+    def spawn_callback(self, *args):
+        self.spawn = True
+
+    def match_callback(self, *args):
+        self.match = False
+        self.spawn = False
+
+    def new_match_callback(self, *args):
+        self.match = True
+'''
+
+
+class TestVision(unittest.TestCase):
+    def test_get_pointer_position(self):
+        os.chdir(os.path.realpath(os.path.dirname(__file__)))
+        example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
+        with mock.patch('PIL.ImageGrab.grab', return_value=example_image):
+            self.assertEqual(vision.pillow_to_numpy(example_image).all(), vision.get_cv2_screen().all())
+        example_screen = vision.pillow_to_numpy(example_image)
+        coordinates = vision.get_pointer_position_cv2(example_screen)
+        self.assertEqual(coordinates, (491, 914))
+        mid_coord = vision.get_pointer_middle(coordinates)
+        self.assertEqual(mid_coord, (513, 936))
+        distance = vision.get_distance_from_center(mid_coord)
+        self.assertEqual(distance, 597.18)
+        tracking_degrees = vision.get_tracking_degrees(distance, 20, 0.1)
+        self.assertEqual(tracking_degrees, 2.99)
+        tracking_penalty = vision.get_tracking_penalty(tracking_degrees, 2)
+        self.assertEqual(tracking_penalty, 6.0)
+
+    def test_vision(self):
+        os.chdir(os.path.realpath(os.path.dirname(__file__)))
+        example_image = Image.open(os.getcwd() + "/assets/vision/testing.png")
+        example_screen = vision.pillow_to_numpy(example_image)
+        self.assertEqual(vision.get_power_management(example_screen), 3)
 
 
 def grab():

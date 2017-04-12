@@ -18,9 +18,7 @@ import operator
 import os
 import re
 from datetime import datetime
-
 from PIL import Image, ImageTk
-
 import variables
 from parsing import statistics, parse, abilities
 import toplevels
@@ -330,10 +328,14 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
                 try:
-                    ships_string += ship + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
+                    ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
@@ -416,11 +418,16 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
+
                 try:
-                    ships_string += ship + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
-            ships_string += "Uncounted\t\t" + str(uncounted)
+                    ships_string += name + "\t\t0\n"
+            ships_string += "Uncounted\t\t" + str(variables.uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
                 if enemy == "":
@@ -478,11 +485,17 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
             for ship in abilities.ships_strings:
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_strings[ship]
+                else:
+                    name = ship
+
                 try:
-                    ships_string += ship + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
-                    ships_string += ship + "\t\t0\n"
+                    ships_string += name + "\t\t0\n"
             ships_string += "Uncounted\t\t%s" % shipsdict["Uncounted"]
+            self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
                 if enemy == "":
                     self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
@@ -531,7 +544,12 @@ class file_frame(ttk.Frame):
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Possible ships used:\n"
             for ship in ships_list:
-                ships_string += str(ship) + "\n"
+                if variables.settings_obj.faction == "republic":
+                    name = abilities.rep_ships[ship]
+                else:
+                    name = ship
+
+                ships_string += str(name) + "\n"
             ships_string += "\t\t\t\t\t\t\nWith the components:\n"
             for component in ships_comps:
                 ships_string += component + "\n"
@@ -605,7 +623,8 @@ class ship_frame(ttk.Frame):
         if len(ships_list) > 1:
             print "[DEBUG] Ship_list larger than 1, setting default.png"
             try:
-                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png")
+                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png".
+                               replace("\\", "/"))
             except IOError:
                 print "[DEBUG] File not found."
                 tkMessageBox.showerror("Error",
@@ -616,11 +635,13 @@ class ship_frame(ttk.Frame):
         else:
             print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
             try:
-                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\" + ships_list[0]
-                               + ".png")
+                if variables.settings_obj.faction == "republic":
+                    img = abilities.rep_ships[ships_list[0]]
+                else:
+                    img = ships_list[0]
+                self.set_image(os.path.dirname(__file__).replace("frames", "") +
+                               ("\\assets\\img\\" + img + ".png").replace("\\", "/"))
             except IOError:
-                print "[DEBUG] File not found: ", os.path.dirname(__file__).replace("frames", "") + "assets\\img\\" \
-                                                  + ships_list[0] + ".png"
                 tkMessageBox.showerror("Error",
                                        "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
@@ -797,5 +818,4 @@ class middle_frame(ttk.Frame):
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
         treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
-
 

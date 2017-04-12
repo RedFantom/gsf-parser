@@ -64,6 +64,8 @@ class defaults:
     # The date format for in the files Listbox
     date_format = "ymd"
 
+    faction = "imperial"
+
 
 # Class that loads, stores and saves settings
 class settings:
@@ -124,6 +126,7 @@ class settings:
         self.date_format = self.conf.get("gui", "date_format")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
+        self.faction = self.conf.get("gui", "faction");
         if self.conf.get("realtime", "overlay_when_gsf") == "True":
             self.overlay_when_gsf = True
         else:
@@ -164,6 +167,7 @@ class settings:
         self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
         self.conf.set("realtime", "timeout", defaults.timeout)
+        self.conf.set("gui", "faction", defaults.faction)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -193,7 +197,8 @@ class settings:
                   timeout=defaults.timeout,
                   event_colors=defaults.event_colors,
                   event_scheme=defaults.event_scheme,
-                  date_format=defaults.date_format):
+                  date_format=defaults.date_format,
+                  faction=defaults.faction):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -235,6 +240,7 @@ class settings:
         self.conf.set("gui", "event_colors", event_colors)
         self.conf.set("gui", "event_scheme", event_scheme)
         self.conf.set("gui", "date_format", date_format)
+        self.conf.set("gui", "faction", faction)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()

@@ -115,7 +115,6 @@ class Parser(object):
             # Remove enemies that weren't registered in last ten seconds
             if (time_now - time).seconds >= 10:
                 del self.recent_enemies[enemy]
-
         # If first line of the file, save the player name
         if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
