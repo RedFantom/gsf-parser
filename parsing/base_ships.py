@@ -4,15 +4,15 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 
-import primaries
-import secondaries
-import shields
-import engines
-import thrusters
-import reactors
-import sensors
-import capacitors
-import magazines
+import components.primaries
+import components.secondaries
+import components.shields
+import components.engines
+import components.thrusters
+import components.reactors
+import components.sensors
+import components.capacitors
+import components.magazines
 
 
 class Ship(object):
