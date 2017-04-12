@@ -398,46 +398,62 @@ class ToggledFrame(ttk.Frame):
             self.toggle_button.configure(image=self.closed)
 
 
-class HoverInfo(tk.Menu):
-    """"
-    A simple class that provides an info box when hovering over a Tkinter widget
-    Author: Jakirk Patrick
-    License: None
-    Source: https://jakirkpatrick.wordpress.com/2012/02/01/making-a-hovering-box-in-tkinter/
+class HoverInfo(tk.Tk):
+    """
+    Author: BioDataSorter
+    License: MIT License
+    Source: https://github.com/BioDataSorter/BioDataSorter
 
-    Edited by RedFantom: Removed comparisons to None
+    Usage: Bind methods to target widget with any other commands.
+    hover_instance = HoverText(parent, "Hi\nHello\nPython is awesome!")
+    widget.bind('<Enter>', lambda e: (hover_instance.enter(e),
+           multiple commands =>       do_something_else(hover_instance)))
+    target_widget.bind('<Leave>', hover_instance.leave)
+    parent.bind('<Motion>', hover_instance.motion)
     """
 
-    def __init__(self, parent, text, command=None):
-        self._com = command
-        tk.Menu.__init__(self, parent, tearoff=0)
+    def __init__(self, parent, text="", width=100):
+        tk.Tk.__init__(self)
+        self.overrideredirect(True)
+        self.parent = parent
+        self.parent.bind("<Enter>", self.enter)
+        self.parent.bind("<Leave>", self.leave)
         if not isinstance(text, str):
-            raise TypeError('Trying to initialise a Hover Menu with a non string type: ' + text.__class__.__name__)
-        toktext = re.split('\n', text)
-        for t in toktext:
-            self.add_command(label=t)
+            error_msg = 'Trying to initialize a Hover Menu with a non '\
+                        'string type: '
+            raise TypeError(error_msg + text.__class__.__name__)
+
+        text_lines = re.split('\n', text)
+        # self.width = max([len(text_line) for text_line in text_lines]) * 7
+        self.labels = []
+        for t in text_lines:
+            self.labels.append(ttk.Label(self, text=t, justify=tk.LEFT, wraplength=width * 7))
+        self.width = 0
+        for i, label in enumerate(self.labels):
+            label.grid(row=i, sticky=tk.N+tk.W)
+            if len(label["text"]) * 6 > self.width:
+                self.width = len(label["text"]) * 6
+
+        self.withdraw()
         self._displayed = False
-        self.master.bind("<Enter>", self.Display)
-        self.master.bind("<Leave>", self.Remove)
 
-    def __del__(self):
-        self.master.unbind("<Enter>")
-        self.master.unbind("<Leave>")
+    def enter(self, _):
+        self._displayed = True
+        self.deiconify()
+        self.motion(_)
 
-    def Display(self, event):
-        if not self._displayed:
-            self._displayed = True
-            self.post(event.x_root, event.y_root)
-        if not self._com:
-            self.master.unbind_all("<Return>")
-            self.master.bind_all("<Return>", self.Click)
-
-    def Remove(self, event):
+    def leave(self, event):
+        # extra check in case mouse moves over top frame instead of hovering
+        # over word cloud
         if self._displayed:
             self._displayed = False
-            self.unpost()
-        if not self._com:
-            self.unbind_all("<Return>")
+            self.withdraw()
 
-    def Click(self, event):
-        self._com()
+    def motion(self, _):
+        # absolute positioning instead of compared to widget
+        x = self.winfo_pointerx()
+        y = self.winfo_pointery()  # b/c geometry uses absolute positioning
+        self.geometry("%dx%d+%d+%d" % (self.width,
+                                       len(self.labels)*24,
+                                       x+2,
+                                       y+2))
