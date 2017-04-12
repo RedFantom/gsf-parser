@@ -11,6 +11,7 @@ from os import path
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from variables import settings_obj as settings
+from widgets import HoverInfo
 
 
 class ComponentWidget(ttk.Frame):
@@ -61,10 +62,14 @@ class MinorComponentWidget(ComponentWidget):
         self.icon_photo = photo(self.icon_image)
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
+        self.hover_infos = []
         for i in range(3):
             self.upgrade_buttons.append(ttk.Button(self, image=self.icon_photo,
                                                    command=lambda: press_button(self.upgrade_buttons[i],
                                                                                 self.enable_level, i+1)))
+            self.hover_infos.append(HoverInfo(self.upgrade_buttons[i], str(data_dictionary["TalentTree"][i][0]["Name"])
+                                              + "\n\n" + str(data_dictionary["TalentTree"][i][0]["Description"]),
+                                              width=50))
         self.level = 0
         self.name = data_dictionary["Name"]
 
