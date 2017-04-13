@@ -20,6 +20,10 @@ import widgets
 
 
 class builds_frame(ttk.Frame):
+    """
+    This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
+    is explained in the README file. This also includes the not-enabled Infiltrator class ships.
+    """
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.ships = collections.OrderedDict()
