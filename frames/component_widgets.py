@@ -80,14 +80,14 @@ class MiddleComponentWidget(ComponentWidget):
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=3)
+        self.description_label.grid(row=0, column=0, columnspan=2)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
                 widget[0].grid(row=set_row, column=0)
-                widget[1].grid(row=set_row, column=2)
+                widget[1].grid(row=set_row, column=1)
             else:
-                widget.grid(row=set_row, column=1)
+                widget.grid(row=set_row, column=0, columnspan=2)
             set_row += 1
 
     def set_level(self, level):
