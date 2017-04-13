@@ -225,7 +225,7 @@ class LogStalker(threading.Thread):
         except IOError:
             tkMessageBox.showerror("Error",
                                    "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
-            variables.main_window.on_close()
+            variables.main_window.destroy()
         except EnvironmentError as err:
             if err.errno != errno.ENOENT:
                 raise
