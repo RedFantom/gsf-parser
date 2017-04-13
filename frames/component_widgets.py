@@ -40,7 +40,6 @@ class MajorComponentWidget(ComponentWidget):
 class MiddleComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
-        ComponentWidget.__init__(self, parent, data_dictionary)
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=200)
         self.icon = data_dictionary["Icon"] + ".jpg"
