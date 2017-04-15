@@ -284,11 +284,11 @@ class settings_frame(ttk.Frame):
         self.date_format_label.grid(column=0, row=4, sticky=tk.W)
         self.date_format_ymd.grid(column=1, row=4, sticky=tk.W)
         self.date_format_ydm.grid(column=2, row=4, sticky=tk.W)
-        self.faction_label.grid(column=0, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.faction_label.grid(column=0, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
         set_column = 0
         for radio in self.faction_options:
             set_column += 1
-            radio.grid(column=set_column, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
+            radio.grid(column=set_column, row=5, sticky=tk.N+tk.S+tk.W+tk.E)
         ### PARSING SETTINGS ###
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady=5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
