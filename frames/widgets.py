@@ -373,7 +373,7 @@ class ToggledFrame(ttk.Frame):
     Source: http://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
     """
 
-    def __init__(self, parent, text="", *args, **options):
+    def __init__(self, parent, text="", labelwidth=25, *args, **options):
         ttk.Frame.__init__(self, parent, *args, **options)
         self.show = tk.IntVar()
         self.show.set(0)
@@ -385,7 +385,8 @@ class ToggledFrame(ttk.Frame):
         open_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) +
                                               "\\..\\assets\\gui\\open.png"))
         self.open = ImageTk.PhotoImage(open_img)
-        ttk.Label(self.title_frame, text=text, font=("Calibri", 11)).pack(side="left", fill="x", expand=1)
+        ttk.Label(self.title_frame, text=text, font=("Calibri", 11), width=labelwidth).\
+            pack(side="left", fill="x", expand=1)
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=4, image=self.closed,
                                              command=self.toggle, variable=self.show, style='Toolbutton')
         self.toggle_button.pack(side="left")
