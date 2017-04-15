@@ -8,11 +8,11 @@
 import Tkinter as tk
 import ttk
 from os import path
-
+import cPickle as pickle
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 
-from widgets import HoverInfo, ToggledFrame
+from widgets import HoverInfo, ToggledFrame, vertical_scroll_frame
 
 
 class ComponentListFrame(ttk.Frame):
@@ -42,15 +42,75 @@ class ComponentListFrame(ttk.Frame):
         self.callback(self.category, component)
 
     def grid_widgets(self):
-        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.toggled_frame.grid(row=0, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
         set_row = 0
         for button in self.buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
             set_row += 1
 
 
 class ShipSelectFrame(ttk.Frame):
-    pass
+    def __init__(self, parent, callback):
+        ttk.Frame.__init__(self, parent)
+        self.faction = "Republic"
+        self.scroll_frame = vertical_scroll_frame(self)
+        self.frame = self.scroll_frame.interior
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as db:
+            self.data = pickle.load(db)
+        self.callback = callback
+        self.faction_frames = {}
+        self.faction_buttons = {}
+        self.ship_frames = {}
+        self.ship_photos = {}
+        self.ship_buttons = {}
+        self.ship_hoverinfos = {}
+        self.faction_category_frames = {}
+        self.category_frames = {}
+        for faction in self.data:
+            self.faction_frames[faction] = ttk.Frame(self.frame)
+            self.faction_buttons[faction] = ttk.Button(self.frame, text=faction,
+                                                       command=lambda: self.set_faction(faction),
+                                                       image=photo(img.open(path.join(self.icons_path,
+                                                                                      faction.lower() + ".jpg"))),
+                                                       compound=tk.LEFT)
+            for category in self.data[faction]:
+                self.category_frames[category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"])
+                for ship_dict in category["Ships"]:
+                    try:
+                        image = img.open(path.join(self.icons_path, ship_dict["Icon"] + ".jpg"))
+                        image = image.resize((52, 52))
+                        self.ship_photos[ship_dict["Name"]] = photo(image)
+                    except IOError:
+                        self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
+                                                                                       "imperial.jpg")))
+                    self.ship_buttons[ship_dict["Name"]] = \
+                        ttk.Button(self.category_frames[category["CategoryName"]].sub_frame, text=ship_dict["Name"],
+                                   image=self.ship_photos[ship_dict["Name"]], compound=tk.LEFT,
+                                   command=lambda: self.set_ship(faction, category["CategoryName"], ship_dict["Name"]))
+            self.faction_category_frames[faction] = self.category_frames
+
+    def grid_widgets(self):
+        self.scroll_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
+        set_row = 0
+        for button in self.faction_buttons.itervalues():
+            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            set_row += 1
+        set_row = 20
+        for frame in self.faction_category_frames[self.faction].itervalues():
+            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            set_row += 1
+        set_row = 40
+        for button in self.ship_buttons.itervalues():
+            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            set_row += 1
+
+    def set_ship(self, faction, category, shipname):
+        print "Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, shipname)
+        self.callback(faction, category, shipname)
+
+    def set_faction(self, faction):
+        pass
 
 
 class ShipImageFrame(ttk.Frame):
