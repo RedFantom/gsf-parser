@@ -11,19 +11,31 @@ from os import path
 import cPickle as pickle
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-
 from widgets import HoverInfo, ToggledFrame, vertical_scroll_frame
 
 
 class ComponentListFrame(ttk.Frame):
     def __init__(self, parent, category, data_dictionary, callback):
         ttk.Frame.__init__(self, parent)
-        if not callable(callback):
-            raise ValueError("Callback passed is not callable")
+        # if not callable(callback):
+        #     raise ValueError("Callback passed is not callable")
+        self.names = {"PrimaryWeapon": "Primary Weapon",
+                      "PrimaryWeapon2": "Primary Weapon",
+                      "SecondaryWeapon": "Secondary Weapon",
+                      "SecondaryWeapon2": "Secondary Weapon",
+                      "Engine": "Engine",
+                      "Systems": "Systems",
+                      "Shield": "Shields",
+                      "Magazine": "Magazine",
+                      "Capacitor": "Capacitor",
+                      "Reactor": "Reactor",
+                      "Armor": "Armor",
+                      "Sensor": "Sensors"
+                      }
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.toggled_frame = ToggledFrame(self, text=category)
+        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=28)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}
@@ -33,7 +45,7 @@ class ComponentListFrame(ttk.Frame):
             self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
                                                          text=component["Name"],
                                                          command=lambda: self.set_component(component["Name"]),
-                                                         compound=tk.LEFT)
+                                                         compound=tk.LEFT, width=21)
             self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
                                                             text=str(component["Name"]) + "\n\n" +
                                                                  str(component["Description"]))
@@ -53,7 +65,7 @@ class ShipSelectFrame(ttk.Frame):
     def __init__(self, parent, callback):
         ttk.Frame.__init__(self, parent)
         self.faction = "Republic"
-        self.scroll_frame = vertical_scroll_frame(self)
+        self.scroll_frame = vertical_scroll_frame(self, canvaswidth=200, canvasheight=398, width=200, height=495)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as db:
@@ -64,41 +76,43 @@ class ShipSelectFrame(ttk.Frame):
         self.ship_frames = {}
         self.ship_photos = {}
         self.ship_buttons = {}
-        self.ship_hoverinfos = {}
         self.faction_category_frames = {}
         self.category_frames = {}
+        self.faction_photos = {}
         for faction in self.data:
             self.faction_frames[faction] = ttk.Frame(self.frame)
-            self.faction_buttons[faction] = ttk.Button(self.frame, text=faction,
+            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")))
+            self.faction_buttons[faction] = ttk.Button(self.frame,  # text=faction,
                                                        command=lambda: self.set_faction(faction),
-                                                       image=photo(img.open(path.join(self.icons_path,
-                                                                                      faction.lower() + ".jpg"))),
-                                                       compound=tk.LEFT)
+                                                       image=self.faction_photos[faction],
+                                                       compound=tk.LEFT, text=faction, width=8)
             for category in self.data[faction]:
                 self.category_frames[category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"])
                 for ship_dict in category["Ships"]:
                     try:
                         image = img.open(path.join(self.icons_path, ship_dict["Icon"] + ".jpg"))
-                        image = image.resize((52, 52))
+                        image = image.resize((40, 40))
                         self.ship_photos[ship_dict["Name"]] = photo(image)
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
-                                                                                       "imperial.jpg")))
+                                                                                       "imperial.png")))
                     self.ship_buttons[ship_dict["Name"]] = \
                         ttk.Button(self.category_frames[category["CategoryName"]].sub_frame, text=ship_dict["Name"],
                                    image=self.ship_photos[ship_dict["Name"]], compound=tk.LEFT,
-                                   command=lambda: self.set_ship(faction, category["CategoryName"], ship_dict["Name"]))
+                                   command=lambda: self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
+                                   width=22)
             self.faction_category_frames[faction] = self.category_frames
 
     def grid_widgets(self):
         self.scroll_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
         set_row = 0
+        set_column = 0
         for button in self.faction_buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
-            set_row += 1
+            button.grid(row=set_row, column=set_column, sticky=tk.N+tk.W+tk.E)
+            set_column += 1
         set_row = 20
         for frame in self.faction_category_frames[self.faction].itervalues():
-            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
             set_row += 1
         set_row = 40
         for button in self.ship_buttons.itervalues():
@@ -179,7 +193,7 @@ class MajorComponentWidget(ComponentWidget):
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -236,7 +250,7 @@ class MiddleComponentWidget(ComponentWidget):
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -281,7 +295,7 @@ class MinorComponentWidget(ComponentWidget):
         self.name = data_dictionary["Name"]
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0)
+        self.description_label.grid(row=0, column=0, pady=2)
         set_row = 1
         for widget in self.upgrade_buttons:
             widget.grid(row=set_row, column=0, pady=5)
