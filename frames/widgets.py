@@ -32,10 +32,10 @@ class vertical_scroll_frame(ttk.Frame):
     def __init__(self, parent, canvaswidth=780, canvasheight=395, *args, **kw):
         ttk.Frame.__init__(self, parent, *args, **kw)
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
+        vscrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=2)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width=canvaswidth,
                            height=canvasheight)
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
+        canvas.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         vscrollbar.config(command=canvas.yview)
 
         def mousewheel(event):
@@ -49,8 +49,9 @@ class vertical_scroll_frame(ttk.Frame):
         interior_id = canvas.create_window(0, 0, window=interior, anchor=tk.NW)
 
         def _configure_interior(event):
-            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() == canvaswidth and interior.winfo_reqheight() == canvasheight:
+                return
+            canvas.config(scrollregion=canvas.bbox("all"))
             if interior.winfo_reqwidth() != canvas.winfo_width():
                 canvas.config(width=interior.winfo_reqwidth())
 
@@ -384,7 +385,7 @@ class ToggledFrame(ttk.Frame):
         open_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) +
                                               "\\..\\assets\\gui\\open.png"))
         self.open = ImageTk.PhotoImage(open_img)
-        ttk.Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
+        ttk.Label(self.title_frame, text=text, font=("Calibri", 11)).pack(side="left", fill="x", expand=1)
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=4, image=self.closed,
                                              command=self.toggle, variable=self.show, style='Toolbutton')
         self.toggle_button.pack(side="left")
@@ -413,7 +414,7 @@ class HoverInfo(tk.Tk):
     parent.bind('<Motion>', hover_instance.motion)
     """
 
-    def __init__(self, parent, text="", width=100):
+    def __init__(self, parent, text="", width=70):
         tk.Tk.__init__(self)
         self.overrideredirect(True)
         self.parent = parent
