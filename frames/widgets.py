@@ -379,9 +379,11 @@ class ToggledFrame(ttk.Frame):
         self.show.set(0)
         self.title_frame = ttk.Frame(self)
         self.title_frame.pack(fill="x", expand=1)
-        closed_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\gui\\closed.png")
+        closed_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__))
+                                                + "\\..\\assets\\gui\\closed.png"))
         self.closed = ImageTk.PhotoImage(closed_img)
-        open_img = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\assets\\gui\\open.png")
+        open_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) +
+                                              "\\..\\assets\\gui\\open.png"))
         self.open = ImageTk.PhotoImage(open_img)
         ttk.Label(self.title_frame, text=text).pack(side="left", fill="x", expand=1)
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=4, image=self.closed,
