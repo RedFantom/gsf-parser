@@ -12,11 +12,11 @@ except ImportError:
     print "mtTkinter not found, please use 'pip install mttkinter'"
     import Tkinter as tk
 import ttk
-import collections
-import os
-from PIL import Image
-from PIL.ImageTk import PhotoImage
-import widgets
+from shipswidgets import *
+from collections import OrderedDict
+from os import path
+import cPickle as pickle
+from widgets import vertical_scroll_frame
 
 
 class builds_frame(ttk.Frame):
@@ -26,35 +26,43 @@ class builds_frame(ttk.Frame):
     """
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        self.ships = collections.OrderedDict()
-        self.ships['Blackbolt'] = 'blackbolt.png'
-        self.ships['Bloodmark'] = 'bloodmark.png'
-        self.ships['Sting'] = 'sting.png'
-        self.ships['Quell'] = 'quell.png'
-        self.ships['Imperium'] = 'imperium.png'
-        self.ships['Rcyer'] = 'rycer.png'
-        self.ships['Decimus'] = 'decimus.png'
-        self.ships['Razorwire'] = 'razorwire.png'
-        self.ships['Legion'] = 'legion.png'
-        self.ships['Jurgoran'] = 'jurgoran.png'
-        self.ships['Mangler'] = 'mangler.png'
-        self.ships['Dustmaker'] = 'dustmaker.png'
-        self.ship_buttons = {}
-        self.ship_scrollable_frame = widgets.vertical_scroll_frame(self, width=60, height=400)
-        self.ship_frame = self.ship_scrollable_frame.interior
-        self.ship_images = {}
-        for key, value in self.ships.iteritems():
-            temp_img = Image.open(os.path.dirname(__file__).replace("frames", "") + "\\assets\\ships\\" + value)
-            self.ship_images[key] = PhotoImage(temp_img)
-            self.ship_buttons[key] = ttk.Button(self.ship_frame, image=self.ship_images[key],
-                                                command=lambda ship=key: self.set_ship(ship))
+        working = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+                   "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+        self.categories = {"Bomber": 0,
+                           "Gunship": 1,
+                           "Infiltrator": 2,
+                           "Scout": 3,
+                           "Strike Fighter": 4}
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
+            self.ships_data = pickle.load(f)
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
+            self.categories_data = pickle.load(f)
+        self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=398)
+        self.ship_select_frame = ShipSelectFrame(self, self.set_ship)
+        self.components_lists = OrderedDict()
+        self.faction = "Imperial"
+        self.category = "Scout"
+        self.ship = "S-13 Sting"
+        self.components = self.ships_data["Imperial_S-13_Sting"]
+        for category in working:
+            if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
+                continue
+            self.components_lists[category] = \
+                ComponentListFrame(self.components_lists_frame.interior, category,
+                                   self.ships_data["Imperial_S-SC4_Bloodmark"][category],  None)
 
-    def set_ship(self, ship):
+    def set_ship(self, faction, category, ship):
+        pass
+
+    def set_component(self, *args):
         pass
 
     def grid_widgets(self):
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_select_frame.grid_widgets()
+        self.components_lists_frame.grid(row=0, column=1, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.W)
         set_row = 0
-        for widget in self.ship_buttons.itervalues():
-            widget.grid(column=0, row=set_row)
+        for frame in self.components_lists.itervalues():
+            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            frame.grid_widgets()
             set_row += 1
-        self.ship_frame.grid(column=0, row=0, rowspan=6, sticky=tk.W + tk.N)
