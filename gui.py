@@ -115,6 +115,7 @@ class main_window(tk.Tk):
             print "[DEBUG] Theme plastik is not available. Using default."
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
+        self.style.configure('TButton', anchor=tk.W)
         try:
             self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:
