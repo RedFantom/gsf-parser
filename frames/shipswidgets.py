@@ -8,9 +8,53 @@
 import Tkinter as tk
 import ttk
 from os import path
+
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-from widgets import HoverInfo
+
+from widgets import HoverInfo, ToggledFrame
+
+
+class ComponentListFrame(ttk.Frame):
+    def __init__(self, parent, category, data_dictionary, callback):
+        ttk.Frame.__init__(self, parent)
+        if not callable(callback):
+            raise ValueError("Callback passed is not callable")
+        self.category = category
+        self.callback = callback
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+        self.toggled_frame = ToggledFrame(self, text=category)
+        self.frame = self.toggled_frame.sub_frame
+        self.icons = {}
+        self.buttons = {}
+        self.hover_infos = {}
+        for component in data_dictionary:
+            self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
+            self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
+                                                         text=component["Name"],
+                                                         command=lambda: self.set_component(component["Name"]),
+                                                         compound=tk.LEFT)
+            self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
+                                                            text=str(component["Name"]) + "\n\n" +
+                                                                 str(component["Description"]))
+
+    def set_component(self, component):
+        self.callback(self.category, component)
+
+    def grid_widgets(self):
+        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        set_row = 0
+        for button in self.buttons.itervalues():
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            set_row += 1
+
+
+class ShipSelectFrame(ttk.Frame):
+    pass
+
+
+class ShipImageFrame(ttk.Frame):
+    pass
 
 
 class ComponentWidget(ttk.Frame):
@@ -46,14 +90,14 @@ class MajorComponentWidget(ComponentWidget):
         self.photos = []
         for i in range(5):
             if i >= 3:
-                self.photos.append(photo(img.open(path.join(self.icons_path,
-                                                            data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
-                self.photos.append(photo(img.open(path.join(self.icons_path,
-                                                            data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg"))))
-                self.upgrade_buttons.append([ttk.Button(self, image=self.photos[i],
+                self.photos.append([photo(img.open(path.join(self.icons_path,
+                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
+                                    photo(img.open(path.join(self.icons_path,
+                                                             data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
+                self.upgrade_buttons.append([ttk.Button(self, image=self.photos[i][0],
                                                         command=lambda: press_button(self.upgrade_buttons[i][0],
                                                                                      self.set_level, i)),
-                                             ttk.Button(self, image=self.photos[i + 1],
+                                             ttk.Button(self, image=self.photos[i][1],
                                                         command=lambda: press_button(self.upgrade_buttons[i][1],
                                                                                      self.set_level, i + 1))])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
