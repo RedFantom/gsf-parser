@@ -65,6 +65,9 @@ class defaults:
     date_format = "ymd"
 
     faction = "imperial"
+    events_overlay = False
+    screenparsing = False
+    screenparsing_overlay = False
 
 
 # Class that loads, stores and saves settings
@@ -132,6 +135,18 @@ class settings:
         else:
             self.overlay_when_gsf = False
         print "[DEBUG] Settings read"
+        if self.conf.get("realtime", "events_overlay") == "True":
+            self.events_overlay = True
+        else:
+            self.events_overlay = False
+        if self.conf.get("realtime", "screenparsing") == "True":
+            self.screenparsing = True
+        else:
+            self.screenparsing = False
+        if self.conf.get("realtime", "screenparsing_overlay"):
+            self.screenparsing_overlay = True
+        else:
+            self.screenparsing_overlay = False
 
     # Write the defaults settings found in the class defaults to a pickle in a
     # file
@@ -168,6 +183,9 @@ class settings:
         self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
         self.conf.set("realtime", "timeout", defaults.timeout)
         self.conf.set("gui", "faction", defaults.faction)
+        self.conf.set("realtime", "events_overlay", defaults.events_overlay)
+        self.conf.set("realtime", "screenparsing", defaults.screenparsing)
+        self.conf.set("realtime", "screenparsing_overlay", defaults.screenparsing_overlay)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -198,7 +216,10 @@ class settings:
                   event_colors=defaults.event_colors,
                   event_scheme=defaults.event_scheme,
                   date_format=defaults.date_format,
-                  faction=defaults.faction):
+                  faction=defaults.faction,
+                  events_overlay=defaults.events_overlay,
+                  screenparsing=defaults.screenparsing,
+                  screenparsing_overlay=defaults.screenparsing_overlay):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -235,6 +256,9 @@ class settings:
         self.conf.set("realtime", "overlay_tx_size", tx_size)
         self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
         self.conf.set("realtime", "timeout", timeout)
+        self.conf.set("realtime", "events_overlay", events_overlay)
+        self.conf.set("realtime", "screenparsing", screenparsing)
+        self.conf.set("realtime", "screenparsing_overlay", screenparsing_overlay)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)

@@ -201,6 +201,24 @@ class settings_frame(ttk.Frame):
                                                        command=self.show_timeout_help)
         self.realtime_timeout_help_label = ttk.Label(self.realtime_frame, text="Only change this if you are "
                                                                                "experiencing performance issues!")
+        self.realtime_event_overlay_label = ttk.Label(self.realtime_frame, text="\tShow events overlay: ")
+        self.realtime_event_overlay_var = tk.BooleanVar()
+        self.realtime_event_overlay_true = ttk.Radiobutton(self.realtime_frame, text="Yes",
+                                                           variable=self.realtime_event_overlay_var, value=True)
+        self.realtime_event_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
+                                                            variable=self.realtime_event_overlay_var, value=False)
+        self.screenparsing_label = ttk.Label(self.realtime_frame, text="\tEnable screen parsing: ")
+        self.screenparsing_var = tk.BooleanVar()
+        self.screenparsing_true = ttk.Radiobutton(self.realtime_frame, text="Yes", variable=self.screenparsing_var,
+                                                  value=True)
+        self.screenparsing_false = ttk.Radiobutton(self.realtime_frame, text="No", variable=self.screenparsing_var,
+                                                   value=False)
+        self.screenparsing_overlay_label = ttk.Label(self.realtime_frame, text="\tShow overlay for screen parsing: ")
+        self.screenparsing_overlay_var = tk.BooleanVar()
+        self.screenparsing_overlay_true = ttk.Radiobutton(self.realtime_frame, text="Yes",
+                                                          variable=self.screenparsing_overlay_var, value=True)
+        self.screenparsing_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
+                                                           variable=self.screenparsing_overlay_var, value=False)
         ### MISC ###
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -358,6 +376,15 @@ class settings_frame(ttk.Frame):
         self.realtime_timeout_help_button.grid(column=2, row=12, sticky=tk.W)
         self.realtime_timeout_help_label.grid(column=3, row=12, sticky=tk.W, columnspan=5,
                                               padx=5)
+        self.realtime_event_overlay_label.grid(column=0, row=13, sticky=tk.W)
+        self.realtime_event_overlay_true.grid(column=1, row=13, sticky=tk.W)
+        self.realtime_event_overlay_false.grid(column=2, row=13, sticky=tk.W)
+        self.screenparsing_label.grid(column=0, row=14, sticky=tk.W)
+        self.screenparsing_true.grid(column=1, row=14, sticky=tk.W)
+        self.screenparsing_false.grid(column=2, row=14, sticky=tk.W)
+        self.screenparsing_overlay_label.grid(column=0, row=15, sticky=tk.W)
+        self.screenparsing_overlay_true.grid(column=1, row=15, sticky=tk.W)
+        self.screenparsing_overlay_false.grid(column=2, row=16, sticky=tk.W)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=1, padx=2)
         self.discard_settings_button.grid(column=1, row=1, padx=2)
@@ -410,7 +437,9 @@ class settings_frame(ttk.Frame):
         self.date_format.set(variables.settings_obj.date_format)
         self.realtime_timeout.set(variables.settings_obj.timeout)
         self.faction.set(variables.settings_obj.faction)
-
+        self.realtime_event_overlay_var.set(variables.settings_obj.event_overlay)
+        self.screenparsing_var.set(variables.settings_obj.screenparsing)
+        self.screenparsing_overlay_var.set(variables.settings_obj.screenparsing_overlay)
 
     def save_settings(self):
         """
@@ -462,7 +491,10 @@ class settings_frame(ttk.Frame):
                                          event_colors=self.event_colors.get(),
                                          event_scheme=self.event_scheme.get(),
                                          date_format=self.date_format.get(),
-                                         faction=self.faction.get())
+                                         faction=self.faction.get(),
+                                         events_overlay=self.realtime_event_overlay_var.get(),
+                                         screenparsing=self.screenparsing_var.get(),
+                                         screenparsing_overlay=self.screenparsing_overlay_var.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
