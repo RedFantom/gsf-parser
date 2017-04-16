@@ -437,7 +437,7 @@ class settings_frame(ttk.Frame):
         self.date_format.set(variables.settings_obj.date_format)
         self.realtime_timeout.set(variables.settings_obj.timeout)
         self.faction.set(variables.settings_obj.faction)
-        self.realtime_event_overlay_var.set(variables.settings_obj.event_overlay)
+        self.realtime_event_overlay_var.set(variables.settings_obj.events_overlay)
         self.screenparsing_var.set(variables.settings_obj.screenparsing)
         self.screenparsing_overlay_var.set(variables.settings_obj.screenparsing_overlay)
 
