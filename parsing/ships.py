@@ -3,86 +3,67 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
+from os import path
+import cPickle as pickle
 
-import components.primaries
-import components.secondaries
-import components.shields
-import components.engines
-import components.thrusters
-import components.reactors
-import components.sensors
-import components.capacitors
-import components.magazines
+ships = {"Decimus": "Imperial_B-5_Decimus",
+         "Quell": "Imperial_F-T2_Quell",
+         "Imperium": "Imperial_FT-3C_Imperium",
+         "Rycer": "Imperial_F-T6_Rycer",
+         "Mangler": "Imperial_GSS-3_Mangler",
+         "Jurgoran": "Imperial_GSS-4Y_Jurogran",
+         "Dustmaker": "Imperial_GSS-5C_Dustmaker",
+         "Onslaught": "Imperial_G-X1_Onslaught",
+         "Frostburn": "Imperial_ICA-2B_Frostburn",
+         "Sable Claw": "Imperial_ICA-3A_-_Sable_Claw",
+         "Tormentor": "ImperialICA-X_Tormentor",
+         "Ocula": "Imperial_IL-5_Ocula",
+         "Demolisher": "Imperial_K-52_Demolisher",
+         "Razorwire": "Imperial_M-7_Razorwire",
+         "Blackbolt": "Imperial_S-12_Blackbolt",
+         "Sting": "Imperial_S-13_Sting",
+         "Bloodmark": "Imperial_S-SC4_Bloodmark",
+         "Gladiator": "Imperial_TZ-24_Gladiator",
+         "Mailoc": "Imperial_VX-9_Mailoc",
+         "Banshee": "Republic_Banshee",
+         "Flashfire": "Republic_Flashfire",
+         "Pike": "Republic_FT-6_Pike",
+         "Clarion": "Republic_FT-7B_Clarion",
+         "Star Guard": "Republic_FT-8_Star_Guard",
+         "Firehauler": "Republic_G-X1_Firehauler",
+         "Skybolt": "Republic_IL-5_Skybolt",
+         "Strongarm": "Republic_K-52_Strongarm",
+         "Novadive": "Republic_NovaDive",
+         "Rampart Mark Four": "Republic_Rampart_Mark_Four",
+         "Comet Breaker": "Republic_SGS-41B_Comet_Breaker",
+         "Quarrel": "Republic_SGS-45_Quarrel",
+         "Condor": "Republic_SGS-S1_Condor",
+         "Sledgehammer": "Republic_Sledgehammer",
+         "Spearpoint": "Republic_Spearpoint",
+         "Enforcer": "Republic_TZ-24_Enforcer",
+         "Redeemer": "Republic_VX-9_Redeemer",
+         "Warcarrier": "Republic_Warcarrier",
+         "Whisper": 'Republic_X5-Whisper',
+         "Mirage": "Republic_X7-Mirage"
+         }
 
 
 class Ship(object):
-    """
-    component: (category, name, upgrade_level)
-    """
-
-    def __init__(self):
-        self.components = {'primary': None,
-                           'secondary': None,
-                           'shield': None,
-                           'engine': None,
-                           'system': None,
-                           'capacitor': None,
-                           'reactor': None,
-                           'magazine': None,
-                           'sensor': None,
-                           'armor': None,
-                           'thruster': None}
+    def __init__(self, ship_name):
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
+            self.ships_data = pickle.load(f)
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
+            self.categories_data = pickle.load(f)
+        if ship_name not in self.ships_data:
+            ship_name = ships[ship_name]
+        self.data = self.ships_data[ship_name]
 
     def __setitem__(self, item, value):
-        pass
+        self.ships_data[item] = value
 
     def __getitem__(self, item):
-        pass
+        return self.ships_data[item]
 
 
-class Razorwire(Ship):
-    pass
-
-
-class Legion(Ship):
-    pass
-
-
-class Decimus(Ship):
-    pass
-
-
-class Mangler(Ship):
-    pass
-
-
-class Dustmaker(Ship):
-    pass
-
-
-class Jurgoran(Ship):
-    pass
-
-
-class Sting(Ship):
-    pass
-
-
-class Bloodmark(Ship):
-    pass
-
-
-class Blackbolt(Ship):
-    pass
-
-
-class Rycer(Ship):
-    pass
-
-
-class Quell(Ship):
-    pass
-
-
-class Imperium(Ship):
+class Component(object):
     pass
