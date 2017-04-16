@@ -33,11 +33,12 @@ class builds_frame(ttk.Frame):
                            "Infiltrator": 2,
                            "Scout": 3,
                            "Strike Fighter": 4}
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
             self.ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
             self.categories_data = pickle.load(f)
-        self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=398)
+        self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=345)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
@@ -50,6 +51,9 @@ class builds_frame(ttk.Frame):
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
                                    self.ships_data["Imperial_S-SC4_Bloodmark"][category],  None)
+        self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((39, 39)))
+        self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
+                                            image=self.ship_stats_image, compound=tk.LEFT)
 
     def set_ship(self, faction, category, ship):
         pass
@@ -58,11 +62,15 @@ class builds_frame(ttk.Frame):
         pass
 
     def grid_widgets(self):
-        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.E, padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
-        self.components_lists_frame.grid(row=0, column=1, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.W)
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
+        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
         set_row = 0
         for frame in self.components_lists.itervalues():
             frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
             frame.grid_widgets()
             set_row += 1
+
+    def show_ship_stats(self):
+        pass
