@@ -69,10 +69,6 @@ def numpy_to_pillow(array):
     return Image.fromarray(pillow)
 
 
-def numpy_to_pillow(array):
-    pillow = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(pillow)
-
 
 '''
 The following functions were written with the help of Close-shave, who provided
@@ -98,7 +94,7 @@ def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
     return round(c, 2)
 
 
-def get_tracking_degrees(distance, firingarc, pixelsperdegree):
+def get_tracking_degrees(distance, firingarc, pixelsperdegree=10):
     """
     :param distance: Distance in pixels by get_distance_from_center
     :param firingarc: The firing arc of the weapon used
