@@ -116,6 +116,10 @@ class ScreenParser(mp.Process):
         self._ms_listener = pynput.mouse.Listener(on_press=self.on_press_ms, on_release=self.on_release_ms)
         self._current_match = None
         self._current_spawn = None
+        self.file = None
+        self.match = None
+        self.is_match = None
+        self.is_match = None
 
     def run(self):
         # Start the listeners for keyboard and mouse input
@@ -124,7 +128,7 @@ class ScreenParser(mp.Process):
         # Start the loop to parse the screen data
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
-            # for terminating the process intirely by saving all the data collected.
+            # for terminating the process entirely by saving all the data collected.
             if not self.exit_queue.empty():
                 if not self.exit_queue.get():
                     break
@@ -200,6 +204,7 @@ class ScreenParser(mp.Process):
         self.close()
 
     # TODO: Add RGB capabilities
+    # TODO: Add security measures (key filters)
     def on_press_kb(self, key):
         if key in keys:
             key = keys[key]
