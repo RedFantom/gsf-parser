@@ -373,31 +373,32 @@ class ToggledFrame(ttk.Frame):
     Source: http://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
     """
 
-    def __init__(self, parent, text="", labelwidth=25, *args, **options):
-        ttk.Frame.__init__(self, parent, *args, **options)
+    def __init__(self, parent, text="", labelwidth=25, **options):
+        ttk.Frame.__init__(self, parent, **options)
         self.show = tk.IntVar()
         self.show.set(0)
         self.title_frame = ttk.Frame(self)
-        self.title_frame.pack(fill="x", expand=1)
+        self.title_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
         closed_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__))
                                                 + "\\..\\assets\\gui\\closed.png"))
         self.closed = ImageTk.PhotoImage(closed_img)
         open_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) +
                                               "\\..\\assets\\gui\\open.png"))
         self.open = ImageTk.PhotoImage(open_img)
-        ttk.Label(self.title_frame, text=text, font=("Calibri", 11), width=labelwidth).\
-            pack(side="left", fill="x", expand=1)
-        self.toggle_button = ttk.Checkbutton(self.title_frame, width=4, image=self.closed,
-                                             command=self.toggle, variable=self.show, style='Toolbutton')
-        self.toggle_button.pack(side="left")
+        # ttk.Label(self.title_frame, text=text, font=("Calibri", 11), width=labelwidth).\
+        #     pack(side="left", fill="x", expand=1)
+        self.toggle_button = ttk.Checkbutton(self.title_frame, width=labelwidth, image=self.closed,
+                                             command=self.toggle, variable=self.show, style='Toolbutton',
+                                             text=text, compound=tk.LEFT)
+        self.toggle_button.grid(sticky=tk.W+tk.E)
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
 
     def toggle(self):
         if bool(self.show.get()):
-            self.sub_frame.pack(fill="x", expand=1)
+            self.sub_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
             self.toggle_button.configure(image=self.open)
         else:
-            self.sub_frame.forget()
+            self.sub_frame.grid_forget()
             self.toggle_button.configure(image=self.closed)
 
 

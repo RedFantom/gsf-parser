@@ -116,6 +116,7 @@ class main_window(tk.Tk):
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor=tk.W)
+        self.style.configure('Toolbutton', anchor=tk.W)
         try:
             self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:
