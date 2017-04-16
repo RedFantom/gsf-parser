@@ -94,14 +94,13 @@ def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
     return round(c, 2)
 
 
-def get_tracking_degrees(distance, firingarc, pixelsperdegree=10):
+def get_tracking_degrees(distance, pixelsperdegree=10):
     """
     :param distance: Distance in pixels by get_distance_from_center
-    :param firingarc: The firing arc of the weapon used
     :param pixelsperdegree: The pixels per firing degree (resolution dependent)
     :return: The amount of degrees for tracking penalty
     """
-    return round(distance * pixelsperdegree / firingarc, 2)
+    return round(distance * pixelsperdegree, 2)
 
 
 def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):
