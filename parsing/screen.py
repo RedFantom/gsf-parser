@@ -168,7 +168,8 @@ class ScreenParser(mp.Process):
             health_shields_r = vision.get_ship_health_rearshields(screen)
             current_time = datetime.now()
             # TODO: get_tracking_degrees(*args)
-            tracking_degrees = vision.get_tracking_degrees()
+            distance = vision.get_distance_from_center(pointer_cds)
+            tracking_degrees = vision.get_tracking_degrees(distance)
             self._cursor_pos_dict[current_time] = pointer_cds
             self._power_mgmt_dict[current_time] = power_mgmt
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
