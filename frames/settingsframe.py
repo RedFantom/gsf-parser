@@ -384,7 +384,7 @@ class settings_frame(ttk.Frame):
         self.screenparsing_false.grid(column=2, row=14, sticky=tk.W)
         self.screenparsing_overlay_label.grid(column=0, row=15, sticky=tk.W)
         self.screenparsing_overlay_true.grid(column=1, row=15, sticky=tk.W)
-        self.screenparsing_overlay_false.grid(column=2, row=16, sticky=tk.W)
+        self.screenparsing_overlay_false.grid(column=2, row=15, sticky=tk.W)
         ### MISC ###
         self.save_settings_button.grid(column=0, row=1, padx=2)
         self.discard_settings_button.grid(column=1, row=1, padx=2)
