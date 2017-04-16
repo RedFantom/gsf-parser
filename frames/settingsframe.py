@@ -15,11 +15,10 @@ import ttk
 import tkMessageBox
 import tkFileDialog
 import re
-
 import variables
 import toplevels
 import widgets
-
+from colors import event_colors
 
 class settings_frame(ttk.Frame):
     """
@@ -235,7 +234,7 @@ class settings_frame(ttk.Frame):
         view. See toplevel.event_colors for more information.
         :return: None
         """
-        self.color_toplevel = toplevels.event_colors(variables.main_window)
+        self.color_toplevel = event_colors(variables.main_window)
         self.color_toplevel.grid_widgets()
         self.color_toplevel.focus_set()
 
