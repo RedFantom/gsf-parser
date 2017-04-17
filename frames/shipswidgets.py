@@ -87,11 +87,12 @@ class ShipSelectFrame(ttk.Frame):
                                                        image=self.faction_photos[faction],
                                                        compound=tk.LEFT, text=faction, width=8)
             for category in self.data[faction]:
-                self.category_frames[category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"])
+                self.category_frames[category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"],
+                                                                              labelwidth=27)
                 for ship_dict in category["Ships"]:
                     try:
                         image = img.open(path.join(self.icons_path, ship_dict["Icon"] + ".jpg"))
-                        image = image.resize((40, 40))
+                        image = image.resize((52, 52))
                         self.ship_photos[ship_dict["Name"]] = photo(image)
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
@@ -154,7 +155,7 @@ class MajorComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
         self.description = data_dictionary["Description"]
-        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=200)
+        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
         self.icon_image = img.open(path.join(self.icons_path, self.icon))
         self.icon_photo = photo(self.icon_image)
@@ -186,14 +187,14 @@ class MajorComponentWidget(ComponentWidget):
                 self.photos.append(photo(img.open(path.join(self.icons_path,
                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
                 self.upgrade_buttons.append(ttk.Button(self, image=self.photos[i],
-                                                       command=lambda: press_button(self.upgrade_buttons[i],
+                                                       command=lambda: press_button(self.upgrade_buttons[i][0],
                                                                                     self.set_level, i)))
                 self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2, pady=2)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=10)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
