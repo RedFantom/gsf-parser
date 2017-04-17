@@ -135,13 +135,8 @@ class ShipSelectFrame(ttk.Frame):
         self.callback(faction, category, shipname)
 
     def set_faction(self, faction):
-        print "Gridding for ", faction
         self.faction = faction
         self.grid_widgets()
-
-
-class ShipImageFrame(ttk.Frame):
-    pass
 
 
 class ComponentWidget(ttk.Frame):
