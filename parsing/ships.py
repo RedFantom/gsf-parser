@@ -6,46 +6,47 @@
 from os import path
 import cPickle as pickle
 
-ships = {"Decimus": "Imperial_B-5_Decimus",
-         "Quell": "Imperial_F-T2_Quell",
-         "Imperium": "Imperial_FT-3C_Imperium",
-         "Rycer": "Imperial_F-T6_Rycer",
-         "Mangler": "Imperial_GSS-3_Mangler",
-         "Jurgoran": "Imperial_GSS-4Y_Jurogran",
-         "Dustmaker": "Imperial_GSS-5C_Dustmaker",
-         "Onslaught": "Imperial_G-X1_Onslaught",
-         "Frostburn": "Imperial_ICA-2B_Frostburn",
-         "Sable Claw": "Imperial_ICA-3A_-_Sable_Claw",
-         "Tormentor": "ImperialICA-X_Tormentor",
-         "Ocula": "Imperial_IL-5_Ocula",
-         "Demolisher": "Imperial_K-52_Demolisher",
-         "Razorwire": "Imperial_M-7_Razorwire",
-         "Blackbolt": "Imperial_S-12_Blackbolt",
-         "Sting": "Imperial_S-13_Sting",
-         "Bloodmark": "Imperial_S-SC4_Bloodmark",
-         "Gladiator": "Imperial_TZ-24_Gladiator",
-         "Mailoc": "Imperial_VX-9_Mailoc",
-         "Banshee": "Republic_Banshee",
-         "Flashfire": "Republic_Flashfire",
-         "Pike": "Republic_FT-6_Pike",
-         "Clarion": "Republic_FT-7B_Clarion",
-         "Star Guard": "Republic_FT-8_Star_Guard",
-         "Firehauler": "Republic_G-X1_Firehauler",
-         "Skybolt": "Republic_IL-5_Skybolt",
-         "Strongarm": "Republic_K-52_Strongarm",
-         "Novadive": "Republic_NovaDive",
-         "Rampart Mark Four": "Republic_Rampart_Mark_Four",
-         "Comet Breaker": "Republic_SGS-41B_Comet_Breaker",
-         "Quarrel": "Republic_SGS-45_Quarrel",
-         "Condor": "Republic_SGS-S1_Condor",
-         "Sledgehammer": "Republic_Sledgehammer",
-         "Spearpoint": "Republic_Spearpoint",
-         "Enforcer": "Republic_TZ-24_Enforcer",
-         "Redeemer": "Republic_VX-9_Redeemer",
-         "Warcarrier": "Republic_Warcarrier",
-         "Whisper": 'Republic_X5-Whisper',
-         "Mirage": "Republic_X7-Mirage"
-         }
+ships = {
+    "Decimus": "Imperial_B-5_Decimus",
+    "Quell": "Imperial_F-T2_Quell",
+    "Imperium": "Imperial_FT-3C_Imperium",
+    "Rycer": "Imperial_F-T6_Rycer",
+    "Mangler": "Imperial_GSS-3_Mangler",
+    "Jurgoran": "Imperial_GSS-4Y_Jurogran",
+    "Dustmaker": "Imperial_GSS-5C_Dustmaker",
+    "Onslaught": "Imperial_G-X1_Onslaught",
+    "Frostburn": "Imperial_ICA-2B_Frostburn",
+    "Sable Claw": "Imperial_ICA-3A_-_Sable_Claw",
+    "Tormentor": "ImperialICA-X_Tormentor",
+    "Ocula": "Imperial_IL-5_Ocula",
+    "Demolisher": "Imperial_K-52_Demolisher",
+    "Razorwire": "Imperial_M-7_Razorwire",
+    "Blackbolt": "Imperial_S-12_Blackbolt",
+    "Sting": "Imperial_S-13_Sting",
+    "Bloodmark": "Imperial_S-SC4_Bloodmark",
+    "Gladiator": "Imperial_TZ-24_Gladiator",
+    "Mailoc": "Imperial_VX-9_Mailoc",
+    "Banshee": "Republic_Banshee",
+    "Flashfire": "Republic_Flashfire",
+    "Pike": "Republic_FT-6_Pike",
+    "Clarion": "Republic_FT-7B_Clarion",
+    "Star Guard": "Republic_FT-8_Star_Guard",
+    "Firehauler": "Republic_G-X1_Firehauler",
+    "Skybolt": "Republic_IL-5_Skybolt",
+    "Strongarm": "Republic_K-52_Strongarm",
+    "Novadive": "Republic_NovaDive",
+    "Rampart Mark Four": "Republic_Rampart_Mark_Four",
+    "Comet Breaker": "Republic_SGS-41B_Comet_Breaker",
+    "Quarrel": "Republic_SGS-45_Quarrel",
+    "Condor": "Republic_SGS-S1_Condor",
+    "Sledgehammer": "Republic_Sledgehammer",
+    "Spearpoint": "Republic_Spearpoint",
+    "Enforcer": "Republic_TZ-24_Enforcer",
+    "Redeemer": "Republic_VX-9_Redeemer",
+    "Warcarrier": "Republic_Warcarrier",
+    "Whisper": 'Republic_X5-Whisper',
+    "Mirage": "Republic_X7-Mirage"
+}
 
 
 class Ship(object):
@@ -57,13 +58,43 @@ class Ship(object):
         if ship_name not in self.ships_data:
             ship_name = ships[ship_name]
         self.data = self.ships_data[ship_name]
+        self.components = {
+            "primary": None,
+            "primary2": None,
+            "secondary": None,
+            "secondary2": None,
+            "engine": None,
+            "shields": None,
+            "systems": None,
+            "armor": None,
+            "reactor": None,
+            "magazine": None,
+            "sensors": None,
+            "thrusters": None,
+            "capacitor": None
+        }
 
     def __setitem__(self, item, value):
-        self.ships_data[item] = value
+        if item in self.components:
+            self.components[item] = value
+        else:
+            self.ships_data[item] = value
 
     def __getitem__(self, item):
-        return self.ships_data[item]
+        if item in self.components:
+            return self.ships_data[item]
+        else:
+            return self.ships_data[item]
 
 
 class Component(object):
-    pass
+    def __init__(self, modifiers):
+        self.modifiers = modifiers
+
+    def __setitem__(self, key, value):
+        self.modifiers[key] = value
+
+    def __getitem__(self, key):
+        if key not in self.modifiers:
+            self.modifiers[key] = 1.0
+        return self.modifiers[key]
