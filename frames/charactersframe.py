@@ -23,11 +23,16 @@ class CharactersFrame(ttk.Frame):
         directory = tempfile.gettempdir()
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
         if "characters.db" not in os.listdir(self.directory):
-            self.characters = {}
-            with open(os.path.join(self.directory, "characters.db")) as f:
-                pickle.dump(self.characters, f)
+            servers = ["BAS", "BEG", "HAR", "SHA", "JUN", "EBH", "PRF", "JCV", "T3M", "NIH", "TFN", "JKS",
+                       "PRG", "VCH", "BMD", "MFR", "TRE"]
+            characters = {server: None for server in servers}
+            with open(os.path.join(self.directory, "characters.db"), "w") as f:
+                pickle.dump(characters, f)
         with open(os.path.join(self.directory, "characters.db")) as f:
             self.characters = pickle.load(f)
+
+    def grid_widgets(self):
+        pass
 
 
 class Character(object):

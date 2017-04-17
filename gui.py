@@ -16,7 +16,8 @@ import os
 import variables
 import client
 import main
-from frames import fileframe, resourcesframe, sharingframe, graphsframe, settingsframe, realtimeframe, buildframe
+from frames import fileframe, resourcesframe, sharingframe, graphsframe, settingsframe, realtimeframe, buildframe, \
+    charactersframe
 import toplevels
 
 
@@ -69,6 +70,7 @@ class main_window(tk.Tk):
         self.graphs_frame = graphsframe.graphs_frame(self.notebook, self)
         self.resources_frame = resourcesframe.resources_frame(self.notebook, self)
         self.builds_frame = buildframe.builds_frame(self.notebook)
+        self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.file_select_frame.grid_widgets()
@@ -84,8 +86,11 @@ class main_window(tk.Tk):
         self.resources_frame.grid()
         self.builds_frame.grid_widgets()
         self.builds_frame.grid()
+        self.characters_frame.grid()
+        self.characters_frame.grid_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
+        self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
