@@ -17,7 +17,8 @@ from collections import OrderedDict
 from os import path
 import cPickle as pickle
 from widgets import vertical_scroll_frame
-
+from parsing.ships import Ship, Component, ships
+from parsing.abilities import rep_ships
 
 class builds_frame(ttk.Frame):
     """
@@ -46,7 +47,7 @@ class builds_frame(ttk.Frame):
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
         self.category = "Scout"
-        self.ship = "S-13 Sting"
+        self.ship = Ship("Bloodmark")
         for category in working:
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
@@ -54,15 +55,34 @@ class builds_frame(ttk.Frame):
                 ComponentListFrame(self.components_lists_frame.interior, category,
                                    self.ships_data["Imperial_S-SC4_Bloodmark"][category], None)
         self.component_frame = ttk.Frame(self)
+        self.current_ship = Ship("Bloodmark")
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
-                                                      None)
+                                                      self.current_ship)
         self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((39, 39)))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
 
     def set_ship(self, faction, category, ship):
-        pass
+        ship_name = self.ships_data[ships[ship]]
+        self.ship = Ship(ship_name)
+        if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
+            self.ship_select_frame[faction][category].toggle()
+        if faction == "Imperial":
+            for key in rep_ships.iterkeys():
+                if key in ship_name:
+                    ship_name = key
+                    break
+            raise ValueError("No valid ship name given as argument.")
+        elif faction == "Republic":
+            for key in rep_ships.itervalues():
+                if key in ship_name:
+                    ship_name = key
+                    break
+            raise ValueError("No valid ship name given as argument.")
+        else:
+            raise ValueError("No valid faction given as argument.")
+
 
     def set_component(self, *args):
         pass

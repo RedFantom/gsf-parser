@@ -64,7 +64,9 @@ class ComponentListFrame(ttk.Frame):
 class ShipSelectFrame(ttk.Frame):
     def __init__(self, parent, callback):
         ttk.Frame.__init__(self, parent)
-        self.faction = "Republic"
+        self.faction = "Imperial"
+        self.ship = "Bloodmark",
+        self.component = "Light Laser Cannon"
         self.scroll_frame = vertical_scroll_frame(self, canvaswidth=240, canvasheight=345, width=240, height=345)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
@@ -76,19 +78,21 @@ class ShipSelectFrame(ttk.Frame):
         self.ship_frames = {}
         self.ship_photos = {}
         self.ship_buttons = {}
-        self.faction_category_frames = {}
-        self.category_frames = {}
+        self.category_frames = {faction: {} for faction in self.data}
         self.faction_photos = {}
+        toggled = False
         for faction in self.data:
             self.faction_frames[faction] = ttk.Frame(self.frame)
             self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")))
-            self.faction_buttons[faction] = ttk.Button(self,  # text=faction,
-                                                       command=lambda: self.set_faction(faction),
-                                                       image=self.faction_photos[faction],
-                                                       compound=tk.LEFT, text=faction, width=8)
+            self.faction_buttons[faction] = ttk.Button(self, text=faction, width=8,
+                                                       command=lambda faction=faction: self.set_faction(faction),
+                                                       image=self.faction_photos[faction], compound=tk.LEFT)
             for category in self.data[faction]:
-                self.category_frames[category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"],
+                self.category_frames[faction][category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"],
                                                                               labelwidth=27)
+                if category["CategoryName"] == "Scout" and not toggled:
+                    self.category_frames[faction][category["CategoryName"]].toggle()
+                    toggled = True
                 for ship_dict in category["Ships"]:
                     try:
                         image = img.open(path.join(self.icons_path, ship_dict["Icon"] + ".jpg"))
@@ -98,23 +102,28 @@ class ShipSelectFrame(ttk.Frame):
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
                                                                                        "imperial.png")))
                     self.ship_buttons[ship_dict["Name"]] = \
-                        ttk.Button(self.category_frames[category["CategoryName"]].sub_frame, text=ship_dict["Name"],
+                        ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame, text=ship_dict["Name"],
                                    image=self.ship_photos[ship_dict["Name"]], compound=tk.LEFT,
-                                   command=lambda: self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
+                                   command=lambda faction=faction, category=category, ship_dict=ship_dict:
+                                   self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
                                    width=20)
-            self.faction_category_frames[faction] = self.category_frames
 
     def grid_widgets(self):
         self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E, pady=2)
         set_row = 0
         set_column = 0
         for button in self.faction_buttons.itervalues():
-            button.grid(row=set_row, column=set_column, sticky=tk.N+tk.W+tk.E, padx=1)
+            button.grid(row=set_row, column=set_column, sticky=tk.N + tk.W + tk.E, padx=1)
             set_column += 1
         set_row = 20
-        for frame in self.faction_category_frames[self.faction].itervalues():
-            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
-            set_row += 1
+        for faction in self.category_frames:
+            if faction == self.faction:
+                for frame in self.category_frames[faction].itervalues():
+                    frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
+                    set_row += 1
+            else:
+                for frame in self.category_frames[faction].itervalues():
+                    frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.itervalues():
             button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -125,7 +134,9 @@ class ShipSelectFrame(ttk.Frame):
         self.callback(faction, category, shipname)
 
     def set_faction(self, faction):
-        pass
+        print "Gridding for ", faction
+        self.faction = faction
+        self.grid_widgets()
 
 
 class ShipImageFrame(ttk.Frame):
