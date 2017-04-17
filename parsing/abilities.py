@@ -253,5 +253,10 @@ all_ships = {
     "Blackbolt": "Novadive",
     "Frostburn": "Whisper",
     "Sable Claw": "Mirage",
-    "Tormentor": "Banshee"
+    "Tormentor": "Banshee",
+    "Ocula": "Skybolt",
+    "Onslaught": "Firehauler",
+    "Mailoc": "Redeemer",
+    "Strongarm": "Strongarm",
+    "Gladiator": "Enforcer"
 }
