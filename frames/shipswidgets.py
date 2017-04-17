@@ -49,6 +49,7 @@ class ComponentListFrame(ttk.Frame):
             self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
                                                             text=str(component["Name"]) + "\n\n" +
                                                                  str(component["Description"]))
+        self.data = data_dictionary
 
     def set_component(self, component):
         self.callback(self.category, component)

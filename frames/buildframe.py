@@ -18,7 +18,8 @@ from os import path
 import cPickle as pickle
 from widgets import vertical_scroll_frame
 from parsing.ships import Ship, Component, ships
-from parsing.abilities import rep_ships
+from parsing.abilities import all_ships
+
 
 class builds_frame(ttk.Frame):
     """
@@ -28,7 +29,7 @@ class builds_frame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        working = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+        self.working = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
                    "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.categories = {
             "Bomber": 0,
@@ -48,41 +49,50 @@ class builds_frame(ttk.Frame):
         self.faction = "Imperial"
         self.category = "Scout"
         self.ship = Ship("Bloodmark")
-        for category in working:
+        for category in self.working:
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
                                    self.ships_data["Imperial_S-SC4_Bloodmark"][category], None)
         self.component_frame = ttk.Frame(self)
-        self.current_ship = Ship("Bloodmark")
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
-                                                      self.current_ship)
+                                                      self.ship)
         self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((39, 39)))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
 
     def set_ship(self, faction, category, ship):
-        ship_name = self.ships_data[ships[ship]]
-        self.ship = Ship(ship_name)
         if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
             self.ship_select_frame[faction][category].toggle()
+        ship_name = ""
         if faction == "Imperial":
-            for key in rep_ships.iterkeys():
-                if key in ship_name:
+            for key in all_ships.iterkeys():
+                if key in ship:
                     ship_name = key
                     break
-            raise ValueError("No valid ship name given as argument.")
         elif faction == "Republic":
-            for key in rep_ships.itervalues():
-                if key in ship_name:
+            for key in all_ships.itervalues():
+                print key
+                if key in ship:
                     ship_name = key
                     break
-            raise ValueError("No valid ship name given as argument.")
         else:
             raise ValueError("No valid faction given as argument.")
-
+        if ship_name == "":
+            raise ValueError("No valid ship specified.")
+        self.ship = Ship(ship_name)
+        for widget in self.components_lists_frame.interior.winfo_children():
+            # widget.destroy()
+            widget.grid_forget()
+        for category in self.working:
+            if category not in self.ship.data:
+                continue
+            self.components_lists[category] = \
+                ComponentListFrame(self.components_lists_frame.interior, category,
+                                   self.ship.data[category], None)
+        self.grid_widgets()
 
     def set_component(self, *args):
         pass
@@ -97,6 +107,7 @@ class builds_frame(ttk.Frame):
         self.current_component.grid_widgets()
         set_row = 0
         for frame in self.components_lists.itervalues():
+            print frame.data[1]["Name"]
             frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
             frame.grid_widgets()
             set_row += 1
