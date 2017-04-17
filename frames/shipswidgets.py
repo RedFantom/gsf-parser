@@ -41,7 +41,10 @@ class ComponentListFrame(ttk.Frame):
         self.buttons = {}
         self.hover_infos = {}
         for component in data_dictionary:
-            self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
+            try:
+                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
+            except IOError:
+                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial.png")))
             self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
                                                          text=component["Name"],
                                                          command=lambda: self.set_component(component["Name"]),
@@ -89,8 +92,9 @@ class ShipSelectFrame(ttk.Frame):
                                                        command=lambda faction=faction: self.set_faction(faction),
                                                        image=self.faction_photos[faction], compound=tk.LEFT)
             for category in self.data[faction]:
-                self.category_frames[faction][category["CategoryName"]] = ToggledFrame(self.frame, text=category["CategoryName"],
-                                                                              labelwidth=27)
+                self.category_frames[faction][category["CategoryName"]] = ToggledFrame(self.frame,
+                                                                                       text=category["CategoryName"],
+                                                                                       labelwidth=27)
                 if category["CategoryName"] == "Scout" and not toggled:
                     self.category_frames[faction][category["CategoryName"]].toggle()
                     toggled = True
@@ -101,9 +105,10 @@ class ShipSelectFrame(ttk.Frame):
                         self.ship_photos[ship_dict["Name"]] = photo(image)
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
-                                                                                       "imperial.png")))
+                                                                                       faction.lower() + ".png")))
                     self.ship_buttons[ship_dict["Name"]] = \
-                        ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame, text=ship_dict["Name"],
+                        ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame,
+                                   text=ship_dict["Name"],
                                    image=self.ship_photos[ship_dict["Name"]], compound=tk.LEFT,
                                    command=lambda faction=faction, category=category, ship_dict=ship_dict:
                                    self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
