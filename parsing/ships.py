@@ -86,6 +86,14 @@ class Ship(object):
         else:
             return self.ships_data[item]
 
+    def __iter__(self):
+        for key, value in self.ships_data.iteritems():
+            yield (key, value)
+
+    def iter_components(self):
+        for key, value in self.components.iteritems():
+            yield (key, value)
+
 
 class Component(object):
     def __init__(self, modifiers):
@@ -98,3 +106,7 @@ class Component(object):
         if key not in self.modifiers:
             self.modifiers[key] = 1.0
         return self.modifiers[key]
+
+    def __iter__(self):
+        for key, value in self.modifiers:
+            yield (key, value)
