@@ -12,6 +12,107 @@ import cPickle as pickle
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, ToggledFrame, vertical_scroll_frame
+from collections import OrderedDict
+
+
+class CrewListFrame(ttk.Frame):
+    def __init__(self, parent, data_dictionary):
+        ttk.Frame.__init__(self, parent)
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+        self.data = data_dictionary
+        self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
+        self.header_label = ttk.Label(self, text="Crew", font=("Calibiri", 12), justify=tk.LEFT)
+        self.category_frames = OrderedDict()
+        self.member_buttons = OrderedDict()
+        self.member_icons = OrderedDict()
+        self.copilots = []
+        self.copilot_dicts = {}
+        self.copilot_icons = {}
+        self.copilot_buttons = {}
+        for category in self.data:
+            crole = ""
+            for role in self.roles:
+                try:
+                    category = category[role]
+                    crole = role
+                    break
+                except KeyError:
+                    continue
+            if crole == "CoPilot":
+                for member_dict in category:
+                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=28)
+                    self.copilot_dicts[member_dict["Name"]] = member_dict
+                continue
+            elif crole == "":
+                raise ValueError("Invalid role detected.")
+            self.category_frames[crole] = ToggledFrame(self, text=crole)
+            for member_dict in category:
+                self.member_icons[member_dict["Name"]] = photo(img.open(path.join(self.icons_path,
+                                                                                  member_dict["Icon"] + ".jpg")))
+                self.member_buttons[member_dict["Name"]] = ttk.Button(self.category_frames[crole].sub_frame,
+                                                                      text=member_dict["Name"], compound=tk.LEFT,
+                                                                      image=self.member_icons[member_dict["Name"]],
+                                                                      command=(lambda name=member_dict["Name"],
+                                                                               crole=crole:
+                                                                               self.set_crew_member(name, crole)),
+                                                                      width=21)
+                if member_dict["IsDefaultCompanion"]:
+                    self.copilots.append(member_dict["Name"])
+        self.update_copilots()
+
+    def set_crew_member(self, name, role):
+        pass
+
+    def update_copilots(self):
+        self.copilot_buttons.clear()
+        self.copilot_icons.clear()
+        for name in self.copilots:
+            self.member_icons[name] = photo(img.open(path.join(self.icons_path,
+                                                               self.copilot_dicts[name]["Icon"] + ".jpg")))
+            self.member_buttons[name] = ttk.Button(self.category_frames["CoPilot"].sub_frame,
+                                                   text=name, compound=tk.LEFT,
+                                                   image=self.member_icons[name],
+                                                   command=(lambda name=name, category="CoPilot":
+                                                            self.set_crew_member(name, category)),
+                                                   width=21)
+        self.grid_widgets()
+
+    def grid_widgets(self):
+        self.header_label.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        set_row = 1
+        for frame in self.category_frames.itervalues():
+            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            set_row += 1
+        for button in self.member_buttons.itervalues():
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            set_row += 1
+
+
+class CrewAbilitiesFrame(ttk.Frame):
+    def __init__(self, parent, data_dictionary):
+        ttk.Frame.__init__(self, parent)
+        self.data = data_dictionary
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+        self.description_label = ttk.Label(self, text=self.data["Description"], justify=tk.LEFT, wraplength=300)
+        self.active_image = photo(img.open(path.join(self.icons_path, self.data["AbilityIcon"] + ".jpg")))
+        self.passive_one_image = photo(img.open(path.join(self.icons_path, self.data["AbilityIcon"] + ".jpg")))
+        self.passive_two_image = photo(img.open(path.join(self.icons_path, self.data["SecondaryPassiveIcon"] + ".jpg")))
+        self.active_label = ttk.Label(self, text=(self.data["AbilityName"] + "\n" + self.data["AbilityDescription"]),
+                                      image=self.active_image, compound=tk.LEFT, justify=tk.LEFT, wraplength=250)
+        self.passive_one_label = ttk.Label(self, text=(self.data["PassiveName"] + "\n" +
+                                                       self.data["PassiveDescription"]),
+                                           image=self.passive_one_image, compound=tk.LEFT, justify=tk.LEFT,
+                                           wraplength=250)
+        self.passive_two_label = ttk.Label(self, text=(self.data["SecondaryPassiveName"] + "\n" +
+                                                       self.data["SecondaryPassiveDescription"]),
+                                           image=self.passive_two_image, compound=tk.LEFT, justify=tk.LEFT,
+                                           wraplength=250)
+
+    def grid_widgets(self):
+        self.description_label.grid(column=0, row=0, sticky=tk.W + tk.E)
+        self.active_label.grid(column=0, row=1, sticky=tk.W + tk.E)
+        self.passive_one_label.grid(column=0, row=2, sticky=tk.W + tk.E)
+        self.passive_two_label.grid(column=0, row=3, sticky=tk.W + tk.E)
 
 
 class ComponentListFrame(ttk.Frame):
@@ -58,10 +159,10 @@ class ComponentListFrame(ttk.Frame):
         self.callback(self.category, component)
 
     def grid_widgets(self):
-        self.toggled_frame.grid(row=0, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
         set_row = 0
         for button in self.buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
 
 
@@ -115,24 +216,24 @@ class ShipSelectFrame(ttk.Frame):
                                    width=20)
 
     def grid_widgets(self):
-        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E, pady=2)
+        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)
         set_row = 0
         set_column = 0
         for button in self.faction_buttons.itervalues():
-            button.grid(row=set_row, column=set_column, sticky=tk.N+tk.W+tk.E, padx=1)
+            button.grid(row=set_row, column=set_column, sticky=tk.N + tk.W + tk.E, padx=1)
             set_column += 1
         set_row = 20
         for faction in self.category_frames:
             if faction == self.faction:
                 for frame in self.category_frames[faction].itervalues():
-                    frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
+                    frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2)
                     set_row += 1
             else:
                 for frame in self.category_frames[faction].itervalues():
                     frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
 
     def set_ship(self, faction, category, shipname):

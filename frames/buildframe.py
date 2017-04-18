@@ -45,14 +45,16 @@ class builds_frame(ttk.Frame):
             self.ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
             self.categories_data = pickle.load(f)
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db"))) as f:
+            self.companions_data = pickle.load(f)
         self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=345)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
         self.category = "Scout"
         self.ship = Ship("Bloodmark")
-        self.style = variables.main_window.style
-        self.style.configure("Sunken.TButton", state=tk.DISABLED)
+        self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
+                                                       justify=tk.LEFT, font=("Calibiri", 12))
         for category in self.working:
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
@@ -115,11 +117,14 @@ class builds_frame(ttk.Frame):
         self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_component.grid_widgets()
-        set_row = 0
+        self.components_lists_header_label.grid(row=0, column=0, sticky=tk.W)
+        set_row = 1
         for frame in self.components_lists.itervalues():
             frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             frame.grid_widgets()
             set_row += 1
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
+        self.crew_select_frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
 
     def show_ship_stats(self):
         pass
