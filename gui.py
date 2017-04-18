@@ -35,6 +35,7 @@ class main_window(tk.Tk):
         tk.Tk.__init__(self)
         self.finished = False
         self.style = ttk.Style()
+        variables.main_window = self
         self.set_icon()
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         # Get the screen properties
@@ -107,7 +108,6 @@ class main_window(tk.Tk):
         self.finished = True
         self.splash.destroy()
         # Start the main loop
-        variables.main_window = self
 
     def update_style(self, start=False):
         try:
