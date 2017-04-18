@@ -58,10 +58,10 @@ class ComponentListFrame(ttk.Frame):
         self.callback(self.category, component)
 
     def grid_widgets(self):
-        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.toggled_frame.grid(row=0, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
         set_row = 0
         for button in self.buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
             set_row += 1
 
 
@@ -115,24 +115,24 @@ class ShipSelectFrame(ttk.Frame):
                                    width=20)
 
     def grid_widgets(self):
-        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)
+        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E, pady=2)
         set_row = 0
         set_column = 0
         for button in self.faction_buttons.itervalues():
-            button.grid(row=set_row, column=set_column, sticky=tk.N + tk.W + tk.E, padx=1)
+            button.grid(row=set_row, column=set_column, sticky=tk.N+tk.W+tk.E, padx=1)
             set_column += 1
         set_row = 20
         for faction in self.category_frames:
             if faction == self.faction:
                 for frame in self.category_frames[faction].itervalues():
-                    frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2)
+                    frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
                     set_row += 1
             else:
                 for frame in self.category_frames[faction].itervalues():
                     frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
             set_row += 1
 
     def set_ship(self, faction, category, shipname):

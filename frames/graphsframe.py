@@ -650,7 +650,7 @@ class graphs_frame(ttk.Frame):
         self.spawn_graph_radio.grid(column=0, row=8, sticky=tk.W)
         self.match_graph_radio.grid(column=0, row=9, sticky=tk.W)
         self.death_graph_radio.grid(column=0, row=10, sticky=tk.W)
-        self.update_button.grid(column=0, row=19, sticky=tk.W+tk.E + tk.N + tk.S)
+        self.update_button.grid(column=0, row=19, sticky=tk.N+tk.S+tk.W+tk.E)
         self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
         self.tkcanvas.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
         self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)

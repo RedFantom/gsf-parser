@@ -311,7 +311,7 @@ class settings_frame(ttk.Frame):
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
         self.path_entry_button.grid(column=2, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=3)
         self.path_entry.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.entry_frame.grid(column=0, row=3, sticky=tk.N + tk.S + tk.W)
+        self.entry_frame.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W)
         self.privacy_label.grid(column=0, row=0, sticky=tk.W)
         self.privacy_select_true.grid(column=1, row=0, sticky=tk.W)
         self.privacy_select_false.grid(column=2, row=0, sticky=tk.W)
@@ -400,9 +400,9 @@ class settings_frame(ttk.Frame):
         self.save_frame.grid(column=0, row=0)
         ### FINAL FRAME ###
         self.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.top_frame.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W)
+        self.top_frame.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
         self.separator.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=10)
-        self.bottom_frame.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W)
+        self.bottom_frame.grid(column=0, row=2, sticky=tk.N+tk.S+tk.W)
 
     def update_settings(self):
         """

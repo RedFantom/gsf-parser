@@ -79,7 +79,7 @@ class main_window(tk.Tk):
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
-        self.ship_frame.grid(column=3, row=1, sticky=tk.N + tk.S + tk.E + tk.W)
+        self.ship_frame.grid(column=3, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
         self.graphs_frame.grid(column=0, row=0)

@@ -349,28 +349,28 @@ class filters(tk.Toplevel):
         pass
 
     def grid_widgets(self):
-        self.description_label.grid(row=1, column=1, columnspan=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.type_frame.grid(row=2, column=1, columnspan=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.dateframe.grid(row=3, column=1, columnspan=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.components_frame.grid(row=4, column=1, columnspan=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.ships_frame.grid(row=5, column=1, columnspan=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.complete_button.grid(row=6, column=1, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.search_button.grid(row=6, column=2, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.cancel_button.grid(row=6, column=3, sticky=tk.W + tk.N + tk.S + tk.E)
+        self.description_label.grid(row=1, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.type_frame.grid(row=2, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.dateframe.grid(row=3, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.components_frame.grid(row=4, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ships_frame.grid(row=5, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.complete_button.grid(row=6, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.search_button.grid(row=6, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.cancel_button.grid(row=6, column=3, sticky=tk.N+tk.S+tk.W+tk.E)
 
-        self.any_radio.grid(row=1, column=1, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.logs_radio.grid(row=1, column=2, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.matches_radio.grid(row=1, column=3, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.spawns_radio.grid(row=1, column=4, sticky=tk.W + tk.N + tk.S + tk.E)
+        self.any_radio.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.logs_radio.grid(row=1, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.matches_radio.grid(row=1, column=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.spawns_radio.grid(row=1, column=4, sticky=tk.N+tk.S+tk.W+tk.E)
 
-        self.start_date_widget.grid(row=1, column=1, sticky=tk.W + tk.N + tk.S + tk.E)
-        self.end_date_widget.grid(row=1, column=2, sticky=tk.W + tk.N + tk.S + tk.E)
+        self.start_date_widget.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.end_date_widget.grid(row=1, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
 
         start_row = 1
         start_column = 1
         for dictionary in self.comps_dicts:
             for widget in dictionary.itervalues():
-                widget.grid(row=start_row, column=start_column, sticky=tk.W + tk.N)
+                widget.grid(row=start_row, column=start_column, sticky=tk.N+tk.W)
                 start_column += 1
                 if start_column == 6:
                     start_column = 1
