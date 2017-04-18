@@ -11,14 +11,15 @@ try:
 except ImportError:
     print "mtTkinter not found, please use 'pip install mttkinter'"
     import Tkinter as tk
-import ttk
-from shipswidgets import *
 from collections import OrderedDict
 from os import path
 import cPickle as pickle
+import ttk
+from shipswidgets import *
 from widgets import vertical_scroll_frame
 from parsing.ships import Ship, Component, ships
 from parsing.abilities import all_ships
+import variables
 
 
 class builds_frame(ttk.Frame):
@@ -29,8 +30,9 @@ class builds_frame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        self.working = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
-                   "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+        self.working = [
+            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+            "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.categories = {
             "Bomber": 0,
             "Gunship": 1,
@@ -49,6 +51,8 @@ class builds_frame(ttk.Frame):
         self.faction = "Imperial"
         self.category = "Scout"
         self.ship = Ship("Bloodmark")
+        self.style = variables.main_window.style
+        self.style.configure("Sunken.TButton", state=tk.DISABLED)
         for category in self.working:
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
@@ -74,7 +78,6 @@ class builds_frame(ttk.Frame):
                     break
         elif faction == "Republic":
             for key in all_ships.itervalues():
-                print key
                 if key in ship:
                     ship_name = key
                     break
@@ -84,7 +87,6 @@ class builds_frame(ttk.Frame):
             raise ValueError("No valid ship specified.")
         self.ship = Ship(ship_name)
         for widget in self.components_lists_frame.interior.winfo_children():
-            # widget.destroy()
             widget.grid_forget()
         for category in self.working:
             if category not in self.ship.data:
@@ -92,23 +94,30 @@ class builds_frame(ttk.Frame):
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
                                    self.ship.data[category], None)
+        for button in self.ship_select_frame.ship_buttons.itervalues():
+            button.config(state=tk.ACTIVE)
+        for key in self.ship_select_frame.ship_buttons.iterkeys():
+            if ship in key:
+                ship = key
+                break
+        self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
+        print ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"]
         self.grid_widgets()
 
     def set_component(self, *args):
         pass
 
     def grid_widgets(self):
-        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.E, padx=1, pady=1)
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
-        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
-        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
-        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.current_component.grid(sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_component.grid_widgets()
         set_row = 0
         for frame in self.components_lists.itervalues():
-            print frame.data[1]["Name"]
-            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             frame.grid_widgets()
             set_row += 1
 
