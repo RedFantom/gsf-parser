@@ -17,7 +17,7 @@ ships = {
     "Onslaught": "Imperial_G-X1_Onslaught",
     "Frostburn": "Imperial_ICA-2B_Frostburn",
     "Sable Claw": "Imperial_ICA-3A_-_Sable_Claw",
-    "Tormentor": "ImperialICA-X_Tormentor",
+    "Tormentor": "Imperial_ICA-X_Tormentor",
     "Ocula": "Imperial_IL-5_Ocula",
     "Demolisher": "Imperial_K-52_Demolisher",
     "Razorwire": "Imperial_M-7_Razorwire",
@@ -45,7 +45,8 @@ ships = {
     "Redeemer": "Republic_VX-9_Redeemer",
     "Warcarrier": "Republic_Warcarrier",
     "Whisper": 'Republic_X5-Whisper',
-    "Mirage": "Republic_X7-Mirage"
+    "Mirage": "Republic_X7-Mirage",
+    "Legion": "Imperial_B-4D_Legion"
 }
 
 
