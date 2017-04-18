@@ -53,7 +53,7 @@ class CrewListFrame(ttk.Frame):
                                                                       text=member_dict["Name"], compound=tk.LEFT,
                                                                       image=self.member_icons[member_dict["Name"]],
                                                                       command=(lambda name=member_dict["Name"],
-                                                                               crole=crole:
+                                                                                      crole=crole:
                                                                                self.set_crew_member(name, crole)),
                                                                       width=21)
                 if member_dict["IsDefaultCompanion"]:
@@ -189,7 +189,7 @@ class ShipSelectFrame(ttk.Frame):
         toggled = False
         for faction in self.data:
             self.faction_frames[faction] = ttk.Frame(self.frame)
-            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")))
+            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + "_l.png")))
             self.faction_buttons[faction] = ttk.Button(self, text=faction, width=8,
                                                        command=lambda faction=faction: self.set_faction(faction),
                                                        image=self.faction_photos[faction], compound=tk.LEFT)
