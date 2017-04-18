@@ -58,10 +58,10 @@ class ComponentListFrame(ttk.Frame):
         self.callback(self.category, component)
 
     def grid_widgets(self):
-        self.toggled_frame.grid(row=0, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
         set_row = 0
         for button in self.buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
 
 
@@ -115,7 +115,7 @@ class ShipSelectFrame(ttk.Frame):
                                    width=20)
 
     def grid_widgets(self):
-        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E, pady=2)
+        self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)
         set_row = 0
         set_column = 0
         for button in self.faction_buttons.itervalues():
@@ -125,14 +125,14 @@ class ShipSelectFrame(ttk.Frame):
         for faction in self.category_frames:
             if faction == self.faction:
                 for frame in self.category_frames[faction].itervalues():
-                    frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2)
+                    frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2)
                     set_row += 1
             else:
                 for frame in self.category_frames[faction].itervalues():
                     frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.itervalues():
-            button.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
 
     def set_ship(self, faction, category, shipname):
@@ -175,18 +175,28 @@ class MajorComponentWidget(ComponentWidget):
         self.upgrade_buttons = []
         self.hover_infos = []
         self.photos = []
+        self.intvars = []
         for i in range(5):
             if i >= 3:
+                self.intvars.append([tk.IntVar(), tk.IntVar()])
+                self.intvars[i][0].set(0)
+                self.intvars[i][1].set(0)
                 self.photos.append([photo(img.open(path.join(self.icons_path,
                                                              data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
                                     photo(img.open(path.join(self.icons_path,
                                                              data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
-                self.upgrade_buttons.append([ttk.Button(self, image=self.photos[i][0],
-                                                        command=lambda: press_button(self.upgrade_buttons[i][0],
-                                                                                     self.set_level, i)),
-                                             ttk.Button(self, image=self.photos[i][1],
-                                                        command=lambda: press_button(self.upgrade_buttons[i][1],
-                                                                                     self.set_level, i + 1))])
+                self.upgrade_buttons.append([ttk.Checkbutton(self, image=self.photos[i][0],
+                                                             command=lambda i=i: press_button(
+                                                                 self.upgrade_buttons[i][0],
+                                                                 self.set_level, i),
+                                                             style="TButton",
+                                                             variable=self.intvars[i][0]),
+                                             ttk.Checkbutton(self, image=self.photos[i][1],
+                                                             command=lambda i=i: press_button(
+                                                                 self.upgrade_buttons[i][1],
+                                                                 self.set_level, i + 1),
+                                                             variable=self.intvars[i][1],
+                                                             style="TButton")])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
                                                    text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                         str(data_dictionary["TalentTree"][i][0]["Description"]),
@@ -196,14 +206,18 @@ class MajorComponentWidget(ComponentWidget):
                                                         str(data_dictionary["TalentTree"][i][1]["Description"]),
                                                    width=50)])
             else:
+                self.intvars.append(tk.IntVar())
+                self.intvars[i].set(0)
                 self.photos.append(photo(img.open(path.join(self.icons_path,
                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
-                self.upgrade_buttons.append(ttk.Button(self, image=self.photos[i],
-                                                       command=lambda: press_button(self.upgrade_buttons[i][0],
-                                                                                    self.set_level, i)))
+                self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
+                                                            command=lambda i=i: press_button(self.upgrade_buttons[i],
+                                                                                             self.set_level, i),
+                                                            variable=self.intvars[i], style="TButton"))
                 self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
+        return
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=10)
@@ -232,18 +246,28 @@ class MiddleComponentWidget(ComponentWidget):
         self.upgrade_buttons = []
         self.hover_infos = []
         self.photos = []
+        self.intvars = []
         for i in range(3):
-            if i == 2:
-                self.photos.append(photo(img.open(path.join(self.icons_path,
-                                                            data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
-                self.photos.append(photo(img.open(path.join(self.icons_path,
-                                                            data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg"))))
-                self.upgrade_buttons.append([ttk.Button(self, image=self.photos[i],
-                                                        command=lambda: press_button(self.upgrade_buttons[i][0],
-                                                                                     self.set_level, i)),
-                                             ttk.Button(self, image=self.photos[i + 1],
-                                                        command=lambda: press_button(self.upgrade_buttons[i][1],
-                                                                                     self.set_level, i + 1))])
+            if i >= 3:
+                self.intvars.append([tk.IntVar(), tk.IntVar()])
+                self.intvars[i][0].set(0)
+                self.intvars[i][1].set(0)
+                self.photos.append([photo(img.open(path.join(self.icons_path,
+                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
+                                    photo(img.open(path.join(self.icons_path,
+                                                             data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
+                self.upgrade_buttons.append([ttk.Checkbutton(self, image=self.photos[i][0],
+                                                             command=lambda i=i: press_button(
+                                                                 self.upgrade_buttons[i][0],
+                                                                 self.set_level, i),
+                                                             style="TButton",
+                                                             variable=self.intvars[i][0]),
+                                             ttk.Checkbutton(self, image=self.photos[i][1],
+                                                             command=lambda i=i: press_button(
+                                                                 self.upgrade_buttons[i][1],
+                                                                 self.set_level, i + 1),
+                                                             variable=self.intvars[i][1],
+                                                             style="TButton")])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
                                                    text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                         str(data_dictionary["TalentTree"][i][0]["Description"]),
@@ -253,14 +277,19 @@ class MiddleComponentWidget(ComponentWidget):
                                                         str(data_dictionary["TalentTree"][i][1]["Description"]),
                                                    width=50)])
             else:
+                self.intvars.append(tk.IntVar())
+                self.intvars[i].set(0)
                 self.photos.append(photo(img.open(path.join(self.icons_path,
                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
-                self.upgrade_buttons.append(ttk.Button(self, image=self.photos[i],
-                                                       command=lambda: press_button(self.upgrade_buttons[i],
-                                                                                    self.set_level, i)))
+                self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
+                                                            command=lambda i=i: press_button(self.upgrade_buttons[i],
+                                                                                             self.set_level, i),
+                                                            variable=self.intvars[i],
+                                                            style="TButton"))
                 self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                        str(data_dictionary["TalentTree"][i][0]["Description"])))
+        return
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=2, pady=2)
@@ -299,8 +328,8 @@ class MinorComponentWidget(ComponentWidget):
         self.hover_infos = []
         for i in range(3):
             self.upgrade_buttons.append(ttk.Button(self, image=self.icon_photo,
-                                                   command=lambda: press_button(self.upgrade_buttons[i],
-                                                                                self.set_level, i + 1)))
+                                                   command=lambda i=i: press_button(self.upgrade_buttons[i],
+                                                                                    self.set_level, i + 1)))
             self.hover_infos.append(HoverInfo(self.upgrade_buttons[i], str(data_dictionary["TalentTree"][i][0]["Name"])
                                               + "\n\n" + str(data_dictionary["TalentTree"][i][0]["Description"]),
                                               width=50))
@@ -318,11 +347,18 @@ class MinorComponentWidget(ComponentWidget):
         pass
 
 
+class ShipStatsToplevel(tk.Toplevel):
+    pass
+
+
 def press_button(button, callback, *args):
-    button.config(relief=tk.SUNKEN)
+    if button["style"] == "TButton":
+        button.config(style="Toolbutton")
+    else:
+        button.config(style="TButton")
     callback(*args)
 
 
 def release_button(button, callback, *args):
-    button.config(relief=tk.RAISED)
+    button.condig(style="TButton")
     callback(*args)
