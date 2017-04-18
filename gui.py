@@ -70,7 +70,7 @@ class main_window(tk.Tk):
         self.settings_frame = settingsframe.settings_frame(self.settings_tab_frame, self)
         self.graphs_frame = graphsframe.graphs_frame(self.notebook, self)
         self.resources_frame = resourcesframe.resources_frame(self.notebook, self)
-        self.builds_frame = buildframe.builds_frame(self.notebook)
+        self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky=tk.N + tk.S + tk.W + tk.E)

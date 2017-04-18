@@ -22,7 +22,7 @@ from parsing.abilities import all_ships
 import variables
 
 
-class builds_frame(ttk.Frame):
+class BuildsFrame(ttk.Frame):
     """
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
