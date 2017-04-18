@@ -218,9 +218,9 @@ class event_colors(tk.Toplevel):
             self.color_entry_widgets_fg[key].grid(column=4, row=set_row, sticky=tk.W, padx=5)
             self.color_button_widgets_fg[key].grid(column=5, row=set_row, sticky=tk.W)
             set_row += 1
-        self.separator.grid(column=0, columnspan=6, sticky=tk.N+tk.S+tk.W+tk.E, pady=5)
+        self.separator.grid(column=0, columnspan=6, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
         set_row += 1
-        self.cancel_button.grid(column=3, columnspan=2, row=set_row, sticky=tk.N+tk.S+tk.E)
-        self.ok_button.grid(column=5, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.import_button.grid(column=0, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.export_button.grid(column=1, row=set_row, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.cancel_button.grid(column=3, columnspan=2, row=set_row, sticky=tk.N + tk.S + tk.E)
+        self.ok_button.grid(column=5, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.import_button.grid(column=0, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.export_button.grid(column=1, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)

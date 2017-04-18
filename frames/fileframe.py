@@ -135,13 +135,13 @@ class file_frame(ttk.Frame):
         self.match_box.config(height=6)
         self.spawn_box.config(height=6)
         self.file_box.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
-        self.file_box_scroll.grid(column=2, row=0, rowspan=8, columnspan=1, sticky=tk.N+tk.S, pady=5)
+        self.file_box_scroll.grid(column=2, row=0, rowspan=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
         self.match_box.grid(column=0, row=8, columnspan=2, padx=5, pady=5)
-        self.match_box_scroll.grid(column=2, row=8, columnspan=1, sticky=tk.N+tk.S, pady=5)
+        self.match_box_scroll.grid(column=2, row=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
         self.spawn_box.grid(column=0, row=16, columnspan=2, padx=5, pady=5)
-        self.spawn_box_scroll.grid(column=2, row=16, columnspan=1, sticky=tk.N+tk.S, pady=5)
-        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.spawn_box_scroll.grid(column=2, row=16, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E)
 
     def add_matches(self):
         """
@@ -608,8 +608,8 @@ class ship_frame(ttk.Frame):
         Put the widgets in the right place
         :return:
         """
-        self.ship_image.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.ship_label.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_image.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_label.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
         self.remove_image()
 
     def update_ship(self, ships_list):
@@ -796,16 +796,16 @@ class middle_frame(ttk.Frame):
         Put all widgets in the right place
         :return:
         """
-        self.abilities_treeview.grid(column=0, row=0, sticky=tk.N+tk.W)
-        self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N+tk.W+tk.E)
-        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.events_button.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=4, pady=12)
-        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N+tk.W+tk.E)
-        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W+tk.E+tk.S)
-        self.enemies_treeview.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.abilities_treeview.grid(column=0, row=0, sticky=tk.N + tk.W)
+        self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N + tk.W + tk.E)
+        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.events_button.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=4, pady=12)
+        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N + tk.W + tk.E)
+        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W + tk.E + tk.S)
+        self.enemies_treeview.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
@@ -818,4 +818,3 @@ class middle_frame(ttk.Frame):
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
         treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
-

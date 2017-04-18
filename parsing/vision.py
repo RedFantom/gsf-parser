@@ -5,6 +5,7 @@
 # For license see LICENSE
 import cv2
 from PIL import Image
+
 try:
     from PIL import ImageGrab
 except ImportError:
@@ -64,10 +65,10 @@ def pillow_to_numpy(pillow):
     imagefile = numpy.array(pillow)
     return imagefile[:, :, ::-1].copy()
 
+
 def numpy_to_pillow(array):
     pillow = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
     return Image.fromarray(pillow)
-
 
 
 '''

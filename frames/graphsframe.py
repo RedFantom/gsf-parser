@@ -24,6 +24,7 @@ from collections import OrderedDict
 import variables
 from parsing import parse
 import toplevels
+
 matplotlib.use('TkAgg')
 
 
@@ -619,7 +620,7 @@ class graphs_frame(ttk.Frame):
                     print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)]+2)
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
             self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
@@ -650,7 +651,7 @@ class graphs_frame(ttk.Frame):
         self.spawn_graph_radio.grid(column=0, row=8, sticky=tk.W)
         self.match_graph_radio.grid(column=0, row=9, sticky=tk.W)
         self.death_graph_radio.grid(column=0, row=10, sticky=tk.W)
-        self.update_button.grid(column=0, row=19, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
-        self.tkcanvas.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
-        self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)
+        self.update_button.grid(column=0, row=19, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N + tk.W, padx=10)
+        self.tkcanvas.grid(column=1, row=1, rowspan=20, sticky=tk.N + tk.W, padx=10)
+        self.toolbar.grid(column=1, row=21, sticky=tk.N + tk.W)

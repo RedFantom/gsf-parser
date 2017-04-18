@@ -258,4 +258,3 @@ class MouseCounter(threading.Thread):
 
     def run(self):
         pass
-

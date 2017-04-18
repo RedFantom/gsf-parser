@@ -4,6 +4,7 @@
 # IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
 # software.
 import ttk
+
 try:
     import mttkinter.mtTkinter as tk
 except ImportError:
@@ -32,10 +33,10 @@ class vertical_scroll_frame(ttk.Frame):
     def __init__(self, parent, canvaswidth=780, canvasheight=395, *args, **kw):
         ttk.Frame.__init__(self, parent, *args, **kw)
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        vscrollbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E, padx=2)
+        vscrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=2)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width=canvaswidth,
                            height=canvasheight)
-        canvas.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        canvas.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         vscrollbar.config(command=canvas.yview)
 
         def mousewheel(event):
@@ -378,7 +379,7 @@ class ToggledFrame(ttk.Frame):
         self.show = tk.IntVar()
         self.show.set(0)
         self.title_frame = ttk.Frame(self)
-        self.title_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
+        self.title_frame.grid(sticky=tk.N + tk.S + tk.W + tk.E)
         closed_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__))
                                                 + "\\..\\assets\\gui\\closed.png"))
         self.closed = ImageTk.PhotoImage(closed_img)
@@ -390,12 +391,12 @@ class ToggledFrame(ttk.Frame):
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=labelwidth, image=self.closed,
                                              command=self.toggle, variable=self.show, style='Toolbutton',
                                              text=text, compound=tk.LEFT)
-        self.toggle_button.grid(sticky=tk.W+tk.E)
+        self.toggle_button.grid(sticky=tk.W + tk.E)
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
 
     def toggle(self):
         if bool(self.show.get()):
-            self.sub_frame.grid(sticky=tk.N+tk.S+tk.W+tk.E)
+            self.sub_frame.grid(sticky=tk.N + tk.S + tk.W + tk.E)
             self.toggle_button.configure(image=self.open)
         else:
             self.sub_frame.grid_forget()
@@ -423,7 +424,7 @@ class HoverInfo(tk.Tk):
         self.parent.bind("<Enter>", self.enter)
         self.parent.bind("<Leave>", self.leave)
         if not isinstance(text, str):
-            error_msg = 'Trying to initialize a Hover Menu with a non '\
+            error_msg = 'Trying to initialize a Hover Menu with a non ' \
                         'string type: '
             raise TypeError(error_msg + text.__class__.__name__)
 
@@ -434,7 +435,7 @@ class HoverInfo(tk.Tk):
             self.labels.append(ttk.Label(self, text=t, justify=tk.LEFT, wraplength=width * 7))
         self.width = 0
         for i, label in enumerate(self.labels):
-            label.grid(row=i, sticky=tk.N+tk.W)
+            label.grid(row=i, sticky=tk.N + tk.W)
             if len(label["text"]) * 6 > self.width:
                 self.width = len(label["text"]) * 6
 
@@ -458,6 +459,6 @@ class HoverInfo(tk.Tk):
         x = self.winfo_pointerx()
         y = self.winfo_pointery()  # b/c geometry uses absolute positioning
         self.geometry("%dx%d+%d+%d" % (self.width,
-                                       len(self.labels)*24,
-                                       x+2,
-                                       y+2))
+                                       len(self.labels) * 24,
+                                       x + 2,
+                                       y + 2))

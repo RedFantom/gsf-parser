@@ -608,6 +608,7 @@ def get_amount_enemies(spawn, player):
             enemies.append(line_dict['destination'])
     return len(enemies)
 
+
 # Returns the player's ID numbers
 def determinePlayer(lines):
     """

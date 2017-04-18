@@ -108,16 +108,16 @@ class builds_frame(ttk.Frame):
         pass
 
     def grid_widgets(self):
-        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N+tk.S+tk.W+tk.E, padx=1, pady=1)
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
-        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
-        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N+tk.S+tk.W+tk.E, pady=1)
-        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.current_component.grid(sticky=tk.N+tk.S+tk.W+tk.E)
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_component.grid_widgets()
         set_row = 0
         for frame in self.components_lists.itervalues():
-            frame.grid(row=set_row, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
+            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             frame.grid_widgets()
             set_row += 1
 

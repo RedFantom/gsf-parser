@@ -33,7 +33,6 @@ def check_gsf(file_name):
 
 # Class to calculate various statistics from files, and even folders
 class statistics:
-
     # Calculate the statistics for a whole folder
     @staticmethod
     def folder_statistics():
@@ -506,7 +505,7 @@ class statistics:
         delta = datetime.datetime.strptime(
             realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1])
             ['time'][:-4].strip(), "%H:%M:%S") - \
-            datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
+                datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
         elapsed = divmod(delta.total_seconds(), 60)
         string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
         try:
@@ -616,6 +615,7 @@ class statistics:
                              str(hitcount) + "\n" + str(criticalcount) + "\n" +
                              str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
         return abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+
 
 # Name of the columns for the pretty event printing functions
 # TODO: make them visible for the user in some good format

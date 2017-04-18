@@ -84,7 +84,7 @@ class overlay(tk.Toplevel):
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
                                                    "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
                                         justify=tk.LEFT, font=(
-                variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
+                    variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
                                         foreground=variables.settings_obj.overlay_tx_color,
                                         background=variables.settings_obj.overlay_bg_color)
         elif variables.settings_obj.size == "small":
@@ -241,12 +241,12 @@ class events_view(tk.Toplevel):
     def __init__(self, window, spawn, player):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Events for spawn on %s of match started at %s" % (
-        variables.spawn_timing, variables.match_timing))
+            variables.spawn_timing, variables.match_timing))
         self.listbox = tk.Listbox(self, width=100, height=15, font=("Consolas", 10))
         self.scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scroll.set)
-        self.listbox.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.scroll.grid(column=2, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.listbox.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.scroll.grid(column=2, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         self.resizable(width=False, height=False)
         for line in spawn:
             event = statistics.print_event(line, variables.spawn_timing, player)
@@ -349,28 +349,28 @@ class filters(tk.Toplevel):
         pass
 
     def grid_widgets(self):
-        self.description_label.grid(row=1, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.type_frame.grid(row=2, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.dateframe.grid(row=3, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.components_frame.grid(row=4, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.ships_frame.grid(row=5, column=1, columnspan=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.complete_button.grid(row=6, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.search_button.grid(row=6, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.cancel_button.grid(row=6, column=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.description_label.grid(row=1, column=1, columnspan=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.type_frame.grid(row=2, column=1, columnspan=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.dateframe.grid(row=3, column=1, columnspan=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.components_frame.grid(row=4, column=1, columnspan=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ships_frame.grid(row=5, column=1, columnspan=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.complete_button.grid(row=6, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.search_button.grid(row=6, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.cancel_button.grid(row=6, column=3, sticky=tk.N + tk.S + tk.W + tk.E)
 
-        self.any_radio.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.logs_radio.grid(row=1, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.matches_radio.grid(row=1, column=3, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.spawns_radio.grid(row=1, column=4, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.any_radio.grid(row=1, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.logs_radio.grid(row=1, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.matches_radio.grid(row=1, column=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.spawns_radio.grid(row=1, column=4, sticky=tk.N + tk.S + tk.W + tk.E)
 
-        self.start_date_widget.grid(row=1, column=1, sticky=tk.N+tk.S+tk.W+tk.E)
-        self.end_date_widget.grid(row=1, column=2, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.start_date_widget.grid(row=1, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.end_date_widget.grid(row=1, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
 
         start_row = 1
         start_column = 1
         for dictionary in self.comps_dicts:
             for widget in dictionary.itervalues():
-                widget.grid(row=start_row, column=start_column, sticky=tk.N+tk.W)
+                widget.grid(row=start_row, column=start_column, sticky=tk.N + tk.W)
                 start_column += 1
                 if start_column == 6:
                     start_column = 1
