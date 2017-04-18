@@ -48,7 +48,7 @@ class BuildsFrame(ttk.Frame):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db"))) as f:
             self.companions_data = pickle.load(f)
         self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=345)
-        self.ship_select_frame = ShipSelectFrame(self, self.set_ship)
+        self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
         self.category = "Scout"
@@ -65,6 +65,7 @@ class BuildsFrame(ttk.Frame):
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
                                                       self.ship)
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
         self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((39, 39)))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
@@ -123,8 +124,13 @@ class BuildsFrame(ttk.Frame):
             frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             frame.grid_widgets()
             set_row += 1
+        self.crew_select_frame.destroy()
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
         self.crew_select_frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
 
     def show_ship_stats(self):
         pass
+
+    def set_faction(self, faction):
+        self.faction = faction
+        self.grid_widgets()

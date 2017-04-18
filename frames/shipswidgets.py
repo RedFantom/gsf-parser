@@ -167,7 +167,7 @@ class ComponentListFrame(ttk.Frame):
 
 
 class ShipSelectFrame(ttk.Frame):
-    def __init__(self, parent, callback):
+    def __init__(self, parent, callback, faction_callback):
         ttk.Frame.__init__(self, parent)
         self.faction = "Imperial"
         self.ship = "Bloodmark",
@@ -178,6 +178,7 @@ class ShipSelectFrame(ttk.Frame):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as db:
             self.data = pickle.load(db)
         self.callback = callback
+        self.faction_callback = faction_callback
         self.faction_frames = {}
         self.faction_buttons = {}
         self.ship_frames = {}
@@ -242,6 +243,7 @@ class ShipSelectFrame(ttk.Frame):
 
     def set_faction(self, faction):
         self.faction = faction
+        self.faction_callback(faction)
         self.grid_widgets()
 
 
