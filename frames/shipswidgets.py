@@ -189,7 +189,7 @@ class ShipSelectFrame(ttk.Frame):
         toggled = False
         for faction in self.data:
             self.faction_frames[faction] = ttk.Frame(self.frame)
-            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + "_l.png")))
+            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")))
             self.faction_buttons[faction] = ttk.Button(self, text=faction, width=8,
                                                        command=lambda faction=faction: self.set_faction(faction),
                                                        image=self.faction_photos[faction], compound=tk.LEFT)
@@ -207,7 +207,7 @@ class ShipSelectFrame(ttk.Frame):
                         self.ship_photos[ship_dict["Name"]] = photo(image)
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
-                                                                                       faction.lower() + ".png")))
+                                                                                       faction.lower() + "_l.png")))
                     self.ship_buttons[ship_dict["Name"]] = \
                         ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame,
                                    text=ship_dict["Name"],
