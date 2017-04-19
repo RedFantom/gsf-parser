@@ -424,10 +424,10 @@ class file_frame(ttk.Frame):
                     name = ship
 
                 try:
-                    ships_string += name + "\t\t" + str(variables.total_shipsdict[ship.replace("\t", "", 1)]) + "\n"
+                    ships_string += name + "\t\t" + str(shipsdict[ship.replace("\t", "", 1)]) + "\n"
                 except KeyError:
                     ships_string += name + "\t\t0\n"
-            ships_string += "Uncounted\t\t" + str(variables.uncounted)
+            ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
                 if enemy == "":
