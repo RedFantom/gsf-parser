@@ -458,7 +458,7 @@ class HoverInfo(tk.Tk):
         # absolute positioning instead of compared to widget
         x = self.winfo_pointerx()
         y = self.winfo_pointery()  # b/c geometry uses absolute positioning
-        self.geometry("%dx%d+%d+%d" % (self.width,
-                                       len(self.labels) * 24,
+        self.geometry("%dx%d+%d+%d" % (self.winfo_reqwidth(),
+                                       self.winfo_reqheight(),
                                        x + 2,
                                        y + 2))

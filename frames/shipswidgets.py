@@ -145,7 +145,7 @@ class ComponentListFrame(ttk.Frame):
             try:
                 self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
             except IOError:
-                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial.png")))
+                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
             self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
                                                          text=component["Name"],
                                                          command=lambda: self.set_component(component["Name"]),
