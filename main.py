@@ -12,7 +12,6 @@ try:
     shutil.copytree(src=tcl_lib, dst=tcl_new_lib)
 except AttributeError:
     pass
-import tkMessageBox
 import gui
 
 
@@ -22,12 +21,4 @@ def new_window():
 
 
 if __name__ == "__main__":
-    if sys.platform == "win32":
-        import variables
-
-        if variables.settings_obj.version != "v2.2.1":
-            print "[DEBUG] OOB not completed successfully, exiting..."
-        main_window = gui.main_window()
-        main_window.mainloop()
-    else:
-        tkMessageBox.showerror("Fatal error", "Unix is not supported")
+    new_window()
