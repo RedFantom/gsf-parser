@@ -239,7 +239,7 @@ def get_ship_health_hull(screen):
     pass
 
 
-def get_ship_health_forwardshields(screen):
+def get_ship_health_shields(screen):
     """
     Uses the PIL library to determine the color of the ship icon in the UI
     to make an approximation of the ship shield health.
@@ -251,22 +251,54 @@ def get_ship_health_forwardshields(screen):
     :param screen: cv2 array of screenshot or pillow object
     :return: int with percentage
     """
-    pass
+    health = cv2.imread(os.getcwd() + "/assets/vision/health.png")
+    results = cv2.matchTemplate(screen, health, cv2.TM_CCOEFF_NORMED)
+    x, y = numpy.unravel_index(results.argmax(), results.shape)
 
+    colors = {
+        "blue": (2, 95, 133),
+        "green": (0, 166, 0),
+        "yellow": (133, 159, 0),
+        "orange": (165, 94, 0),
+        "red": (164, 1, 1),
+        "none": (0, 0, 0)
+    }
+    colors_health = {
+        "blue": 62.5,
+        "green": 50.0,
+        "yellow": 37.5,
+        "orange": 25.0,
+        "red": 12.5,
+        "none": 0.0
+    }
 
-def get_ship_health_rearshields(screen):
-    """
-    Uses the PIL library to determine the color of the ship icon in the UI
-    to make an approximation of the ship shield health.
+    f_one = (x_f_one, y_f_one) = (x - 16, y)
+    f_two = (x_f_two, y_f_two) = (x - 31, y)
+    b_one = (x_b_one, y_b_one) = (x - 16, y + 55)
+    b_two = (x_b_two, y_b_two) = (x - 31, y + 55)
 
-    Two elements, each with their own color. Each color represents 10%
-    Red, orange, yellow, green, bright green and blue when power to shields
-    is enabled to make for total of 110% shield power.
+    health_pil = numpy_to_pillow(screen).convert("RGB")
+    f_one_rgb = health_pil.getpixel(f_one)
+    f_two_rgb = health_pil.getpixel(f_two)
+    b_one_rgb = health_pil.getpixel(b_one)
+    b_two_rgb = health_pil.getpixel(b_two)
 
-    :param screen: cv2 array of screenshot or pillow object
-    :return: int with percentage
-    """
-    pass
+    shields_rgb = (f_one_rgb, f_two_rgb, b_one_rgb, b_two_rgb)
+    color_shields = []
+
+    for number, rgb in enumerate(shields_rgb):
+        for key, value in colors:
+            valid = True
+            for index, color in enumerate(value):
+                if not color - 20 < rgb[index] < color + 20:
+                    valid = False
+            if valid:
+                color_shields.append(key)
+                break
+
+    f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
+    b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
+    return f, b
 
 
 def get_leftbutton_pressed():
