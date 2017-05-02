@@ -3,10 +3,8 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import threading as mp
 import vision
 import threading
-import settings
 import cPickle as pickle
 import tempfile
 from datetime import datetime
@@ -77,9 +75,9 @@ class FileHandler(object):
     pass
 
 
-class ScreenParser(mp.Thread):
+class ScreenParser(threading.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, rgb=False, cooldowns=None):
-        mp.Thread.__init__(self)
+        threading.Thread.__init__(self)
         if rgb and not cooldowns:
             raise ValueError("rgb requested but cooldowns not specified")
         self.rgb = rgb
@@ -201,6 +199,7 @@ class ScreenParser(mp.Thread):
             self._file_dict[self._match] = self._match_dict
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
+            print "Cycle"
         self.close()
 
     # TODO: Add RGB capabilities

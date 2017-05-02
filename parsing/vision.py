@@ -15,6 +15,13 @@ import numpy
 import math
 import win32gui
 import win32api
+from utilities import get_temp_directory
+
+
+def write_debug_log(line):
+    line = (line.replace("\n", "") + "\n")
+    with open(os.path.join(get_temp_directory(), "screen_debug.txt"), "a") as fo:
+        fo.write(line)
 
 
 def get_cv2_screen():
@@ -297,15 +304,15 @@ def get_ship_health_shields(screen):
                     valid = False
             if valid:
                 color_shields.append(key)
-                print "Appended: ", key
+                write_debug_log("Appended: " + key)
                 break
     if len(color_shields) != 4:
-        print "[DEBUG] Output for the error below: ", str((f_one, f_two, b_one, b_two))
-        print "[DEBUG] Output for the error below: ", str(shields_rgb)
+        write_debug_log(("[DEBUG] Output for the error below: " + str((f_one, f_two, b_one, b_two))))
+        write_debug_log(("[DEBUG] Output for the error below: " + str(shields_rgb)))
         raise ValueError("Not four colours identified.")
     f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
     b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
-    print "[DEBUG] Shield health determined: ", str(f), str(b)
+    write_debug_log(("[DEBUG] Shield health determined: " + str(f) + "  " + str(b)))
     return f, b
 
 

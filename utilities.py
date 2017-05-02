@@ -7,12 +7,16 @@
 import os
 import sys
 
+debug = False
+
 
 def get_temp_directory():
     """
     Returns the absolute path to the directory that is to be used by the GSF Parser for the temporary files.
     :return: str
     """
+    if debug:
+        return os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     if sys.platform == "win32":
         import tempfile
         path = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "GSF Parser"))

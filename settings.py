@@ -74,8 +74,7 @@ class settings:
     # Set the file_name for use by other functions
     def __init__(self, file_name="settings.ini"):
         self.directory = utilities.get_temp_directory()
-        self.file_name = self.directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
-        self.file_name = self.file_name.replace("\\", "/")
+        self.file_name = os.path.join(self.directory, file_name)
         self.conf = ConfigParser.RawConfigParser()
         # variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
@@ -328,8 +327,7 @@ class color_schemes:
                                             "event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
 
-    def set_scheme(self, name, custom_file=(tempfile.gettempdir().replace("temp", "GSF Parser") +
-                                            "\\event_colors.ini").replace("\\", "/")):
+    def set_scheme(self, name, custom_file=(os.path.join(utilities.get_temp_directory(), "events_colors.ini"))):
         if name == "default":
             self.current_scheme = self.default_colors
         elif name == "pastel":
