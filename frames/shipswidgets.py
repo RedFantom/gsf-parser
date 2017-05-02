@@ -148,7 +148,8 @@ class ComponentListFrame(ttk.Frame):
                 self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
             self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
                                                          text=component["Name"],
-                                                         command=lambda: self.set_component(component["Name"]),
+                                                         command=lambda name=component["Name"]:
+                                                         self.set_component(name),
                                                          compound=tk.LEFT, width=21)
             self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
                                                             text=str(component["Name"]) + "\n\n" +
@@ -194,6 +195,8 @@ class ShipSelectFrame(ttk.Frame):
                                                        command=lambda faction=faction: self.set_faction(faction),
                                                        image=self.faction_photos[faction], compound=tk.LEFT)
             for category in self.data[faction]:
+                if category["CategoryName"] == "Infiltrator":
+                    continue  # pass
                 self.category_frames[faction][category["CategoryName"]] = ToggledFrame(self.frame,
                                                                                        text=category["CategoryName"],
                                                                                        labelwidth=27)
@@ -269,10 +272,15 @@ class ComponentWidget(ttk.Frame):
 class MajorComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
+        self.scroll_frame = vertical_scroll_frame(self, canvaswidth=300)
+        self.interior = self.scroll_frame.interior
         self.description = data_dictionary["Description"]
-        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
+        self.description_label = ttk.Label(self.interior, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
-        self.icon_image = img.open(path.join(self.icons_path, self.icon))
+        try:
+            self.icon_image = img.open(path.join(self.icons_path, self.icon))
+        except IOError:
+            self.icon_image = img.open(path.join(self.icons_path, "imperial.png"))
         self.icon_photo = photo(self.icon_image)
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
@@ -284,17 +292,21 @@ class MajorComponentWidget(ComponentWidget):
                 self.intvars.append([tk.IntVar(), tk.IntVar()])
                 self.intvars[i][0].set(0)
                 self.intvars[i][1].set(0)
-                self.photos.append([photo(img.open(path.join(self.icons_path,
-                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
-                                    photo(img.open(path.join(self.icons_path,
-                                                             data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
-                self.upgrade_buttons.append([ttk.Checkbutton(self, image=self.photos[i][0],
+                try:
+                    self.photos.append([photo(img.open(path.join(self.icons_path,
+                                                                 data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
+                                        photo(img.open(path.join(self.icons_path,
+                                                                 data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
+                except IndexError:
+                    self.photos.append([photo(img.open(path.join(self.icons_path, "imperial.png"))),
+                                        photo(img.open(path.join(self.icons_path, "imperial.png")))])
+                self.upgrade_buttons.append([ttk.Checkbutton(self.interior, image=self.photos[i][0],
                                                              command=lambda i=i: press_button(
                                                                  self.upgrade_buttons[i][0],
                                                                  self.set_level, i),
                                                              style="TButton",
                                                              variable=self.intvars[i][0]),
-                                             ttk.Checkbutton(self, image=self.photos[i][1],
+                                             ttk.Checkbutton(self.interior, image=self.photos[i][1],
                                                              command=lambda i=i: press_button(
                                                                  self.upgrade_buttons[i][1],
                                                                  self.set_level, i + 1),
@@ -311,19 +323,26 @@ class MajorComponentWidget(ComponentWidget):
             else:
                 self.intvars.append(tk.IntVar())
                 self.intvars[i].set(0)
-                self.photos.append(photo(img.open(path.join(self.icons_path,
-                                                            data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
-                self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
+                try:
+                    self.photos.append(photo(img.open(path.join(self.icons_path,
+                                                                data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
+                except IndexError:
+                    self.photos.append(photo(img.open(path.join(self.icons_path, "imperial.png"))))
+                self.upgrade_buttons.append(ttk.Checkbutton(self.interior, image=self.photos[i],
                                                             command=lambda i=i: press_button(self.upgrade_buttons[i],
                                                                                              self.set_level, i),
                                                             variable=self.intvars[i], style="TButton"))
-                self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
-                                                  text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
-                                                       str(data_dictionary["TalentTree"][i][0]["Description"])))
+                try:
+                    self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
+                                                      text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
+                                                           str(data_dictionary["TalentTree"][i][0]["Description"])))
+                except IndexError:
+                    pass
         return
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=10)
+        self.scroll_frame.grid(sticky=tk.N + tk.S + tk.W + tk.E)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=5, sticky=tk.N + tk.S + tk.W + tk.E)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -341,7 +360,7 @@ class MiddleComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
         self.description = data_dictionary["Description"]
-        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=200)
+        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
         self.icon_image = img.open(path.join(self.icons_path, self.icon))
         self.icon_photo = photo(self.icon_image)
@@ -395,7 +414,7 @@ class MiddleComponentWidget(ComponentWidget):
         return
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2, pady=2)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -422,7 +441,7 @@ class MinorComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
         self.description = data_dictionary["Description"]
-        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=200)
+        self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
         self.icon_image = img.open(path.join(self.icons_path, self.icon))
         self.icon_photo = photo(self.icon_image)
@@ -440,7 +459,7 @@ class MinorComponentWidget(ComponentWidget):
         self.name = data_dictionary["Name"]
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, pady=2)
+        self.description_label.grid(row=0, column=0, pady=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
         set_row = 1
         for widget in self.upgrade_buttons:
             widget.grid(row=set_row, column=0, pady=5)

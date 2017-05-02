@@ -57,8 +57,10 @@ class Ship(object):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
             self.categories_data = pickle.load(f)
         if ship_name not in self.ships_data:
-            ship_name = ships[ship_name]
-        self.data = self.ships_data[ship_name]
+            self.ship_name = ships[ship_name]
+        else:
+            self.ship_name = ship_name
+        self.data = self.ships_data[self.ship_name]
         self.components = {
             "primary": None,
             "primary2": None,
@@ -83,13 +85,17 @@ class Ship(object):
 
     def __getitem__(self, item):
         if item in self.components:
-            return self.ships_data[item]
+            return self.components[item]
         else:
             return self.ships_data[item]
 
     def __iter__(self):
         for key, value in self.ships_data.iteritems():
             yield (key, value)
+
+    def update(self, dictionary):
+        for key, value in dictionary.iteritems():
+            self[key] = value
 
     def iter_components(self):
         for key, value in self.components.iteritems():

@@ -40,6 +40,9 @@ class BuildsFrame(ttk.Frame):
             "Scout": 3,
             "Strike Fighter": 4
         }
+        self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
+        self.middle_components = ["Engine", "Shield"]
+        self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
             self.ships_data = pickle.load(f)
@@ -60,7 +63,7 @@ class BuildsFrame(ttk.Frame):
                 continue
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
-                                   self.ships_data["Imperial_S-SC4_Bloodmark"][category], None)
+                                   self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component)
         self.component_frame = ttk.Frame(self)
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
@@ -96,7 +99,7 @@ class BuildsFrame(ttk.Frame):
                 continue
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
-                                   self.ship.data[category], None)
+                                   self.ship.data[category], self.set_component)
         for button in self.ship_select_frame.ship_buttons.itervalues():
             button.config(state=tk.ACTIVE)
         for key in self.ship_select_frame.ship_buttons.iterkeys():
@@ -107,8 +110,33 @@ class BuildsFrame(ttk.Frame):
         print ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"]
         self.grid_widgets()
 
-    def set_component(self, *args):
-        pass
+    def set_component(self, category, component):
+        self.current_component.grid_forget()
+        print "[DEBUG] set_component(%s, %s)" % (category, component)
+        index = -1
+        for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
+            if component == dictionary["Name"]:
+                break
+        if index == -1:
+            raise ValueError("No components found in self.ships_data[%s][%s]" % (self.ship.ship_name, category))
+        if category in self.minor_components:
+            self.current_component = MinorComponentWidget(self.component_frame,
+                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ship)
+        elif category in self.middle_components:
+            self.current_component = MiddleComponentWidget(self.component_frame,
+                                                           self.ships_data[self.ship.ship_name][category][index],
+                                                           self.ship)
+        elif category in self.major_components:
+            self.current_component = MajorComponentWidget(self.component_frame,
+                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ship)
+        else:
+            raise ValueError("Component category not found: %s" % category)
+        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][index]["Stats"])
+        self.current_component.grid_widgets()
+        print "[DEBUG] Gridding DEBUG component"
+        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
 
     def grid_widgets(self):
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)

@@ -23,8 +23,21 @@ class CharactersFrame(ttk.Frame):
         directory = tempfile.gettempdir()
         self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
         if "characters.db" not in os.listdir(self.directory):
-            servers = ["BAS", "BEG", "HAR", "SHA", "JUN", "EBH", "PRF", "JCV", "T3M", "NIH", "TFN", "JKS",
-                       "PRG", "VCH", "BMD", "MFR", "TRE"]
+            servers = {"BAS": "The Bastion",
+                       "BEG": "Begeren Colony",
+                       "SHA": "The Shadowlands",
+                       "JUN": "Jung Ma",
+                       "EBH": "The Ebon Hawk",
+                       "PRF": "Prophecy of the Five",
+                       "T3M": "T3-M4",
+                       "NTH": "Darth Nihilus",
+                       "TFN": "The Tomb of Freedon Nadd",
+                       "JKS": "Jar'kai Sword",
+                       "PRG": "The Progenitor",
+                       "VCH": "Vanjervalis Chain",
+                       "BMD": "Battle Meditation",
+                       "MFR": "Mantle of the Force",
+                       "TRE": "The Red Eclipse"}
             characters = {server: None for server in servers}
             with open(os.path.join(self.directory, "characters.db"), "w") as f:
                 pickle.dump(characters, f)
