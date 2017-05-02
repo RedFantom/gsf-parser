@@ -6,11 +6,10 @@
 
 # UI imports
 import tkMessageBox
-import tkFileDialog
 # General imports
 import os
 import ConfigParser
-import tempfile
+import utilities
 import collections
 import ast
 
@@ -73,15 +72,9 @@ class defaults:
 # Class that loads, stores and saves settings
 class settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name="settings.ini",
-                 directory=tempfile.gettempdir()):
-        try:
-            os.makedirs((directory.replace("\\temp", "") + "\\GSF Parser").replace("\\", "/"), True)
-        except OSError:
-            pass
-        self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
-        self.directory = self.directory.replace("\\", "/")
-        self.file_name = directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
+    def __init__(self, file_name="settings.ini"):
+        self.directory = utilities.get_temp_directory()
+        self.file_name = self.directory.replace("\\temp", "") + "\\GSF Parser\\" + file_name
         self.file_name = self.file_name.replace("\\", "/")
         self.conf = ConfigParser.RawConfigParser()
         # variables.install_path = os.getcwd()
@@ -350,8 +343,8 @@ class color_schemes:
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
-    def write_custom(self, custom_file=(tempfile.gettempdir().replace("temp", "GSF Parser") +
-                                        "\\event_colors.ini").replace("\\", "/")):
+    def write_custom(self):
+        custom_file = os.path.join(utilities.get_temp_directory(), "event_colors.ini")
         cp = ConfigParser.RawConfigParser()
         try:
             cp.add_section("colors")

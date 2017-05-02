@@ -5,6 +5,7 @@
 *.gsf
 *.ini
 *.xml
+*.spec
 Release
 .idea
 __pycache__

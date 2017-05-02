@@ -33,6 +33,8 @@ class main_window(tk.Tk):
     def __init__(self):
         # Initialize window
         tk.Tk.__init__(self)
+        dpi_value = self.winfo_fpixels('1i')
+        self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.finished = False
         self.style = ttk.Style()
         variables.main_window = self

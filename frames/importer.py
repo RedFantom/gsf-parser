@@ -3,7 +3,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import tempfile
+import utilities
 import os
 import settings
 import ConfigParser
@@ -19,7 +19,7 @@ class settings_importer(object):
     def __init__(self):
         self.first_install = False
         self.conf = ConfigParser.RawConfigParser()
-        self.directory = tempfile.gettempdir().replace("\\temp", "") + "\\GSF Parser"
+        self.directory = utilities.get_temp_directory()
         self.file_name = self.directory + "\\GSF Parser\\settings.ini"
         try:
             os.makedirs(self.directory, True)

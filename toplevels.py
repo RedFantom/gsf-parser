@@ -14,7 +14,7 @@ import tkMessageBox
 import tkFileDialog
 import os
 import sys
-import tempfile
+import utilities
 from PIL import ImageTk, Image
 import variables
 from parsing import statistics, abilities
@@ -69,11 +69,11 @@ class overlay(tk.Toplevel):
         self.update_position()
         if sys.platform == "win32":
             try:
-                with open(tempfile.gettempdir().replace("temp", "") + "/SWTOR/swtor/settings/client_settings.ini",
+                with open(os.path.join(utilities.get_swtor_directory(), "swtor", "settings", "client_settings.ini"),
                           "r") as swtor:
                     if "D3DFullScreen = true" in swtor:
                         tkMessageBox.showerror("Error",
-                                               "The overlay cannot be shown with the current SWTOR settings. " + \
+                                               "The overlay cannot be shown with the current SWTOR settings. " +
                                                "Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
             except IOError:
                 tkMessageBox.showerror("Error",
