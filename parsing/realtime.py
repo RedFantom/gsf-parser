@@ -177,6 +177,8 @@ class Parser(object):
             print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
                   sum(self.spawn_selfdmg))
             # Call the new spawn callback
+            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+            self.data_queue.put(("spawn", time))
             self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
             self.spawns += 1
             self.active_id = ''
@@ -222,14 +224,16 @@ class Parser(object):
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
-        if not self.is_match:
-            if '@' not in line['source']:
-                self.is_match = True
-                # Call the callback for a new match
-                self.new_match_callback()
-                variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
-                if self.screenoverlay:
-                    self.screenoverlay.deiconify()
+        if not self.is_match and '@' not in line['source']:
+            self.is_match = True
+            # Call the callback for a new match
+            self.new_match_callback()
+            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+            variables.rt_timing = time
+            if self.screenoverlay:
+                self.screenoverlay.deiconify()
+            if self.screenparser:
+                self.data_queue.put(("match", True, time))
 
         if self.is_match:
             if '@' in line['source']:
@@ -264,6 +268,9 @@ class Parser(object):
                 self.spawns = 1
                 self.active_ids = []
                 # self.recent_enemies.clear()
+                if self.screenparser:
+                    time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                    self.data_queue.put(("match", False, time))
                 if self.screenoverlay:
                     self.screenoverlay.withdraw()
                 return
@@ -304,6 +311,10 @@ class Parser(object):
     def dprint(self, *args):
         if self.DEBUG:
             print(args)
+
+    def new_file(self, filename):
+        if self.screenparser:
+            self.data_queue.put(("file", filename))
 
 
 # ===================================================================

@@ -98,8 +98,12 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
+            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
+                                          statistics.pretty_event, screen=variables.settings_obj.screenparsing,
+                                          screenoverlay=variables.settings_obj.screenparsing_overlay)
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=variables.settings_obj.cl_path,
-                                                       watching_stringvar=self.watching_stringvar)
+                                                       watching_stringvar=self.watching_stringvar,
+                                                       newfilecallback=self.parser.new_file)
             variables.FLAG = True
             self.stalker_obj.start()
             if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
@@ -190,10 +194,6 @@ class realtime_frame(ttk.Frame):
     def callback(self, lines):
         if not self.parsing:
             return
-        if not self.parser:
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          statistics.pretty_event, screen=variables.settings_obj.screenparsing,
-                                          screenoverlay=variables.settings_obj.screenparsing_overlay)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)

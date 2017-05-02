@@ -29,7 +29,7 @@ class LogStalker(threading.Thread):
     """
 
     def __init__(self, folder=variables.settings_obj.cl_path, callback=None,
-                 watching_stringvar=None):
+                 watching_stringvar=None, newfilecallback=None):
         """
         Open a LogStalker class
         :param folder: the folder with the files to watch
@@ -42,9 +42,10 @@ class LogStalker(threading.Thread):
         self.folder = folder
         self.stringvar = watching_stringvar
         print self.folder
-        if not callback:
+        if not callback or not newfilecallback:
             raise ValueError("callback is not allowed to be None")
         self.callback = callback
+        self.new_file_callback = newfilecallback
         self.list_of_files = os.listdir(self.folder)
         self.current_file = None
         self.read_so_far = 0
@@ -83,6 +84,7 @@ class LogStalker(threading.Thread):
                 if self.stringvar:
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
+                self.new_file_callback(self.current_file)
                 with open(variables.settings_obj.cl_path + "/" + self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage

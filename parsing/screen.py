@@ -135,10 +135,12 @@ class ScreenParser(threading.Thread):
             while not self.data_queue.empty():
                 data = self.data_queue.get()
                 # (data[0], data[1], data[2])
-                if not isinstance(data, tuple) or not len(data) is 2 or not len(data) is 3:
+                """
+                if not isinstance(data, tuple) and not len(data) is 2 and not len(data) is 3:
                     raise ValueError("Unexpected data received: ", str(data))
+                """
                 # ("file", filename)
-                elif data[0] == "file" and self.file is not data[1]:
+                if data[0] == "file" and self.file is not data[1]:
                     self.data_dictionary[self.file] = self._file_dict
                     self.file = data[1]
                     self._file_dict.clear()
