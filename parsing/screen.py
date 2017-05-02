@@ -3,7 +3,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import multiprocessing as mp
+import threading as mp
 import vision
 import threading
 import settings
@@ -77,9 +77,9 @@ class FileHandler(object):
     pass
 
 
-class ScreenParser(mp.Process):
+class ScreenParser(mp.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, rgb=False, cooldowns=None):
-        mp.Process.__init__(self)
+        mp.Thread.__init__(self)
         if rgb and not cooldowns:
             raise ValueError("rgb requested but cooldowns not specified")
         self.rgb = rgb
@@ -92,8 +92,9 @@ class ScreenParser(mp.Process):
         directory = tempfile.gettempdir()
         self.pickle_name = directory.replace("\\temp", "") + "\\GSF Parser\\rltdata.db"
         try:
-            self.data_dictionary = pickle.load(self.pickle_name)
-        except OSError:
+            with open(self.pickle_name, "r") as fi:
+                self.data_dictionary = pickle.load(fi)
+        except IOError:
             self.data_dictionary = {}
         # String of filename
         self._file = ""
@@ -113,7 +114,7 @@ class ScreenParser(mp.Process):
         self._health_dict = {}
         # Listeners for keyboard and mouse input
         self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
-        self._ms_listener = pynput.mouse.Listener(on_press=self.on_press_ms, on_release=self.on_release_ms)
+        self._ms_listener = pynput.mouse.Listener(on_click=self.on_click)
         self._current_match = None
         self._current_spawn = None
         self.file = None
@@ -219,15 +220,22 @@ class ScreenParser(mp.Process):
             key = keys[key]
         self._internal_queue.put("mouserelease", key, datetime.now())
 
+    def on_click(self, x, y, button, pressed):
+        if pressed:
+            self.on_press_ms(button)
+        else:
+            self.on_press_ms(button)
+
     def close(self):
         self.__exit__()
 
     def __exit__(self):
         self.data_dictionary[self.file] = self._file_dict
-        pickle.dump(self.data_dictionary, self.pickle_name)
+        self.save_data_dictionary()
 
     def save_data_dictionary(self):
-        pickle.dump(self.data_dictionary, self.pickle_name)
+        with open(self.pickle_name, "w") as fo:
+            pickle.dump(self.data_dictionary, fo)
 
     def set_new_spawn(self):
         self._match_dict[self._spawn] = self._spawn_dict

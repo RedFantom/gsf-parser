@@ -16,7 +16,6 @@ import tkMessageBox
 import tkSimpleDialog
 import time
 import platform
-
 import variables
 from parsing import stalking_alt, realtime, statistics
 import toplevels
@@ -110,8 +109,13 @@ class realtime_frame(ttk.Frame):
         elif self.parsing:
             print "[DEBUG] Detected Windows version: ", platform.release()
             if (platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1"
-                and platform.release().lower() != "post2008Server".lower()):
+               and platform.release().lower() != "post2008Server".lower()):
                 self.main_window.file_select_frame.add_files_cb()
+            try:
+                self.parser.exit_queue.put(False)
+                self.parser.screenoverlay.destroy()
+            except AttributeError as e:
+                print e
             self.parsing = False
             variables.FLAG = False
             self.stalker_obj.FLAG = False
@@ -188,7 +192,8 @@ class realtime_frame(ttk.Frame):
             return
         if not self.parser:
             self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          statistics.pretty_event)
+                                          statistics.pretty_event, screen=variables.settings_obj.screenparsing,
+                                          screenoverlay=variables.settings_obj.screenparsing_overlay)
         for line in lines:
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)

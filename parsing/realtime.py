@@ -11,6 +11,10 @@ import datetime
 import re
 from parsing.stalking import LogStalker
 import variables
+from tkMessageBox import showerror
+from screen import ScreenParser
+from Queue import Queue
+from frames.screenoverlay import HitChanceOverlay
 
 
 class Parser(object):
@@ -62,7 +66,32 @@ class Parser(object):
 
     DEBUG = False
 
-    def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
+    def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
+                 ship=None):
+        if not screen and screenoverlay:
+            showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
+            raise ValueError("screenoverlay True but screen False")
+        if screen and not ship:
+            showerror("Error", "Screen parsing enabled but no ship object acquired.")
+            # raise ValueError("screen True but ship None")
+
+        if screen:
+            self.data_queue = Queue()
+            self.exit_queue = Queue()
+            self.query_queue = Queue()
+            self.return_queue = Queue()
+            self.screenparser = ScreenParser(data_queue=self.data_queue, exit_queue=self.exit_queue,
+                                             query_queue=self.query_queue, return_queue=self.return_queue)
+            self.screenparser.start()
+        else:
+            self.screenparser = None
+
+        if screenoverlay:
+            self.screenoverlay = HitChanceOverlay(variables.main_window)
+            self.screenoverlay.withdraw()
+        else:
+            self.screenoverlay = None
+
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -101,6 +130,13 @@ class Parser(object):
         self.close()
 
     def parse(self, line, recursion=False):
+        if self.screenparser and self.screenoverlay:
+            self.query_queue.put("tracking")
+            degrees = self.return_queue.get()
+            self.screenoverlay.set_geometry()
+            self.screenoverlay.set_percentage(str(degrees) + "%")
+
+        print "Called."
         self.dprint("[DEBUG] line", line)
         if not line:
             print "[DEBUG] Line is of NoneType"
@@ -110,11 +146,13 @@ class Parser(object):
         if "SetLevel" in line:
             return
 
-        time_now = datetime.datetime.now()
-        for enemy, time in self.recent_enemies.iteritems():
-            # Remove enemies that weren't registered in last ten seconds
-            if (time_now - time).seconds >= 10:
-                del self.recent_enemies[enemy]
+        # This block is for keeping track of recent enemies, but it causes RuntimeErrors
+        # time_now = datetime.datetime.now()
+        # for enemy, time in self.recent_enemies.iteritems():
+        #    # Remove enemies that weren't registered in last ten seconds
+        #    if (time_now - time).seconds >= 10:
+        #        del self.recent_enemies[enemy]
+
         # If first line of the file, save the player name
         if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
@@ -190,6 +228,8 @@ class Parser(object):
                 # Call the callback for a new match
                 self.new_match_callback()
                 variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                if self.screenoverlay:
+                    self.screenoverlay.deiconify()
 
         if self.is_match:
             if '@' in line['source']:
@@ -223,7 +263,9 @@ class Parser(object):
                 self.active_id = ''
                 self.spawns = 1
                 self.active_ids = []
-                self.recent_enemies.clear()
+                # self.recent_enemies.clear()
+                if self.screenoverlay:
+                    self.screenoverlay.withdraw()
                 return
 
             # Start parsing
@@ -247,13 +289,14 @@ class Parser(object):
                     else:
                         self.spawn_dmg_taken.append(int(line['amount'].replace('*', '')))
                         self.dprint("[DEBUG] damage taken", self.spawn_dmg_taken)
-                        self.recent_enemies[line['destination']] = \
-                            datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                        # self.recent_enemies[line['destination']] = \
+                        #    datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
             if line['ability'] in self.tmp_abilities:
                 self.tmp_abilities[line['ability']] += 1
             else:
                 self.tmp_abilities[line['ability']] = 1
+        print "Done"
 
     def close(self):
         pass

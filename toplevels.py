@@ -83,8 +83,8 @@ class overlay(tk.Toplevel):
         if variables.settings_obj.size == "big":
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
                                                    "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
-                                        justify=tk.LEFT, font=(
-                    variables.settings_obj.overlay_tx_font, int(variables.settings_obj.overlay_tx_size)),
+                                        justify=tk.LEFT, font=(variables.settings_obj.overlay_tx_font,
+                                                               int(variables.settings_obj.overlay_tx_size)),
                                         foreground=variables.settings_obj.overlay_tx_color,
                                         background=variables.settings_obj.overlay_bg_color)
         elif variables.settings_obj.size == "small":

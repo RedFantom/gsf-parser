@@ -71,6 +71,10 @@ def numpy_to_pillow(array):
     return Image.fromarray(pillow)
 
 
+def get_xy_tuple(xy):
+    (x, y) = xy
+    return int(x), int(y)
+
 '''
 The following functions were written with the help of Close-shave, who provided
 the formula for calculating the tracking penalty:
@@ -199,9 +203,9 @@ def get_power_management(screen):
     screen_pil = numpy_to_pillow(screen)
     results = cv2.matchTemplate(screen, image, cv2.TM_CCOEFF_NORMED)
     x, y = numpy.unravel_index(results.argmax(), results.shape)
-    weapon_cds = (x + 10, y - 50)
-    shield_cds = (x + 32, y - 50)
-    engine_cds = (x + 54, y - 50)
+    weapon_cds = get_xy_tuple((x + 10, y - 50))
+    shield_cds = get_xy_tuple((x + 32, y - 50))
+    engine_cds = get_xy_tuple((x + 54, y - 50))
     power_mgmt = 4
     weapon_rgb = screen_pil.getpixel(weapon_cds)
     engine_rgb = screen_pil.getpixel(engine_cds)
@@ -253,7 +257,7 @@ def get_ship_health_shields(screen):
     """
     health = cv2.imread(os.getcwd() + "/assets/vision/health.png")
     results = cv2.matchTemplate(screen, health, cv2.TM_CCOEFF_NORMED)
-    x, y = numpy.unravel_index(results.argmax(), results.shape)
+    y, x = numpy.unravel_index(results.argmax(), results.shape)
 
     colors = {
         "blue": (2, 95, 133),
@@ -271,11 +275,10 @@ def get_ship_health_shields(screen):
         "red": 12.5,
         "none": 0.0
     }
-
-    f_one = (x_f_one, y_f_one) = (x - 16, y)
-    f_two = (x_f_two, y_f_two) = (x - 31, y)
-    b_one = (x_b_one, y_b_one) = (x - 16, y + 55)
-    b_two = (x_b_two, y_b_two) = (x - 31, y + 55)
+    f_one = get_xy_tuple((x - 16, y))
+    f_two = get_xy_tuple((x - 31, y))
+    b_one = get_xy_tuple((x - 16, y + 55))
+    b_two = get_xy_tuple((x - 31, y + 55))
 
     health_pil = numpy_to_pillow(screen).convert("RGB")
     f_one_rgb = health_pil.getpixel(f_one)
@@ -287,17 +290,22 @@ def get_ship_health_shields(screen):
     color_shields = []
 
     for number, rgb in enumerate(shields_rgb):
-        for key, value in colors:
+        for key, value in colors.iteritems():
             valid = True
             for index, color in enumerate(value):
                 if not color - 20 < rgb[index] < color + 20:
                     valid = False
             if valid:
                 color_shields.append(key)
+                print "Appended: ", key
                 break
-
+    if len(color_shields) != 4:
+        print "[DEBUG] Output for the error below: ", str((f_one, f_two, b_one, b_two))
+        print "[DEBUG] Output for the error below: ", str(shields_rgb)
+        raise ValueError("Not four colours identified.")
     f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
     b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
+    print "[DEBUG] Shield health determined: ", str(f), str(b)
     return f, b
 
 
