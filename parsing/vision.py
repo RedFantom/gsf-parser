@@ -15,13 +15,7 @@ import numpy
 import math
 import win32gui
 import win32api
-from utilities import get_temp_directory
-
-
-def write_debug_log(line):
-    line = (line.replace("\n", "") + "\n")
-    with open(os.path.join(get_temp_directory(), "screen_debug.txt"), "a") as fo:
-        fo.write(line)
+from utilities import write_debug_log
 
 
 def get_cv2_screen():

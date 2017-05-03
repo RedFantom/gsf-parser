@@ -11,6 +11,7 @@ from datetime import datetime
 import pynput
 from Queue import Queue
 from keys import keys
+from utilities import write_debug_log
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -122,10 +123,13 @@ class ScreenParser(threading.Thread):
 
     def run(self):
         # Start the listeners for keyboard and mouse input
+        write_debug_log("ScreenParser starting main functions")
+        write_debug_log("Threads active: %s" % str(threading.enumerate()))
         self._kb_listener.start()
         self._ms_listener.start()
         # Start the loop to parse the screen data
         while True:
+            write_debug_log("ScreenParser started a cycle")
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
             if not self.exit_queue.empty():
@@ -134,6 +138,7 @@ class ScreenParser(threading.Thread):
             # While data_queue is not empty, process the data in it
             while not self.data_queue.empty():
                 data = self.data_queue.get()
+                write_debug_log("ScreenParser received the following data from Parser: %s" % str(data))
                 # (data[0], data[1], data[2])
                 """
                 if not isinstance(data, tuple) and not len(data) is 2 and not len(data) is 3:
@@ -159,12 +164,17 @@ class ScreenParser(threading.Thread):
                     self._match = data[2]
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
+                    self.is_match = True
                 # ("spawn", datetime)
                 elif data[0] == "spawn":
                     self.set_new_spawn()
                     self._spawn = data[1]
                 else:
                     raise ValueError("Unexpected data received: ", str(data))
+            if not self.is_match:
+                write_debug_log("No match is active, so ScreenParser ends cycle")
+                continue
+            write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
             pointer_cds = vision.get_pointer_position_win32()
             power_mgmt = vision.get_power_management(screen)
@@ -174,24 +184,30 @@ class ScreenParser(threading.Thread):
             # TODO: get_tracking_degrees(*args)
             distance = vision.get_distance_from_center(pointer_cds)
             tracking_degrees = vision.get_tracking_degrees(distance)
+            write_debug_log("Start logging and saving vision functions data")
             self._cursor_pos_dict[current_time] = pointer_cds
             self._power_mgmt_dict[current_time] = power_mgmt
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
-            self._tracking_dict[current_time] = tracking_degrees
+            self._tracking_dict[current_time] = tracking_degrees * 1
             while not self._internal_queue.empty():
                 data = self._internal_queue.get()
+                write_debug_log("ScreenParser received the following data in the internal_queue: %s" % str(data))
                 if "mouse" in data[0]:
                     self._clicks_dict[data[2]] = (data[0], data[1])
                 else:
                     self._keys_dict[data[2]] = (data[0], data[1])
             while not self.query_queue.empty():
                 command = self.query_queue.get()
+                write_debug_log("ScreenParser received the following command: %s" % command)
+                if not isinstance(command, str):
+                    raise ValueError("Command received was not of str type")
                 if command == "power_mgmt":
                     self.return_queue.put(power_mgmt)
                 elif command == "health":
                     self.return_queue.put((health_hull, health_shields_f, health_shields_r))
                 elif command == "tracking":
                     self.return_queue.put(tracking_degrees)
+                write_debug_log("Requested data returned to in the return_queue")
             self._spawn_dict["power_mgmt"] = self._power_mgmt_dict
             self._spawn_dict["cursor_pos"] = self._cursor_pos_dict
             self._spawn_dict["clicks"] = self._clicks_dict
@@ -201,7 +217,7 @@ class ScreenParser(threading.Thread):
             self._file_dict[self._match] = self._match_dict
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
-            print "Cycle"
+            write_debug_log("Finished a screen parsing cycle")
         self.close()
 
     # TODO: Add RGB capabilities

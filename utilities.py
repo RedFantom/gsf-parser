@@ -6,8 +6,25 @@
 
 import os
 import sys
+from datetime import datetime
 
 debug = False
+
+
+def write_debug_log(line):
+    """
+    If the debug variable is set to True, enables logging to a file in the temporary files folder.
+    :param line: line to write to the log
+    :return: None
+    """
+    if not debug:
+        return
+    if not isinstance(line, str):
+        raise ValueError("Logger received an object that is not of str type: %s" % str(line))
+    line = (line.replace("\n", "") + "\n")
+    line = "[" + datetime.now().strftime("%H:%M:%S") + "] " + line
+    with open(os.path.join(get_temp_directory(), "debug.txt"), "a") as fo:
+        fo.write(line)
 
 
 def get_temp_directory():
