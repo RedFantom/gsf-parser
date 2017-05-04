@@ -11,7 +11,7 @@ from datetime import datetime
 import pynput
 from Queue import Queue
 from keys import keys
-from utilities import write_debug_log, get_temp_directory
+from utilities import write_debug_log, get_temp_directory, get_cursor_position
 from frames.screenoverlay import HitChanceOverlay
 import time
 import variables
@@ -193,7 +193,7 @@ class ScreenParser(threading.Thread):
                 continue
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
-            pointer_cds = vision.get_pointer_position_win32()
+            pointer_cds = get_cursor_position(screen)
             power_mgmt = vision.get_power_management(screen)
             health_hull = vision.get_ship_health_hull(screen)
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen)
