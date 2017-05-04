@@ -7,8 +7,16 @@
 import os
 import sys
 from datetime import datetime
+from PIL import Image, ImageGrab
 
-debug = False
+debug = True
+
+
+def get_pillow_screen():
+    if debug:
+        return Image.open(os.path.join(get_assets_directory(), "vision", "testing.png"))
+    else:
+        return ImageGrab.grab()
 
 
 def write_debug_log(line):
@@ -69,4 +77,8 @@ def get_swtor_directory():
     else:
         raise NotImplementedError
 
+
+def get_assets_directory():
+    path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets"))
+    return path
 

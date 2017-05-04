@@ -55,7 +55,7 @@ class defaults:
     # Only display overlay when a GSF match is running
     overlay_when_gsf = str(False)
     # Set the timeout for reading from file for realtime
-    timeout = 0.1
+    timeout = 0.2
     # Event color options
     event_colors = "basic"
     # Event color scheme

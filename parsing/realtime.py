@@ -14,7 +14,7 @@ import variables
 from tkMessageBox import showerror
 from screen import ScreenParser
 from Queue import Queue
-from frames.screenoverlay import HitChanceOverlay
+from utilities import write_debug_log
 
 
 class Parser(object):
@@ -67,31 +67,18 @@ class Parser(object):
     DEBUG = False
 
     def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
-                 ship=None):
+                 ship=None, data_queue=None):
         if not screen and screenoverlay:
             showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
             raise ValueError("screenoverlay True but screen False")
         if screen and not ship:
-            showerror("Error", "Screen parsing enabled but no ship object acquired.")
+            # showerror("Error", "Screen parsing enabled but no ship object acquired.")
             # raise ValueError("screen True but ship None")
+            pass
 
-        if screen:
-            self.data_queue = Queue()
-            self.exit_queue = Queue()
-            self.query_queue = Queue()
-            self.return_queue = Queue()
-            self.screenparser = ScreenParser(data_queue=self.data_queue, exit_queue=self.exit_queue,
-                                             query_queue=self.query_queue, return_queue=self.return_queue)
-            self.screenparser.start()
-        else:
-            self.screenparser = None
-
-        if screenoverlay:
-            self.screenoverlay = HitChanceOverlay(variables.main_window)
-            self.screenoverlay.withdraw()
-        else:
-            self.screenoverlay = None
-
+        self.data_queue = data_queue
+        if data_queue:
+            self.screenparser = True
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -130,13 +117,7 @@ class Parser(object):
         self.close()
 
     def parse(self, line, recursion=False):
-        if self.screenparser and self.screenoverlay:
-            self.query_queue.put("tracking")
-            degrees = self.return_queue.get()
-            self.screenoverlay.set_geometry()
-            self.screenoverlay.set_percentage(str(degrees) + "%")
-
-        print "Called."
+        write_debug_log("Parser.parse function called with line: %s" % line)
         self.dprint("[DEBUG] line", line)
         if not line:
             print "[DEBUG] Line is of NoneType"
@@ -230,9 +211,8 @@ class Parser(object):
             self.new_match_callback()
             time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
             variables.rt_timing = time
-            if self.screenoverlay:
-                self.screenoverlay.deiconify()
             if self.screenparser:
+                write_debug_log("Parser announcing new match to ScreenParser")
                 self.data_queue.put(("match", True, time))
 
         if self.is_match:
@@ -269,10 +249,9 @@ class Parser(object):
                 self.active_ids = []
                 # self.recent_enemies.clear()
                 if self.screenparser:
+                    write_debug_log("Parser announcing end of match to ScreenParser")
                     time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
                     self.data_queue.put(("match", False, time))
-                if self.screenoverlay:
-                    self.screenoverlay.withdraw()
                 return
 
             # Start parsing
@@ -303,7 +282,6 @@ class Parser(object):
                 self.tmp_abilities[line['ability']] += 1
             else:
                 self.tmp_abilities[line['ability']] = 1
-        print "Done"
 
     def close(self):
         pass

@@ -5,17 +5,12 @@
 # For license see LICENSE
 import cv2
 from PIL import Image
-
-try:
-    from PIL import ImageGrab
-except ImportError:
-    import testing as ImageGrab
 import os
 import numpy
 import math
 import win32gui
 import win32api
-from utilities import write_debug_log
+from utilities import write_debug_log, get_pillow_screen
 
 
 def get_cv2_screen():
@@ -23,7 +18,7 @@ def get_cv2_screen():
     Gets a screenshot in cv2 format
     :return: cv2 screenshot array
     """
-    screen_pil = ImageGrab.grab()
+    screen_pil = get_pillow_screen()
     return pillow_to_numpy(screen_pil)
 
 
@@ -106,7 +101,7 @@ def get_tracking_degrees(distance, pixelsperdegree=10):
     :param pixelsperdegree: The pixels per firing degree (resolution dependent)
     :return: The amount of degrees for tracking penalty
     """
-    return round(distance * pixelsperdegree, 2)
+    return round(distance / pixelsperdegree, 2)
 
 
 def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):

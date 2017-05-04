@@ -18,15 +18,26 @@ class HitChanceOverlay(tk.Toplevel):
     def __init__(self, master):
         tk.Toplevel.__init__(self, master)
         self.label = ttk.Label(self, foreground=variables.settings_obj.overlay_tx_color,
-                               background=variables.settings_obj.overlay_bg_color)
-        self.after(10, func=self.set_geometry)
+                               background=variables.settings_obj.overlay_bg_color, font=("Calibri", 16))
+        self.configure(background=variables.settings_obj.overlay_bg_color)
+        self.wm_attributes("-transparentcolor", variables.settings_obj.overlay_tr_color)
+        self.overrideredirect(True)
+        self.attributes("-topmost", True)
+        self.attributes("-alpha", variables.settings_obj.opacity)
+        self.grid_widgets()
+        self.after(50, self.set_geometry)
+        self.running = True
 
     def grid_widgets(self):
         self.label.grid(sticky=tk.W)
 
     def set_geometry(self):
         (x, y) = get_pointer_position_win32()
-        self.wm_geometry("%sx%s+%s+%s" % (self.label.winfo_reqheight(), self.label.winfo_reqwidth(), x, y))
+        self.wm_geometry("%sx%s+%s+%s" % (120, 30, x + 10, y + 10))
+        if self.running:
+            self.after(50, self.set_geometry)
+        else:
+            self.destroy()
 
     def set_percentage(self, string):
         self.label["text"] = string

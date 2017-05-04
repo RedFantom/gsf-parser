@@ -10,9 +10,9 @@ import os
 import threading
 import time
 from datetime import datetime
-
 import variables
 import realtime
+from Queue import Queue
 
 
 class LogStalker(threading.Thread):
@@ -51,6 +51,7 @@ class LogStalker(threading.Thread):
         self.read_so_far = 0
         self.lines = []
         self.datetime_dict = {}
+        self.exit_queue = Queue()
 
     def run(self):
         """
@@ -62,7 +63,13 @@ class LogStalker(threading.Thread):
         updated every time the watched file changes.
         :return: None
         """
-        while variables.FLAG:
+        while True:
+            print "LogStalker starting a new loop"
+            if not self.exit_queue.empty():
+                print "LogStalker exit_queue not empty, getting value"
+                if not self.exit_queue.get():
+                    print "LogStalker value was False, break loop"
+                    break
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
             for name in folder_list:
@@ -89,6 +96,7 @@ class LogStalker(threading.Thread):
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
             time.sleep(variables.settings_obj.timeout)
+        print "LogStalker exiting loop"
 
     def read_from_file(self):
         """

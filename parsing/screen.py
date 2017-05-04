@@ -6,12 +6,15 @@
 import vision
 import threading
 import cPickle as pickle
-import tempfile
+import os
 from datetime import datetime
 import pynput
 from Queue import Queue
 from keys import keys
-from utilities import write_debug_log
+from utilities import write_debug_log, get_temp_directory
+from frames.screenoverlay import HitChanceOverlay
+import time
+import variables
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -80,6 +83,8 @@ class ScreenParser(threading.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, rgb=False, cooldowns=None):
         threading.Thread.__init__(self)
         if rgb and not cooldowns:
+            write_debug_log("ScreenParser encountered the following error during initialization: "
+                            "rgb requested but cooldowns not specified")
             raise ValueError("rgb requested but cooldowns not specified")
         self.rgb = rgb
         self.cooldowns = cooldowns
@@ -88,13 +93,18 @@ class ScreenParser(threading.Thread):
         self.exit_queue = exit_queue
         self._internal_queue = Queue()
         self.return_queue = return_queue
-        directory = tempfile.gettempdir()
-        self.pickle_name = directory.replace("\\temp", "") + "\\GSF Parser\\rltdata.db"
+        self.pickle_name = os.path.join(get_temp_directory(), "realtime.db")
+        write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
+        if variables.settings_obj.screenparsing_overlay:
+            self.screenoverlay = HitChanceOverlay(variables.main_window)
+        else:
+            self.screenoverlay = None
         try:
             with open(self.pickle_name, "r") as fi:
                 self.data_dictionary = pickle.load(fi)
         except IOError:
             self.data_dictionary = {}
+        write_debug_log("ScreenParser is creating all required data variables")
         # String of filename
         self._file = ""
         # Datetime objects of start timings
@@ -125,25 +135,27 @@ class ScreenParser(threading.Thread):
         # Start the listeners for keyboard and mouse input
         write_debug_log("ScreenParser starting main functions")
         write_debug_log("Threads active: %s" % str(threading.enumerate()))
-        self._kb_listener.start()
-        self._ms_listener.start()
+        # self._kb_listener.start()
+        # self._ms_listener.start()
         # Start the loop to parse the screen data
         while True:
-            write_debug_log("ScreenParser started a cycle")
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
             if not self.exit_queue.empty():
+                print "ScreenParser exit_queue is not empty"
                 if not self.exit_queue.get():
+                    print "ScreenParser loop break"
                     break
+            write_debug_log("ScreenParser started a cycle")
             # While data_queue is not empty, process the data in it
-            while not self.data_queue.empty():
+            if not self.data_queue.empty():
                 data = self.data_queue.get()
                 write_debug_log("ScreenParser received the following data from Parser: %s" % str(data))
                 # (data[0], data[1], data[2])
-                """
-                if not isinstance(data, tuple) and not len(data) is 2 and not len(data) is 3:
+                if not isinstance(data, tuple):
+                    write_debug_log("ScreenParser encountered the following error: "
+                                    "Unexpected data received: " + str(data))
                     raise ValueError("Unexpected data received: ", str(data))
-                """
                 # ("file", filename)
                 if data[0] == "file" and self.file is not data[1]:
                     self.data_dictionary[self.file] = self._file_dict
@@ -160,7 +172,9 @@ class ScreenParser(threading.Thread):
                 # ("match", True, datetime)
                 elif data[0] == "match" and data[1] and not self.is_match:
                     if not self._match:
-                        raise ValueError("Expected self._match to have value")
+                        write_debug_log("ScreenParser encountered the following error: "
+                                        "Expected self._match to have value")
+                        # raise ValueError("Expected self._match to have value")
                     self._match = data[2]
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
@@ -170,9 +184,12 @@ class ScreenParser(threading.Thread):
                     self.set_new_spawn()
                     self._spawn = data[1]
                 else:
+                    write_debug_log("ScreenParser encountered the following error: "
+                                    "Unexpected data received: " + str(data))
                     raise ValueError("Unexpected data received: ", str(data))
             if not self.is_match:
                 write_debug_log("No match is active, so ScreenParser ends cycle")
+                time.sleep(1)
                 continue
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
@@ -181,25 +198,33 @@ class ScreenParser(threading.Thread):
             health_hull = vision.get_ship_health_hull(screen)
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen)
             current_time = datetime.now()
-            # TODO: get_tracking_degrees(*args)
             distance = vision.get_distance_from_center(pointer_cds)
             tracking_degrees = vision.get_tracking_degrees(distance)
+            if not self.exit_queue.empty():
+                print "ScreenParser exit_queue is not empty"
+                if not self.exit_queue.get():
+                    print "ScreenParser loop break"
+                    break
+            if self.screenoverlay:
+                self.screenoverlay.set_percentage(str(tracking_degrees) + "%")
             write_debug_log("Start logging and saving vision functions data")
             self._cursor_pos_dict[current_time] = pointer_cds
             self._power_mgmt_dict[current_time] = power_mgmt
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             self._tracking_dict[current_time] = tracking_degrees * 1
-            while not self._internal_queue.empty():
+            if not self._internal_queue.empty():
                 data = self._internal_queue.get()
                 write_debug_log("ScreenParser received the following data in the internal_queue: %s" % str(data))
                 if "mouse" in data[0]:
                     self._clicks_dict[data[2]] = (data[0], data[1])
                 else:
                     self._keys_dict[data[2]] = (data[0], data[1])
-            while not self.query_queue.empty():
+            if not self.query_queue.empty():
                 command = self.query_queue.get()
                 write_debug_log("ScreenParser received the following command: %s" % command)
                 if not isinstance(command, str):
+                    write_debug_log("ScreenParser encountered the following error: "
+                                    "Command received was not of str type")
                     raise ValueError("Command received was not of str type")
                 if command == "power_mgmt":
                     self.return_queue.put(power_mgmt)
@@ -218,23 +243,34 @@ class ScreenParser(threading.Thread):
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
             write_debug_log("Finished a screen parsing cycle")
-        self.close()
+        print "ScreenParser stopping activities"
+        write_debug_log("ScreenParser stopping activities")
+        self.screenoverlay.running = False
+        time.sleep(0.05)
+        print "Calling self.close()"
+        self.data_dictionary[self.file] = self._file_dict
+        print "Saving data dictionary"
+        self.save_data_dictionary()
+        print "ScreenParser exit"
 
     # TODO: Add RGB capabilities
     # TODO: Add security measures (key filters)
     def on_press_kb(self, key):
         if key in keys:
             key = keys[key]
+        write_debug_log("A keypress was inserted in the internal_queue: %s" % str(key))
         self._internal_queue.put(("keypress", key, datetime.now()))
 
     def on_press_ms(self, key):
         if key in keys:
             key = keys[key]
+        write_debug_log("A mousepress was inserted in the internal queue: %s" % str(key))
         self._internal_queue.put("mousepress", key, datetime.now())
 
     def on_release_ms(self, key):
         if key in keys:
             key = keys[key]
+        write_debug_log("A mouserelease was inserted in the internal queue: %s" % str(key))
         self._internal_queue.put("mouserelease", key, datetime.now())
 
     def on_click(self, x, y, button, pressed):
@@ -248,13 +284,18 @@ class ScreenParser(threading.Thread):
 
     def __exit__(self):
         self.data_dictionary[self.file] = self._file_dict
+        print "Saving data dictionary"
         self.save_data_dictionary()
+        print "ScreenParser exit"
 
     def save_data_dictionary(self):
+        write_debug_log("ScreenParser saving data dictionary")
         with open(self.pickle_name, "w") as fo:
             pickle.dump(self.data_dictionary, fo)
+        write_debug_log("ScreenParser successfully saved data dictionary")
 
     def set_new_spawn(self):
+        write_debug_log("ScreenParser getting ready for a new spawn")
         self._match_dict[self._spawn] = self._spawn_dict
         self._spawn_dict.clear()
         self._power_mgmt_dict.clear()
@@ -264,6 +305,7 @@ class ScreenParser(threading.Thread):
         self._health_dict.clear()
 
     def set_new_match(self):
+        write_debug_log("ScreenParser getting ready for a new match")
         self._match_dict[self._spawn] = self._spawn_dict
         self.data_dictionary[self._file][self._match] = self._match_dict
         self._match_dict.clear()

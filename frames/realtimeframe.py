@@ -19,6 +19,9 @@ import platform
 import variables
 from parsing import stalking_alt, realtime, statistics
 import toplevels
+from utilities import write_debug_log
+from parsing.screen import ScreenParser
+from Queue import Queue
 
 
 class realtime_frame(ttk.Frame):
@@ -98,39 +101,60 @@ class realtime_frame(ttk.Frame):
             # self.start_parsing_button.config(relief=tk.SUNKEN)
             self.parsing = True
             self.main_window.after(100, self.insert)
+            if variables.settings_obj.screenparsing:
+                self.data_queue = Queue()
+                self.exit_queue = Queue()
+                self.query_queue = Queue()
+                self.return_queue = Queue()
+                self.return_queue.put(0)
+                self.screenparser = ScreenParser(data_queue=self.data_queue, exit_queue=self.exit_queue,
+                                                 query_queue=self.query_queue, return_queue=self.return_queue)
+                self.screenparser.start()
+            else:
+                self.screenparser = None
+                self.data_queue = None
             self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
                                           statistics.pretty_event, screen=variables.settings_obj.screenparsing,
-                                          screenoverlay=variables.settings_obj.screenparsing_overlay)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback, folder=variables.settings_obj.cl_path,
+                                          screenoverlay=variables.settings_obj.screenparsing_overlay,
+                                          data_queue=self.data_queue)
+            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
+                                                       folder=variables.settings_obj.cl_path,
                                                        watching_stringvar=self.watching_stringvar,
                                                        newfilecallback=self.parser.new_file)
             variables.FLAG = True
-            self.stalker_obj.start()
             if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
                 self.overlay = toplevels.overlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
+            self.stalker_obj.start()
+            self.stalking_exit_queue = self.stalker_obj.exit_queue
         elif self.parsing:
             print "[DEBUG] Detected Windows version: ", platform.release()
             if (platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1"
                and platform.release().lower() != "post2008Server".lower()):
                 self.main_window.file_select_frame.add_files_cb()
-            try:
-                self.parser.exit_queue.put(False)
-                self.parser.screenoverlay.destroy()
-            except AttributeError as e:
-                print e
+            write_debug_log("Stopping real-time parsing")
+            self.exit_queue.put(False)
+            write_debug_log("Put False in exit_queue of Parser")
+            print "Joining threads"
+            if variables.settings_obj.screenparsing:
+                print "Joining ScreenParser thread"
+                self.screenparser.join()
+                print "Screenparser thread joined"
+            self.stalking_exit_queue.put(False)
+            print "Joining LogStalker thread"
+            self.stalker_obj.join()
+            print "LogStalker thread joined"
+            print "Threads joined"
             self.parsing = False
-            variables.FLAG = False
-            self.stalker_obj.FLAG = False
-            while self.stalker_obj.is_alive():
-                pass
+            write_debug_log("Real-time parsing joining threads")
             if variables.settings_obj.overlay and self.overlay:
                 self.overlay.destroy()
             self.overlay = None
             self.parsing_bar.stop()
             self.start_parsing_button.configure(text="Start real-time parsing")
             self.watching_stringvar.set("Watching no CombatLog...")
+            write_debug_log("Finished stopping parsing...")
 
     def upload_events(self):
         tkMessageBox.showinfo("Notice", "This button is not yet functional.")

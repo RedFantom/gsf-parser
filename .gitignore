@@ -11,3 +11,4 @@ Release
 __pycache__
 realtime.db
 *.xcf
+debug.txt
