@@ -121,7 +121,7 @@ class settings:
         self.date_format = self.conf.get("gui", "date_format")
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
-        self.faction = self.conf.get("gui", "faction");
+        self.faction = self.conf.get("gui", "faction")
         if self.conf.get("realtime", "overlay_when_gsf") == "True":
             self.overlay_when_gsf = True
         else:
@@ -135,7 +135,7 @@ class settings:
             self.screenparsing = True
         else:
             self.screenparsing = False
-        if self.conf.get("realtime", "screenparsing_overlay"):
+        if self.conf.get("realtime", "screenparsing_overlay") == "True":
             self.screenparsing_overlay = True
         else:
             self.screenparsing_overlay = False
