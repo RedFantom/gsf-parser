@@ -9,3 +9,5 @@
 Release
 .idea
 __pycache__
+realtime.db
+*.xcf
