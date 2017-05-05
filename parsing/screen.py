@@ -138,6 +138,11 @@ class ScreenParser(threading.Thread):
         # self._kb_listener.start()
         # self._ms_listener.start()
         # Start the loop to parse the screen data
+
+        screen = vision.get_cv2_screen()
+        power_mgmt_cds = vision.get_power_management_cds(screen)
+        health_cds = vision.get_ship_health_cds(screen)
+
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
@@ -194,9 +199,9 @@ class ScreenParser(threading.Thread):
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
             pointer_cds = get_cursor_position(screen)
-            power_mgmt = vision.get_power_management(screen)
+            power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
             health_hull = vision.get_ship_health_hull(screen)
-            (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen)
+            (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
             current_time = datetime.now()
             distance = vision.get_distance_from_center(pointer_cds)
             tracking_degrees = vision.get_tracking_degrees(distance)
