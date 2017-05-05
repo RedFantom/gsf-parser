@@ -288,7 +288,7 @@ def get_ship_health_shields(screen, (x, y)):
     if len(color_shields) != 4:
         write_debug_log(("[DEBUG] Output for the error below: " + str((f_one, f_two, b_one, b_two))))
         write_debug_log(("[DEBUG] Output for the error below: " + str(shields_rgb)))
-        raise ValueError("Not four colours identified.")
+        return None, None
     f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
     b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
     write_debug_log(("[DEBUG] Shield health determined: " + str(f) + "  " + str(b)))
