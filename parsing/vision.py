@@ -186,9 +186,12 @@ def get_power_management(screen, (x, y)):
     shield_cds = get_xy_tuple((x + 32, y - 50))
     engine_cds = get_xy_tuple((x + 54, y - 50))
     power_mgmt = 4
-    weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
-    engine_rgb = screen[shield_cds[0]][shield_cds[1]]
-    shield_rgb = screen[engine_cds[0]][engine_cds[1]]
+    try:
+        weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
+        engine_rgb = screen[shield_cds[0]][shield_cds[1]]
+        shield_rgb = screen[engine_cds[0]][engine_cds[1]]
+    except IndexError:
+        return None
     weapon_power = list((value > 50) for value in weapon_rgb)
     engine_power = list((value > 50) for value in engine_rgb)
     shield_power = list((value > 50) for value in shield_rgb)
@@ -196,11 +199,11 @@ def get_power_management(screen, (x, y)):
         power_mgmt = 1
     if True in engine_power:
         if power_mgmt != 4:
-            raise ValueError("Power management was already set.")
+            pass
         power_mgmt = 3
     if True in shield_power:
         if power_mgmt != 4:
-            raise ValueError("Power management was already set.")
+            pass
         power_mgmt = 2
     return power_mgmt
 
@@ -262,12 +265,13 @@ def get_ship_health_shields(screen, (x, y)):
     f_two = get_xy_tuple((x - 31, y))
     b_one = get_xy_tuple((x - 16, y + 55))
     b_two = get_xy_tuple((x - 31, y + 55))
-
-    f_one_rgb = screen[f_one[0]][f_one[1]]
-    f_two_rgb = screen[f_two[0]][f_two[1]]
-    b_one_rgb = screen[b_one[0]][b_one[1]]
-    b_two_rgb = screen[b_two[0]][b_two[1]]
-
+    try:
+        f_one_rgb = screen[f_one[0]][f_one[1]]
+        f_two_rgb = screen[f_two[0]][f_two[1]]
+        b_one_rgb = screen[b_one[0]][b_one[1]]
+        b_two_rgb = screen[b_two[0]][b_two[1]]
+    except IndexError:
+        return None, None
     shields_rgb = (f_one_rgb, f_two_rgb, b_one_rgb, b_two_rgb)
     color_shields = []
 
