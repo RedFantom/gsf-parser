@@ -166,7 +166,7 @@ class ScreenParser(threading.Thread):
                     self.file = data[1]
                     self._file_dict.clear()
                 # ("match", False, datetime)
-                elif data[0] == "match" and not data[1] and not self.is_match:
+                elif data[0] == "match" and not data[1] and self.is_match:
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
                     self._file_dict[self._match] = self._match_dict
