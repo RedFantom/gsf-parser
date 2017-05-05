@@ -64,7 +64,6 @@ class LogStalker(threading.Thread):
         :return: None
         """
         while True:
-            print "LogStalker starting a new loop"
             if not self.exit_queue.empty():
                 print "LogStalker exit_queue not empty, getting value"
                 if not self.exit_queue.get():
@@ -96,7 +95,6 @@ class LogStalker(threading.Thread):
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
             time.sleep(variables.settings_obj.timeout)
-        print "LogStalker exiting loop"
 
     def read_from_file(self):
         """
