@@ -139,9 +139,8 @@ class ScreenParser(threading.Thread):
         # self._ms_listener.start()
         # Start the loop to parse the screen data
 
-        screen = vision.get_cv2_screen()
-        power_mgmt_cds = vision.get_power_management_cds(screen)
-        health_cds = vision.get_ship_health_cds(screen)
+        power_mgmt_cds = None
+        health_cds = None
 
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
@@ -176,10 +175,6 @@ class ScreenParser(threading.Thread):
                     self.match = None
                 # ("match", True, datetime)
                 elif data[0] == "match" and data[1] and not self.is_match:
-                    if not self._match:
-                        write_debug_log("ScreenParser encountered the following error: "
-                                        "Expected self._match to have value")
-                        # raise ValueError("Expected self._match to have value")
                     self._match = data[2]
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
@@ -198,6 +193,9 @@ class ScreenParser(threading.Thread):
                 continue
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
+            if not power_mgmt_cds or not health_cds:
+                power_mgmt_cds = vision.get_power_management_cds(screen)
+                health_cds = vision.get_ship_health_cds(screen)
             pointer_cds = get_cursor_position(screen)
             power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
             health_hull = vision.get_ship_health_hull(screen)
