@@ -10,7 +10,7 @@ try:
 except ImportError:
     import Tkinter as tk
 import ttk
-from parsing.vision import get_pointer_position_win32
+from utilities import get_pointer_position_win32
 import variables
 
 

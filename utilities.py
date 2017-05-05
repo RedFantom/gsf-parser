@@ -12,27 +12,29 @@ import cv2
 import numpy
 import win32gui
 
-debug = True
+debug = False
+
+
+def get_pointer_position_cv2(screen):
+    """
+    Gets the position of the targeting pointer on the screen
+    :param screen: A cv2 array of a screenshot image
+    :return: A tuple with the coordinates of the top left corner of the pointer
+    """
+    pointer = cv2.imread(os.getcwd() + "/assets/vision/pointer.png")
+    results = cv2.matchTemplate(screen, pointer, cv2.TM_CCOEFF_NORMED)
+    return numpy.unravel_index(results.argmax(), results.shape)
+
+
+def get_pointer_position_win32():
+    """
+    Gets the position of the targeting pointer with win32gui
+    :return: coordinates of pointer
+    """
+    return win32gui.GetCursorPos()
 
 
 def get_cursor_position(screen):
-    def get_pointer_position_cv2(screen):
-        """
-        Gets the position of the targeting pointer on the screen
-        :param screen: A cv2 array of a screenshot image
-        :return: A tuple with the coordinates of the top left corner of the pointer
-        """
-        pointer = cv2.imread(os.getcwd() + "/assets/vision/pointer.png")
-        results = cv2.matchTemplate(screen, pointer, cv2.TM_CCOEFF_NORMED)
-        return numpy.unravel_index(results.argmax(), results.shape)
-
-    def get_pointer_position_win32():
-        """
-        Gets the position of the targeting pointer with win32gui
-        :return: coordinates of pointer
-        """
-        return win32gui.GetCursorPos()
-
     if debug:
         return get_pointer_position_win32()
     else:
