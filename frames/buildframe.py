@@ -11,15 +11,10 @@ try:
 except ImportError:
     print "mtTkinter not found, please use 'pip install mttkinter'"
     import Tkinter as tk
-from collections import OrderedDict
-from os import path
-import cPickle as pickle
-import ttk
 from shipswidgets import *
-from widgets import vertical_scroll_frame
-from parsing.ships import Ship, Component, ships
+from widgets import VerticalScrollFrame
+from parsing.ships import Ship, Component
 from parsing.abilities import all_ships
-import variables
 
 
 class BuildsFrame(ttk.Frame):
@@ -50,7 +45,7 @@ class BuildsFrame(ttk.Frame):
             self.categories_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db"))) as f:
             self.companions_data = pickle.load(f)
-        self.components_lists_frame = vertical_scroll_frame(self, canvaswidth=300, canvasheight=345)
+        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=345)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"

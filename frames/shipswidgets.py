@@ -9,10 +9,10 @@ import Tkinter as tk
 import ttk
 from os import path
 import cPickle as pickle
+from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-from widgets import HoverInfo, ToggledFrame, vertical_scroll_frame
-from collections import OrderedDict
+from widgets import HoverInfo, ToggledFrame, VerticalScrollFrame
 
 
 class CrewListFrame(ttk.Frame):
@@ -173,7 +173,7 @@ class ShipSelectFrame(ttk.Frame):
         self.faction = "Imperial"
         self.ship = "Bloodmark",
         self.component = "Light Laser Cannon"
-        self.scroll_frame = vertical_scroll_frame(self, canvaswidth=240, canvasheight=345, width=240, height=345)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=240, canvasheight=345, width=240, height=345)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as db:
@@ -272,7 +272,7 @@ class ComponentWidget(ttk.Frame):
 class MajorComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
         ComponentWidget.__init__(self, parent, data_dictionary)
-        self.scroll_frame = vertical_scroll_frame(self, canvaswidth=300)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=300)
         self.interior = self.scroll_frame.interior
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self.interior, text=self.description, justify=tk.LEFT, wraplength=300)

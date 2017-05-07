@@ -3,16 +3,19 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
 import webbrowser
-from widgets import *
+from widgets import VerticalScrollFrame
+import ttk
+try:
+    import mttkinter.mtTkinter as tk
+except ImportError:
+    import Tkinter as tk
 
 
 class resources_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.frame = vertical_scroll_frame(self, canvasheight=280)
+        self.frame = VerticalScrollFrame(self, canvasheight=280)
         self.frame.grid(column=0, row=0, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
         self.main_window = main_window
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)

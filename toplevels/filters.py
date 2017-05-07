@@ -10,8 +10,9 @@ try:
 except ImportError:
     import Tkinter as tk
 import ttk
+
 from parsing import abilities
-import frames.widgets
+import widgets.hoverinfo
 
 
 class Filters(tk.Toplevel):
@@ -26,7 +27,7 @@ class Filters(tk.Toplevel):
         self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
         print "[DEBUG] Setting up Type filters"
-        self.type_frame = frames.widgets.ToggledFrame(self, text="Type")
+        self.type_frame = widgets.hoverinfo.ToggledFrame(self, text="Type")
         self.type_variable = tk.StringVar()
         self.type_variable.set("any")
         self.any_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Any", variable=self.type_variable,
@@ -38,16 +39,16 @@ class Filters(tk.Toplevel):
         self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns", variable=self.type_variable,
                                             value="spawns")
         print "[DEBUG] Setting up date filters"
-        self.dateframe = frames.widgets.ToggledFrame(self, text="Date")
-        self.start_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = frames.widgets.Calendar(self.dateframe.sub_frame)
+        self.dateframe = widgets.hoverinfo.ToggledFrame(self, text="Date")
+        self.start_date_widget = widgets.hoverinfo.Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = widgets.hoverinfo.Calendar(self.dateframe.sub_frame)
         print "[DEBUG] Setting up components filters"
-        self.components_frame = frames.widgets.ToggledFrame(self, text="Components")
-        self.primaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
-        self.secondaries_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
-        self.engines_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
-        self.shields_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
-        self.systems_frame = frames.widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
+        self.components_frame = widgets.hoverinfo.ToggledFrame(self, text="Components")
+        self.primaries_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
+        self.secondaries_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
+        self.engines_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Engines")
+        self.shields_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Shields")
+        self.systems_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
         self.primaries_tickboxes = {}
         self.primaries_tickboxes_vars = {}
         self.secondaries_tickboxes = {}
@@ -85,7 +86,7 @@ class Filters(tk.Toplevel):
             self.systems_tickboxes_vars[system_chk] = system_var
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
-        self.ships_frame = frames.widgets.ToggledFrame(self, text="Ships")
+        self.ships_frame = widgets.hoverinfo.ToggledFrame(self, text="Ships")
         print "[DEBUG] Setting up buttons"
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter_files)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)

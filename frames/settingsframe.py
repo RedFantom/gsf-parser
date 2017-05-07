@@ -16,7 +16,7 @@ import tkMessageBox
 import tkFileDialog
 import re
 import variables
-import widgets
+from widgets import VerticalScrollFrame
 from toplevels import EventColors
 from toplevels import Privacy
 
@@ -33,7 +33,7 @@ class settings_frame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ### LAY-OUT ###
         ttk.Frame.__init__(self, root_frame)
-        self.frame = widgets.vertical_scroll_frame(self, canvasheight=295, canvaswidth=780)
+        self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=780)
         self.gui_frame = ttk.Frame(self.frame.interior)
         self.entry_frame = ttk.Frame(self.frame.interior)
         self.privacy_frame = ttk.Frame(self.frame.interior)
