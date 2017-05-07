@@ -8,30 +8,30 @@
 import decimal
 import variables
 from . import parse
+from parsing import abilities
 
 
 def file_statistics(file_cube):
     """
-    Puts the statistics found in a file_cube from parse.splitter() into a
-    format that is usable by the file_frame to display them to the user
-
-    :param file_cube: An already split file into a file_cube
-    :return: abilities_string, a string for in the abilities tab
-             statistics_string, a string for in the statistics label in the
-                                statistics tab
-             total_shipsdict, a dictionary with ships as keys and the amount
-                              of times they occurred as values
-             total_enemies, a list of all enemies encountered in the whole
-                            folder
-             total_enemydamaged, a dictionary with the enemies as keys and
-                                 their respective damage taken from you as
-                                 values
-             total_enemydamaget, a dictionary with the enemies as keys and
-                                 their respective damage dealt to you as
-                                 values
-             uncounted, the amount of ships that was not counted in the
-                        total_shipsdict, if there was more than one
-                        possibility
+     Puts the statistics found in a file_cube from parse.splitter() into a
+     format that is usable by the file_frame to display them to the user
+     :param file_cube: An already split file into a file_cube
+     :return: abilities_string, a string for in the abilities tab
+              statistics_string, a string for in the statistics label in the
+                                 statistics tab
+              total_shipsdict, a dictionary with ships as keys and the amount
+                               of times they occurred as values
+              total_enemies, a list of all enemies encountered in the whole
+                             folder
+              total_enemydamaged, a dictionary with the enemies as keys and
+                                  their respective damage taken from you as
+                                  values
+              total_enemydamaget, a dictionary with the enemies as keys and
+                                  their respective damage dealt to you as
+                                  values
+              uncounted, the amount of ships that was not counted in the
+                         total_shipsdict, if there was more than one
+                         possibility
     """
     player_list = []
     for match in file_cube:
@@ -40,7 +40,7 @@ def file_statistics(file_cube):
             for id in player:
                 player_list.append(id)
 
-    (abilities, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
+    (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
         parse.parse_file(file_cube, player_list, variables.match_timings, variables.spawn_timings)
     total_abilities = {}
@@ -52,7 +52,7 @@ def file_statistics(file_cube):
     total_criticalcount = 0
     total_hitcount = 0
 
-    for mat in abilities:
+    for mat in abs:
         for dic in mat:
             for (key, value) in dic.items():
                 if key not in total_abilities:
