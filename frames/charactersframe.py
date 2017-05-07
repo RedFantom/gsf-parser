@@ -9,14 +9,13 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import pickle as pickle
 import os
-import tempfile
+from tools import utilities
 
 
 class CharactersFrame(ttk.Frame):
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
-        directory = tempfile.gettempdir()
-        self.directory = directory.replace("\\temp", "") + "\\GSF Parser"
+        self.directory = utilities.get_temp_directory()
         if "characters.db" not in os.listdir(self.directory):
             servers = {"BAS": "The Bastion",
                        "BEG": "Begeren Colony",

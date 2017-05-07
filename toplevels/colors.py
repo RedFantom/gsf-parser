@@ -12,7 +12,8 @@ import tkinter.colorchooser
 import collections
 import struct
 import tkinter.filedialog
-import tempfile
+from tools import utilities
+import os
 
 
 class EventColors(tk.Toplevel):
@@ -109,8 +110,8 @@ class EventColors(tk.Toplevel):
 
     def import_button_cb(self):
         file_to_open = tkinter.filedialog.askopenfile(filetypes=[("Settings file", ".ini")],
-                                                      initialdir=tempfile.gettempdir().replace("temp", "GSF Parser") \
-                                                                 + "\\event_colors.ini",
+                                                      initialdir=os.path.join(utilities.get_temp_directory(),
+                                                                              "event_colors.ini"),
                                                       parent=self, title="GSF Parser: Import colors from file")
         if not file_to_open:
             self.focus_set()
@@ -140,9 +141,8 @@ class EventColors(tk.Toplevel):
     def export_button_cb(self):
         file_to_save = tkinter.filedialog.asksaveasfilename(defaultextension=".ini",
                                                             filetypes=[("Settings file", ".ini")],
-                                                            initialdir=tempfile.gettempdir().replace("temp",
-                                                                                                     "GSF Parser") \
-                                                                       + "\\event_colors.ini",
+                                                            initialdir=os.path.join(utilities.get_temp_directory(),
+                                                                                    "event_colors.ini"),
                                                             parent=self, title="GSF Parser: Export colors to file")
         if not file_to_save:
             self.focus_set()
