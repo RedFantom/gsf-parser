@@ -13,17 +13,16 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import tkMessageBox
-import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
 import platform
 import os
 import datetime
 from collections import OrderedDict
-# Own modules
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
 import variables
 from parsing import parse
-import toplevels
+from toplevels import SplashScreen
 
 matplotlib.use('TkAgg')
 
@@ -84,7 +83,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -123,7 +122,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -176,7 +175,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -229,7 +228,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -282,7 +281,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -343,7 +342,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -399,7 +398,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -452,7 +451,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             spawns_played_date = {}
@@ -517,7 +516,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}
@@ -584,7 +583,7 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
+            self.splash_screen = SplashScreen(self.main_window,
                                                          max=len(os.listdir(variables.settings_obj.cl_path)),
                                                          title="Calculating graph...")
             matches_played_date = {}

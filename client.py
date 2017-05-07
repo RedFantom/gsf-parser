@@ -9,9 +9,8 @@ import tkMessageBox
 import hashlib
 import threading
 import ssl
-
 import variables
-import toplevels
+from toplevels import ConnectionSplash
 
 
 class client_conn:
@@ -42,7 +41,7 @@ class client_conn:
         self.closing = False
         if not silent:
             print "[DEBUG] Creating conn_splash"
-            self.splash = toplevels.conn_splash(window=variables.main_window)
+            self.splash = ConnectionSplash(window=variables.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
         self.TIME_OUT = 4

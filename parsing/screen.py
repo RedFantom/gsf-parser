@@ -3,17 +3,17 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import vision
 import threading
 import cPickle as pickle
 import os
 from datetime import datetime
-import pynput
 from Queue import Queue
+import time
+import pynput
+import vision
 from keys import keys
 from utilities import write_debug_log, get_temp_directory, get_cursor_position
-from frames.screenoverlay import HitChanceOverlay
-import time
+from toplevels.screenoverlay import HitChanceOverlay
 import variables
 
 """
@@ -141,6 +141,12 @@ class ScreenParser(threading.Thread):
 
         power_mgmt_cds = None
         health_cds = None
+
+        # TODO: Ship health
+        # TODO: TTK
+        # TODO: TTD
+        # TODO: Fix template matching
+        # TODO: Implement settings
 
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations

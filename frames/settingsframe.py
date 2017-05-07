@@ -16,9 +16,9 @@ import tkMessageBox
 import tkFileDialog
 import re
 import variables
-import toplevels
 import widgets
 from colors import event_colors
+from toplevels import Privacy
 
 
 class settings_frame(ttk.Frame):
@@ -539,4 +539,4 @@ class settings_frame(ttk.Frame):
         if not variables.client_obj.INIT:
             tkMessageBox.showerror("Error", "The connection to the server was not initialized correctly.")
             return
-        toplevels.privacy(self.main_window)
+        Privacy(self.main_window)

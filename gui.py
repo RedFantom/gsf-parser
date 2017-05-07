@@ -16,9 +16,9 @@ import os
 import variables
 import client
 import main
-from frames import fileframe, resourcesframe, sharingframe, graphsframe, settingsframe, realtimeframe, buildframe, \
-    charactersframe
-import toplevels
+from frames import fileframe, resourcesframe, sharingframe, graphsframe
+from frames import settingsframe, realtimeframe, buildframe, charactersframe
+from toplevels.splashscreens import BootSplash
 
 
 # Class that contains all code to start the parser
@@ -52,7 +52,7 @@ class main_window(tk.Tk):
         self.wm_title("GSF Parser")
         self.withdraw()
         variables.client_obj = client.client_conn()
-        self.splash = toplevels.boot_splash(self)
+        self.splash = BootSplash(self)
         # TODO Enable connecting to the server in a later phase
         if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
             variables.client_obj.init_conn()

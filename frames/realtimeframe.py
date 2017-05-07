@@ -16,12 +16,12 @@ import tkMessageBox
 import tkSimpleDialog
 import time
 import platform
+from Queue import Queue
 import variables
 from parsing import stalking_alt, realtime, statistics
-import toplevels
+from toplevels import RealtimeOverlay
 from utilities import write_debug_log
 from parsing.screen import ScreenParser
-from Queue import Queue
 
 
 class realtime_frame(ttk.Frame):
@@ -123,7 +123,7 @@ class realtime_frame(ttk.Frame):
                                                        newfilecallback=self.parser.new_file)
             variables.FLAG = True
             if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
-                self.overlay = toplevels.overlay(self.main_window)
+                self.overlay = RealtimeOverlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
             self.stalker_obj.start()
@@ -250,7 +250,7 @@ class realtime_frame(ttk.Frame):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
         if variables.settings_obj.overlay_when_gsf and not self.overlay:
-            self.overlay = toplevels.overlay(self.main_window)
+            self.overlay = RealtimeOverlay(self.main_window)
 
     def insert(self):
         while variables.insert_queue.qsize():

@@ -21,8 +21,8 @@ from datetime import datetime
 from PIL import Image, ImageTk
 import variables
 from parsing import statistics, parse, abilities
-import toplevels
-import widgets
+from toplevels import SplashScreen
+from toplevels import EventsView
 
 
 # Class for the _frame in the fileTab of the parser
@@ -214,7 +214,7 @@ class file_frame(ttk.Frame):
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
-        self.splash = toplevels.splash_screen(self.main_window)
+        self.splash = SplashScreen(self.main_window)
         try:
             old_path = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
@@ -269,7 +269,7 @@ class file_frame(ttk.Frame):
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         if not silent:
-            self.splash = toplevels.splash_screen(self.main_window)
+            self.splash = SplashScreen(self.main_window)
         try:
             old_cwd = os.getcwd()
             os.chdir(variables.settings_obj.cl_path)
@@ -789,7 +789,7 @@ class middle_frame(ttk.Frame):
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
         """
-        self.toplevel = toplevels.events_view(self.window, variables.spawn, variables.player_numbers)
+        self.toplevel = EventsView(self.window, variables.spawn, variables.player_numbers)
 
     def grid_widgets(self):
         """

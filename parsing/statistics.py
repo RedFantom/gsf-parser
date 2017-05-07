@@ -9,13 +9,11 @@ import tkMessageBox
 import os
 import decimal
 import datetime
-
 import variables
 import abilities
 import parse
 import realtime
-import toplevels
-
+from toplevels import SplashScreen
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
@@ -89,7 +87,7 @@ class statistics:
         # TODO: interface as an addtional statistic
         player_names = []
         # Create a splash screen for the user to see the progress of parsing
-        splash = toplevels.splash_screen(variables.main_window, max=len(file_list))
+        splash = SplashScreen(variables.main_window, max=len(file_list))
         # Start looping through the files
         variables.files_done = 0
         for name in file_list:
