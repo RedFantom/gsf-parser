@@ -19,7 +19,7 @@ import tkFileDialog
 import tempfile
 
 
-class event_colors(tk.Toplevel):
+class EventColors(tk.Toplevel):
     """
     A class for a Toplevel that lets the user set their own custom HTML colors for events.
     List of colors that need to be set:

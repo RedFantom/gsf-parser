@@ -17,7 +17,7 @@ import tkFileDialog
 import re
 import variables
 import widgets
-from colors import event_colors
+from toplevels import EventColors
 from toplevels import Privacy
 
 
@@ -253,7 +253,7 @@ class settings_frame(ttk.Frame):
         view. See toplevel.event_colors for more information.
         :return: None
         """
-        self.color_toplevel = event_colors(variables.main_window)
+        self.color_toplevel = EventColors(variables.main_window)
         self.color_toplevel.grid_widgets()
         self.color_toplevel.focus_set()
 
