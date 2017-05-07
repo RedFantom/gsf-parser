@@ -129,6 +129,7 @@ class RealtimeFrame(ttk.Frame):
             self.stalking_exit_queue = self.stalker_obj.exit_queue
         elif self.parsing:
             write_debug_log("Stopping real-time parsing")
+            self.exit_queue.put(False)
             write_debug_log("Put False in exit_queue of Parser")
             print("Joining threads")
             if variables.settings_obj.screenparsing:

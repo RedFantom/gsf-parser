@@ -9,9 +9,7 @@ import os
 from datetime import datetime
 from queue import Queue
 import time
-
 import pynput
-
 from . import vision
 from .keys import keys
 from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
@@ -105,6 +103,8 @@ class ScreenParser(threading.Thread):
             with open(self.pickle_name, "rb") as fi:
                 self.data_dictionary = pickle.load(fi)
         except IOError:
+            self.data_dictionary = {}
+        except EOFError:
             self.data_dictionary = {}
         write_debug_log("ScreenParser is creating all required data variables")
         # String of filename
@@ -258,7 +258,10 @@ class ScreenParser(threading.Thread):
             write_debug_log("Finished a screen parsing cycle")
         print("ScreenParser stopping activities")
         write_debug_log("ScreenParser stopping activities")
-        self.screenoverlay.running = False
+        try:
+            self.screenoverlay.running = False
+        except AttributeError:
+            pass
         time.sleep(0.05)
         print("Calling self.close()")
         self.data_dictionary[self.file] = self._file_dict
@@ -303,7 +306,7 @@ class ScreenParser(threading.Thread):
 
     def save_data_dictionary(self):
         write_debug_log("ScreenParser saving data dictionary")
-        with open(self.pickle_name, "w") as fo:
+        with open(self.pickle_name, "wb") as fo:
             pickle.dump(self.data_dictionary, fo)
         write_debug_log("ScreenParser successfully saved data dictionary")
 
