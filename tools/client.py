@@ -13,7 +13,7 @@ import variables
 from toplevels import ConnectionSplash
 
 
-class client_conn:
+class ClientConnection(object):
     """
     A class that connects to a remote server as specified in the settings_obj
     of the module variables.py in order to get data related to parsing
@@ -490,7 +490,7 @@ class client_conn:
         return wrapped
 
 
-class realtime_conn(threading.Thread):
+class RealtimeConnection(threading.Thread):
     """
     UNFINISHED!
     This class will run in the background, sending real-time data to the server
@@ -617,7 +617,7 @@ class realtime_conn(threading.Thread):
 
     @staticmethod
     def notinit():
-        tkMessageBox.showerrror("Error", "The connection was not initialized correctly.")
+        tkMessageBox.showerror("Error", "The connection was not initialized correctly.")
         return
 
     @staticmethod

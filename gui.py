@@ -26,7 +26,7 @@ from toplevels.splashscreens import BootSplash
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
 # Main loop is started at the end
-class main_window(tk.Tk):
+class MainWindow(tk.Tk):
     """
     Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
     various functions of the parser an
@@ -53,7 +53,7 @@ class main_window(tk.Tk):
         self.resizable(width=False, height=False)
         self.wm_title("GSF Parser")
         self.withdraw()
-        variables.client_obj = client.client_conn()
+        variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
         # TODO Enable connecting to the server in a later phase
         if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
@@ -65,15 +65,15 @@ class main_window(tk.Tk):
         self.notebook = ttk.Notebook(self, height=420, width=800)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
-        self.share_tab_frame = sharingframe.share_frame(self.notebook)
+        self.share_tab_frame = sharingframe.SharingFrame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.file_select_frame = fileframe.FileFrame(self.file_tab_frame, self)
-        self.realtime_frame = realtimeframe.realtime_frame(self.realtime_tab_frame, self)
+        self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
         self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
         self.ship_frame = shipframe.ShipFrame(self.file_tab_frame)
-        self.settings_frame = settingsframe.settings_frame(self.settings_tab_frame, self)
-        self.graphs_frame = graphsframe.graphs_frame(self.notebook, self)
-        self.resources_frame = resourcesframe.resources_frame(self.notebook, self)
+        self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)
+        self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
+        self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
         self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         # Pack the frames and put their widgets into place

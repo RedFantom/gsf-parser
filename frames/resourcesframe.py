@@ -12,7 +12,7 @@ except ImportError:
     import Tkinter as tk
 
 
-class resources_frame(ttk.Frame):
+class ResourcesFrame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
         self.frame = VerticalScrollFrame(self, canvasheight=280)

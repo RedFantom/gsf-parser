@@ -22,7 +22,7 @@ import Queue
 
 from tools import settings
 
-settings_obj = settings.settings()
+settings_obj = settings.Settings()
 color_scheme = settings.color_schemes()
 
 FLAG = False

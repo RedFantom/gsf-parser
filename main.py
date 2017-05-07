@@ -16,7 +16,7 @@ import gui
 
 
 def new_window():
-    main_window = gui.main_window()
+    main_window = gui.MainWindow()
     main_window.mainloop()
 
 

@@ -10,15 +10,11 @@ import os
 import ConfigParser
 import collections
 import ast
-
 import utilities
 
 
-# Own modules
-# import variables
-
 # Class with default settings for in the settings file
-class defaults:
+class Defaults(object):
     # Version to display in settings tab
     version = "2.2.1"
     # Path to get the CombatLogs from
@@ -70,7 +66,7 @@ class defaults:
 
 
 # Class that loads, stores and saves settings
-class settings:
+class Settings:
     # Set the file_name for use by other functions
     def __init__(self, file_name="settings.ini"):
         self.directory = utilities.get_temp_directory()
@@ -152,32 +148,32 @@ class settings:
             self.conf.add_section("gui")
         except:
             pass
-        self.conf.set("misc", "version", defaults.version)
-        self.conf.set("parsing", "cl_path", defaults.cl_path)
-        self.conf.set("parsing", "auto_ident", defaults.auto_ident)
-        self.conf.set("sharing", "server_address", defaults.server_address)
-        self.conf.set("sharing", "server_port", defaults.server_port)
-        self.conf.set("sharing", "auto_upl", defaults.auto_upl)
-        self.conf.set("realtime", "overlay", defaults.overlay)
-        self.conf.set("realtime", "opacity", defaults.opacity)
-        self.conf.set("realtime", "size", defaults.size)
-        self.conf.set("realtime", "pos", defaults.pos)
-        self.conf.set("realtime", "overlay_bg_color", defaults.overlay_bg_color)
-        self.conf.set("realtime", "overlay_tx_color", defaults.overlay_tx_color)
-        self.conf.set("realtime", "overlay_tr_color", defaults.overlay_tr_color)
-        self.conf.set("gui", "color", defaults.color)
-        self.conf.set("gui", "logo_color", defaults.logo_color)
-        self.conf.set("gui", "event_colors", defaults.event_colors)
-        self.conf.set("gui", "event_scheme", defaults.event_scheme)
-        self.conf.set("gui", "date_format", defaults.date_format)
-        self.conf.set("realtime", "overlay_tx_font", defaults.overlay_tx_font)
-        self.conf.set("realtime", "overlay_tx_size", defaults.overlay_tx_size)
-        self.conf.set("realtime", "overlay_when_gsf", defaults.overlay_when_gsf)
-        self.conf.set("realtime", "timeout", defaults.timeout)
-        self.conf.set("gui", "faction", defaults.faction)
-        self.conf.set("realtime", "events_overlay", defaults.events_overlay)
-        self.conf.set("realtime", "screenparsing", defaults.screenparsing)
-        self.conf.set("realtime", "screenparsing_overlay", defaults.screenparsing_overlay)
+        self.conf.set("misc", "version", Defaults.version)
+        self.conf.set("parsing", "cl_path", Defaults.cl_path)
+        self.conf.set("parsing", "auto_ident", Defaults.auto_ident)
+        self.conf.set("sharing", "server_address", Defaults.server_address)
+        self.conf.set("sharing", "server_port", Defaults.server_port)
+        self.conf.set("sharing", "auto_upl", Defaults.auto_upl)
+        self.conf.set("realtime", "overlay", Defaults.overlay)
+        self.conf.set("realtime", "opacity", Defaults.opacity)
+        self.conf.set("realtime", "size", Defaults.size)
+        self.conf.set("realtime", "pos", Defaults.pos)
+        self.conf.set("realtime", "overlay_bg_color", Defaults.overlay_bg_color)
+        self.conf.set("realtime", "overlay_tx_color", Defaults.overlay_tx_color)
+        self.conf.set("realtime", "overlay_tr_color", Defaults.overlay_tr_color)
+        self.conf.set("gui", "color", Defaults.color)
+        self.conf.set("gui", "logo_color", Defaults.logo_color)
+        self.conf.set("gui", "event_colors", Defaults.event_colors)
+        self.conf.set("gui", "event_scheme", Defaults.event_scheme)
+        self.conf.set("gui", "date_format", Defaults.date_format)
+        self.conf.set("realtime", "overlay_tx_font", Defaults.overlay_tx_font)
+        self.conf.set("realtime", "overlay_tx_size", Defaults.overlay_tx_size)
+        self.conf.set("realtime", "overlay_when_gsf", Defaults.overlay_when_gsf)
+        self.conf.set("realtime", "timeout", Defaults.timeout)
+        self.conf.set("gui", "faction", Defaults.faction)
+        self.conf.set("realtime", "events_overlay", Defaults.events_overlay)
+        self.conf.set("realtime", "screenparsing", Defaults.screenparsing)
+        self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print "[DEBUG] Defaults written"
@@ -186,32 +182,32 @@ class settings:
     # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always
     # written
-    def write_set(self, version=defaults.version,
-                  cl_path=defaults.cl_path,
-                  auto_ident=defaults.auto_ident,
-                  server_address=defaults.server_address,
-                  server_port=defaults.server_port,
-                  auto_upl=defaults.auto_upl,
-                  overlay=defaults.overlay,
-                  opacity=defaults.opacity,
-                  size=defaults.size,
-                  pos=defaults.pos,
-                  color=defaults.color,
-                  logo_color=defaults.logo_color,
-                  bg_color=defaults.overlay_bg_color,
-                  tx_color=defaults.overlay_tx_color,
-                  tr_color=defaults.overlay_tr_color,
-                  tx_font=defaults.overlay_tx_font,
-                  tx_size=defaults.overlay_tx_size,
-                  overlay_when_gsf=defaults.overlay_when_gsf,
-                  timeout=defaults.timeout,
-                  event_colors=defaults.event_colors,
-                  event_scheme=defaults.event_scheme,
-                  date_format=defaults.date_format,
-                  faction=defaults.faction,
-                  events_overlay=defaults.events_overlay,
-                  screenparsing=defaults.screenparsing,
-                  screenparsing_overlay=defaults.screenparsing_overlay):
+    def write_set(self, version=Defaults.version,
+                  cl_path=Defaults.cl_path,
+                  auto_ident=Defaults.auto_ident,
+                  server_address=Defaults.server_address,
+                  server_port=Defaults.server_port,
+                  auto_upl=Defaults.auto_upl,
+                  overlay=Defaults.overlay,
+                  opacity=Defaults.opacity,
+                  size=Defaults.size,
+                  pos=Defaults.pos,
+                  color=Defaults.color,
+                  logo_color=Defaults.logo_color,
+                  bg_color=Defaults.overlay_bg_color,
+                  tx_color=Defaults.overlay_tx_color,
+                  tr_color=Defaults.overlay_tr_color,
+                  tx_font=Defaults.overlay_tx_font,
+                  tx_size=Defaults.overlay_tx_size,
+                  overlay_when_gsf=Defaults.overlay_when_gsf,
+                  timeout=Defaults.timeout,
+                  event_colors=Defaults.event_colors,
+                  event_scheme=Defaults.event_scheme,
+                  date_format=Defaults.date_format,
+                  faction=Defaults.faction,
+                  events_overlay=Defaults.events_overlay,
+                  screenparsing=Defaults.screenparsing,
+                  screenparsing_overlay=Defaults.screenparsing_overlay):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")

@@ -122,7 +122,7 @@ class TestFileParsing(unittest.TestCase):
 
 class TestUI(unittest.TestCase):
     def setUp(self):
-        self.window = gui.main_window()
+        self.window = gui.MainWindow()
 
     def tearDown(self):
         variables.FLAG = False

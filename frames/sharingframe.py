@@ -7,7 +7,7 @@ import ttk
 import Tkinter as tk
 
 
-class share_frame(ttk.Frame):
+class SharingFrame(ttk.Frame):
     """
     A Frame to contain widgets to allow uploading of CombatLogs to the server
     and viewing leaderboards that keep track of individual player performance

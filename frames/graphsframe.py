@@ -27,7 +27,7 @@ from toplevels import SplashScreen
 matplotlib.use('TkAgg')
 
 
-class graphs_frame(ttk.Frame):
+class GraphsFrame(ttk.Frame):
     """
     A frame containing a place for a graph where the user can view his/her performance over time.
     """

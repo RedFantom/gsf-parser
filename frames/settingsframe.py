@@ -21,7 +21,7 @@ from toplevels import EventColors
 from toplevels import Privacy
 
 
-class settings_frame(ttk.Frame):
+class SettingsFrame(ttk.Frame):
     """
     A rather complicated Frame with lots of widgets containing the widgets for
     all user-changable settings of the parser. The instance calls on functions
@@ -31,7 +31,7 @@ class settings_frame(ttk.Frame):
     """
 
     def __init__(self, root_frame, main_window):
-        ### LAY-OUT ###
+        # LAY-OUT
         ttk.Frame.__init__(self, root_frame)
         self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=780)
         self.gui_frame = ttk.Frame(self.frame.interior)
@@ -45,7 +45,7 @@ class settings_frame(ttk.Frame):
         self.license_frame = ttk.Frame(self.bottom_frame)
         self.top_frame = self.frame
         self.main_window = main_window
-        ### GUI SETTINGS ###
+        # GUI SETTINGS
         # TODO Add more GUI settings including colors
         self.gui_label = ttk.Label(self.frame.interior, text="GUI settings", justify=tk.LEFT, font=("Calibri", 12))
         self.color_label = ttk.Label(self.gui_frame, text="\tParser text color: ")
@@ -101,7 +101,7 @@ class settings_frame(ttk.Frame):
             self.faction_options.append(ttk.Radiobutton(self.gui_frame, value=str(faction).lower(), text=faction,
                                                         variable=self.faction, width=8))
 
-        ### PARSING SETTINGS ###
+        # PARSING SETTINGS
         self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
         self.path_var = tk.StringVar()
@@ -114,7 +114,7 @@ class settings_frame(ttk.Frame):
                                                    text="Yes")
         self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable=self.privacy_var, value=False,
                                                     text="No")
-        ### SHARING SETTINGS ###
+        # SHARING SETTINGS
         self.sharing_label = ttk.Label(self.frame.interior, text="Share settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
         self.server_label = ttk.Label(self.server_frame, text="\tServer for sharing: ")
@@ -127,7 +127,7 @@ class settings_frame(ttk.Frame):
                                                  text="No")
         self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True,
                                                 text="Yes")
-        ### REAL-TIME SETTINGS ###
+        # REAL-TIME SETTINGS
         # TODO Add more colors for the overlay
         # TODO Add events view possibility to the overlay
         self.realtime_settings_label = ttk.Label(self.realtime_frame, text="Real-time parsing settings",
@@ -220,7 +220,7 @@ class settings_frame(ttk.Frame):
                                                           variable=self.screenparsing_overlay_var, value=True)
         self.screenparsing_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
                                                            variable=self.screenparsing_overlay_var, value=False)
-        ### MISC ###
+        # MISC
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
         self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
@@ -275,7 +275,7 @@ class settings_frame(ttk.Frame):
         places.
         :return: None
         """
-        ### GUI SETTINGS ###
+        # GUI SETTINGS
         self.gui_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
         self.gui_frame.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
         self.color_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
@@ -307,7 +307,7 @@ class settings_frame(ttk.Frame):
         for radio in self.faction_options:
             set_column += 1
             radio.grid(column=set_column, row=5, sticky=tk.N + tk.S + tk.W + tk.E)
-        ### PARSING SETTINGS ###
+        # PARSING SETTINGS
         self.parsing_label.grid(column=0, row=2, sticky=tk.W, pady=5)
         self.path_entry_label.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
         self.path_entry_button.grid(column=2, row=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=3)
@@ -317,7 +317,7 @@ class settings_frame(ttk.Frame):
         self.privacy_select_true.grid(column=1, row=0, sticky=tk.W)
         self.privacy_select_false.grid(column=2, row=0, sticky=tk.W)
         self.privacy_frame.grid(column=0, row=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        ### SHARING SETTINGS ###
+        # SHARING SETTINGS
         self.sharing_label.grid(column=0, row=5, sticky=tk.W, pady=5)
         self.server_label.grid(column=0, row=0, sticky=tk.W)
         self.server_address_entry.grid(column=1, row=0)
@@ -328,7 +328,7 @@ class settings_frame(ttk.Frame):
         self.auto_upload_true.grid(column=1, row=0)
         self.auto_upload_false.grid(column=2, row=0)
         self.upload_frame.grid(column=0, row=7, sticky=tk.N + tk.S + tk.W + tk.E)
-        ### REALTIME SETTINGS ###
+        # REALTIME SETTINGS
         self.overlay_enable_label.grid(column=0, row=1, sticky=tk.W)
         self.overlay_enable_radio_yes.grid(column=1, row=1, sticky=tk.W)
         self.overlay_enable_radio_no.grid(column=2, row=1, sticky=tk.W)
@@ -386,7 +386,7 @@ class settings_frame(ttk.Frame):
         self.screenparsing_overlay_label.grid(column=0, row=15, sticky=tk.W)
         self.screenparsing_overlay_true.grid(column=1, row=15, sticky=tk.W)
         self.screenparsing_overlay_false.grid(column=2, row=15, sticky=tk.W)
-        ### MISC ###
+        # MISC
         self.save_settings_button.grid(column=0, row=1, padx=2)
         self.discard_settings_button.grid(column=1, row=1, padx=2)
         self.default_settings_button.grid(column=2, row=1, padx=2)
@@ -399,7 +399,7 @@ class settings_frame(ttk.Frame):
         self.separator.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E, pady=10)
         self.license_frame.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
         self.save_frame.grid(column=0, row=0)
-        ### FINAL FRAME ###
+        # FINAL FRAME
         self.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         self.top_frame.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W)
         self.separator.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=10)

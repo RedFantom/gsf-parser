@@ -17,7 +17,6 @@ import tkSimpleDialog
 import time
 import platform
 from Queue import Queue
-
 import variables
 from parsing import stalking_alt, realtime, lineops
 from toplevels import RealtimeOverlay
@@ -25,7 +24,7 @@ from tools.utilities import write_debug_log
 from parsing.screen import ScreenParser
 
 
-class realtime_frame(ttk.Frame):
+class RealtimeFrame(ttk.Frame):
     """
     A frame that contains all buttons and widgets involved in real-time parsing
     Callbacks for the buttons control the parsing and a listbox displays the events
