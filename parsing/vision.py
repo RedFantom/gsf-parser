@@ -3,13 +3,15 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import cv2
-from PIL import Image
 import os
-import numpy
 import math
 import win32api
-from utilities import write_debug_log, get_pillow_screen
+
+import cv2
+from PIL import Image
+import numpy
+
+from tools.utilities import write_debug_log, get_pillow_screen
 
 
 def get_cv2_screen():

@@ -9,10 +9,12 @@ import os
 from datetime import datetime
 from Queue import Queue
 import time
+
 import pynput
+
 import vision
 from keys import keys
-from utilities import write_debug_log, get_temp_directory, get_cursor_position
+from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
 from toplevels.screenoverlay import HitChanceOverlay
 import variables
 

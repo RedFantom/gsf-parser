@@ -10,7 +10,8 @@ try:
 except ImportError:
     import Tkinter as tk
 import ttk
-from utilities import get_pointer_position_win32
+
+from tools.utilities import get_pointer_position_win32
 import variables
 
 

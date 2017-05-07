@@ -9,11 +9,12 @@
 from decimal import Decimal
 import datetime
 import re
+from tkMessageBox import showerror
+
 from parsing.stalking import LogStalker
 import variables
-from tkMessageBox import showerror
 from lineops import line_to_dictionary
-from utilities import write_debug_log
+from tools.utilities import write_debug_log
 
 
 class Parser(object):

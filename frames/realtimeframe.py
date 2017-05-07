@@ -17,10 +17,11 @@ import tkSimpleDialog
 import time
 import platform
 from Queue import Queue
+
 import variables
 from parsing import stalking_alt, realtime, lineops
 from toplevels import RealtimeOverlay
-from utilities import write_debug_log
+from tools.utilities import write_debug_log
 from parsing.screen import ScreenParser
 
 

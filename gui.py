@@ -13,8 +13,9 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import os
+
 import variables
-import client
+from tools import client
 import main
 from frames import fileframe, resourcesframe, sharingframe, graphsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe

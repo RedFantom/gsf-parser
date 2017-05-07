@@ -13,7 +13,8 @@ import ttk
 import tkMessageBox
 import os
 import sys
-import utilities
+
+from tools import utilities
 import variables
 
 

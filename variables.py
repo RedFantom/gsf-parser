@@ -19,7 +19,8 @@
 # spawn_timings is a matrix of datetimes
 import os
 import Queue
-import settings
+
+from tools import settings
 
 settings_obj = settings.settings()
 color_scheme = settings.color_schemes()

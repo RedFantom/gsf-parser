@@ -13,9 +13,11 @@ import ttk
 import tkMessageBox
 import tkFileDialog
 import os
-import variables
+
 from PIL import Image, ImageTk
-import utilities
+
+import variables
+from tools import utilities
 
 
 class SplashScreen(tk.Toplevel):

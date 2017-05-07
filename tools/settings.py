@@ -6,12 +6,12 @@
 
 # UI imports
 import tkMessageBox
-# General imports
 import os
 import ConfigParser
-import utilities
 import collections
 import ast
+
+import utilities
 
 
 # Own modules
