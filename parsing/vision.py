@@ -6,19 +6,19 @@
 import os
 import math
 import win32api
-
 import cv2
 from PIL import Image
 import numpy
+from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
 
-from tools.utilities import write_debug_log, get_pillow_screen
 
-
-def get_cv2_screen():
+def get_cv2_screen(testing=False):
     """
     Gets a screenshot in cv2 format
     :return: cv2 screenshot array
     """
+    if not testing:
+        return Image.open(os.path.join(get_assets_directory(), "vision", "testing.png"))
     screen_pil = get_pillow_screen()
     return pillow_to_numpy(screen_pil)
 
