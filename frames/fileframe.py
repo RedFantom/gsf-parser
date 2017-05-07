@@ -19,7 +19,7 @@ import os
 import re
 from datetime import datetime
 import variables
-from parsing import statistics, parse, abilities
+from parsing import parse, abilities, folderstats, filestats, matchstats, spawnstats
 from toplevels import SplashScreen
 
 
@@ -80,7 +80,6 @@ class FileFrame(ttk.Frame):
         self.spawn_box.bind("<Enter>", self.bind_spawn)
         self.spawn_box.bind("<Leave>", self.unbind_spawn)
 
-        self.statistics_object = statistics.statistics()
         self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files_cb)
         self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
         self.old_file = 0
@@ -225,7 +224,7 @@ class FileFrame(ttk.Frame):
             variables.settings_obj.read_set()
         for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
+                if parse.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         if variables.settings_obj.date_format == "ymd":
                             dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
@@ -280,7 +279,7 @@ class FileFrame(ttk.Frame):
             variables.settings_obj.read_set()
         for file in os.listdir(variables.settings_obj.cl_path):
             if file.endswith(".txt"):
-                if statistics.check_gsf(variables.settings_obj.cl_path + "/" + file):
+                if parse.check_gsf(variables.settings_obj.cl_path + "/" + file):
                     try:
                         dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
                     except ValueError:
@@ -319,7 +318,7 @@ class FileFrame(ttk.Frame):
             self.old_file = 0
             self.file_box.itemconfig(self.old_file, background="lightgrey")
             (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
-             enemydamaget, uncounted) = statistics.statistics.folder_statistics()
+             enemydamaget, uncounted) = folderstats.folder_statistics()
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             for key, value in abilities_dict.iteritems():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
@@ -410,7 +409,7 @@ class FileFrame(ttk.Frame):
                 variables.match_timing = self.match_timing_strings[int(numbers[0]) - 1]
             file_cube = variables.file_cube
             (abilities_dict, statistics_string, shipsdict, enemies,
-             enemydamaged, enemydamaget, uncounted) = self.statistics_object.file_statistics(file_cube)
+             enemydamaged, enemydamaget, uncounted) = filestats.file_statistics(file_cube)
             for key, value in abilities_dict.iteritems():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
@@ -477,7 +476,7 @@ class FileFrame(ttk.Frame):
             for spawn in match:
                 variables.player_numbers.update(parse.determinePlayer(spawn))
             (abilities_dict, statistics_string, shipsdict, enemies,
-             enemydamaged, enemydamaget) = self.statistics_object.match_statistics(match)
+             enemydamaged, enemydamaget) = matchstats.match_statistics(match)
             for key, value in abilities_dict.iteritems():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
@@ -536,7 +535,7 @@ class FileFrame(ttk.Frame):
             variables.spawn = spawn
             variables.player_numbers = parse.determinePlayer(spawn)
             (abilities_dict, statistics_string, ships_list, ships_comps,
-             enemies, enemydamaged, enemydamaget) = self.statistics_object.spawn_statistics(spawn)
+             enemies, enemydamaged, enemydamaget) = spawnstats.spawn_statistics(spawn)
             for key, value in abilities_dict.iteritems():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)

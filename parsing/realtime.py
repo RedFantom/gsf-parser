@@ -12,8 +12,7 @@ import re
 from parsing.stalking import LogStalker
 import variables
 from tkMessageBox import showerror
-from screen import ScreenParser
-from Queue import Queue
+from lineops import line_to_dictionary
 from utilities import write_debug_log
 
 
@@ -298,33 +297,6 @@ class Parser(object):
 # ===================================================================
 # --- Utility Tools
 # ===================================================================
-
-def line_to_dictionary(line):
-    logpaths = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-    logpath = re.compile(logpaths)
-
-    group = logpath.match(line) if isinstance(line, str) else logpath.match(line.decode('cp1252'))
-    try:
-        tuple_ = group.groups()
-    except AttributeError as err:
-        print("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group)
-        print(err)
-        return
-
-    colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
-    log = dict(zip(colnames, tuple_))
-
-    """
-    if not log['ability'] is '':
-        log['ability'] = log['ability'].rsplit(None, 1)[1][1:-1]
-    """
-
-    if not log['amount'] is '':
-        log['amount'] = log['amount'].split(None, 1)[0]
-
-    return log
-
-
 def read_config():
     """
     Reads the config file and determines all the configuration

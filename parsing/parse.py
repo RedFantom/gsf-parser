@@ -7,9 +7,22 @@
 import re
 from datetime import datetime
 from decimal import Decimal
-
 from abilities import *
 import realtime
+
+
+# Function that returns True if a file contains any GSF events
+def check_gsf(file_name):
+    with open(file_name, "r") as file_obj:
+        for line in file_obj:
+            if "@" not in line:
+                file_obj.close()
+                return True
+            else:
+                continue
+    if not file_obj.closed:
+        raise
+    return False
 
 
 # Function that splits the lines it gets into new lists of lines according

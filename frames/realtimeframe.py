@@ -18,7 +18,7 @@ import time
 import platform
 from Queue import Queue
 import variables
-from parsing import stalking_alt, realtime, statistics
+from parsing import stalking_alt, realtime, lineops
 from toplevels import RealtimeOverlay
 from utilities import write_debug_log
 from parsing.screen import ScreenParser
@@ -114,7 +114,7 @@ class realtime_frame(ttk.Frame):
                 self.screenparser = None
                 self.data_queue = None
             self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          statistics.pretty_event, screen=variables.settings_obj.screenparsing,
+                                          lineops.pretty_event, screen=variables.settings_obj.screenparsing,
                                           screenoverlay=variables.settings_obj.screenparsing_overlay,
                                           data_queue=self.data_queue)
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,

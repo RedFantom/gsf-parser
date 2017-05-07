@@ -11,7 +11,7 @@ except ImportError:
     import Tkinter as tk
 import ttk
 import variables
-from parsing.statistics import print_event
+from parsing.lineops import print_event
 
 
 class EventsView(tk.Toplevel):
