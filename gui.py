@@ -18,6 +18,7 @@ import client
 import main
 from frames import fileframe, resourcesframe, sharingframe, graphsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
+from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
 
 
@@ -65,10 +66,10 @@ class main_window(tk.Tk):
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = sharingframe.share_frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
-        self.file_select_frame = fileframe.file_frame(self.file_tab_frame, self)
+        self.file_select_frame = fileframe.FileFrame(self.file_tab_frame, self)
         self.realtime_frame = realtimeframe.realtime_frame(self.realtime_tab_frame, self)
-        self.middle_frame = fileframe.middle_frame(self.file_tab_frame, self)
-        self.ship_frame = fileframe.ship_frame(self.file_tab_frame)
+        self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
+        self.ship_frame = shipframe.ShipFrame(self.file_tab_frame)
         self.settings_frame = settingsframe.settings_frame(self.settings_tab_frame, self)
         self.graphs_frame = graphsframe.graphs_frame(self.notebook, self)
         self.resources_frame = resourcesframe.resources_frame(self.notebook, self)
