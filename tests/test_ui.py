@@ -7,9 +7,9 @@
 # For license see LICENSE
 import unittest
 import gui
-import Tkinter as tk
+import tkinter as tk
 import variables
-import tkMessageBox
+import tkinter.messagebox
 import os
 from tools import utilities
 
@@ -29,10 +29,10 @@ class TestUI(unittest.TestCase):
             except OSError:
                 pass
             with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
-                               replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
+                              replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
                 target_log.writelines(self.lines)
-        tkMessageBox.showerror = messagebox
-        tkMessageBox.showinfo = messagebox
+        tkinter.messagebox.showerror = messagebox
+        tkinter.messagebox.showinfo = messagebox
 
     def tearDown(self):
         variables.FLAG = False
@@ -41,7 +41,7 @@ class TestUI(unittest.TestCase):
 
     def test_instances(self):
         self.assertIsInstance(self.window, tk.Tk)
-        for item in self.window.children.values():
+        for item in list(self.window.children.values()):
             self.assertIsInstance(item, tk.Widget)
 
     def test_main_window(self):
@@ -108,7 +108,7 @@ class TestUI(unittest.TestCase):
         self.window.settings_frame.save_settings_button.invoke()
         self.window.settings_frame.discard_settings_button.invoke()
         self.window.settings_frame.default_settings_button.invoke()
-        for widget in self.window.settings_frame.children.values():
+        for widget in list(self.window.settings_frame.children.values()):
             if isinstance(widget, tk.Radiobutton):
                 widget.select()
             if isinstance(widget, tk.Button):

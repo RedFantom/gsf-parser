@@ -3,8 +3,8 @@
 # For license see LICENSE
 
 # UI imports
-import ttk
-import Tkinter as tk
+import tkinter.ttk as ttk
+import tkinter as tk
 
 
 class SharingFrame(ttk.Frame):

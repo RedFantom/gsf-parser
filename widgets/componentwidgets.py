@@ -5,8 +5,8 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 from os import path
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
@@ -57,9 +57,11 @@ class MajorComponentWidget(ComponentWidget):
                 self.intvars[i][1].set(0)
                 try:
                     self.photos.append([photo(img.open(path.join(self.icons_path,
-                                                                 data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
+                                                                 data_dictionary["TalentTree"][i][0][
+                                                                     "Icon"] + ".jpg"))),
                                         photo(img.open(path.join(self.icons_path,
-                                                                 data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
+                                                                 data_dictionary["TalentTree"][i][1][
+                                                                     "Icon"] + ".jpg")))])
                 except IndexError:
                     self.photos.append([photo(img.open(path.join(self.icons_path, "imperial.png"))),
                                         photo(img.open(path.join(self.icons_path, "imperial.png")))])

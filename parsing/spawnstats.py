@@ -4,12 +4,12 @@
 # For license see LICENSE
 
 # UI imports
-import tkMessageBox
+import tkinter.messagebox
 import datetime
 import variables
-import abilities
-import parse
-import realtime
+from . import abilities
+from . import parse
+from . import realtime
 
 
 def spawn_statistics(spawn):
@@ -70,7 +70,7 @@ def spawn_statistics(spawn):
         elif component in abilities.systems:
             comps[4] = component
         else:
-            tkMessageBox.showinfo("WHAT?!", "DID GSF GET AN UPDATE?!")
+            tkinter.messagebox.showinfo("WHAT?!", "DID GSF GET AN UPDATE?!")
     if "Primary" in comps:
         del comps[comps.index("Primary")]
     if "Secondary" in comps:

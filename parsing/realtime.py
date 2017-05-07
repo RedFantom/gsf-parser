@@ -5,15 +5,13 @@
 # For license see LICENSE
 
 # Written by Daethyra, edited by RedFantom
-
 from decimal import Decimal
 import datetime
 import re
-from tkMessageBox import showerror
-
+from tkinter.messagebox import showerror
 from parsing.stalking import LogStalker
 import variables
-from lineops import line_to_dictionary
+from .lineops import line_to_dictionary
 from tools.utilities import write_debug_log
 
 
@@ -79,6 +77,8 @@ class Parser(object):
         self.data_queue = data_queue
         if data_queue:
             self.screenparser = True
+        else:
+            self.screenparser = False
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -120,7 +120,7 @@ class Parser(object):
         write_debug_log("Parser.parse function called with line: %s" % line)
         self.dprint("[DEBUG] line", line)
         if not line:
-            print "[DEBUG] Line is of NoneType"
+            print("[DEBUG] Line is of NoneType")
             # Should be return for #20?
             return
 
@@ -138,7 +138,7 @@ class Parser(object):
         if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
             variables.rt_name = self.player_name
-            print self.player_name
+            print((self.player_name))
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
         if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
@@ -146,7 +146,7 @@ class Parser(object):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
                 variables.rt_name = self.player_name
-                print self.player_name
+                print((self.player_name))
 
         if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
             self.dprint("[DEBUG] out of match, skip")
@@ -155,8 +155,8 @@ class Parser(object):
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
-            print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
-                  sum(self.spawn_selfdmg))
+            print(("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
+                   sum(self.spawn_selfdmg)))
             # Call the new spawn callback
             time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
             self.data_queue.put(("spawn", time))
@@ -224,8 +224,8 @@ class Parser(object):
                 # Call the end of match callback
                 self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
-                print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
-                      sum(self.tmp_selfdmg))
+                print(("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
+                       sum(self.tmp_selfdmg)))
                 self.is_match = False
                 self.dmg_done.append(self.tmp_dmg_done)
                 self.dmg_taken.append(self.tmp_dmg_taken)

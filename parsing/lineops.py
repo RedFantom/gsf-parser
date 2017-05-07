@@ -7,7 +7,7 @@
 # UI imports
 import datetime
 import variables
-import abilities
+from . import abilities
 import re
 
 # Name of the columns for the pretty event printing functions
@@ -38,7 +38,7 @@ def pretty_event(line_dict, start_of_match, active_id):
     except TypeError:
         string = "00:00" + 4 * " "
     except:
-        print "[DEBUG] An unknown error occurred while doing the delta thing"
+        print("[DEBUG] An unknown error occurred while doing the delta thing")
         return
     # If the player name is too long, shorten it
     if variables.rt_name:
@@ -177,7 +177,7 @@ def print_event(line_dict, start_of_match, player):
     except TypeError:
         string = "00:00" + 4 * " "
     except:
-        print "[DEBUG] An unknown error occurred while doing the delta thing"
+        print("[DEBUG] An unknown error occurred while doing the delta thing")
         return
     # If the player name is too long, shorten it
     if variables.rt_name:
@@ -291,12 +291,13 @@ def line_to_dictionary(line):
     try:
         tuple_ = group.groups()
     except AttributeError as err:
-        print("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group)
+        print(
+            ("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group))
         print(err)
         return
 
     colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
-    log = dict(zip(colnames, tuple_))
+    log = dict(list(zip(colnames, tuple_)))
 
     """
     if not log['ability'] is '':

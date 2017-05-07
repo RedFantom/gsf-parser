@@ -5,18 +5,14 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    print "mtTkinter not found, please use 'pip install mttkinter'"
-    import Tkinter as tk
 from widgets import *
 from parsing.ships import Ship, Component
 from parsing.abilities import all_ships
-import cPickle as pickle
+import pickle as pickle
 from os import path
 from collections import OrderedDict
+import tkinter as tk
+import tkinter.ttk as ttk
 
 
 class BuildsFrame(ttk.Frame):
@@ -41,11 +37,11 @@ class BuildsFrame(ttk.Frame):
         self.middle_components = ["Engine", "Shield"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db")), "rb") as f:
             self.ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")), "rb") as f:
             self.categories_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db"))) as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db")), "rb") as f:
             self.companions_data = pickle.load(f)
         self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=345)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
@@ -75,12 +71,12 @@ class BuildsFrame(ttk.Frame):
             self.ship_select_frame[faction][category].toggle()
         ship_name = ""
         if faction == "Imperial":
-            for key in all_ships.iterkeys():
+            for key in all_ships.keys():
                 if key in ship:
                     ship_name = key
                     break
         elif faction == "Republic":
-            for key in all_ships.itervalues():
+            for key in all_ships.values():
                 if key in ship:
                     ship_name = key
                     break
@@ -97,19 +93,19 @@ class BuildsFrame(ttk.Frame):
             self.components_lists[category] = \
                 ComponentListFrame(self.components_lists_frame.interior, category,
                                    self.ship.data[category], self.set_component)
-        for button in self.ship_select_frame.ship_buttons.itervalues():
+        for button in self.ship_select_frame.ship_buttons.values():
             button.config(state=tk.ACTIVE)
-        for key in self.ship_select_frame.ship_buttons.iterkeys():
+        for key in self.ship_select_frame.ship_buttons.keys():
             if ship in key:
                 ship = key
                 break
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
-        print ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"]
+        print(ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"])
         self.grid_widgets()
 
     def set_component(self, category, component):
         self.current_component.grid_forget()
-        print "[DEBUG] set_component(%s, %s)" % (category, component)
+        print("[DEBUG] set_component(%s, %s)" % (category, component))
         index = -1
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
@@ -132,7 +128,7 @@ class BuildsFrame(ttk.Frame):
             raise ValueError("Component category not found: %s" % category)
         self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][index]["Stats"])
         self.current_component.grid_widgets()
-        print "[DEBUG] Gridding DEBUG component"
+        print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
 
     def grid_widgets(self):
@@ -145,7 +141,7 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid_widgets()
         self.components_lists_header_label.grid(row=0, column=0, sticky=tk.W)
         set_row = 1
-        for frame in self.components_lists.itervalues():
+        for frame in self.components_lists.values():
             frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             frame.grid_widgets()
             set_row += 1

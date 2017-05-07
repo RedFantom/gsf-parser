@@ -110,4 +110,3 @@ def get_swtor_directory():
 def get_assets_directory():
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
     return path
-

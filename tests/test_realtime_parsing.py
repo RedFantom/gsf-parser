@@ -54,7 +54,7 @@ class TestRealtimeParsing(unittest.TestCase):
 
     def stalking_callback(self, lines):
         for line in lines:
-            print "Read: ", line.replace("\n", "")
+            print("Read: ", line.replace("\n", ""))
             self.stalking_lines.append(line)
 
     def spawn_callback(self, *args):

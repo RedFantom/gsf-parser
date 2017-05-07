@@ -3,12 +3,10 @@
 # This file is excluded from the copyright of RedFantom, Daethyra and Sprigellania, but the code in this file
 # IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
 # software.
-import ttk
+import tkinter.ttk as ttk
 
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
+import tkinter as tk
+
 import platform
 
 
@@ -35,7 +33,7 @@ class VerticalScrollFrame(ttk.Frame):
         vscrollbar.config(command=canvas.yview)
 
         def mousewheel(event):
-            print "[DEBUG] Being scrolled"
+            print("[DEBUG] Being scrolled")
             canvas.yview_scroll(-1 * (event.delta / 100), "units")
 
         canvas.bind("<MouseWheel>", mousewheel)

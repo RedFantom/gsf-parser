@@ -5,13 +5,13 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 from os import path
 from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-from toggledframe import ToggledFrame
+from .toggledframe import ToggledFrame
 
 
 class CrewListFrame(ttk.Frame):
@@ -79,9 +79,9 @@ class CrewListFrame(ttk.Frame):
     def grid_widgets(self):
         self.header_label.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
         set_row = 1
-        for frame in self.category_frames.itervalues():
+        for frame in self.category_frames.values():
             frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
-        for button in self.member_buttons.itervalues():
+        for button in self.member_buttons.values():
             button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1

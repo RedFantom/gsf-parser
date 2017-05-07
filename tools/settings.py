@@ -5,12 +5,14 @@
 # For license see LICENSE
 
 # UI imports
-import tkMessageBox
+import tkinter.messagebox
+import tkinter.filedialog
+# General imports
 import os
-import ConfigParser
+import configparser
 import collections
 import ast
-import utilities
+from tools import utilities
 
 
 # Class with default settings for in the settings file
@@ -68,15 +70,15 @@ class Defaults(object):
 # Class that loads, stores and saves settings
 class Settings:
     # Set the file_name for use by other functions
-    def __init__(self, file_name="settings.ini"):
-        self.directory = utilities.get_temp_directory()
-        self.file_name = os.path.join(self.directory, file_name)
-        self.conf = ConfigParser.RawConfigParser()
+    def __init__(self, file_name="settings.ini", directory=utilities.get_temp_directory()):
+        self.directory = directory
+        self.file_name = os.path.join(directory, file_name)
+        self.conf = configparser.RawConfigParser()
         # variables.install_path = os.getcwd()
         if file_name in os.listdir(self.directory):
             try:
                 self.read_set()
-            except ConfigParser.NoOptionError:
+            except configparser.NoOptionError:
                 self.write_def()
         else:
             self.write_def()
@@ -122,7 +124,6 @@ class Settings:
             self.overlay_when_gsf = True
         else:
             self.overlay_when_gsf = False
-        print "[DEBUG] Settings read"
         if self.conf.get("realtime", "events_overlay") == "True":
             self.events_overlay = True
         else:
@@ -135,6 +136,7 @@ class Settings:
             self.screenparsing_overlay = True
         else:
             self.screenparsing_overlay = False
+        print("[DEBUG] Settings read")
 
     # Write the defaults settings found in the class defaults to a pickle in a
     # file
@@ -176,7 +178,7 @@ class Settings:
         self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
-        print "[DEBUG] Defaults written"
+        print("[DEBUG] Defaults written")
         self.read_set()
 
     # Write the settings passed as arguments to a pickle in a file
@@ -219,14 +221,14 @@ class Settings:
             pass
         # TODO Make this setting changeable without restarting
         if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting for "
-                                            "auto uploading CombatLogs, the "
-                                            "parser must be restarted.")
+            tkinter.messagebox.showinfo("Notice", "In order to change the setting for "
+                                                  "auto uploading CombatLogs, the "
+                                                  "parser must be restarted.")
         if str(auto_ident) != self.conf.get("parsing", "auto_ident"):
-            tkMessageBox.showinfo("Notice", "In order to change the setting "
-                                            "for auto identifying enemies in "
-                                            "CombatLogs, the parser must be "
-                                            "restarted.")
+            tkinter.messagebox.showinfo("Notice", "In order to change the setting "
+                                                  "for auto identifying enemies in "
+                                                  "CombatLogs, the parser must be "
+                                                  "restarted.")
         self.conf.set("misc", "version", version)
         self.conf.set("parsing", "cl_path", cl_path)
         self.conf.set("parsing", "auto_ident", auto_ident)
@@ -256,7 +258,7 @@ class Settings:
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()
-        print "[DEBUG] Settings written"
+        print("[DEBUG] Settings written")
 
     def write_settings_dict(self, settings_dict):
         """
@@ -264,16 +266,16 @@ class Settings:
                               cat_set_tuple as (section, setting)
         :return: None
         """
-        for cat_set_tuple, value in settings_dict.iteritems():
+        for cat_set_tuple, value in list(settings_dict.items()):
             try:
                 self.conf.set(cat_set_tuple[0], cat_set_tuple[1], value)
-            except ConfigParser.NoSectionError:
-                tkMessageBox.showerror("Error", "This section does not exist: %s" % cat_set_tuple[0])
+            except configparser.NoSectionError:
+                tkinter.messagebox.showerror("Error", "This section does not exist: %s" % cat_set_tuple[0])
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
 
 
-class color_schemes:
+class ColorSchemes(object):
     def __init__(self):
         self.default_colors = collections.OrderedDict()
         self.default_colors['dmgd_pri'] = ['#ffd11a', '#000000']
@@ -314,13 +316,13 @@ class color_schemes:
         try:
             return list(self.current_scheme[key])
         except KeyError:
-            tkMessageBox.showerror("Error", "The requested color for %s was not found, "
-                                            "did you alter the event_colors.ini file?" % key)
+            tkinter.messagebox.showerror("Error", "The requested color for %s was not found, "
+                                                  "did you alter the event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
         except TypeError:
-            tkMessageBox.showerror("Error", "The requested color for %s was could not be "
-                                            "type changed into a list. Did you alter the "
-                                            "event_colors.ini file?" % key)
+            tkinter.messagebox.showerror("Error", "The requested color for %s was could not be "
+                                                  "type changed into a list. Did you alter the "
+                                                  "event_colors.ini file?" % key)
             return ['#ffffff', '#000000']
 
     def set_scheme(self, name, custom_file=(os.path.join(utilities.get_temp_directory(), "events_colors.ini"))):
@@ -329,22 +331,27 @@ class color_schemes:
         elif name == "pastel":
             self.current_scheme = self.pastel_colors
         elif name == "custom":
-            cp = ConfigParser.RawConfigParser()
+            cp = configparser.RawConfigParser()
             cp.read(custom_file)
-            current_scheme = dict(cp.items("colors"))
-            for key, value in current_scheme.iteritems():
-                self.current_scheme[key] = ast.literal_eval(value)
+            try:
+                current_scheme = dict(cp.items("colors"))
+                for key, value in list(current_scheme.items()):
+                    self.current_scheme[key] = ast.literal_eval(value)
+            except configparser.NoSectionError:
+                self.current_scheme = self.default_colors
+                tkinter.messagebox.showinfo("Info", "Failed to load custom colors, default colors have been loaded as "
+                                                    "custom color scheme.")
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
     def write_custom(self):
         custom_file = os.path.join(utilities.get_temp_directory(), "event_colors.ini")
-        cp = ConfigParser.RawConfigParser()
+        cp = configparser.RawConfigParser()
         try:
             cp.add_section("colors")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
-        for key, value in self.current_scheme.iteritems():
+        for key, value in list(self.current_scheme.items()):
             cp.set('colors', key, value)
         with open(custom_file, "w") as file_obj:
             cp.write(file_obj)

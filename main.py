@@ -5,10 +5,12 @@
 # For license see LICENSE
 from os.path import dirname, join, basename
 import sys
+
 try:
     tcl_lib = join(sys._MEIPASS, "lib")
     tcl_new_lib = join(dirname(dirname(tcl_lib)), basename(tcl_lib))
     import shutil
+
     shutil.copytree(src=tcl_lib, dst=tcl_new_lib)
 except AttributeError:
     pass

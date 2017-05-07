@@ -7,8 +7,8 @@
 import re
 from datetime import datetime
 from decimal import Decimal
-from abilities import *
-import realtime
+from .abilities import *
+from . import realtime
 
 
 # Function that returns True if a file contains any GSF events
@@ -20,8 +20,6 @@ def check_gsf(file_name):
                 return True
             else:
                 continue
-    if not file_obj.closed:
-        raise
     return False
 
 
@@ -286,51 +284,51 @@ def parse_spawn(spawn, player):
                 amount_secondaries += 1
             if "Legion" in ships_list:
                 if key.strip() not in legionAbilities:
-                    print "[DEBUG] Legion removed for: ", key.strip()
+                    print(("[DEBUG] Legion removed for: ", key.strip()))
                     ships_list.remove("Legion")
             if "Razorwire" in ships_list:
                 if key.strip() not in razorwireAbilities:
-                    print "[DEBUG] Razorwire removed for: ", key.strip()
+                    print(("[DEBUG] Razorwire removed for: ", key.strip()))
                     ships_list.remove("Razorwire")
             if "Decimus" in ships_list:
                 if key.strip() not in decimusAbilities:
-                    print "[DEBUG] Decimus removed for: ", key.strip()
+                    print(("[DEBUG] Decimus removed for: ", key.strip()))
                     ships_list.remove("Decimus")
             if "Mangler" in ships_list:
                 if key.strip() not in manglerAbilities:
-                    print "[DEBUG] Mangler removed for: ", key.strip()
+                    print(("[DEBUG] Mangler removed for: ", key.strip()))
                     ships_list.remove("Mangler")
             if "Jurgoran" in ships_list:
                 if key.strip() not in jurgoranAbilities:
-                    print "[DEBUG] Jurgoran removed for: ", key.strip()
+                    print(("[DEBUG] Jurgoran removed for: ", key.strip()))
                     ships_list.remove("Jurgoran")
             if "Dustmaker" in ships_list:
                 if key.strip() not in dustmakerAbilities:
-                    print "[DEBUG] Dustmaker removed for: ", key.strip()
+                    print(("[DEBUG] Dustmaker removed for: ", key.strip()))
                     ships_list.remove("Dustmaker")
             if "Bloodmark" in ships_list:
                 if key.strip() not in bloodmarkAbilities:
-                    print "[DEBUG] Bloodmark removed for: ", key.strip()
+                    print(("[DEBUG] Bloodmark removed for: ", key.strip()))
                     ships_list.remove("Bloodmark")
             if "Blackbolt" in ships_list:
                 if key.strip() not in blackboltAbilities:
-                    print "[DEBUG] Blackbolt removed for: ", key.strip()
+                    print(("[DEBUG] Blackbolt removed for: ", key.strip()))
                     ships_list.remove("Blackbolt")
             if "Sting" in ships_list:
                 if key.strip() not in stingAbilities:
-                    print "[DEBUG] Sting removed for: ", key.strip()
+                    print(("[DEBUG] Sting removed for: ", key.strip()))
                     ships_list.remove("Sting")
             if "Imperium" in ships_list:
                 if key.strip() not in imperiumAbilities:
-                    print "[DEBUG] Imperium removed for: ", key.strip()
+                    print(("[DEBUG] Imperium removed for: ", key.strip()))
                     ships_list.remove("Imperium")
             if "Quell" in ships_list:
                 if key.strip() not in quellAbilities:
-                    print "[DEBUG] Quell removed for: ", key.strip()
+                    print(("[DEBUG] Quell removed for: ", key.strip()))
                     ships_list.remove("Quell")
             if "Rycer" in ships_list:
                 if key.strip() not in rycerAbilities:
-                    print "[DEBUG] Rycer removed for: ", key.strip()
+                    print(("[DEBUG] Rycer removed for: ", key.strip()))
                     ships_list.remove("Rycer")
     if amount_secondaries == 2:
         for ship in ships_list:
@@ -558,7 +556,7 @@ def abilityUsage(abilitiesOccurrences, match_timingsList, spawn_timingsMatrix):
     systemCooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
                        'Blaster Overcharge': 60, 'EMP Field': 60}
-    print "Ability usage: "
+    print("Ability usage: ")
     # return a dictionary with abilities and percentage of the possible usage
 
 
@@ -706,4 +704,4 @@ if __name__ == "__main__":
                                                                                                                    spawn_timingsMatrix)
     for list in abilities:
         for dict in list:
-            print determineShip(dict)
+            print((determineShip(dict)))

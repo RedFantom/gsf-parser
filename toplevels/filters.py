@@ -5,14 +5,11 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
+import tkinter as tk
 
+import tkinter.ttk as ttk
 from parsing import abilities
-import widgets.hoverinfo
+import widgets
 
 
 class Filters(tk.Toplevel):
@@ -26,8 +23,8 @@ class Filters(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
-        print "[DEBUG] Setting up Type filters"
-        self.type_frame = widgets.hoverinfo.ToggledFrame(self, text="Type")
+        print("[DEBUG] Setting up Type filters")
+        self.type_frame = widgets.ToggledFrame(self, text="Type")
         self.type_variable = tk.StringVar()
         self.type_variable.set("any")
         self.any_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Any", variable=self.type_variable,
@@ -38,17 +35,17 @@ class Filters(tk.Toplevel):
                                              value="matches")
         self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns", variable=self.type_variable,
                                             value="spawns")
-        print "[DEBUG] Setting up date filters"
-        self.dateframe = widgets.hoverinfo.ToggledFrame(self, text="Date")
-        self.start_date_widget = widgets.hoverinfo.Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = widgets.hoverinfo.Calendar(self.dateframe.sub_frame)
-        print "[DEBUG] Setting up components filters"
-        self.components_frame = widgets.hoverinfo.ToggledFrame(self, text="Components")
-        self.primaries_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
-        self.secondaries_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
-        self.engines_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Engines")
-        self.shields_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Shields")
-        self.systems_frame = widgets.hoverinfo.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
+        print("[DEBUG] Setting up date filters")
+        self.dateframe = widgets.ToggledFrame(self, text="Date")
+        self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
+        print("[DEBUG] Setting up components filters")
+        self.components_frame = widgets.ToggledFrame(self, text="Components")
+        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries")
+        self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries")
+        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines")
+        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields")
+        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems")
         self.primaries_tickboxes = {}
         self.primaries_tickboxes_vars = {}
         self.secondaries_tickboxes = {}
@@ -87,11 +84,11 @@ class Filters(tk.Toplevel):
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
         self.ships_frame = widgets.hoverinfo.ToggledFrame(self, text="Ships")
-        print "[DEBUG] Setting up buttons"
+        print("[DEBUG] Setting up buttons")
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter_files)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
         self.search_button = ttk.Button(self, text="Search", command=self.search_files)
-        print "[DEBUG] Gridding widgets"
+        print("[DEBUG] Gridding widgets")
         self.grid_widgets()
 
     def filter_files(self):
@@ -127,7 +124,7 @@ class Filters(tk.Toplevel):
         start_row = 1
         start_column = 1
         for dictionary in self.comps_dicts:
-            for widget in dictionary.itervalues():
+            for widget in dictionary.values():
                 widget.grid(row=start_row, column=start_column, sticky=tk.N + tk.W)
                 start_column += 1
                 if start_column == 6:

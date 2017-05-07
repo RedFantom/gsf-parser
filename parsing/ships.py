@@ -4,7 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from os import path
-import cPickle as pickle
+import pickle as pickle
 
 ships = {
     "Decimus": "Imperial_B-5_Decimus",
@@ -52,9 +52,10 @@ ships = {
 
 class Ship(object):
     def __init__(self, ship_name):
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db"))) as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db")), "rb") as f:
             self.ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")),
+                  "rb") as f:
             self.categories_data = pickle.load(f)
         if ship_name not in self.ships_data:
             self.ship_name = ships[ship_name]
@@ -90,15 +91,15 @@ class Ship(object):
             return self.ships_data[item]
 
     def __iter__(self):
-        for key, value in self.ships_data.iteritems():
+        for key, value in self.ships_data.items():
             yield (key, value)
 
     def update(self, dictionary):
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             self[key] = value
 
     def iter_components(self):
-        for key, value in self.components.iteritems():
+        for key, value in self.components.items():
             yield (key, value)
 
 

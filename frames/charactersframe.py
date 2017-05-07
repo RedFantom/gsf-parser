@@ -5,14 +5,9 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    print "mtTkinter not found, please use 'pip install mttkinter'"
-    import Tkinter as tk
-import ttk
-import cPickle as pickle
+import tkinter as tk
+import tkinter.ttk as ttk
+import pickle as pickle
 import os
 import tempfile
 
@@ -39,10 +34,10 @@ class CharactersFrame(ttk.Frame):
                        "MFR": "Mantle of the Force",
                        "TRE": "The Red Eclipse"}
             characters = {server: None for server in servers}
-            with open(os.path.join(self.directory, "characters.db"), "w") as f:
+            with open(os.path.join(self.directory, "characters.db"), "wb") as f:
                 pickle.dump(characters, f)
-        with open(os.path.join(self.directory, "characters.db")) as f:
-            self.characters = pickle.load(f)
+        # with open(os.path.join(self.directory, "characters.db"), "wb") as f:
+        #    self.characters = pickle.load(f)
 
     def grid_widgets(self):
         pass

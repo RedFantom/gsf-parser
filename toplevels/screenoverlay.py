@@ -5,11 +5,9 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
+import tkinter as tk
+
+import tkinter.ttk as ttk
 
 from tools.utilities import get_pointer_position_win32
 import variables

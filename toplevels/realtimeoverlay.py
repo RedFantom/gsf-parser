@@ -5,12 +5,10 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
+import tkinter as tk
+
+import tkinter.ttk as ttk
+import tkinter.messagebox
 import os
 import sys
 
@@ -27,14 +25,16 @@ class RealtimeOverlay(tk.Toplevel):
                 with open(os.path.join(utilities.get_swtor_directory(), "swtor", "settings", "client_settings.ini"),
                           "r") as swtor:
                     if "D3DFullScreen = true" in swtor:
-                        tkMessageBox.showerror("Error",
-                                               "The overlay cannot be shown with the current SWTOR settings. " +
-                                               "Please set SWTOR to Fullscreen (windowed) in the Graphics settings.")
+                        tkinter.messagebox.showerror("Error",
+                                                     "The overlay cannot be shown with the current SWTOR settings. "
+                                                     "Please set SWTOR to Fullscreen (windowed) in the Graphics "
+                                                     "settings.")
             except IOError:
-                tkMessageBox.showerror("Error",
-                                       "The settings file for SWTOR cannot be found. Is SWTOR correctly installed?")
-        print "[DEBUG] Setting overlay font to: ", (
-            variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size)
+                tkinter.messagebox.showerror("Error",
+                                             "The settings file for SWTOR cannot be found. Is SWTOR correctly "
+                                             "installed?")
+        print("[DEBUG] Setting overlay font to: ", (
+            variables.settings_obj.overlay_tx_font, variables.settings_obj.overlay_tx_size))
         if variables.settings_obj.size == "big":
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
                                                    "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
@@ -72,7 +72,7 @@ class RealtimeOverlay(tk.Toplevel):
             h_req = (int(variables.settings_obj.overlay_tx_size) * 1.6) * 4
             w_req = ((int(variables.settings_obj.overlay_tx_size) / 1.5) + 2) * (4 + 6)
         else:
-            raise
+            raise ValueError("Not a valid overlay size found.")
         if variables.settings_obj.pos == "TL":
             pos_c = "+0+0"
         elif variables.settings_obj.pos == "BL":
@@ -91,4 +91,4 @@ class RealtimeOverlay(tk.Toplevel):
         else:
             raise ValueError("vars.settings_obj.pos not valid")
         self.wm_geometry("%sx%s" % (int(w_req), int(h_req)) + pos_c)
-        print "[DEBUG] Overlay position set to: ", "%sx%s" % (int(w_req), int(h_req)) + pos_c
+        print("[DEBUG] Overlay position set to: ", "%sx%s" % (int(w_req), int(h_req)) + pos_c)

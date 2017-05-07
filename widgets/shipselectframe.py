@@ -5,10 +5,10 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 from os import path
-import cPickle as pickle
+import pickle as pickle
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import ToggledFrame, VerticalScrollFrame
@@ -23,7 +23,8 @@ class ShipSelectFrame(ttk.Frame):
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=240, canvasheight=345, width=240, height=345)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db"))) as db:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")),
+                  "rb") as db:
             self.data = pickle.load(db)
         self.callback = callback
         self.faction_callback = faction_callback
@@ -70,25 +71,25 @@ class ShipSelectFrame(ttk.Frame):
         self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)
         set_row = 0
         set_column = 0
-        for button in self.faction_buttons.itervalues():
+        for button in self.faction_buttons.values():
             button.grid(row=set_row, column=set_column, sticky=tk.N + tk.W + tk.E, padx=1)
             set_column += 1
         set_row = 20
         for faction in self.category_frames:
             if faction == self.faction:
-                for frame in self.category_frames[faction].itervalues():
+                for frame in self.category_frames[faction].values():
                     frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2)
                     set_row += 1
             else:
-                for frame in self.category_frames[faction].itervalues():
+                for frame in self.category_frames[faction].values():
                     frame.grid_forget()
         set_row = 40
-        for button in self.ship_buttons.itervalues():
+        for button in self.ship_buttons.values():
             button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
             set_row += 1
 
     def set_ship(self, faction, category, shipname):
-        print "Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, shipname)
+        print("Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, shipname))
         self.callback(faction, category, shipname)
 
     def set_faction(self, faction):

@@ -4,16 +4,16 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import threading
-import cPickle as pickle
+import pickle as pickle
 import os
 from datetime import datetime
-from Queue import Queue
+from queue import Queue
 import time
 
 import pynput
 
-import vision
-from keys import keys
+from . import vision
+from .keys import keys
 from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
 from toplevels.screenoverlay import HitChanceOverlay
 import variables
@@ -102,7 +102,7 @@ class ScreenParser(threading.Thread):
         else:
             self.screenoverlay = None
         try:
-            with open(self.pickle_name, "r") as fi:
+            with open(self.pickle_name, "rb") as fi:
                 self.data_dictionary = pickle.load(fi)
         except IOError:
             self.data_dictionary = {}
@@ -154,9 +154,9 @@ class ScreenParser(threading.Thread):
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
             if not self.exit_queue.empty():
-                print "ScreenParser exit_queue is not empty"
+                print("ScreenParser exit_queue is not empty")
                 if not self.exit_queue.get():
-                    print "ScreenParser loop break"
+                    print("ScreenParser loop break")
                     break
             write_debug_log("ScreenParser started a cycle")
             # While data_queue is not empty, process the data in it
@@ -214,9 +214,9 @@ class ScreenParser(threading.Thread):
             distance = vision.get_distance_from_center(pointer_cds)
             tracking_degrees = vision.get_tracking_degrees(distance)
             if not self.exit_queue.empty():
-                print "ScreenParser exit_queue is not empty"
+                print("ScreenParser exit_queue is not empty")
                 if not self.exit_queue.get():
-                    print "ScreenParser loop break"
+                    print("ScreenParser loop break")
                     break
             if self.screenoverlay:
                 self.screenoverlay.set_percentage(str(tracking_degrees) + "%")
@@ -256,15 +256,15 @@ class ScreenParser(threading.Thread):
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
             write_debug_log("Finished a screen parsing cycle")
-        print "ScreenParser stopping activities"
+        print("ScreenParser stopping activities")
         write_debug_log("ScreenParser stopping activities")
         self.screenoverlay.running = False
         time.sleep(0.05)
-        print "Calling self.close()"
+        print("Calling self.close()")
         self.data_dictionary[self.file] = self._file_dict
-        print "Saving data dictionary"
+        print("Saving data dictionary")
         self.save_data_dictionary()
-        print "ScreenParser exit"
+        print("ScreenParser exit")
 
     # TODO: Add RGB capabilities
     # TODO: Add security measures (key filters)
@@ -297,9 +297,9 @@ class ScreenParser(threading.Thread):
 
     def __exit__(self):
         self.data_dictionary[self.file] = self._file_dict
-        print "Saving data dictionary"
+        print("Saving data dictionary")
         self.save_data_dictionary()
-        print "ScreenParser exit"
+        print("ScreenParser exit")
 
     def save_data_dictionary(self):
         write_debug_log("ScreenParser saving data dictionary")

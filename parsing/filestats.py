@@ -7,7 +7,7 @@
 # UI imports
 import decimal
 import variables
-import parse
+from . import parse
 
 
 def file_statistics(file_cube):
@@ -54,7 +54,7 @@ def file_statistics(file_cube):
 
     for mat in abilities:
         for dic in mat:
-            for (key, value) in dic.iteritems():
+            for (key, value) in dic.items():
                 if key not in total_abilities:
                     total_abilities[key] = value
                 else:

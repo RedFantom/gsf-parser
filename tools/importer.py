@@ -4,7 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import os
-import ConfigParser
+import configparser
 from tools import settings, utilities
 
 
@@ -17,7 +17,7 @@ class SettingsImporter(object):
 
     def __init__(self):
         self.first_install = False
-        self.conf = ConfigParser.RawConfigParser()
+        self.conf = configparser.RawConfigParser()
         self.directory = utilities.get_temp_directory()
         self.file_name = self.directory + "\\GSF Parser\\settings.ini"
         try:
@@ -46,116 +46,116 @@ class SettingsImporter(object):
         """
         try:
             self.conf.add_section("misc")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
         try:
             self.conf.add_section("parsing")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
         try:
             self.conf.add_section("sharing")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
         try:
             self.conf.add_section("realtime")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
         try:
             self.conf.add_section("gui")
-        except ConfigParser.DuplicateSectionError:
+        except configparser.DuplicateSectionError:
             pass
         try:
             self.version = self.conf.get("misc", "version")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.first_install = True
             return
         try:
             self.cl_path = self.conf.get("parsing", "cl_path")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.cl_path = settings.Defaults.cl_path
         try:
             if self.conf.get("parsing", "auto_ident") == "True":
                 self.auto_ident = True
             else:
                 self.auto_ident = False
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.auto_ident = settings.Defaults.auto_ident
         try:
             self.server_address = self.conf.get("sharing", "server_address")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.server_address = settings.Defaults.server_address
         try:
             self.server_port = int(self.conf.get("sharing", "server_port"))
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.server_port = settings.Defaults.server_port
         try:
             if self.conf.get("sharing", "auto_upl") == "True":
                 self.auto_upl = True
             else:
                 self.auto_upl = False
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.auto_upl = settings.Defaults.auto_upl
         try:
             if self.conf.get("realtime", "overlay") == "True":
                 self.overlay = True
             else:
                 self.overlay = False
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay = settings.Defaults.overlay
         try:
             self.overlay_bg_color = self.conf.get("realtime", "overlay_bg_color")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_bg_color = settings.Defaults.overlay_bg_color
         try:
             self.overlay_tr_color = self.conf.get("realtime", "overlay_tr_color")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_tr_color = settings.Defaults.overlay_tr_color
         try:
             self.overlay_tx_color = self.conf.get("realtime", "overlay_tx_color")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_tx_color = settings.Defaults.overlay_tx_color
         try:
             self.opacity = float(self.conf.get("realtime", "opacity"))
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.opacity = settings.Defaults.opacity
         except TypeError:
             self.opacity = settings.Defaults.opacity
         try:
             self.size = self.conf.get("realtime", "size")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.size = settings.Defaults.size
         try:
             self.pos = self.conf.get("realtime", "pos")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.pos = settings.Defaults.pos
         try:
             self.color = self.conf.get("gui", "color")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.color = settings.Defaults.color
         try:
             self.event_colors = self.conf.get("gui", "event_colors")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.event_colors = settings.Defaults.event_colors
         try:
             self.event_scheme = self.conf.get("gui", "event_scheme")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.event_scheme = settings.Defaults.event_scheme
         try:
             self.logo_color = self.conf.get("gui", "logo_color")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.logo_color = settings.Defaults.logo_color
         try:
             self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_tx_font = settings.Defaults.overlay_tx_font
         try:
             self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_tx_size = settings.Defaults.overlay_tx_size
         try:
             if self.conf.get("realtime", "overlay_when_gsf") == "True":
                 self.overlay_when_gsf = True
             else:
                 self.overlay_when_gsf = False
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             self.overlay_when_gsf = settings.Defaults.overlay_when_gsf

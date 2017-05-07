@@ -5,17 +5,13 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    print "mtTkinter not found, please use 'pip install mttkinter'"
-    import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 import variables
-import tkColorChooser
+import tkinter.colorchooser
 import collections
 import struct
-import tkFileDialog
+import tkinter.filedialog
 import tempfile
 
 
@@ -80,7 +76,7 @@ class EventColors(tk.Toplevel):
         self.color_entry_widgets_fg = {}
         self.color_button_widgets_fg = {}
         self.color_button_widgets_bg = {}
-        for key in self.colors.iterkeys():
+        for key in self.colors.keys():
             self.color_labels[key] = ttk.Label(self, text=self.color_descriptions[key], justify=tk.LEFT)
             self.color_button_widgets_fg[key] = ttk.Button(self, text="Choose",
                                                            command=lambda color=key: self.set_color(color, fg=True))
@@ -93,7 +89,7 @@ class EventColors(tk.Toplevel):
         self.cancel_button = ttk.Button(self, text="Cancel", width=10, command=self.cancel_button_cb)
         self.import_button = ttk.Button(self, text="Import", width=10, command=self.import_button_cb)
         self.export_button = ttk.Button(self, text="Export", width=10, command=self.export_button_cb)
-        for key in self.color_descriptions.iterkeys():
+        for key in self.color_descriptions.keys():
             self.color_entry_widgets_bg[key].delete(0, tk.END)
             self.color_entry_widgets_fg[key].delete(0, tk.END)
             self.color_entry_widgets_bg[key].insert(0, self.colors[key][0])
@@ -112,10 +108,10 @@ class EventColors(tk.Toplevel):
             self.color_entry_widgets_fg[key].config(foreground=foreground_color, background=self.colors[key][1])
 
     def import_button_cb(self):
-        file_to_open = tkFileDialog.askopenfile(filetypes=[("Settings file", ".ini")],
-                                                initialdir=tempfile.gettempdir().replace("temp", "GSF Parser") \
-                                                           + "\\event_colors.ini",
-                                                parent=self, title="GSF Parser: Import colors from file")
+        file_to_open = tkinter.filedialog.askopenfile(filetypes=[("Settings file", ".ini")],
+                                                      initialdir=tempfile.gettempdir().replace("temp", "GSF Parser") \
+                                                                 + "\\event_colors.ini",
+                                                      parent=self, title="GSF Parser: Import colors from file")
         if not file_to_open:
             self.focus_set()
             return
@@ -134,7 +130,7 @@ class EventColors(tk.Toplevel):
         self.colors['spawn'] = [variables.color_scheme['spawn'][0], variables.color_scheme['spawn'][1]]
         self.colors['match'] = [variables.color_scheme['match'][0], variables.color_scheme['match'][1]]
         self.colors['default'] = [variables.color_scheme['default'][0], variables.color_scheme['default'][1]]
-        for key in self.color_entry_vars_bg.iterkeys():
+        for key in self.color_entry_vars_bg.keys():
             self.color_entry_widgets_bg[key].delete(0, tk.END)
             self.color_entry_widgets_fg[key].delete(0, tk.END)
             self.color_entry_widgets_bg[key].insert(self.colors[key][0])
@@ -142,27 +138,30 @@ class EventColors(tk.Toplevel):
         self.focus_set()
 
     def export_button_cb(self):
-        file_to_save = tkFileDialog.asksaveasfilename(defaultextension=".ini", filetypes=[("Settings file", ".ini")],
-                                                      initialdir=tempfile.gettempdir().replace("temp", "GSF Parser") \
-                                                                 + "\\event_colors.ini",
-                                                      parent=self, title="GSF Parser: Export colors to file")
+        file_to_save = tkinter.filedialog.asksaveasfilename(defaultextension=".ini",
+                                                            filetypes=[("Settings file", ".ini")],
+                                                            initialdir=tempfile.gettempdir().replace("temp",
+                                                                                                     "GSF Parser") \
+                                                                       + "\\event_colors.ini",
+                                                            parent=self, title="GSF Parser: Export colors to file")
         if not file_to_save:
             self.focus_set()
             return
-        for color, variable in self.color_entry_vars_bg.iteritems():
+        for color, variable in self.color_entry_vars_bg.items():
             self.colors[color][0] = variable.get()
-        for color, variable in self.color_entry_vars_fg.iteritems():
+        for color, variable in self.color_entry_vars_fg.items():
             self.colors[color][1] = variable.get()
-        for color, lst in self.colors.iteritems():
+        for color, lst in self.colors.items():
             variables.color_scheme[color] = lst
         variables.color_scheme.write_custom(custom_file=file_to_save)
         self.focus_set()
 
     def set_color(self, key, fg=False):
         if not fg:
-            color_tuple = tkColorChooser.askcolor(color=self.color_entry_widgets_bg[key].get(),
-                                                  title="GSF Parser: Choose color for %s" % self.color_descriptions[
-                                                      key])
+            color_tuple = tkinter.colorchooser.askcolor(color=self.color_entry_widgets_bg[key].get(),
+                                                        title="GSF Parser: Choose color for %s" %
+                                                              self.color_descriptions[
+                                                                  key])
             try:
                 red = int(color_tuple[0][0])
                 green = int(color_tuple[0][1])
@@ -176,9 +175,10 @@ class EventColors(tk.Toplevel):
             self.color_entry_widgets_bg[key].config(background=color_tuple[1],
                                                     foreground=foreground_color)
         else:
-            color_tuple = tkColorChooser.askcolor(color=self.color_entry_widgets_fg[key].get(),
-                                                  title="GSF Parser: Choose color for %s" % self.color_descriptions[
-                                                      key])
+            color_tuple = tkinter.colorchooser.askcolor(color=self.color_entry_widgets_fg[key].get(),
+                                                        title="GSF Parser: Choose color for %s" %
+                                                              self.color_descriptions[
+                                                                  key])
             try:
                 red = int(color_tuple[0][0])
                 green = int(color_tuple[0][1])
@@ -194,11 +194,11 @@ class EventColors(tk.Toplevel):
         self.focus_set()
 
     def ok_button_cb(self):
-        for color, widget in self.color_entry_widgets_bg.iteritems():
+        for color, widget in self.color_entry_widgets_bg.items():
             self.colors[color][0] = widget.get()
-        for color, widget in self.color_entry_widgets_fg.iteritems():
+        for color, widget in self.color_entry_widgets_fg.items():
             self.colors[color][1] = widget.get()
-        for color, lst in self.colors.iteritems():
+        for color, lst in self.colors.items():
             variables.color_scheme[color] = lst
         variables.color_scheme.write_custom()
         self.destroy()
@@ -211,7 +211,7 @@ class EventColors(tk.Toplevel):
         self.column_label_two.grid(column=2, columnspan=2, row=0, sticky=tk.W)
         self.column_label_three.grid(column=4, columnspan=2, row=0, sticky=tk.W)
         set_row = 1
-        for key in self.colors.iterkeys():
+        for key in self.colors.keys():
             self.color_labels[key].grid(column=0, columnspan=2, row=set_row, sticky=tk.W)
             self.color_entry_widgets_bg[key].grid(column=2, row=set_row, sticky=tk.W, padx=5)
             self.color_button_widgets_bg[key].grid(column=3, row=set_row, sticky=tk.W)

@@ -5,12 +5,10 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
+import tkinter as tk
+
+import tkinter.ttk as ttk
+import tkinter.messagebox
 import variables
 
 
@@ -28,15 +26,9 @@ class Privacy(tk.Toplevel):
         try:
             privacy_list = list(privacy)
         except:
-            tkMessageBox.showerror("Error", "Data in privacy statement received is not valid.")
+            tkinter.messagebox.showerror("Error", "Data in privacy statement received is not valid.")
             return
         index = 0
         for line in privacy_list:
             privacy_listbox.insert(0, line)
             index += 1
-
-
-
-
-
-

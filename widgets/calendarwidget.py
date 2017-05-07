@@ -3,19 +3,17 @@
 # This file is excluded from the copyright of RedFantom, Daethyra and Sprigellania, but the code in this file
 # IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
 # software.
-import ttk
+import tkinter.ttk
 
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
+import tkinter as tk
+
 import calendar
-import tkFont
+import tkinter.font
 from PIL import Image, ImageTk
 import os
 
 
-class Calendar(ttk.Frame):
+class Calendar(tkinter.ttk.Frame):
     """
     ttk Widget that enables a calender within a frame, allowing the user to select dates.
     Credits to: The Python team
@@ -43,7 +41,7 @@ class Calendar(ttk.Frame):
         self._date = self.datetime(year, month, 1)
         self._selection = None  # no date selected
 
-        ttk.Frame.__init__(self, master, **kw)
+        tkinter.ttk.Frame.__init__(self, master, **kw)
 
         self._cal = self.get_calendar(locale, fwday)
 
@@ -70,7 +68,7 @@ class Calendar(ttk.Frame):
         elif item == 'selectforeground':
             self._canvas.itemconfigure(self._canvas.text, item=value)
         else:
-            ttk.Frame.__setitem__(self, item, value)
+            tkinter.ttk.Frame.__setitem__(self, item, value)
 
     def __getitem__(self, item):
         if item in ('year', 'month'):
@@ -80,7 +78,7 @@ class Calendar(ttk.Frame):
         elif item == 'selectforeground':
             return self._canvas.itemcget(self._canvas.text, 'fill')
         else:
-            r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(self, item)})
+            r = tkinter.ttk.tclobjs_to_py({item: tkinter.ttk.Frame.__getitem__(self, item)})
             return r[item]
 
     '''
@@ -96,16 +94,16 @@ class Calendar(ttk.Frame):
 
     def __place_widgets(self):
         # header frame and its widgets
-        hframe = ttk.Frame(self)
+        hframe = tkinter.ttk.Frame(self)
         lbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\left.png")
         rbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\right.png")
         lbtn_tkimg = ImageTk.PhotoImage(lbtn_img)
         rbtn_tkimg = ImageTk.PhotoImage(rbtn_img)
-        lbtn = ttk.Button(hframe, command=self._prev_month, image=lbtn_tkimg)
-        rbtn = ttk.Button(hframe, command=self._next_month, image=rbtn_tkimg)
-        self._header = ttk.Label(hframe, width=15, anchor='center')
+        lbtn = tkinter.ttk.Button(hframe, command=self._prev_month, image=lbtn_tkimg)
+        rbtn = tkinter.ttk.Button(hframe, command=self._next_month, image=rbtn_tkimg)
+        self._header = tkinter.ttk.Label(hframe, width=15, anchor='center')
         # the calendar
-        self._calendar = ttk.Treeview(hframe, show='', selectmode='none', height=7)
+        self._calendar = tkinter.ttk.Treeview(hframe, show='', selectmode='none', height=7)
 
         # pack the widgets
         hframe.pack(side='top', pady=4, anchor='center')
@@ -120,14 +118,14 @@ class Calendar(ttk.Frame):
         self._calendar.tag_configure('header', background='grey90')
         self._calendar.insert('', 'end', values=cols, tag='header')
         # adjust its columns width
-        font = tkFont.Font()
+        font = tkinter.font.Font()
         maxwidth = max(font.measure(col) for col in cols)
         for col in cols:
             self._calendar.column(col, width=maxwidth, minwidth=maxwidth,
                                   anchor='e')
 
     def __setup_selection(self, sel_bg, sel_fg):
-        self._font = tkFont.Font()
+        self._font = tkinter.font.Font()
         self._canvas = canvas = tk.Canvas(self._calendar,
                                           background=sel_bg, borderwidth=0, highlightthickness=0)
         canvas.text = canvas.create_text(0, 0, fill=sel_fg, anchor='w')

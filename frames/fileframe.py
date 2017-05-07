@@ -7,20 +7,17 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
-import tkFileDialog
+import tkinter as tk
+import tkinter.ttk as ttk
+import tkinter.messagebox
+import tkinter.filedialog
 import operator
 import os
 import re
 from datetime import datetime
 import variables
 from parsing import parse, abilities, folderstats, filestats, matchstats, spawnstats
-from toplevels import SplashScreen
+from toplevels.splashscreens import SplashScreen
 
 
 # Class for the _frame in the fileTab of the parser
@@ -87,7 +84,8 @@ class FileFrame(ttk.Frame):
         self.old_spawn = 0
 
     def scroll_file(self, event):
-        self.file_box.yview_scroll(-1 * (event.delta / 100), "units")
+        # self.file_box.yview_scroll(-1 * (event.delta / 100), "units")
+        pass
 
     def bind_file(self, event):
         self.main_window.bind("<MouseWheel>", self.scroll_file)
@@ -97,7 +95,8 @@ class FileFrame(ttk.Frame):
         self.main_window.unbind("<MouseWheel>")
 
     def scroll_match(self, event):
-        self.match_box.yview_scroll(-1 * (event.delta / 100), "units")
+        # self.match_box.yview_scroll(-1 * (event.delta / 100), "units")
+        pass
 
     def bind_match(self, event):
         self.main_window.bind("<MouseWheel>", self.scroll_match)
@@ -107,7 +106,8 @@ class FileFrame(ttk.Frame):
         self.main_window.unbind("<MouseWheel>")
 
     def scroll_spawn(self, event):
-        self.spawn_box.yview_scroll(-1 * (event.delta / 100), "units")
+        # self.spawn_box.yview_scroll(-1 * (event.delta / 100), "units")
+        pass
 
     def bind_spawn(self, event):
         self.main_window.bind("<MouseWheel>", self.scroll_spawn)
@@ -120,7 +120,7 @@ class FileFrame(ttk.Frame):
         """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         """
-        tkMessageBox.showinfo("Notice", "This button is not yet functional.")
+        tkinter.messagebox.showinfo("Notice", "This button is not yet functional.")
 
     def grid_widgets(self):
         """
@@ -217,9 +217,10 @@ class FileFrame(ttk.Frame):
             os.chdir(variables.settings_obj.cl_path)
             os.chdir(old_path)
         except OSError:
-            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
-                                            "choose another folder.")
-            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            tkinter.messagebox.showerror("Error",
+                                         "The CombatLogs folder found in the settings file is not valid. Please "
+                                         "choose another folder.")
+            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
         for file in os.listdir(variables.settings_obj.cl_path):
@@ -232,7 +233,7 @@ class FileFrame(ttk.Frame):
                             dt = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime(
                                 "%Y-%d-%m   %H:%M:%S")
                         else:
-                            tkMessageBox.showerror("No valid date format setting found.")
+                            tkinter.messagebox.showerror("No valid date format setting found.")
                             return
                     except ValueError:
                         dt = file
@@ -272,9 +273,10 @@ class FileFrame(ttk.Frame):
             os.chdir(variables.settings_obj.cl_path)
             os.chdir(old_cwd)
         except OSError:
-            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
-                                            "choose another folder.")
-            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            tkinter.messagebox.showerror("Error",
+                                         "The CombatLogs folder found in the settings file is not valid. Please "
+                                         "choose another folder.")
+            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
         for file in os.listdir(variables.settings_obj.cl_path):
@@ -290,7 +292,8 @@ class FileFrame(ttk.Frame):
                 if not silent:
                     self.splash.update_progress()
                 else:
-                    self.main_window.splash.update_progress()
+                    # self.main_window.splash.update_progress()
+                    pass
         self.file_box.insert(tk.END, "All CombatLogs")
         for file in self.file_strings:
             self.file_box.insert(tk.END, file)
@@ -320,7 +323,7 @@ class FileFrame(ttk.Frame):
             (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
              enemydamaget, uncounted) = folderstats.folder_statistics()
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
-            for key, value in abilities_dict.iteritems():
+            for key, value in abilities_dict.items():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             ships_string = "Ships used:\t\tCount:\n"
@@ -353,7 +356,7 @@ class FileFrame(ttk.Frame):
                                                                                   str(enemydamaget[enemy])))
 
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
-            most_used_ship = max(shipsdict.iteritems(), key=operator.itemgetter(1))[0]
+            most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
             self.main_window.ship_frame.update_ship([most_used_ship])
             self.main_window.ship_frame.update()
         else:
@@ -367,8 +370,8 @@ class FileFrame(ttk.Frame):
             except TypeError:
                 variables.file_name = self.files_dict[self.file_strings[int(numbers[0]) - 1]]
             except KeyError:
-                tkMessageBox.showerror("Error", "The parser encountered an error while selecting the file. Please "
-                                                "consult the issues page of the GitHub repository.")
+                tkinter.messagebox.showerror("Error", "The parser encountered an error while selecting the file. "
+                                                      "Please consult the issues page of the GitHub repository.")
             # Read all the lines from the selected file
             with open(variables.settings_obj.cl_path + "/" + variables.file_name, "rU") as clicked_file:
                 lines = clicked_file.readlines()
@@ -410,7 +413,7 @@ class FileFrame(ttk.Frame):
             file_cube = variables.file_cube
             (abilities_dict, statistics_string, shipsdict, enemies,
              enemydamaged, enemydamaget, uncounted) = filestats.file_statistics(file_cube)
-            for key, value in abilities_dict.iteritems():
+            for key, value in abilities_dict.items():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -477,7 +480,7 @@ class FileFrame(ttk.Frame):
                 variables.player_numbers.update(parse.determinePlayer(spawn))
             (abilities_dict, statistics_string, shipsdict, enemies,
              enemydamaged, enemydamaget) = matchstats.match_statistics(match)
-            for key, value in abilities_dict.iteritems():
+            for key, value in abilities_dict.items():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Ships used:\t\tCount:\n"
@@ -522,21 +525,21 @@ class FileFrame(ttk.Frame):
                 try:
                     variables.spawn_timing = self.spawn_timing_strings[int(numbers[0]) - 1]
                 except:
-                    tkMessageBox.showerror("Error",
-                                           "The parser encountered a bug known as #19 in the repository. "
-                                           "This bug has not been fixed. Check out issue #19 in the repository"
-                                           " for more information.")
+                    tkinter.messagebox.showerror("Error",
+                                                 "The parser encountered a bug known as #19 in the repository. "
+                                                 "This bug has not been fixed. Check out issue #19 in the repository"
+                                                 " for more information.")
             try:
                 match = variables.file_cube[self.match_timing_strings.index(variables.match_timing)]
             except ValueError:
-                print "[DEBUG] vars.match_timing not in self.match_timing_strings!"
+                print("[DEBUG] vars.match_timing not in self.match_timing_strings!")
                 return
             spawn = match[self.spawn_timing_strings.index(variables.spawn_timing)]
             variables.spawn = spawn
             variables.player_numbers = parse.determinePlayer(spawn)
             (abilities_dict, statistics_string, ships_list, ships_comps,
              enemies, enemydamaged, enemydamaget) = spawnstats.spawn_statistics(spawn)
-            for key, value in abilities_dict.iteritems():
+            for key, value in abilities_dict.items():
                 self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
             self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
             ships_string = "Possible ships used:\n"

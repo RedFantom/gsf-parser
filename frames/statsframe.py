@@ -7,13 +7,10 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 import variables
-from toplevels import EventsView
+from toplevels.eventsview import EventsView
 
 
 class StatsFrame(ttk.Frame):

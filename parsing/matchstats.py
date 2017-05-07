@@ -8,8 +8,8 @@
 import decimal
 import datetime
 import variables
-import parse
-import realtime
+from . import parse
+from . import realtime
 
 
 def match_statistics(match):
@@ -61,12 +61,12 @@ def match_statistics(match):
                 total_enemies.append(enemy)
         total_criticalcount += criticalcount
         total_hitcount += hitcount
-        for key, value in enemydamaged.iteritems():
+        for key, value in enemydamaged.items():
             if key in total_enemydamaged:
                 total_enemydamaged[key] += value
             else:
                 total_enemydamaged[key] = value
-        for key, value in enemydamaget.iteritems():
+        for key, value in enemydamaget.items():
             if key in total_enemydamaget:
                 total_enemydamaget[key] += value
             else:

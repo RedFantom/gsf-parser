@@ -7,12 +7,9 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
+import tkinter as tk
+import tkinter.ttk as ttk
+import tkinter.messagebox
 import os
 from PIL import Image, ImageTk
 import variables
@@ -65,19 +62,19 @@ class ShipFrame(ttk.Frame):
         :return:
         """
         if len(ships_list) > 1:
-            print "[DEBUG] Ship_list larger than 1, setting default.png"
+            print("[DEBUG] Ship_list larger than 1, setting default.png")
             try:
                 self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png".
                                replace("\\", "/"))
             except IOError:
-                print "[DEBUG] File not found."
-                tkMessageBox.showerror("Error",
-                                       "The specified picture can not be found. Is the assets folder copied correctly?")
+                print("[DEBUG] File not found.")
+                tkinter.messagebox.showerror("Error",
+                                             "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
         elif len(ships_list) == 0:
             raise ValueError("Ships_list == 0")
         else:
-            print "[DEBUG]  Ship_list not larger than one, setting appropriate image"
+            print("[DEBUG]  Ship_list not larger than one, setting appropriate image")
             try:
                 if variables.settings_obj.faction == "republic":
                     img = abilities.rep_ships[ships_list[0]]
@@ -86,8 +83,8 @@ class ShipFrame(ttk.Frame):
                 self.set_image(os.path.dirname(__file__).replace("frames", "") +
                                ("\\assets\\img\\" + img + ".png").replace("\\", "/"))
             except IOError:
-                tkMessageBox.showerror("Error",
-                                       "The specified picture can not be found. Is the assets folder copied correctly?")
+                tkinter.messagebox.showerror("Error",
+                                             "The specified picture can not be found. Is the assets folder copied correctly?")
                 return
         return
 
@@ -103,7 +100,7 @@ class ShipFrame(ttk.Frame):
             self.pic = ImageTk.PhotoImage(self.img)
             self.ship_image.config(image=self.pic)
         except tk.TclError as e:
-            print e
+            print(e)
 
     def remove_image(self):
         """
@@ -115,7 +112,7 @@ class ShipFrame(ttk.Frame):
                                                      replace("frames", "") +
                                                      "assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
         except IOError:
-            print "[DEBUG] default.png can not be opened."
+            print("[DEBUG] default.png can not be opened.")
             return
         try:
             self.ship_image.config(image=self.pic)

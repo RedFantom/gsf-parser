@@ -3,14 +3,13 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
 import socket
-import tkMessageBox
+import tkinter.messagebox
 import hashlib
 import threading
 import ssl
 import variables
-from toplevels import ConnectionSplash
+from toplevels.splashscreens import ConnectionSplash
 
 
 class ClientConnection(object):
@@ -40,7 +39,6 @@ class ClientConnection(object):
         self.INIT = False
         self.closing = False
         if not silent:
-            print "[DEBUG] Creating conn_splash"
             self.splash = ConnectionSplash(window=variables.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
@@ -51,27 +49,27 @@ class ClientConnection(object):
         try:
             self.conn.connect(self.address)
         except ssl.SSLError as e:
-            print "[DEBUG] %s" % e
-            tkMessageBox.showerror("Error", "An encryption error occurred while connecting to the server.")
+            print(("[DEBUG] %s" % e))
+            tkinter.messagebox.showerror("Error", "An encryption error occurred while connecting to the server.")
             self.connecting = False
             if not silent:
                 self.splash.destroy()
             return
         except socket.timeout:
-            tkMessageBox.showerror("Error", "A time-out occured while connecting to the server.")
+            tkinter.messagebox.showerror("Error", "A time-out occured while connecting to the server.")
             self.connecting = False
             if not silent:
                 self.splash.destroy()
             return
         except socket.error:
-            tkMessageBox.showerror("Error", "The server closed the connection.")
+            tkinter.messagebox.showerror("Error", "The server closed the connection.")
             if not silent:
                 self.splash.FLAG = True
                 self.splash.destroy()
             self.connecting = False
             return
         except:
-            tkMessageBox.showerror("Error", "An error occurred while connecting to the server.")
+            tkinter.messagebox.showerror("Error", "An error occurred while connecting to the server.")
             self.connecting = False
             if not silent:
                 self.splash.FLAG = True
@@ -154,7 +152,7 @@ class ClientConnection(object):
             self.unexpected()
             return
         recv_hash = self.recv(512)
-        for key, value in player.iteritems():
+        for key, value in list(player.items()):
             if hashlib.sha512(key) == recv_hash:
                 return True
         return False
@@ -430,52 +428,53 @@ class ClientConnection(object):
 
     @staticmethod
     def timeout():
-        tkMessageBox.showerror("Error", "The connection timed out.")
+        tkinter.messagebox.showerror("Error", "The connection timed out.")
         return
 
     @staticmethod
     def empty():
-        tkMessageBox.showerror("Error", "The response of the server is empty.")
+        tkinter.messagebox.showerror("Error", "The response of the server is empty.")
         return
 
     @staticmethod
     def unexpected():
-        tkMessageBox.showerror("Error", "Did not get the expected response.")
+        tkinter.messagebox.showerror("Error", "Did not get the expected response.")
         return
 
     @staticmethod
     def failed():
-        tkMessageBox.showerror("Error", "Sending or receiving data from the server failed.")
+        tkinter.messagebox.showerror("Error", "Sending or receiving data from the server failed.")
         return
 
     @staticmethod
     def notinit():
-        tkMessageBox.showerror("Error", "The connection was not initialized correctly.")
+        tkinter.messagebox.showerror("Error", "The connection was not initialized correctly.")
         return
 
     @staticmethod
     def maintenance():
-        tkMessageBox.showinfo("Notice", "The server is in maintenance mode.")
+        tkinter.messagebox.showinfo("Notice", "The server is in maintenance mode.")
         return
 
     @staticmethod
     def unavailable():
-        tkMessageBox.showinfo("Notice", "The server is unavailable for an unknown reason.")
+        tkinter.messagebox.showinfo("Notice", "The server is unavailable for an unknown reason.")
         return
 
     @staticmethod
     def deprecated():
-        tkMessageBox.showinfo("Notice", "Cannot connect to the server, this parser is not up-to-date. Please update.")
+        tkinter.messagebox.showinfo("Notice",
+                                    "Cannot connect to the server, this parser is not up-to-date. Please update.")
         return
 
     @staticmethod
     def duplicate():
-        tkMessageBox.showinfo("Notice", "This file is already present on the server.")
+        tkinter.messagebox.showinfo("Notice", "This file is already present on the server.")
         return
 
     @staticmethod
     def banned():
-        tkMessageBox.showerror("Error", "This IP-address is banned from this server.")
+        tkinter.messagebox.showerror("Error", "This IP-address is banned from this server.")
         return
 
     @staticmethod
@@ -510,7 +509,7 @@ class RealtimeConnection(threading.Thread):
         try:
             self.conn.connect(self.address)
         except ssl.SSLError:
-            tkMessageBox.showerror("Error", "An encryption error occurred while connecting to the server.")
+            tkinter.messagebox.showerror("Error", "An encryption error occurred while connecting to the server.")
             self.INIT = False
             return
         if self.send("INIT") == -1: return
@@ -597,50 +596,51 @@ class RealtimeConnection(threading.Thread):
 
     @staticmethod
     def timeout():
-        tkMessageBox.showerror("Error", "The connection timed out.")
+        tkinter.messagebox.showerror("Error", "The connection timed out.")
         return
 
     @staticmethod
     def empty():
-        tkMessageBox.showerror("Error", "The response of the server is empty.")
+        tkinter.messagebox.showerror("Error", "The response of the server is empty.")
         return
 
     @staticmethod
     def unexpected():
-        tkMessageBox.showerror("Error", "Did not get the expected response.")
+        tkinter.messagebox.showerror("Error", "Did not get the expected response.")
         return
 
     @staticmethod
     def failed():
-        tkMessageBox.showerror("Error", "Sending or receiving data from the server failed.")
+        tkinter.messagebox.showerror("Error", "Sending or receiving data from the server failed.")
         return
 
     @staticmethod
     def notinit():
-        tkMessageBox.showerror("Error", "The connection was not initialized correctly.")
+        tkinter.messagebox.showerror("Error", "The connection was not initialized correctly.")
         return
 
     @staticmethod
     def maintenance():
-        tkMessageBox.showinfo("Notice", "The server is in maintenance mode.")
+        tkinter.messagebox.showinfo("Notice", "The server is in maintenance mode.")
         return
 
     @staticmethod
     def unavailable():
-        tkMessageBox.showinfo("Notice", "The server is unavailable for an unknown reason.")
+        tkinter.messagebox.showinfo("Notice", "The server is unavailable for an unknown reason.")
         return
 
     @staticmethod
     def deprecated():
-        tkMessageBox.showinfo("Notice", "Cannot connect to the server, this parser is not up-to-date. Please update.")
+        tkinter.messagebox.showinfo("Notice",
+                                    "Cannot connect to the server, this parser is not up-to-date. Please update.")
         return
 
     @staticmethod
     def dupliate():
-        tkMessageBox.showinfo("Notice", "This file is already present on the server.")
+        tkinter.messagebox.showinfo("Notice", "This file is already present on the server.")
         return
 
     @staticmethod
     def banned():
-        tkMessageBox.showerror("Error", "This IP-address is banned from this server.")
+        tkinter.messagebox.showerror("Error", "This IP-address is banned from this server.")
         return

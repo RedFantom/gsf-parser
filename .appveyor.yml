@@ -2,8 +2,8 @@ init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 environment:
   matrix:
-    - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
 install:
   - "%PYTHON%\\python.exe -m pip install matplotlib numpy opencv-python pillow mock pyinstaller configparser"
   - "%PYTHON%\\python.exe -m pip install codecov coverage mttkinter pynput nose"

@@ -53,6 +53,7 @@ def get_xy_tuple(xy):
     (x, y) = xy
     return int(x), int(y)
 
+
 '''
 The following functions were written with the help of Close-shave, who provided
 the formula for calculating the tracking penalty:
@@ -100,8 +101,7 @@ def get_timer_status_cv2(screen):
     """
     Determines the state of the spawn countdown timer by performing
     template matching on the cv2 array of a screenshot to find a match
-    for one of the timers in the folder.
-    :param screen: A cv2 array of the screenshot
+    for one of the timers in the folder.    :param screen: A cv2 array of the screenshot
     :return: An int of how many seconds are left
     """
     folder = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/") + "/assets/timers"
@@ -173,7 +173,7 @@ def get_power_management_cds(screen):
     return x, y
 
 
-def get_power_management(screen, (x, y)):
+def get_power_management(screen, cds):
     """
     Uses template matching to determine how the user has divided the power
     among the different ship components.
@@ -184,6 +184,7 @@ def get_power_management(screen, (x, y)):
              3: power to engines
              4: power to all
     """
+    x, y = cds
     weapon_cds = get_xy_tuple((x + 10, y - 50))
     shield_cds = get_xy_tuple((x + 32, y - 50))
     engine_cds = get_xy_tuple((x + 54, y - 50))
@@ -234,7 +235,7 @@ def get_ship_health_cds(screen):
     return x, y
 
 
-def get_ship_health_shields(screen, (x, y)):
+def get_ship_health_shields(screen, cds):
     """
     Uses the PIL library to determine the color of the ship icon in the UI
     to make an approximation of the ship shield health.
@@ -246,6 +247,8 @@ def get_ship_health_shields(screen, (x, y)):
     :param screen: cv2 array of screenshot or pillow object
     :return: int with percentage
     """
+
+    x, y = cds
 
     colors = {
         "blue": (2, 95, 133),
@@ -278,7 +281,7 @@ def get_ship_health_shields(screen, (x, y)):
     color_shields = []
 
     for number, rgb in enumerate(shields_rgb):
-        for key, value in colors.iteritems():
+        for key, value in colors.items():
             valid = True
             for index, color in enumerate(value):
                 if not color - 20 < rgb[index] < color + 20:

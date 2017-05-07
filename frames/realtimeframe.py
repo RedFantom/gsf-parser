@@ -7,19 +7,16 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
-import tkSimpleDialog
+import tkinter as tk
+import tkinter.ttk as ttk
+import tkinter.messagebox
+import tkinter.simpledialog
 import time
 import platform
-from Queue import Queue
+from queue import Queue
 import variables
 from parsing import stalking_alt, realtime, lineops
-from toplevels import RealtimeOverlay
+from toplevels.realtimeoverlay import RealtimeOverlay
 from tools.utilities import write_debug_log
 from parsing.screen import ScreenParser
 
@@ -53,11 +50,13 @@ class RealtimeFrame(ttk.Frame):
         self.listbox = tk.Listbox(self, width=105, height=15)
         self.scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scrollbar.set, font=("Consolas", 10))
-        self.statistics_list_label_one = ttk.Label(self, justify=tk.LEFT, text="Damage dealt:\nDamage taken:\n" + \
-                                                                               "Selfdamage:\nHealing received:\nSpawns:")
+        self.statistics_list_label_one = ttk.Label(self, justify=tk.LEFT,
+                                                   text="Damage dealt:\nDamage taken:\n" + \
+                                                        "Selfdamage:\nHealing received:\nSpawns:")
         self.statistics_list_label_two = ttk.Label(self, justify=tk.LEFT, text="Abilities:")
         self.statistics_label_one_text = tk.StringVar()
-        self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text, justify=tk.LEFT)
+        self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text,
+                                              justify=tk.LEFT)
         self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.start_parsing,
                                                width=25)
         self.upload_results_button = ttk.Button(self, text="Start uploading events", command=self.upload_events,
@@ -129,23 +128,18 @@ class RealtimeFrame(ttk.Frame):
             self.stalker_obj.start()
             self.stalking_exit_queue = self.stalker_obj.exit_queue
         elif self.parsing:
-            print "[DEBUG] Detected Windows version: ", platform.release()
-            if (platform.release() != "10" and platform.release() != "8" and platform.release() != "8.1"
-               and platform.release().lower() != "post2008Server".lower()):
-                self.main_window.file_select_frame.add_files_cb()
             write_debug_log("Stopping real-time parsing")
-            self.exit_queue.put(False)
             write_debug_log("Put False in exit_queue of Parser")
-            print "Joining threads"
+            print("Joining threads")
             if variables.settings_obj.screenparsing:
-                print "Joining ScreenParser thread"
+                print("Joining ScreenParser thread")
                 self.screenparser.join()
-                print "Screenparser thread joined"
+                print("Screenparser thread joined")
             self.stalking_exit_queue.put(False)
-            print "Joining LogStalker thread"
+            print("Joining LogStalker thread")
             self.stalker_obj.join()
-            print "LogStalker thread joined"
-            print "Threads joined"
+            print("LogStalker thread joined")
+            print("Threads joined")
             self.parsing = False
             write_debug_log("Real-time parsing joining threads")
             if variables.settings_obj.overlay and self.overlay:
@@ -157,12 +151,13 @@ class RealtimeFrame(ttk.Frame):
             write_debug_log("Finished stopping parsing...")
 
     def upload_events(self):
-        tkMessageBox.showinfo("Notice", "This button is not yet functional.")
+        tkinter.messagebox.showinfo("Notice", "This button is not yet functional.")
         return
-        mainname = tkSimpleDialog.askstring("Main character name", "Please enter the name of the main character you " + \
-                                            "want the character you're playing now to belong to in the database. Enter" + \
-                                            "nothing or the name of the character you're currently playing on to " + \
-                                            "create a new main character.")
+        mainname = tkinter.simpledialog.askstring("Main character name",
+                                                  "Please enter the name of the main character you " + \
+                                                  "want the character you're playing now to belong to in the database. Enter" + \
+                                                  "nothing or the name of the character you're currently playing on to " + \
+                                                  "create a new main character.")
 
     def grid_widgets(self):
         self.start_parsing_button.grid(column=0, row=1, padx=5, pady=5)
@@ -213,7 +208,7 @@ class RealtimeFrame(ttk.Frame):
                                            str(healing) + "\n" +
                                            str(selfdamage) + "\n")
             else:
-                raise
+                raise ValueError("Not a valid overlay size found.")
 
     def callback(self, lines):
         if not self.parsing:
@@ -264,7 +259,7 @@ class RealtimeFrame(ttk.Frame):
                     self.listbox.itemconfig(tk.END, bg="black", fg="white")
                 time.sleep(0.1)
             except:
-                print "[DEBUG] Error adding line to listbox"
+                print("[DEBUG] Error adding line to listbox")
         if self.parsing:
             self.main_window.after(500, self.insert)
             self.listbox.yview(tk.END)

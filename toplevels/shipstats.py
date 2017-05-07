@@ -5,8 +5,8 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 
 
 class ShipStatsToplevel(tk.Toplevel):

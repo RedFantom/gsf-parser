@@ -7,13 +7,9 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
+import tkinter as tk
+import tkinter.ttk as ttk
 import os
-
 import variables
 from tools import client
 import main
@@ -38,8 +34,8 @@ class MainWindow(tk.Tk):
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.finished = False
-        self.style = ttk.Style()
         variables.main_window = self
+        self.style = ttk.Style()
         self.set_icon()
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
         # Get the screen properties
@@ -58,8 +54,8 @@ class MainWindow(tk.Tk):
         # TODO Enable connecting to the server in a later phase
         if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
             variables.client_obj.init_conn()
-            print "[DEBUG] Connection initialized"
-        self.splash.update_progress()
+            print("[DEBUG] Connection initialized")
+        # self.splash.update_progress()
         self.geometry("800x425")
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=800)
@@ -115,13 +111,22 @@ class MainWindow(tk.Tk):
 
     def update_style(self, start=False):
         try:
-            print self.tk.call('package', 'require', 'tile-themes')
-        except:
-            print "[DEBUG] tile-themes is not available"
+            print((self.tk.call('package', 'require', 'tile-themes')))
+        except tk.TclError:
+            print("[DEBUG] tile-themes is not available")
+        old_dir = os.getcwd()
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
-            self.style.theme_use("plastik")
+            self.tk.eval("source theme/arc.tcl")
         except:
-            print "[DEBUG] Theme plastik is not available. Using default."
+            print("Error evaluating arc.tcl")
+        os.chdir(old_dir)
+        print((list(self.tk.call("ttk::themes"))))
+        try:
+            self.style.theme_use("arc")
+        except tk.TclError as e:
+            print("[DEBUG] Theme plastik is not available. Using default.")
+            print(e)
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor=tk.W)
@@ -139,4 +144,4 @@ class MainWindow(tk.Tk):
             self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
                                     variables.settings_obj.logo_color + ".ico")
         except:
-            print "[DEBUG] No icon found, is this from the GitHub repo?"
+            print("[DEBUG] No icon found, is this from the GitHub repo?")

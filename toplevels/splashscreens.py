@@ -5,13 +5,11 @@
 # For license see LICENSE
 
 # UI imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
-import tkFileDialog
+import tkinter as tk
+
+import tkinter.ttk as ttk
+import tkinter.messagebox
+import tkinter.filedialog
 import os
 
 from PIL import Image, ImageTk
@@ -33,9 +31,10 @@ class SplashScreen(tk.Toplevel):
         try:
             list = os.listdir(variables.settings_obj.cl_path)
         except OSError:
-            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
-                                            "choose another folder.")
-            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            tkinter.messagebox.showerror("Error",
+                                         "The CombatLogs folder found in the settings file is not valid. Please "
+                                         "choose another folder.")
+            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             list = os.listdir(variables.settings_obj.cl_path)
         files = []
@@ -48,9 +47,10 @@ class SplashScreen(tk.Toplevel):
         else:
             self.amount_files = max
         if self.amount_files >= 50 and boot:
-            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombatLogs folder. " + \
-                                  "You may want to archive some of your %s CombatLogs in order to speed up the parsing " + \
-                                  "program and the startup times." % self.amount_files)
+            tkinter.messagebox.showinfo("Notice",
+                                        "You currently have more than 50 CombatLogs in your CombatLogs folder. " + \
+                                        "You may want to archive some of your %s CombatLogs in order to speed up the parsing " + \
+                                        "program and the startup times." % self.amount_files)
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()
@@ -79,9 +79,10 @@ class BootSplash(tk.Toplevel):
         try:
             directory = os.listdir(window.default_path)
         except OSError:
-            tkMessageBox.showerror("Error", "The CombatLogs folder found in the settings file is not valid. Please "
-                                            "choose another folder.")
-            folder = tkFileDialog.askdirectory(title="CombatLogs folder")
+            tkinter.messagebox.showerror("Error",
+                                         "The CombatLogs folder found in the settings file is not valid. Please "
+                                         "choose another folder.")
+            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
             os.chdir(variables.settings_obj.cl_path)

@@ -8,9 +8,9 @@
 import os
 import decimal
 import variables
-import abilities
-import parse
-from toplevels import SplashScreen
+from . import abilities
+from . import parse
+from toplevels.splashscreens import SplashScreen
 
 
 def folder_statistics():
@@ -112,7 +112,7 @@ def folder_statistics():
                 ships_possible = parse.determineShip(spawn_abs)
                 # Add the abilities to the total dictionary of abilities and their amount of
                 # occurrences to display in the abilities tab eventually
-                for key, value in spawn_abs.iteritems():
+                for key, value in spawn_abs.items():
                     if key not in total_abilities:
                         total_abilities[key] = value
                     else:
@@ -163,13 +163,13 @@ def folder_statistics():
                         # TODO: The hooks of the client.py connection go here to identify enemies
                         total_enemies.append(item)
         # Add the totals of enemy damage dealt
-        for key, value in enemydamaged.iteritems():
+        for key, value in enemydamaged.items():
             if key in total_enemydamaged:
                 total_enemydamaged[key] += value
             else:
                 total_enemydamaged[key] = value
         # And enemy damage taken...
-        for key, value in enemydamaget.iteritems():
+        for key, value in enemydamaget.items():
             if key in total_enemydamaget:
                 total_enemydamaget[key] += value
             else:
@@ -252,7 +252,7 @@ def folder_statistics():
     # This is not actually kills+assits, but more like
     # kills+assists+assists_on_enemies_that_didnt_die
     total_killassists = 0
-    for value in total_enemydamaget.itervalues():
+    for value in total_enemydamaget.values():
         if value > 0:
             total_killassists += 1
     splash.destroy()

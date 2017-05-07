@@ -9,7 +9,7 @@ import unittest
 from datetime import datetime
 from parsing import parse
 import os
-import tkMessageBox
+import tkinter.messagebox
 from tools import utilities
 
 
@@ -26,10 +26,10 @@ class TestFileParsing(unittest.TestCase):
             except OSError:
                 pass
             with open((os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs\\").
-                 replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
+                              replace("\\", "/") + "combat_2017-02-26_12_00_00_000000.txt", "w") as target_log:
                 target_log.writelines(log.readlines())
-        tkMessageBox.showerror = messagebox
-        tkMessageBox.showinfo = messagebox
+        tkinter.messagebox.showerror = messagebox
+        tkinter.messagebox.showinfo = messagebox
 
     def test_determinePlayerName(self):
         self.assertEqual(parse.determinePlayerName(self.lines), "Redfantom")
@@ -54,18 +54,18 @@ class TestFileParsing(unittest.TestCase):
         stats_tuple = parse.parse_spawn(file_cube[0][0], player)
         self.assertIsInstance(stats_tuple, tuple)
         self.assertEqual(len(stats_tuple), 12)
-        self.assertIsInstance(stats_tuple[0], dict)    # abilities
-        self.assertIsInstance(stats_tuple[1], int)     # damagetaken
-        self.assertIsInstance(stats_tuple[2], int)     # damagedealt
-        self.assertIsInstance(stats_tuple[3], int)     # healingreceived
-        self.assertIsInstance(stats_tuple[4], int)     # selfdamage
-        self.assertIsInstance(stats_tuple[5], list)    # enemies
-        self.assertIsInstance(stats_tuple[6], int)     # criticalcount
-        self.assertIsInstance(stats_tuple[7], float)   # criticalluck
-        self.assertIsInstance(stats_tuple[8], int)     # hitcount
-        self.assertIsInstance(stats_tuple[9], list)    # ships_list
-        self.assertIsInstance(stats_tuple[10], dict)   # enemydamaged
-        self.assertIsInstance(stats_tuple[11], dict)   # enemydamaget
+        self.assertIsInstance(stats_tuple[0], dict)  # abilities
+        self.assertIsInstance(stats_tuple[1], int)  # damagetaken
+        self.assertIsInstance(stats_tuple[2], int)  # damagedealt
+        self.assertIsInstance(stats_tuple[3], int)  # healingreceived
+        self.assertIsInstance(stats_tuple[4], int)  # selfdamage
+        self.assertIsInstance(stats_tuple[5], list)  # enemies
+        self.assertIsInstance(stats_tuple[6], int)  # criticalcount
+        self.assertIsInstance(stats_tuple[7], float)  # criticalluck
+        self.assertIsInstance(stats_tuple[8], int)  # hitcount
+        self.assertIsInstance(stats_tuple[9], list)  # ships_list
+        self.assertIsInstance(stats_tuple[10], dict)  # enemydamaged
+        self.assertIsInstance(stats_tuple[11], dict)  # enemydamaget
         self.assertEqual(len(stats_tuple[0]), 4)
         self.assertTrue("Cluster Missiles" in stats_tuple[0])
         self.assertTrue("Nullify" in stats_tuple[0])
@@ -93,18 +93,18 @@ class TestFileParsing(unittest.TestCase):
         stats_tuple = parse.parse_spawn(file_cube[1][0], player)
         self.assertIsInstance(stats_tuple, tuple)
         self.assertEqual(len(stats_tuple), 12)
-        self.assertIsInstance(stats_tuple[0], dict)    # abilities
-        self.assertIsInstance(stats_tuple[1], int)     # damagetaken
-        self.assertIsInstance(stats_tuple[2], int)     # damagedealt
-        self.assertIsInstance(stats_tuple[3], int)     # healingreceived
-        self.assertIsInstance(stats_tuple[4], int)     # selfdamage
-        self.assertIsInstance(stats_tuple[5], list)    # enemies
-        self.assertIsInstance(stats_tuple[6], int)     # criticalcount
-        self.assertIsInstance(stats_tuple[7], float)   # criticalluck
-        self.assertIsInstance(stats_tuple[8], int)     # hitcount
-        self.assertIsInstance(stats_tuple[9], list)    # ships_list
-        self.assertIsInstance(stats_tuple[10], dict)   # enemydamaged
-        self.assertIsInstance(stats_tuple[11], dict)   # enemydamaget
+        self.assertIsInstance(stats_tuple[0], dict)  # abilities
+        self.assertIsInstance(stats_tuple[1], int)  # damagetaken
+        self.assertIsInstance(stats_tuple[2], int)  # damagedealt
+        self.assertIsInstance(stats_tuple[3], int)  # healingreceived
+        self.assertIsInstance(stats_tuple[4], int)  # selfdamage
+        self.assertIsInstance(stats_tuple[5], list)  # enemies
+        self.assertIsInstance(stats_tuple[6], int)  # criticalcount
+        self.assertIsInstance(stats_tuple[7], float)  # criticalluck
+        self.assertIsInstance(stats_tuple[8], int)  # hitcount
+        self.assertIsInstance(stats_tuple[9], list)  # ships_list
+        self.assertIsInstance(stats_tuple[10], dict)  # enemydamaged
+        self.assertIsInstance(stats_tuple[11], dict)  # enemydamaget
         self.assertEqual(stats_tuple[0], {'Ion Railgun': 1,
                                           'Distortion Field': 1,
                                           'Barrel Roll': 1})

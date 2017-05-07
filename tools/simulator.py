@@ -27,8 +27,8 @@ def flusher():
         while count < 10:
             fo.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
                      " [dest] [abi] [eff] ()\n")
-            print("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-                  " [dest] [abi] [eff] ()")
+            print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
+                   " [dest] [abi] [eff] ()"))
             fo.flush()
             sleep_time = random.randrange(0, 10)
             time.sleep(sleep_time)
@@ -48,8 +48,8 @@ def unbuffered():
         while count < 10:
             fo.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(
                 count) + "]" + " [dest] [abi] [eff] ()\n")
-            print("[" + datetime.now().time().isoformat() + "] [This is line " + str(
-                count) + "]" + " [dest] [abi] [eff] ()")
+            print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(
+                count) + "]" + " [dest] [abi] [eff] ()"))
             fo.flush()
             sleep_time = random.randrange(0, 10)
             time.sleep(sleep_time)
@@ -69,8 +69,8 @@ def open_close():
         f = open("OnGoing2.log", "a")
         f.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
                 " [dest] [abi] [eff] ()\n")
-        print("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-              " [dest] [abi] [eff] ()")
+        print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
+               " [dest] [abi] [eff] ()"))
         sleep_time = random.randrange(0, 10)
         time.sleep(sleep_time)
         count += 1
@@ -108,7 +108,7 @@ def simulate(input_file):
             fo.write(line)
             fo.flush()
 
-            print line
+            print(line)
 
             time.sleep(delta_sec)
 

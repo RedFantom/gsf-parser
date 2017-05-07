@@ -11,8 +11,8 @@ import threading
 import time
 from datetime import datetime
 import variables
-import realtime
-from Queue import Queue
+from queue import Queue
+from . import realtime
 
 
 class LogStalker(threading.Thread):
@@ -41,7 +41,7 @@ class LogStalker(threading.Thread):
         threading.Thread.__init__(self)
         self.folder = folder
         self.stringvar = watching_stringvar
-        print self.folder
+        print((self.folder))
         if not callback or not newfilecallback:
             raise ValueError("callback is not allowed to be None")
         self.callback = callback
@@ -65,9 +65,9 @@ class LogStalker(threading.Thread):
         """
         while True:
             if not self.exit_queue.empty():
-                print "LogStalker exit_queue not empty, getting value"
+                print("LogStalker exit_queue not empty, getting value")
                 if not self.exit_queue.get():
-                    print "LogStalker value was False, break loop"
+                    print("LogStalker value was False, break loop")
                     break
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
@@ -79,14 +79,14 @@ class LogStalker(threading.Thread):
                 except ValueError:
                     continue
             temp_datetime_list = []
-            for (key, value) in self.datetime_dict.iteritems():
+            for (key, value) in list(self.datetime_dict.items()):
                 temp_datetime_list.append(key)
             latest_file_datetime = max(temp_datetime_list)
             latest_file_name = self.datetime_dict[latest_file_datetime]
             if self.current_file == latest_file_name:
                 self.callback(self.read_from_file())
             else:
-                print "[DEBUG] Watching: " + latest_file_name
+                print(("[DEBUG] Watching: " + latest_file_name))
                 if self.stringvar:
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
