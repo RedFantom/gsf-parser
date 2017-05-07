@@ -11,10 +11,12 @@ try:
 except ImportError:
     print "mtTkinter not found, please use 'pip install mttkinter'"
     import Tkinter as tk
-from shipswidgets import *
-from widgets import VerticalScrollFrame
+from widgets import *
 from parsing.ships import Ship, Component
 from parsing.abilities import all_ships
+import cPickle as pickle
+from os import path
+from collections import OrderedDict
 
 
 class BuildsFrame(ttk.Frame):

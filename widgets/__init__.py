@@ -2,3 +2,8 @@ from calendarwidget import *
 from hoverinfo import *
 from toggledframe import *
 from verticalscrollframe import *
+from crewabilitiesframe import *
+from crewlistframe import *
+from shipselectframe import *
+from componentslistframe import *
+from componentwidgets import *
