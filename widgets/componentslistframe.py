@@ -48,7 +48,7 @@ class ComponentListFrame(ttk.Frame):
                                                          text=component["Name"],
                                                          command=lambda name=component["Name"]:
                                                          self.set_component(name),
-                                                         compound=tk.LEFT, width=21)
+                                                         compound=tk.LEFT, width=19)
             self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
                                                             text=str(component["Name"]) + "\n\n" +
                                                                  str(component["Description"]))

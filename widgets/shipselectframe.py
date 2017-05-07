@@ -38,7 +38,8 @@ class ShipSelectFrame(ttk.Frame):
         toggled = False
         for faction in self.data:
             self.faction_frames[faction] = ttk.Frame(self.frame)
-            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")))
+            self.faction_photos[faction] = photo(img.open(path.join(self.icons_path, faction.lower() + ".png")).
+                                                 resize((25, 25), img.ANTIALIAS))
             self.faction_buttons[faction] = ttk.Button(self, text=faction, width=8,
                                                        command=lambda faction=faction: self.set_faction(faction),
                                                        image=self.faction_photos[faction], compound=tk.LEFT)
@@ -65,7 +66,7 @@ class ShipSelectFrame(ttk.Frame):
                                    image=self.ship_photos[ship_dict["Name"]], compound=tk.LEFT,
                                    command=lambda faction=faction, category=category, ship_dict=ship_dict:
                                    self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
-                                   width=20)
+                                   width=18)
 
     def grid_widgets(self):
         self.scroll_frame.grid(row=1, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)

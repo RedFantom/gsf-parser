@@ -54,7 +54,7 @@ class CrewListFrame(ttk.Frame):
                                                                       command=(lambda name=member_dict["Name"],
                                                                                       crole=crole:
                                                                                self.set_crew_member(name, crole)),
-                                                                      width=21)
+                                                                      width=19)
                 if member_dict["IsDefaultCompanion"]:
                     self.copilots.append(member_dict["Name"])
         self.update_copilots()
