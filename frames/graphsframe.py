@@ -625,7 +625,7 @@ class GraphsFrame(ttk.Frame):
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average amount of deaths per match per day")
