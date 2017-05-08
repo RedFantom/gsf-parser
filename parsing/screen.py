@@ -15,6 +15,9 @@ from .keys import keys
 from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
 from toplevels.screenoverlay import HitChanceOverlay
 import variables
+import tkinter.messagebox as messagebox
+import tkinter.filedialog as filedialog
+from shutil import copyfile
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -104,7 +107,19 @@ class ScreenParser(threading.Thread):
                 self.data_dictionary = pickle.load(fi)
         except IOError:
             self.data_dictionary = {}
-        except EOFError:
+        except EOFError as e:
+            messagebox.showerror("Error", "The realtime data database did not open correctly. The data in the file may "
+                                          "be corrupted. You will now have the chance to dump the data to a separate "
+                                          "location together with a debug log. After this, the data will be "
+                                          "overwritten and all data in the file, including all data on tracking, "
+                                          "health, maps, scores and other data will be lost.")
+            if messagebox.askyesno("Debug dump", "Would you like to backup your old file with a debug log for the "
+                                                 "developers?"):
+                directory = filedialog.askdirectory(parent=variables.main_window, title="Choose directory...",
+                                                    mustexist=True)
+                copyfile(self.pickle_name, directory)
+                with open(os.path.join(directory, "debug.txt"), "w") as f:
+                    f.writelines(str(e))
             self.data_dictionary = {}
         write_debug_log("ScreenParser is creating all required data variables")
         # String of filename
