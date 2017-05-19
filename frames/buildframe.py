@@ -62,7 +62,7 @@ class BuildsFrame(ttk.Frame):
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
                                                       self.ship)
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
-        self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((39, 39)))
+        self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((25, 25)))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
 
@@ -134,7 +134,7 @@ class BuildsFrame(ttk.Frame):
     def grid_widgets(self):
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
-        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.W + tk.E, pady=1)
         self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
         self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
         self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
