@@ -52,9 +52,10 @@ ships = {
 
 class Ship(object):
     def __init__(self, ship_name):
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db")), "rb") as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
+                  "rb") as f:
             self.ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")),
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as f:
             self.categories_data = pickle.load(f)
         if ship_name not in self.ships_data:

@@ -23,7 +23,7 @@ class ShipSelectFrame(ttk.Frame):
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=240, canvasheight=345, width=240, height=345)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")),
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as db:
             self.data = pickle.load(db)
         self.callback = callback

@@ -37,11 +37,14 @@ class BuildsFrame(ttk.Frame):
         self.middle_components = ["Engine", "Shield"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "ships.db")), "rb") as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
+                  "rb") as f:
             self.ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "categories.db")), "rb") as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
+                  "rb") as f:
             self.categories_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "ships", "companions.db")), "rb") as f:
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
+                  "rb") as f:
             self.companions_data = pickle.load(f)
         self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=345)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
