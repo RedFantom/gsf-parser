@@ -16,27 +16,27 @@ class CharactersFrame(ttk.Frame):
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
         self.directory = utilities.get_temp_directory()
+        self.servers = {
+            "BAS": "The Bastion",
+            "BEG": "Begeren Colony",
+            "SHA": "The Shadowlands",
+            "JUN": "Jung Ma",
+            "EBH": "The Ebon Hawk",
+            "PRF": "Prophecy of the Five",
+            "T3M": "T3-M4",
+            "NTH": "Darth Nihilus",
+            "TFN": "The Tomb of Freedon Nadd",
+            "JKS": "Jar'kai Sword",
+            "PRG": "The Progenitor",
+            "VCH": "Vanjervalis Chain",
+            "BMD": "Battle Meditation",
+            "MFR": "Mantle of the Force",
+            "TRE": "The Red Eclipse"
+        }
         if "characters.db" not in os.listdir(self.directory):
-            servers = {"BAS": "The Bastion",
-                       "BEG": "Begeren Colony",
-                       "SHA": "The Shadowlands",
-                       "JUN": "Jung Ma",
-                       "EBH": "The Ebon Hawk",
-                       "PRF": "Prophecy of the Five",
-                       "T3M": "T3-M4",
-                       "NTH": "Darth Nihilus",
-                       "TFN": "The Tomb of Freedon Nadd",
-                       "JKS": "Jar'kai Sword",
-                       "PRG": "The Progenitor",
-                       "VCH": "Vanjervalis Chain",
-                       "BMD": "Battle Meditation",
-                       "MFR": "Mantle of the Force",
-                       "TRE": "The Red Eclipse"}
-            characters = {server: None for server in servers}
-            with open(os.path.join(self.directory, "characters.db"), "wb") as f:
-                pickle.dump(characters, f)
-        # with open(os.path.join(self.directory, "characters.db"), "wb") as f:
-        #    self.characters = pickle.load(f)
+            self.new_database()
+        with open(os.path.join(self.directory, "characters.db"), "rb") as f:
+            self.characters = pickle.load(f)
 
     def grid_widgets(self):
         pass
