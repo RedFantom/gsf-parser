@@ -134,7 +134,7 @@ class StatsFrame(ttk.Frame):
         self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
         self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N + tk.W + tk.E)
         self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.events_button.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=4, pady=12)
+        self.events_button.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=4, pady=2)
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N + tk.W + tk.E)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W + tk.E + tk.S)
