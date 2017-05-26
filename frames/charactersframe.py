@@ -35,8 +35,13 @@ class CharactersFrame(ttk.Frame):
         }
         if "characters.db" not in os.listdir(self.directory):
             self.new_database()
-        with open(os.path.join(self.directory, "characters.db"), "rb") as f:
-            self.characters = pickle.load(f)
+        try:
+            with open(os.path.join(self.directory, "characters.db"), "rb") as f:
+                self.characters = pickle.load(f)
+        except OSError:
+            self.new_database()
+        except EOFError:
+            self.new_database()
 
     def grid_widgets(self):
         pass
@@ -45,3 +50,4 @@ class CharactersFrame(ttk.Frame):
         characters = {server: None for server in self.servers}
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
+        self.characters = {}
