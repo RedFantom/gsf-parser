@@ -30,7 +30,7 @@ class ToolsFrame(ttk.Frame):
 
     @staticmethod
     def open_old_parser():
-        exec(open("../tools/gsfparserv1.py").read())
+        exec(open("../archive/gui.py").read())
 
     def grid_widgets(self):
         pass
