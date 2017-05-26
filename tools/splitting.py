@@ -30,7 +30,7 @@ def check_gsf(file_name):
             else:
                 continue
     if not file_obj.closed:
-        raise
+        raise ValueError()
     return False
 
 

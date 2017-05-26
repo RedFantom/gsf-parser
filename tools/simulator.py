@@ -77,7 +77,7 @@ def open_close():
         f.close()
 
 
-def simulate(input_file):
+def simulate(input_file, output_directory=None):
     """
     Takes an existent log file and copies it into a newly created file, simulating the time-delta.
 
@@ -92,7 +92,7 @@ def simulate(input_file):
     last, current = "", ""
     FMT = "%H:%M:%S.%f"
 
-    with open(input_file, "r") as fi, open(file_name, "a") as fo:
+    with open(input_file, "r") as fi, open(os.path.join(output_directory, file_name), "a") as fo:
         for line in fi:
 
             if last is "":
@@ -112,12 +112,12 @@ def simulate(input_file):
 
             time.sleep(delta_sec)
 
+if __name__ == "__main__":
+    """
+    --------------  Execute -----------------
+    """
 
-"""
---------------  Execute -----------------
-"""
-
-# flusher()
-# unbuffered()
-# open_close()
-simulate("CombatLog.txt")
+    # flusher()
+    # unbuffered()
+    # open_close()
+    simulate("CombatLog.txt")

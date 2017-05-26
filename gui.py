@@ -13,7 +13,7 @@ import os
 import variables
 from tools import client
 import main
-from frames import fileframe, resourcesframe, sharingframe, graphsframe
+from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
@@ -72,6 +72,7 @@ class MainWindow(tk.Tk):
         self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
         self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
+        self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
         self.file_select_frame.grid_widgets()
@@ -89,6 +90,7 @@ class MainWindow(tk.Tk):
         self.builds_frame.grid()
         self.characters_frame.grid()
         self.characters_frame.grid_widgets()
+        self.toolsframe.grid_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.characters_frame, text="Characters")
@@ -98,6 +100,7 @@ class MainWindow(tk.Tk):
         # TODO Finish Sharing and Leaderboards tab
         self.notebook.add(self.share_tab_frame, text="Sharing and Leaderboards")
         self.notebook.add(self.resources_frame, text="Resources")
+        self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
         # Update the files in the file_select frame
         self.notebook.grid(column=0, row=0)
