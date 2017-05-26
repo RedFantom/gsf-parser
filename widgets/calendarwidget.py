@@ -3,17 +3,21 @@
 # This file is excluded from the copyright of RedFantom, Daethyra and Sprigellania, but the code in this file
 # IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
 # software.
-import tkinter.ttk
-
 import tkinter as tk
-
+from tkinter import ttk
 import calendar
-import tkinter.font
-from PIL import Image, ImageTk
-import os
+from tkinter import font as tkFont
 
 
-class Calendar(tkinter.ttk.Frame):
+def get_calendar(locale, fwday):
+    # instantiate proper calendar class
+    if locale is None:
+        return calendar.TextCalendar(fwday)
+    else:
+        return calendar.LocaleTextCalendar(fwday, locale)
+
+
+class Calendar(ttk.Frame):
     """
     ttk Widget that enables a calender within a frame, allowing the user to select dates.
     Credits to: The Python team
@@ -38,27 +42,24 @@ class Calendar(tkinter.ttk.Frame):
         sel_bg = kw.pop('selectbackground', '#ecffc4')
         sel_fg = kw.pop('selectforeground', '#05640e')
 
+        self.master = master
         self._date = self.datetime(year, month, 1)
-        self._selection = None  # no date selected
+        self._selection = None # no date selected
 
-        tkinter.ttk.Frame.__init__(self, master, **kw)
+        ttk.Frame.__init__(self, master, **kw)
 
-        self._cal = self.get_calendar(locale, fwday)
+        self._cal = get_calendar(locale, fwday)
 
-        # self.__setup_styles()       # creates custom styles
-        self.__place_widgets()  # pack/grid used widgets
-        self.__config_calendar()  # adjust calendar columns and setup tags
+        self.__place_widgets()      # pack/grid used widgets
+        self.__config_calendar()    # adjust calendar columns and setup tags
         # configure a canvas, and proper bindings, for selecting dates
         self.__setup_selection(sel_bg, sel_fg)
 
         # store items ids, used for insertion later
         self._items = [self._calendar.insert('', 'end', values='')
-                       for _ in range(6)]
+                            for _ in range(6)]
         # insert dates in the currently empty calendar
         self._build_calendar()
-
-        # set the minimal size for the widget
-        self._calendar.bind('<Map>', self.__minsize)
 
     def __setitem__(self, item, value):
         if item in ('year', 'month'):
@@ -68,7 +69,7 @@ class Calendar(tkinter.ttk.Frame):
         elif item == 'selectforeground':
             self._canvas.itemconfigure(self._canvas.text, item=value)
         else:
-            tkinter.ttk.Frame.__setitem__(self, item, value)
+            ttk.Frame.__setitem__(self, item, value)
 
     def __getitem__(self, item):
         if item in ('year', 'month'):
@@ -78,38 +79,23 @@ class Calendar(tkinter.ttk.Frame):
         elif item == 'selectforeground':
             return self._canvas.itemcget(self._canvas.text, 'fill')
         else:
-            r = tkinter.ttk.tclobjs_to_py({item: tkinter.ttk.Frame.__getitem__(self, item)})
+            r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(self, item)})
             return r[item]
-
-    '''
-    def __setup_styles(self):
-        # custom ttk styles
-        style = ttk.Style(self.master)
-        arrow_layout = lambda dir: (
-            [('Button.focus', {'children': [('Button.%sarrow' % dir, None)]})]
-        )
-        style.layout('L.TButton', arrow_layout('left'))
-        style.layout('R.TButton', arrow_layout('right'))
-    '''
 
     def __place_widgets(self):
         # header frame and its widgets
-        hframe = tkinter.ttk.Frame(self)
-        lbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\left.png")
-        rbtn_img = Image.open(os.path.dirname(__file__) + "\\assets\\gui\\right.png")
-        lbtn_tkimg = ImageTk.PhotoImage(lbtn_img)
-        rbtn_tkimg = ImageTk.PhotoImage(rbtn_img)
-        lbtn = tkinter.ttk.Button(hframe, command=self._prev_month, image=lbtn_tkimg)
-        rbtn = tkinter.ttk.Button(hframe, command=self._next_month, image=rbtn_tkimg)
-        self._header = tkinter.ttk.Label(hframe, width=15, anchor='center')
+        hframe = ttk.Frame(self)
+        lbtn = ttk.Button(hframe, command=self._prev_month, text="Previous")
+        rbtn = ttk.Button(hframe, command=self._next_month, text="Next")
+        self._header = ttk.Label(hframe, width=15, anchor='center')
         # the calendar
-        self._calendar = tkinter.ttk.Treeview(hframe, show='', selectmode='none', height=7)
+        self._calendar = ttk.Treeview(self, show='', selectmode='none', height=7)
 
         # pack the widgets
         hframe.pack(side='top', pady=4, anchor='center')
-        lbtn.grid()
+        lbtn.grid(sticky=tk.N+tk.S+tk.W+tk.E)
         self._header.grid(column=1, row=0, padx=12)
-        rbtn.grid(column=2, row=0)
+        rbtn.grid(column=2, row=0, sticky=tk.N+tk.S+tk.W+tk.E)
         self._calendar.pack(expand=1, fill='both', side='bottom')
 
     def __config_calendar(self):
@@ -118,26 +104,21 @@ class Calendar(tkinter.ttk.Frame):
         self._calendar.tag_configure('header', background='grey90')
         self._calendar.insert('', 'end', values=cols, tag='header')
         # adjust its columns width
-        font = tkinter.font.Font()
+        font = tkFont.Font()
         maxwidth = max(font.measure(col) for col in cols)
         for col in cols:
             self._calendar.column(col, width=maxwidth, minwidth=maxwidth,
-                                  anchor='e')
+                anchor='e')
 
     def __setup_selection(self, sel_bg, sel_fg):
-        self._font = tkinter.font.Font()
+        self._font = tkFont.Font()
         self._canvas = canvas = tk.Canvas(self._calendar,
-                                          background=sel_bg, borderwidth=0, highlightthickness=0)
+            background=sel_bg, borderwidth=0, highlightthickness=0)
         canvas.text = canvas.create_text(0, 0, fill=sel_fg, anchor='w')
 
         canvas.bind('<ButtonPress-1>', lambda evt: canvas.place_forget())
         self._calendar.bind('<Configure>', lambda evt: canvas.place_forget())
         self._calendar.bind('<ButtonPress-1>', self._pressed)
-
-    def __minsize(self, evt):
-        width, height = self._calendar.master.geometry().split('x')
-        height = height[:height.index('+')]
-        self._calendar.master.minsize(width, height)
 
     def _build_calendar(self):
         year, month = self._date.year, self._date.month
@@ -178,15 +159,15 @@ class Calendar(tkinter.ttk.Frame):
             return
 
         item_values = widget.item(item)['values']
-        if not len(item_values):  # row is empty for this month
+        if not len(item_values): # row is empty for this month
             return
 
         text = item_values[int(column[1]) - 1]
-        if not text:  # date is empty
+        if not text: # date is empty
             return
 
         bbox = widget.bbox(item, column)
-        if not bbox:  # calendar not visible yet
+        if not bbox: # calendar not visible yet
             return
 
         # update and then show selection
@@ -200,7 +181,7 @@ class Calendar(tkinter.ttk.Frame):
 
         self._date = self._date - self.timedelta(days=1)
         self._date = self.datetime(self._date.year, self._date.month, 1)
-        self._build_calendar()  # reconstuct calendar
+        self._build_calendar() # reconstuct calendar
 
     def _next_month(self):
         """Update calendar to show the next month."""
@@ -210,21 +191,9 @@ class Calendar(tkinter.ttk.Frame):
         self._date = self._date + self.timedelta(
             days=calendar.monthrange(year, month)[1] + 1)
         self._date = self.datetime(self._date.year, self._date.month, 1)
-        self._build_calendar()  # reconstruct calendar
+        self._build_calendar() # reconstruct calendar
 
-    @staticmethod
-    def get_calendar(locale, fwday):
-        """
-        Function required by the Calender widget class
-        :param locale:
-        :param fwday:
-        :return:
-        """
-        # instantiate proper calendar class
-        if locale is None:
-            return calendar.TextCalendar(fwday)
-        else:
-            return calendar.LocaleTextCalendar(fwday, locale)
+    # Properties
 
     @property
     def selection(self):

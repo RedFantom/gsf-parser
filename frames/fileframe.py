@@ -18,6 +18,7 @@ from datetime import datetime
 import variables
 from parsing import parse, abilities, folderstats, filestats, matchstats, spawnstats
 from toplevels.splashscreens import SplashScreen
+from toplevels.filters import Filters
 
 
 # Class for the _frame in the fileTab of the parser
@@ -120,7 +121,7 @@ class FileFrame(ttk.Frame):
         """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         """
-        tkinter.messagebox.showinfo("Notice", "This button is not yet functional.")
+        Filters()
 
     def grid_widgets(self):
         """
