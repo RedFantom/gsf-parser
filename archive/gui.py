@@ -318,153 +318,152 @@ def info():
 
 
 # Main function to start the GUI and add most of the items in it
-if __name__ == "__main__":
-    # Create the mainWindow and set it's parameters before adding any widgets
-    mainWindow = tkinter.Tk()
-    mainWindow.geometry('{}x{}'.format(500, 300))
-    mainWindow.wm_title("Thranta Squadron GSF CombatLog Parser")
+# Create the mainWindow and set it's parameters before adding any widgets
+mainWindow = tkinter.Tk()
+mainWindow.geometry('{}x{}'.format(500, 300))
+mainWindow.wm_title("Thranta Squadron GSF CombatLog Parser")
 
-    # Create a menu bar for mainWindow
-    menuBar = tkinter.Menu(mainWindow)
+# Create a menu bar for mainWindow
+menuBar = tkinter.Menu(mainWindow)
 
-    # Add a File menu to the menu bar
-    fileMenu = tkinter.Menu(menuBar, tearoff=0)
-    # Add the commands to the fileMenu
-    fileMenu.add_command(label="Open CombatLog", command=openCombatLog)
-    fileMenu.add_command(label="Open Statistics file", command=openStatisticsFile)
-    fileMenu.add_command(label="Save Statistics file", command=saveStatisticsFile)
-    fileMenu.add_separator()
-    fileMenu.add_command(label="About", command=about)
-    fileMenu.add_command(label="Server info", command=info)
-    fileMenu.add_separator()
-    fileMenu.add_command(label="Exit", command=quitApplication)
-    # Add the fileMenu to the menuBar
-    menuBar.add_cascade(label="File", menu=fileMenu)
+# Add a File menu to the menu bar
+fileMenu = tkinter.Menu(menuBar, tearoff=0)
+# Add the commands to the fileMenu
+fileMenu.add_command(label="Open CombatLog", command=openCombatLog)
+fileMenu.add_command(label="Open Statistics file", command=openStatisticsFile)
+fileMenu.add_command(label="Save Statistics file", command=saveStatisticsFile)
+fileMenu.add_separator()
+fileMenu.add_command(label="About", command=about)
+fileMenu.add_command(label="Server info", command=info)
+fileMenu.add_separator()
+fileMenu.add_command(label="Exit", command=quitApplication)
+# Add the fileMenu to the menuBar
+menuBar.add_cascade(label="File", menu=fileMenu)
 
-    # Configure mainWindow with this menuBar
-    mainWindow.config(menu=menuBar)
+# Configure mainWindow with this menuBar
+mainWindow.config(menu=menuBar)
 
-    # Add a notebook widget to the mainWindow and add its tabs
-    notebook = tkinter.ttk.Notebook(mainWindow, height=575, width=498)
-    statisticsTab = tkinter.ttk.Frame(notebook)
-    abilitiesTab = tkinter.ttk.Frame(notebook)
-    enemiesTab = tkinter.ttk.Frame(notebook)
-    alliesTab = tkinter.ttk.Frame(notebook)
-    shareTab = tkinter.ttk.Frame(notebook)
-    notebook.add(statisticsTab, text="Statistics")
-    notebook.add(abilitiesTab, text="Abilities")
-    notebook.add(enemiesTab, text="Enemies")
-    # notebook.add(alliesTab, text = "Allies")
-    notebook.add(shareTab, text="Share")
-    notebook.grid(column=0, row=0)
+# Add a notebook widget to the mainWindow and add its tabs
+notebook = tkinter.ttk.Notebook(mainWindow, height=575, width=498)
+statisticsTab = tkinter.ttk.Frame(notebook)
+abilitiesTab = tkinter.ttk.Frame(notebook)
+enemiesTab = tkinter.ttk.Frame(notebook)
+alliesTab = tkinter.ttk.Frame(notebook)
+shareTab = tkinter.ttk.Frame(notebook)
+notebook.add(statisticsTab, text="Statistics")
+notebook.add(abilitiesTab, text="Abilities")
+notebook.add(enemiesTab, text="Enemies")
+# notebook.add(alliesTab, text = "Allies")
+notebook.add(shareTab, text="Share")
+notebook.grid(column=0, row=0)
 
-    # Add the variables to show the statistics
-    damageDealtLabelVar = tkinter.StringVar()
-    damageTakenLabelVar = tkinter.StringVar()
-    healingReceivedLabelVar = tkinter.StringVar()
-    playerNameLabelVar = tkinter.StringVar()
-    abilitiesOccurrencesLabelVar = tkinter.StringVar()
-    selfdamageLabelVar = tkinter.StringVar()
-    amountOfCritsLabelVar = tkinter.StringVar()
-    percentOfCritsLabelVar = tkinter.StringVar()
-    deathsLabelVar = tkinter.StringVar()
+# Add the variables to show the statistics
+damageDealtLabelVar = tkinter.StringVar()
+damageTakenLabelVar = tkinter.StringVar()
+healingReceivedLabelVar = tkinter.StringVar()
+playerNameLabelVar = tkinter.StringVar()
+abilitiesOccurrencesLabelVar = tkinter.StringVar()
+selfdamageLabelVar = tkinter.StringVar()
+amountOfCritsLabelVar = tkinter.StringVar()
+percentOfCritsLabelVar = tkinter.StringVar()
+deathsLabelVar = tkinter.StringVar()
 
-    # Add the labels to show the variables that were just created
-    damageDealtLabel = tkinter.Label(statisticsTab, textvariable=damageDealtLabelVar)
-    damageTakenLabel = tkinter.Label(statisticsTab, textvariable=damageTakenLabelVar)
-    healingReceivedLabel = tkinter.Label(statisticsTab, textvariable=healingReceivedLabelVar)
-    playerNameLabel = tkinter.Label(statisticsTab, textvariable=playerNameLabelVar)
-    abilitiesOccurrencesLabel = tkinter.Label(abilitiesTab, textvariable=abilitiesOccurrencesLabelVar,
-                                              justify=tkinter.LEFT, wraplength=450)
-    selfdamageLabel = tkinter.Label(statisticsTab, textvariable=selfdamageLabelVar)
-    amountOfCritsLabel = tkinter.Label(statisticsTab, textvariable=amountOfCritsLabelVar)
-    percentOfCritsLabel = tkinter.Label(statisticsTab, textvariable=percentOfCritsLabelVar)
-    deathsLabel = tkinter.Label(statisticsTab, textvariable=deathsLabelVar)
+# Add the labels to show the variables that were just created
+damageDealtLabel = tkinter.Label(statisticsTab, textvariable=damageDealtLabelVar)
+damageTakenLabel = tkinter.Label(statisticsTab, textvariable=damageTakenLabelVar)
+healingReceivedLabel = tkinter.Label(statisticsTab, textvariable=healingReceivedLabelVar)
+playerNameLabel = tkinter.Label(statisticsTab, textvariable=playerNameLabelVar)
+abilitiesOccurrencesLabel = tkinter.Label(abilitiesTab, textvariable=abilitiesOccurrencesLabelVar,
+                                          justify=tkinter.LEFT, wraplength=450)
+selfdamageLabel = tkinter.Label(statisticsTab, textvariable=selfdamageLabelVar)
+amountOfCritsLabel = tkinter.Label(statisticsTab, textvariable=amountOfCritsLabelVar)
+percentOfCritsLabel = tkinter.Label(statisticsTab, textvariable=percentOfCritsLabelVar)
+deathsLabel = tkinter.Label(statisticsTab, textvariable=deathsLabelVar)
 
-    # Add the labels to show what is displayed in each label with a variable
-    damageDealtTextLabel = tkinter.Label(statisticsTab, text="Damage dealt: ")
-    damageTakenTextLabel = tkinter.Label(statisticsTab, text="Damage taken: ")
-    healingReceivedTextLabel = tkinter.Label(statisticsTab, text="Healing received: ")
-    abilitiesLabel = tkinter.Label(abilitiesTab, text="Abilities used: ")
-    playerLabel = tkinter.Label(statisticsTab, text="Character name: ")
-    selfdamageTextLabel = tkinter.Label(statisticsTab, text="Selfdamage: ")
-    amountOfCritsTextLabel = tkinter.Label(statisticsTab, text="Critical count: ")
-    percentOfCritsTextLabel = tkinter.Label(statisticsTab, text="Critical percentage: ")
-    deathsTextLabel = tkinter.Label(statisticsTab, text="Amount of deaths: ")
+# Add the labels to show what is displayed in each label with a variable
+damageDealtTextLabel = tkinter.Label(statisticsTab, text="Damage dealt: ")
+damageTakenTextLabel = tkinter.Label(statisticsTab, text="Damage taken: ")
+healingReceivedTextLabel = tkinter.Label(statisticsTab, text="Healing received: ")
+abilitiesLabel = tkinter.Label(abilitiesTab, text="Abilities used: ")
+playerLabel = tkinter.Label(statisticsTab, text="Character name: ")
+selfdamageTextLabel = tkinter.Label(statisticsTab, text="Selfdamage: ")
+amountOfCritsTextLabel = tkinter.Label(statisticsTab, text="Critical count: ")
+percentOfCritsTextLabel = tkinter.Label(statisticsTab, text="Critical percentage: ")
+deathsTextLabel = tkinter.Label(statisticsTab, text="Amount of deaths: ")
 
-    # Add a label to show a description in the Share tab
-    descriptionLabel = tkinter.Label(shareTab,
-                                     text="""You can send your CombatLog to the Thranta Squadron database server for
-                                             analysis. This would help the developers and you could earn a spot in the
-                                             Holocron Vault with your CombatLog. This functionality is still in
-                                             beta.""",
-                                     justify=tkinter.LEFT, wraplength=450)
-    descriptionLabel.grid(column=0, row=0, columnspan=2)
+# Add a label to show a description in the Share tab
+descriptionLabel = tkinter.Label(shareTab,
+                                 text="""You can send your CombatLog to the Thranta Squadron database server for
+                                         analysis. This would help the developers and you could earn a spot in the
+                                         Holocron Vault with your CombatLog. This functionality is still in
+                                         beta.""",
+                                 justify=tkinter.LEFT, wraplength=450)
+descriptionLabel.grid(column=0, row=0, columnspan=2)
 
-    # Add a progress bar and a button to the Share tab that is accessible for client.py
-    vars.progressBar = tkinter.ttk.Progressbar(shareTab, orient="horizontal", length=350, mode="determinate")
-    vars.progressBar.grid(column=0, row=3, columnspan=1)
+# Add a progress bar and a button to the Share tab that is accessible for client.py
+vars.progressBar = tkinter.ttk.Progressbar(shareTab, orient="horizontal", length=350, mode="determinate")
+vars.progressBar.grid(column=0, row=3, columnspan=1)
 
-    # Add a label to show a warning
-    warningLabelText = tkinter.StringVar()
-    warningLabel = tkinter.Label(shareTab, textvariable=warningLabelText, justify=tkinter.LEFT, wraplength=450)
-    warningLabel.grid(column=0, row=4, columnspan=2)
-    checkConnectionObject = client.initConnection()
-    if not checkConnectionObject:
-        warningLabelText.set("The server for sending is not available. Sending CombatLogs has been disabled.")
-        # Add a button to start sending the file but disable it
-        sendButton = tkinter.Button(shareTab, text="Send CombatLog", command=sendCombatLog, state=tkinter.DISABLED)
-        sendButton.grid(column=1, row=3)
-    else:
-        checkConnectionObject.close()
-        warningLabelText.set("The server is available.")
-        # Add a button to start sending the file
-        sendButton = tkinter.Button(shareTab, text="Send CombatLog", command=sendCombatLog)
-        sendButton.grid(column=1, row=3)
+# Add a label to show a warning
+warningLabelText = tkinter.StringVar()
+warningLabel = tkinter.Label(shareTab, textvariable=warningLabelText, justify=tkinter.LEFT, wraplength=450)
+warningLabel.grid(column=0, row=4, columnspan=2)
+checkConnectionObject = client.initConnection()
+if not checkConnectionObject:
+    warningLabelText.set("The server for sending is not available. Sending CombatLogs has been disabled.")
+    # Add a button to start sending the file but disable it
+    sendButton = tkinter.Button(shareTab, text="Send CombatLog", command=sendCombatLog, state=tkinter.DISABLED)
+    sendButton.grid(column=1, row=3)
+else:
+    checkConnectionObject.close()
+    warningLabelText.set("The server is available.")
+    # Add a button to start sending the file
+    sendButton = tkinter.Button(shareTab, text="Send CombatLog", command=sendCombatLog)
+    sendButton.grid(column=1, row=3)
 
-    # Lay out the labels in a grid
-    playerLabel.grid(column=0, row=0, sticky=tkinter.W)
-    playerNameLabel.grid(column=1, row=0, sticky=tkinter.W)
-    damageDealtTextLabel.grid(column=0, row=1, sticky=tkinter.W)
-    damageTakenTextLabel.grid(column=0, row=2, sticky=tkinter.W)
-    healingReceivedTextLabel.grid(column=0, row=3, sticky=tkinter.W)
-    damageDealtLabel.grid(column=1, row=1, sticky=tkinter.W)
-    damageTakenLabel.grid(column=1, row=2, sticky=tkinter.W)
-    healingReceivedLabel.grid(column=1, row=3, sticky=tkinter.W)
-    selfdamageTextLabel.grid(column=0, row=4, sticky=tkinter.W)
-    selfdamageLabel.grid(column=1, row=4, sticky=tkinter.W)
-    amountOfCritsTextLabel.grid(column=0, row=5, sticky=tkinter.W)
-    amountOfCritsLabel.grid(column=1, row=5, sticky=tkinter.W)
-    percentOfCritsTextLabel.grid(column=0, row=6, sticky=tkinter.W)
-    percentOfCritsLabel.grid(column=1, row=6, sticky=tkinter.W)
-    deathsTextLabel.grid(column=0, row=7, sticky=tkinter.W)
-    deathsLabel.grid(column=1, row=7, sticky=tkinter.W)
+# Lay out the labels in a grid
+playerLabel.grid(column=0, row=0, sticky=tkinter.W)
+playerNameLabel.grid(column=1, row=0, sticky=tkinter.W)
+damageDealtTextLabel.grid(column=0, row=1, sticky=tkinter.W)
+damageTakenTextLabel.grid(column=0, row=2, sticky=tkinter.W)
+healingReceivedTextLabel.grid(column=0, row=3, sticky=tkinter.W)
+damageDealtLabel.grid(column=1, row=1, sticky=tkinter.W)
+damageTakenLabel.grid(column=1, row=2, sticky=tkinter.W)
+healingReceivedLabel.grid(column=1, row=3, sticky=tkinter.W)
+selfdamageTextLabel.grid(column=0, row=4, sticky=tkinter.W)
+selfdamageLabel.grid(column=1, row=4, sticky=tkinter.W)
+amountOfCritsTextLabel.grid(column=0, row=5, sticky=tkinter.W)
+amountOfCritsLabel.grid(column=1, row=5, sticky=tkinter.W)
+percentOfCritsTextLabel.grid(column=0, row=6, sticky=tkinter.W)
+percentOfCritsLabel.grid(column=1, row=6, sticky=tkinter.W)
+deathsTextLabel.grid(column=0, row=7, sticky=tkinter.W)
+deathsLabel.grid(column=1, row=7, sticky=tkinter.W)
 
-    # The abilities are in the grid, but take up two columns
-    abilitiesLabel.grid(column=0, columnspan=2, row=0, rowspan=1, sticky=tkinter.W)
-    abilitiesOccurrencesLabel.grid(column=0, columnspan=2, row=1, rowspan=6, sticky=tkinter.W)
+# The abilities are in the grid, but take up two columns
+abilitiesLabel.grid(column=0, columnspan=2, row=0, rowspan=1, sticky=tkinter.W)
+abilitiesOccurrencesLabel.grid(column=0, columnspan=2, row=1, rowspan=6, sticky=tkinter.W)
 
-    # Add an Entry-bar to let the user enter his/her name for sending with the CombatLog
-    nameEntry = tkinter.Entry(shareTab, width=80)
-    nameEntry.grid(column=0, row=2, columnspan=2, sticky=tkinter.W)
-    nameEntry.insert(0, "Enter your name for sending here")
+# Add an Entry-bar to let the user enter his/her name for sending with the CombatLog
+nameEntry = tkinter.Entry(shareTab, width=80)
+nameEntry.grid(column=0, row=2, columnspan=2, sticky=tkinter.W)
+nameEntry.insert(0, "Enter your name for sending here")
 
-    # Add the elements for the enemiesTab
-    topLabelOne = tkinter.Label(enemiesTab, text="Enemy ID number   ")
-    topLabelTwo = tkinter.Label(enemiesTab, text="Damage dealt to you   ")
-    topLabelThree = tkinter.Label(enemiesTab, text="Damage taken from you   ")
-    topLabelOne.grid(column=0, row=0)
-    topLabelTwo.grid(column=1, row=0)
-    topLabelThree.grid(column=2, row=0)
-    enemyListLabelText = tkinter.StringVar()
-    enemyListLabel = tkinter.Label(enemiesTab, textvariable=enemyListLabelText, justify=tkinter.LEFT)
-    enemyListLabel.grid(column=0, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
-    enemyDealtLabelText = tkinter.StringVar()
-    enemyDealtLabel = tkinter.Label(enemiesTab, textvariable=enemyDealtLabelText, justify=tkinter.LEFT)
-    enemyDealtLabel.grid(column=1, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
-    enemyTakenLabelText = tkinter.StringVar()
-    enemyTakenLabel = tkinter.Label(enemiesTab, textvariable=enemyTakenLabelText, justify=tkinter.LEFT)
-    enemyTakenLabel.grid(column=2, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
+# Add the elements for the enemiesTab
+topLabelOne = tkinter.Label(enemiesTab, text="Enemy ID number   ")
+topLabelTwo = tkinter.Label(enemiesTab, text="Damage dealt to you   ")
+topLabelThree = tkinter.Label(enemiesTab, text="Damage taken from you   ")
+topLabelOne.grid(column=0, row=0)
+topLabelTwo.grid(column=1, row=0)
+topLabelThree.grid(column=2, row=0)
+enemyListLabelText = tkinter.StringVar()
+enemyListLabel = tkinter.Label(enemiesTab, textvariable=enemyListLabelText, justify=tkinter.LEFT)
+enemyListLabel.grid(column=0, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
+enemyDealtLabelText = tkinter.StringVar()
+enemyDealtLabel = tkinter.Label(enemiesTab, textvariable=enemyDealtLabelText, justify=tkinter.LEFT)
+enemyDealtLabel.grid(column=1, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
+enemyTakenLabelText = tkinter.StringVar()
+enemyTakenLabel = tkinter.Label(enemiesTab, textvariable=enemyTakenLabelText, justify=tkinter.LEFT)
+enemyTakenLabel.grid(column=2, row=1, columnspan=1, rowspan=20, sticky=tkinter.W)
 
-    # Start the loop
-    mainWindow.mainloop()
+# Start the loop
+mainWindow.mainloop()
