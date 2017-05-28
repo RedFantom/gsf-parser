@@ -7,6 +7,7 @@ from tools.utilities import get_swtor_directory
 import xml.etree.cElementTree as ET
 import os
 
+
 def get_gui_profiles():
     """
     Returns a list of all GUI profiles available in the SWTOR directory
@@ -15,22 +16,23 @@ def get_gui_profiles():
     dir = get_swtor_directory()
     return [item.replace(".xml", "") for item in os.listdir(dir)]
 
+
 class GUIParser(object):
     """
     Parses an SWTOR GUI profile by first reading the file into an ElementTree and then allowing the user to retrieve
     data values from the profile by providing tuples or directly calculating coordinates the user needs. Example piece
     of GSF GUI profile section:
     <FreeFlightPlayerStatusEffects>
-		<anchorAlignment Type="3" Value="2.000000" />
-		<anchorXOffset Type="3" Value="25.000000" />
-		<anchorYOffset Type="3" Value="-200.000000" />
-		<scale Type="3" Value="1.000000" />
-		<enabled Type="2" Value="1" />
-		<alpha Type="3" Value="100.000000" />
-	</FreeFlightPlayerStatusEffects>
-	All GSF GUI elements provide the attributes anchorAlignment, anchorXOffset, anchorYOffset, scale, enabled and alpha
-	The amount of GSF GUI elements is, luckily, quite limited, a list of items is available in the class' __init__
-	function.
+        <anchorAlignment Type="3" Value="2.000000" />
+        <anchorXOffset Type="3" Value="25.000000" />
+        <anchorYOffset Type="3" Value="-200.000000" />
+        <scale Type="3" Value="1.000000" />
+        <enabled Type="2" Value="1" />
+        <alpha Type="3" Value="100.000000" />
+    </FreeFlightPlayerStatusEffects>
+    All GSF GUI elements provide the attributes anchorAlignment, anchorXOffset, anchorYOffset, scale, enabled and alpha
+    The amount of GSF GUI elements is, luckily, quite limited, a list of items is available in the class' __init__
+    function.
     """
 
     def __init__(self, file_name):
