@@ -83,11 +83,34 @@ class GUIParser(object):
     def get_enemy_health_coordinates(self):
         pass
 
+    def get_max_min_coordinates(self, output=False):
+        """
+        Originally for reverse engineering only
+        :param output: if True prints results
+        :return: (x_min, x_max, y_min, y_max), all float
+        """
+        x_values = []
+        y_values = []
+        for child in self.root:
+            valid = False
+            for item in child:
+                if item.tag != "anchorXOffset":
+                    continue
+                else:
+                    valid = True
+                    break
+            if not valid:
+                continue
+            x_values.append(float(child.find("anchorXOffset").get("Value")))
+            y_values.append(float(child.find("anchorYOffset").get("Value")))
+        if output:
+            print("Minimum X Value: ", min(x_values), "\nMaximum X Value: ", max(x_values))
+            print("Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
+        return min(x_values), max(x_values), min(y_values), max(y_values)
+
 
 if __name__ == '__main__':
     """
     This code is for debugging purposes
     """
-    print GUIParser("Redfantom 1.xml")[("PowerSettings", "scale", "Value")]
-
-
+    GUIParser("Redfantom 1.xml").get_max_min_coordinates(output=True)
