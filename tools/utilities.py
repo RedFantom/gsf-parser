@@ -10,7 +10,7 @@ from datetime import datetime
 from PIL import Image, ImageGrab
 import cv2
 import numpy
-import win32gui
+from sys import platform
 
 debug = False
 
@@ -31,14 +31,31 @@ def get_pointer_position_win32():
     Gets the position of the targeting pointer with win32gui
     :return: coordinates of pointer
     """
+    import win32gui
     return win32gui.GetCursorPos()
+
+
+def get_pointer_position_linux():
+    """
+    Gets the position of the targeting pointer with xlib
+    :return:coordinates of the pointer
+    """
+    from xlib import display
+    data = display.Display().screen().root.query_pointer()._data
+    return data["root_x"], data["root_y"]
 
 
 def get_cursor_position(screen):
     if debug:
         return get_pointer_position_win32()
-    else:
+    elif platform == "win32":
         return get_pointer_position_cv2(screen)
+    elif platform == "linux2":
+        return get_pointer_position_linux()
+    elif platform == "darwin":
+        raise ValueError("This function does not support macOS")
+    else:
+        raise ValueError("Unknown platform detected")
 
 
 def get_pillow_screen():
