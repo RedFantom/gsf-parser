@@ -46,6 +46,15 @@ def get_pointer_position_linux():
 
 
 def get_cursor_position(screen):
+    """
+    Calls the appropriate function to get the cursor position depending on the operating system and whether DEBUG mode
+    is enabled or not. get_pointer_position_cv2() is not preferred because it's resource intensive.
+    :param screen: cv2 array of screenshot
+    :return:
+    """
+    if isinstance(screen, Image):
+        from parsing.vision import pillow_to_numpy
+        screen = pillow_to_numpy(screen)
     if debug:
         return get_pointer_position_win32()
     elif platform == "win32":
@@ -59,6 +68,11 @@ def get_cursor_position(screen):
 
 
 def get_pillow_screen():
+    """
+    Returns the appropriate Image object for the screen depending on the operating system and whether DEBUG mode is
+    enabled or not. ImageGrab is used on Windows, but this does not support Linux, so the GTK toolkit is used.
+    :return: Image object
+    """
     if debug:
         return Image.open(os.path.join(get_assets_directory(), "vision", "testing.png"))
     elif platform == "win32":
@@ -148,5 +162,9 @@ def get_swtor_directory():
 
 
 def get_assets_directory():
+    """
+    Returns the absolute path to the assets directory of the GSF Parser
+    :return: str, absolute path
+    """
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
     return path
