@@ -51,6 +51,9 @@ class GUIParser(object):
 
     So, if the anchorXOffset is 50, the anchorYOffset is 0 and the anchor is 8, then the bottom center of the GUI
     element is 50 pixels to the left from the bottom center of the screen
+
+    All the credit for this incredibly useful information goes to Ion, who has written a SWTOR UI layout generator
+    that you can find here: https://github.com/ion1/swtor-ui
     """
 
     def __init__(self, file_name):
