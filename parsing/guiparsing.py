@@ -33,6 +33,24 @@ class GUIParser(object):
     All GSF GUI elements provide the attributes anchorAlignment, anchorXOffset, anchorYOffset, scale, enabled and alpha
     The amount of GSF GUI elements is, luckily, quite limited, a list of items is available in the class' __init__
     function.
+
+    The alignment of the GUI element works as follows:
+    - The anchorXOffset and anchorYOffset are in pixels
+    - The offsets are counted from one out of nine points on the screen, to the same respective point on the GUI element
+    - The points are these:
+             X    Y
+      * 1: Left center
+      * 2: Left bottom
+      * 3: Left center
+      * 4: Right top
+      * 5: Right bottom
+      * 6: Right center
+      * 7: Center top
+      * 8: Center bottom
+      * 9: Center center
+
+    So, if the anchorXOffset is 50, the anchorYOffset is 0 and the anchor is 8, then the bottom center of the GUI
+    element is 50 pixels to the left from the bottom center of the screen
     """
 
     def __init__(self, file_name):
