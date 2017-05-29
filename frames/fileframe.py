@@ -148,8 +148,7 @@ class FileFrame(ttk.Frame):
         """
 
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         self.main_window.ship_frame.ship_label_var.set("")
         with open(variables.settings_obj.cl_path + "/" + variables.file_name, "r") as file:
             variables.player_name = parse.determinePlayerName(file.readlines())
@@ -175,11 +174,7 @@ class FileFrame(ttk.Frame):
         Function that adds the spawns found in the selected match to the appropriate listbox
         :return:
         """
-
-        self.main_window.middle_frame.abilities_treeview.delete(
-            *self.main_window.middle_frame.abilities_treeview.get_children(""))
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         self.main_window.ship_frame.ship_label_var.set("")
         self.spawn_timing_strings = []
         if variables.match_timing:
@@ -207,10 +202,7 @@ class FileFrame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_treeview.delete(
-            *self.main_window.middle_frame.abilities_treeview.get_children(""))
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         self.main_window.ship_frame.ship_label_var.set("")
         self.splash = SplashScreen(self.main_window)
         try:
@@ -262,10 +254,7 @@ class FileFrame(ttk.Frame):
         self.file_box.delete(0, tk.END)
         self.match_box.delete(0, tk.END)
         self.spawn_box.delete(0, tk.END)
-        self.main_window.middle_frame.abilities_treeview.delete(
-            *self.main_window.middle_frame.abilities_treeview.get_children())
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         self.main_window.ship_frame.ship_label_var.set("")
         if not silent:
             self.splash = SplashScreen(self.main_window)
@@ -312,10 +301,7 @@ class FileFrame(ttk.Frame):
         """
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         for index, filestring in enumerate(self.file_box.get(0, tk.END)):
             self.file_box.itemconfig(index, background="white")
         if self.file_box.curselection() == (0,) or self.file_box.curselection() == ('0',):
@@ -398,10 +384,7 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         for index, matchstring in enumerate(self.match_box.get(0, tk.END)):
             self.match_box.itemconfig(index, background="white")
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         if self.match_box.curselection() == (0,) or self.match_box.curselection() == ('0',):
             self.spawn_box.delete(0, tk.END)
             numbers = self.match_box.curselection()
@@ -469,10 +452,7 @@ class FileFrame(ttk.Frame):
         """
         for index, spawnstring in enumerate(self.spawn_box.get(0, tk.END)):
             self.spawn_box.itemconfig(index, background="white")
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
-        self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children())
+        self.clear_treeviews()
         if self.spawn_box.curselection() == (0,) or self.spawn_box.curselection() == ('0',):
             self.old_spawn = self.spawn_box.curselection()[0]
             self.spawn_box.itemconfig(self.old_spawn, background="lightgrey")
@@ -574,3 +554,9 @@ class FileFrame(ttk.Frame):
 
             self.main_window.middle_frame.events_button.state(["!disabled"])
             self.main_window.ship_frame.update_ship(ships_list)
+
+    def clear_treeviews(self):
+        self.main_window.middle_frame.abilities_treeview.delete(
+            *self.main_window.middle_frame.abilities_treeview.get_children())
+        self.main_window.middle_frame.enemies_treeview.delete(
+            *self.main_window.middle_frame.enemies_treeview.get_children())
