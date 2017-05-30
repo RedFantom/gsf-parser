@@ -11,6 +11,7 @@ from PIL import Image
 import cv2
 import numpy
 from sys import platform
+import tkinter as tk
 
 debug = False
 
@@ -168,3 +169,17 @@ def get_assets_directory():
     """
     path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
     return path
+
+
+def get_screen_resolution():
+    """
+    Cross-platform way to get the screen resolution using Tkinter. Alternative methods include using GetSystemMetrics
+    with win32api for Windows and screen_width()/screen_height() from the gtk.gdk module on Linux. For now, it seems
+    best to use a cross-platform option
+    :return: tuple, (width, height), such as (1920, 1080)
+    """
+    root = tk.Tk()
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    root.destroy()
+    return width, height
