@@ -6,6 +6,8 @@
 from tools.utilities import get_swtor_directory
 import xml.etree.cElementTree as ET
 import os
+from configparser import ConfigParser
+from tkinter import messagebox
 
 
 def get_gui_profiles():
