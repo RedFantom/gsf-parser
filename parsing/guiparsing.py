@@ -17,6 +17,36 @@ def get_gui_profiles():
     return [item.replace(".xml", "") for item in os.listdir(dir)]
 
 
+def get_player_guiname(player_name):
+    """
+    Returns the GUI Profile name for a certain player name. Does not work if there are multiple characters with the same
+    name on the same account used on the same computer and also doesn't work if the name is misspelled. Credit for
+    finding this reference to the GUI state files in the SWTOR settings files goes to Ion.
+    :param player_name: name of the player
+    :return: GUI profile name, not XML file
+    """
+    if not isinstance(player_name, str):
+        raise ValueError("player_name is not of str type: {0}".format(player_name))
+    if player_name == "":
+        raise ValueError("player_name is an empty str")
+    dir = os.path.join(get_swtor_directory(), "swtor", "settings")
+    if not os.path.exists(dir):
+        messagebox.showerror("Error", "SWTOR settings path not found. Is SWTOR correctly installed?")
+        raise ValueError("SWTOR settings path not found")
+    configparser = ConfigParser()
+    correct_file = None
+    for file_name in os.listdir(dir):
+        if not file_name.endswith(".ini"):
+            continue
+        elif player_name in file_name:
+            correct_file = file_name
+            break
+    if not correct_file:
+        raise ValueError("Could not find a player settings file with name: {0}".format(player_name))
+    configparser.read(os.path.join(dir, correct_file))
+    return configparser.get("settings", "GUI_Current_Profile")
+
+
 class GUIParser(object):
     """
     Parses an SWTOR GUI profile by first reading the file into an ElementTree and then allowing the user to retrieve
