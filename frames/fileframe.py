@@ -117,7 +117,8 @@ class FileFrame(ttk.Frame):
     def unbind_spawn(self, event):
         self.main_window.unbind("<MouseWheel>")
 
-    def filters(self):
+    @staticmethod
+    def filters():
         """
         Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
         """
@@ -326,22 +327,7 @@ class FileFrame(ttk.Frame):
             ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
-                if enemy == "":
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=("System",
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                else:
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-
+                self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
             self.main_window.ship_frame.update_ship([most_used_ship])
@@ -414,22 +400,7 @@ class FileFrame(ttk.Frame):
             ships_string += "Uncounted\t\t" + str(uncounted)
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
-                if enemy == "":
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=("System",
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                else:
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-
+                self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         else:
             self.spawn_box.focus()
@@ -478,22 +449,7 @@ class FileFrame(ttk.Frame):
             ships_string += "Uncounted\t\t%s" % shipsdict["Uncounted"]
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
-                if enemy == "":
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=("System",
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                else:
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-
+                self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
             self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
             self.main_window.ship_frame.remove_image()
         else:
@@ -536,22 +492,7 @@ class FileFrame(ttk.Frame):
                 ships_string += component + "\n"
             self.main_window.ship_frame.ship_label_var.set(ships_string)
             for enemy in enemies:
-                if enemy == "":
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=("System",
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                elif re.search('[a-zA-Z]', enemy):
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-                else:
-                    self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                          values=(enemy,
-                                                                                  str(enemydamaged[enemy]),
-                                                                                  str(enemydamaget[enemy])))
-
+                self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
             self.main_window.middle_frame.events_button.state(["!disabled"])
             self.main_window.ship_frame.update_ship(ships_list)
 
@@ -560,3 +501,21 @@ class FileFrame(ttk.Frame):
             *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
+
+    def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
+        if enemy == "":
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                  values=("System",
+                                                                          str(enemydamaged[enemy]),
+                                                                          str(enemydamaget[enemy])))
+        elif re.search('[a-zA-Z]', enemy):
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                  values=(enemy,
+                                                                          str(enemydamaged[enemy]),
+                                                                          str(enemydamaget[enemy])))
+        else:
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
+                                                                  values=(enemy,
+                                                                          str(enemydamaged[enemy]),
+                                                                          str(enemydamaget[enemy])))
+
