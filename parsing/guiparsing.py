@@ -110,9 +110,9 @@ class GUIParser(object):
         self.gui_elements = {}
         self.target_items = [item for item in target_items]
         for item in self.target_items:
-            try:
-                self.gui_elements[item.replace("FreeFlight", "")] = self.root.find(item)
-            except IndexError:
+            item_name = item.replace("FreeFlight", "")
+            self.gui_elements[item_name] = self.root.find(item)
+            if not self.gui_elements[item_name]:
                 raise ValueError("Could not find {0} in GUI profile".format(item))
         resolution = get_screen_resolution()
         self.anchor_dictionary = self.get_anchor_dictionary(resolution)
