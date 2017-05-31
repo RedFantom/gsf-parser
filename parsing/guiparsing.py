@@ -3,7 +3,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from tools.utilities import get_swtor_directory
+from tools.utilities import get_swtor_directory, get_screen_resolution
 import xml.etree.cElementTree as ET
 import os
 from configparser import ConfigParser
@@ -82,13 +82,17 @@ class GUIParser(object):
       * 9: Center center
 
     So, if the anchorXOffset is 50, the anchorYOffset is 0 and the anchor is 8, then the bottom center of the GUI
-    element is 50 pixels to the left from the bottom center of the screen
+    element is 50 pixels to the right from the bottom center of the screen
 
     All the credit for this incredibly useful information goes to Ion, who has written a SWTOR UI layout generator
     that you can find here: https://github.com/ion1/swtor-ui
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name,
+                 target_items=("FreeFlightQuickBar", "FreeFlightShipStatus", "FreeFlightPlayerStatusEffects",
+                               "FreeFlightTargetStatusEffects", "FreeFlightShipAmmo", "FreeFlightTargetingComputer",
+                               "FreeFlightPowerSettings", "FreeFlightMissileLockIndicator", "FreeFlightMiniMap",
+                               "FreeFlightScorecard", "FreeFlightCopilotBark")):
         """
         Initializes the class by reading the XML file and setting things up for access by the user
         :param file_name: a GUI profile file_name, either an absolute path or a plain file_name
@@ -104,17 +108,14 @@ class GUIParser(object):
         self.tree = ET.parse(file_name)
         self.root = self.tree.getroot()
         self.gui_elements = {}
-        self.target_items = [
-            "FreeFlightQuickBar", "FreeFlightShipStatus", "FreeFlightPlayerStatusEffects",
-            "FreeFlightTargetStatusEffects", "FreeFlightShipAmmo", "FreeFlightTargetingComputer",
-            "FreeFlightPowerSettings", "FreeFlightMissileLockIndicator", "FreeFlightMiniMap",
-            "FreeFlightScorecard", "FreeFlightCopilotBark"
-        ]
+        self.target_items = [item for item in target_items]
         for item in self.target_items:
             try:
                 self.gui_elements[item.replace("FreeFlight", "")] = self.root.find(item)
             except IndexError:
                 raise ValueError("Could not find {0} in GUI profile".format(item))
+        resolution = get_screen_resolution()
+        self.anchor_dictionary = self.get_anchor_dictionary(resolution)
         return
 
     def __getitem__(self, key):
@@ -132,10 +133,53 @@ class GUIParser(object):
     def __setitem__(self, key, value):
         raise ValueError("Manipulating GUI profiles is not supported")
 
+    @staticmethod
+    def get_anchor_dictionary(resolution):
+        """
+        Get a dictionary of the absolute pixel points for each of the nine anchor points in the docstring of this class
+        by performing the required calculations.
+        :param resolution: (width, height) tuple
+        :return: anchor_point dict
+        """
+        x_left = 0
+        x_center = int(round(resolution[0] / 2, 0))
+        x_right = resolution[0]
+        y_top = 0
+        y_center = int(round(resolution[1] / 2, 0))
+        y_bottom = resolution[1]
+        anchor_points = {
+            1: (x_left, y_top),
+            2: (x_left, y_bottom),
+            3: (x_left, y_center),
+            4: (x_right, y_top),
+            5: (x_right, y_bottom),
+            6: (x_right, y_center),
+            7: (x_center, y_top),
+            8: (x_center, y_bottom),
+            9: (x_center, y_center)
+        }
+        return anchor_points
+
+    @staticmethod
+    def get_element_absolute_coordinates(anchor_points, anchor, x_offset, y_offset):
+        return anchor_points[anchor][0] + x_offset, anchor_points[anchor][1] + y_offset
+
+    def get_item_coordinates(self, element_name):
+        pass
+
     def get_player_health_coordinates(self):
         pass
 
     def get_enemy_health_coordinates(self):
+        pass
+
+    def get_player_powermgmt_coordinates(self):
+        pass
+
+    def get_element_offsets(self):
+        pass
+
+    def get_element_anchorpoint(self):
         pass
 
     def get_max_min_coordinates(self, output=False):
