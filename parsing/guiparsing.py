@@ -176,8 +176,62 @@ class GUIParser(object):
         """
         return anchor_points[anchor][0] + x_offset, anchor_points[anchor][1] + y_offset
 
-    def get_item_coordinates(self, element_name):
-        pass
+    @staticmethod
+    def get_item_value(element, name):
+        """
+        Get an int value from an element
+        :param element: XML parser element
+        :param name: sub-element name
+        :return: int value
+        """
+        return int(round(float(element.find(name).get("Value")), 0))
+
+    def get_essential_element_values(self, element):
+        """
+        Get the essential element values for a GSF GUI element (for the position)
+        :param element: XML parser element
+        :return: anchor number, x_offset int, y_offset int, alpha percentage
+        """
+        anchor = self.get_item_value(element, "anchorAlignment")
+        x_offset = self.get_item_value(element, "anchorXOffset")
+        y_offset = self.get_item_value(element, "anchorYOffset")
+        alpha = self.get_item_value(element, "anchorAlignment")
+        return anchor, x_offset, y_offset, alpha
+
+    def check_element_name(self, element_name):
+        """
+        Check the element name passed as argument and return an appropriate element object
+        :param element_name: str name
+        :return: element object
+        """
+        element_name = element_name.replace("FreeFlight", "")
+        if element_name not in self.gui_elements:
+            raise ValueError("element requested that was not in target_items initializer argument: {0}".
+                             format(element_name))
+        return self.gui_elements[element_name]
+
+    def get_element_scale(self, element_name):
+        """
+        As the scale is a float value, not an int, the normal class method can't be used for this item
+        :param element_name: str name
+        :return: float
+        """
+        element = self.check_element_name(element_name)
+        return round(float(element.find("scale").get("Value")), 3)
+
+    def get_element_coordinates(self, element_name):
+        """
+        Get element screen coordinates
+        :param element_name: str name
+        :return: (x, y)
+        """
+        element = self.check_element_name(element_name)
+        anchor, x_offset, y_offset, alpha = self.get_essential_element_values(element)
+        if alpha is not 0:
+            messagebox.showerror("Error", "The GSF Parser cannot work with GUI profiles for GSF that have an opacity "
+                                          "level higher than 0. Please adjust your GUI profile.")
+            raise ValueError("opacity for element {0} is higher than zero".format(element_name))
+        return self.get_element_absolute_coordinates(self.anchor_dictionary, anchor, x_offset, y_offset)
 
     def get_player_health_coordinates(self):
         pass
