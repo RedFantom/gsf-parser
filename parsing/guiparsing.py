@@ -15,8 +15,7 @@ def get_gui_profiles():
     Returns a list of all GUI profiles available in the SWTOR directory
     :return: list
     """
-    dir = get_swtor_directory()
-    return [item.replace(".xml", "") for item in os.listdir(dir)]
+    return [item.replace(".xml", "") for item in os.listdir(get_swtor_directory())]
 
 
 def get_player_guiname(player_name):
