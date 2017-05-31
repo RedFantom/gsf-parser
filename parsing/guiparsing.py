@@ -166,6 +166,14 @@ class GUIParser(object):
 
     @staticmethod
     def get_element_absolute_coordinates(anchor_points, anchor, x_offset, y_offset):
+        """
+        Get absolute screen pixel coordinates for an element by name
+        :param anchor_points: dictionary anchor_points
+        :param anchor: anchor number (must be in anchor_points dict)
+        :param x_offset: int offset
+        :param y_offset: int offset
+        :return: (x, y) tuple
+        """
         return anchor_points[anchor][0] + x_offset, anchor_points[anchor][1] + y_offset
 
     def get_item_coordinates(self, element_name):
