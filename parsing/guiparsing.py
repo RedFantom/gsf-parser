@@ -86,6 +86,10 @@ class GUIParser(object):
 
     All the credit for this incredibly useful information goes to Ion, who has written a SWTOR UI layout generator
     that you can find here: https://github.com/ion1/swtor-ui
+
+    Important Note: Not all GUI elements in the SWTOR XML files have the same capitalization in their elements. Such as
+    the different variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please check what forrmat your option
+    uses before using it in this class.
     """
 
     def __init__(self, file_name,
