@@ -242,12 +242,6 @@ class GUIParser(object):
     def get_player_powermgmt_coordinates(self):
         pass
 
-    def get_element_offsets(self):
-        pass
-
-    def get_element_anchorpoint(self):
-        pass
-
     def get_max_min_coordinates(self, output=False):
         """
         Originally for reverse engineering only
@@ -278,4 +272,5 @@ if __name__ == '__main__':
     """
     This code is for debugging purposes
     """
-    GUIParser("Redfantom 1.xml").get_max_min_coordinates(output=True)
+    GUIParser("RedFantom's Interface.xml").get_max_min_coordinates(output=True)
+    GUIParser("RedFantom's Interface.xml").get_element_coordinates("QuickBar")
