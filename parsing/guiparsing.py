@@ -70,7 +70,7 @@ class GUIParser(object):
     - The offsets are counted from one out of nine points on the screen, to the same respective point on the GUI element
     - The points are these:
              X    Y
-      * 1: Left center
+      * 1: Left top
       * 2: Left bottom
       * 3: Left center
       * 4: Right top
@@ -91,11 +91,7 @@ class GUIParser(object):
     uses before using it in this class.
     """
 
-    def __init__(self, file_name,
-                 target_items=("FreeFlightQuickBar", "FreeFlightShipStatus", "FreeFlightPlayerStatusEffects",
-                               "FreeFlightTargetStatusEffects", "FreeFlightShipAmmo", "FreeFlightTargetingComputer",
-                               "FreeFlightPowerSettings", "FreeFlightMissileLockIndicator", "FreeFlightMiniMap",
-                               "FreeFlightScorecard", "FreeFlightCopilotBark")):
+    def __init__(self, file_name, target_items):
         """
         Initializes the class by reading the XML file and setting things up for access by the user
         :param file_name: a GUI profile file_name, either an absolute path or a plain file_name
@@ -112,6 +108,7 @@ class GUIParser(object):
         self.root = self.tree.getroot()
         self.gui_elements = {}
         self.target_items = [item for item in target_items]
+        self.target_sizes = target_items
         for item in self.target_items:
             item_name = item.replace("FreeFlight", "")
             self.gui_elements[item_name] = self.root.find(item)
@@ -191,11 +188,10 @@ class GUIParser(object):
         :param element: XML parser element
         :return: anchor number, x_offset int, y_offset int, alpha percentage
         """
-        anchor = self.get_item_value(element, "anchorAlignment")
         x_offset = self.get_item_value(element, "anchorXOffset")
         y_offset = self.get_item_value(element, "anchorYOffset")
         alpha = self.get_item_value(element, "anchorAlignment")
-        return anchor, x_offset, y_offset, alpha
+        return x_offset, y_offset, alpha
 
     def check_element_name(self, element_name):
         """
@@ -209,37 +205,66 @@ class GUIParser(object):
                              format(element_name))
         return self.gui_elements[element_name]
 
-    def get_element_scale(self, element_name):
+    def get_element_scale(self, element):
         """
         As the scale is a float value, not an int, the normal class method can't be used for this item
-        :param element_name: str name
+        :param element: element object
         :return: float
         """
-        element = self.check_element_name(element_name)
         return round(float(element.find("scale").get("Value")), 3)
 
-    def get_element_coordinates(self, element_name):
+    def get_element_anchor(self, element):
         """
-        Get element screen coordinates
-        :param element_name: str name
-        :return: (x, y)
+        Get the element anchor number
+        :param element: element object
+        :return: anchor int
         """
+        return self.get_item_value(element, "anchorAlignment")
+
+    def get_box_coordinates(self, element_name):
+        """
+        Get a tuple with the box coordinates for an element
+        :param element_name: name of the element
+        :return: (x, y, x+~, y+~)
+        """
+        element_name = element_name.replace("FreeFlight", "")
         element = self.check_element_name(element_name)
-        anchor, x_offset, y_offset, alpha = self.get_essential_element_values(element)
-        if alpha is not 0:
-            messagebox.showerror("Error", "The GSF Parser cannot work with GUI profiles for GSF that have an opacity "
-                                          "level higher than 0. Please adjust your GUI profile.")
-            raise ValueError("opacity for element {0} is higher than zero".format(element_name))
-        return self.get_element_absolute_coordinates(self.anchor_dictionary, anchor, x_offset, y_offset)
+        x_offset, y_offset, alpha = self.get_essential_element_values(element)
+        scale = self.get_element_scale(element)
+        anchor = self.get_element_anchor(element)
+        if anchor is 1:
+            # Anchor left top
+            x_one = self.anchor_dictionary[1][0] + x_offset
+            y_one = self.anchor_dictionary[1][1] + y_offset
+            x_two = x_one + int(round(self.target_items[element_name] * scale), 0)
+            y_two = y_one + int(round(self.target_items[element_name] * scale), 0)
+            return x_one, y_one, x_two, y_two
+        elif anchor is 2:
+            # Anchor left bottom
+            pass
+        elif anchor is 3:
+            # Anchor left center
+            pass
+        elif anchor is 4:
+            # Anchor right top
+            pass
+        elif anchor is 5:
+            # Anchor right bottom
+            pass
+        elif anchor is 6:
+            # Anchor right center
+            pass
+        elif anchor is 7:
+            # Anchor center top
+            pass
+        elif anchor is 8:
+            # Anchor center bottom
+            pass
+        elif anchor is 9:
+            # Anchor center center
+            pass
+        raise ValueError("Invalid anchor value found: {0}".format(anchor))
 
-    def get_player_health_coordinates(self):
-        pass
-
-    def get_enemy_health_coordinates(self):
-        pass
-
-    def get_player_powermgmt_coordinates(self):
-        pass
 
     def get_max_min_coordinates(self, output=False):
         """
@@ -267,9 +292,56 @@ class GUIParser(object):
         return min(x_values), max(x_values), min(y_values), max(y_values)
 
 
-if __name__ == '__main__':
-    """
-    This code is for debugging purposes
-    """
-    GUIParser("RedFantom's Interface.xml").get_max_min_coordinates(output=True)
-    GUIParser("RedFantom's Interface.xml").get_element_coordinates("QuickBar")
+class GSFInterface(GUIParser):
+    def __init__(self, file_name, target_items={"FreeFlightQuickBar": (210, 65), "FreeFlightShipStatus": (175, 165),
+                                                "FreeFlightPlayerStatusEffects": (245, 50),
+                                                "FreeFlightTargetStatusEffects": (280, 50),
+                                                "FreeFlightShipAmmo": (165, 85),
+                                                "FreeFlightTargetingComputer": (305, 245),
+                                                "FreeFlightPowerSettings": (75, 170),
+                                                "FreeFlightMissileLockIndicator": (90, 80),
+                                                "FreeFlightMiniMap": (305, 235), "FreeFlightScorecard": (285, 185),
+                                                "FreeFlightCopilotBark": (245, 90)}):
+        GUIParser.__init__(self, file_name, target_items)
+
+    def get_element_coordinates(self, element_name):
+        """
+        Get element screen coordinates
+        :param element_name: str name
+        :return: (x, y)
+        """
+        element = self.check_element_name(element_name)
+        x_offset, y_offset, alpha = self.get_essential_element_values(element)
+        anchor = self.get_element_anchor(element)
+        if alpha is not 0:
+            messagebox.showerror("Error", "The GSF Parser cannot work with GUI profiles for GSF that have an opacity "
+                                          "level higher than 0. Please adjust your GUI profile.")
+            raise ValueError("opacity for element {0} is higher than zero".format(element_name))
+        return self.get_element_absolute_coordinates(self.anchor_dictionary, anchor, x_offset, y_offset)
+
+    def get_ship_health_coordinates(self):
+        pass
+
+    def get_ship_powermgmt_coordinates(self):
+        pass
+
+    def get_ship_buffs_coordinates(self):
+        pass
+
+    def get_target_name_coordinates(self):
+        pass
+
+    def get_target_shiptype_coordinates(self):
+        pass
+
+    def get_target_buffs_coordinates(self):
+        pass
+
+    def get_score_coordinates(self):
+        pass
+
+    def get_match_timer_coordinates(self):
+        pass
+
+    def get_spawn_timer_coordinates(self):
+        pass
