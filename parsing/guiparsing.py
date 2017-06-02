@@ -4,9 +4,8 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from tools.utilities import get_swtor_directory, get_screen_resolution
-import xml.etree.cElementTree as ET
+import xml.etree.cElementTree as et
 import os
-from configparser import ConfigParser
 from tkinter import messagebox
 
 
@@ -34,7 +33,6 @@ def get_player_guiname(player_name):
     if not os.path.exists(dir):
         messagebox.showerror("Error", "SWTOR settings path not found. Is SWTOR correctly installed?")
         raise ValueError("SWTOR settings path not found")
-    configparser = ConfigParser()
     correct_file = None
     for file_name in os.listdir(dir):
         if not file_name.endswith(".ini"):
@@ -44,8 +42,17 @@ def get_player_guiname(player_name):
             break
     if not correct_file:
         raise ValueError("Could not find a player settings file with name: {0}".format(player_name))
-    configparser.read(os.path.join(dir, correct_file))
-    return configparser.get("settings", "GUI_Current_Profile")
+    with open(os.path.join(dir, correct_file)) as settings_file:
+        lines = settings_file.readlines()
+    gui_profile = None
+    for line in lines:
+        elements = line.split("=")
+        if elements[0] == "GUI_Current_Profile ":
+            gui_profile = str(elements[1])
+            break
+    if not gui_profile:
+        raise ValueError("Could not find GUI_Current_Profile in settings file {0}".format(correct_file))
+    return gui_profile[1:]
 
 
 class GUIParser(object):
@@ -91,6 +98,8 @@ class GUIParser(object):
     uses before using it in this class.
     """
 
+    debug = True
+
     def __init__(self, file_name, target_items):
         """
         Initializes the class by reading the XML file and setting things up for access by the user
@@ -104,15 +113,14 @@ class GUIParser(object):
         if not os.path.exists(file_name):
             raise ValueError("file_name specified is not valid: {0}".format(file_name))
         self.file_name = file_name
-        self.tree = ET.parse(file_name)
+        self.tree = et.parse(file_name)
         self.root = self.tree.getroot()
         self.gui_elements = {}
         self.target_items = [item for item in target_items]
         self.target_sizes = target_items
         for item in self.target_items:
-            item_name = item.replace("FreeFlight", "")
-            self.gui_elements[item_name] = self.root.find(item)
-            if not self.gui_elements[item_name]:
+            self.gui_elements[item] = self.root.find(item)
+            if not self.gui_elements[item]:
                 raise ValueError("Could not find {0} in GUI profile".format(item))
         resolution = get_screen_resolution()
         self.anchor_dictionary = self.get_anchor_dictionary(resolution)
@@ -142,8 +150,8 @@ class GUIParser(object):
         :return: anchor_point dict
         """
         x_left = 0
-        x_center = int(round(resolution[0] / 2, 0))
-        x_right = resolution[0]
+        x_center = int(round(resolution[0] / 2, 0)) - 5
+        x_right = resolution[0] - 5
         y_top = 0
         y_center = int(round(resolution[1] / 2, 0))
         y_bottom = resolution[1]
@@ -182,6 +190,19 @@ class GUIParser(object):
         """
         return int(round(float(element.find(name).get("Value")), 0))
 
+    @staticmethod
+    def get_element_scale(element):
+        """
+        As the scale is a float value, not an int, the normal class method can't be used for this item
+        :param element: element object
+        :return: float
+        """
+        return round(float(element.find("scale").get("Value")), 3)
+
+    @staticmethod
+    def get_scale_corrected_value(value, scale):
+        return int(round(value * scale, 0))
+
     def get_essential_element_values(self, element):
         """
         Get the essential element values for a GSF GUI element (for the position)
@@ -199,19 +220,10 @@ class GUIParser(object):
         :param element_name: str name
         :return: element object
         """
-        element_name = element_name.replace("FreeFlight", "")
         if element_name not in self.gui_elements:
             raise ValueError("element requested that was not in target_items initializer argument: {0}".
                              format(element_name))
         return self.gui_elements[element_name]
-
-    def get_element_scale(self, element):
-        """
-        As the scale is a float value, not an int, the normal class method can't be used for this item
-        :param element: element object
-        :return: float
-        """
-        return round(float(element.find("scale").get("Value")), 3)
 
     def get_element_anchor(self, element):
         """
@@ -227,44 +239,66 @@ class GUIParser(object):
         :param element_name: name of the element
         :return: (x, y, x+~, y+~)
         """
-        element_name = element_name.replace("FreeFlight", "")
         element = self.check_element_name(element_name)
         x_offset, y_offset, alpha = self.get_essential_element_values(element)
         scale = self.get_element_scale(element)
         anchor = self.get_element_anchor(element)
+        self.debug_print("element_name, x_offset, y_offset, alpha, scale, anchor: {0}, {1}, {2}, {3}, {4}, {5}".format(
+            element_name, x_offset, y_offset, alpha, scale, anchor))
+
         if anchor is 1:
             # Anchor left top
-            x_one = self.anchor_dictionary[1][0] + x_offset
-            y_one = self.anchor_dictionary[1][1] + y_offset
-            x_two = x_one + int(round(self.target_items[element_name] * scale), 0)
-            y_two = y_one + int(round(self.target_items[element_name] * scale), 0)
-            return x_one, y_one, x_two, y_two
+            x_one = self.anchor_dictionary[anchor][0] + x_offset
+            y_one = self.anchor_dictionary[anchor][1] + y_offset
         elif anchor is 2:
             # Anchor left bottom
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1], scale)
         elif anchor is 3:
             # Anchor left center
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1] * .5, scale)
         elif anchor is 4:
             # Anchor right top
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0], scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset
         elif anchor is 5:
             # Anchor right bottom
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0], scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1], scale)
         elif anchor is 6:
             # Anchor right center
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0], scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1] * 0.5, scale)
         elif anchor is 7:
             # Anchor center top
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0] * 0.5, scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset
         elif anchor is 8:
             # Anchor center bottom
-            pass
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0] * 0.5, scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1], scale)
         elif anchor is 9:
             # Anchor center center
-            pass
-        raise ValueError("Invalid anchor value found: {0}".format(anchor))
-
+            x_one = self.anchor_dictionary[anchor][0] + x_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][0] * 0.5, scale)
+            y_one = self.anchor_dictionary[anchor][1] + y_offset - self.get_scale_corrected_value(
+                self.target_sizes[element_name][1] * 0.5, scale)
+        else:
+            raise ValueError("Invalid anchor value found: {0}".format(anchor))
+        x_two = x_one + self.get_scale_corrected_value(self.target_sizes[element_name][0], scale)
+        y_two = y_one + self.get_scale_corrected_value(self.target_sizes[element_name][1], scale)
+        return x_one, y_one, x_two, y_two
 
     def get_max_min_coordinates(self, output=False):
         """
@@ -291,16 +325,23 @@ class GUIParser(object):
             print("Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
         return min(x_values), max(x_values), min(y_values), max(y_values)
 
+    def debug_print(self, line):
+        if self.debug:
+            print(line)
+        return
+
 
 class GSFInterface(GUIParser):
-    def __init__(self, file_name, target_items={"FreeFlightQuickBar": (210, 65), "FreeFlightShipStatus": (175, 165),
+    def __init__(self, file_name, target_items={"FreeFlightQuickBar": (230, 70),
+                                                "FreeFlightShipStatus": (190, 180),
                                                 "FreeFlightPlayerStatusEffects": (245, 50),
                                                 "FreeFlightTargetStatusEffects": (280, 50),
-                                                "FreeFlightShipAmmo": (165, 85),
-                                                "FreeFlightTargetingComputer": (305, 245),
-                                                "FreeFlightPowerSettings": (75, 170),
+                                                "FreeFlightShipAmmo": (170, 90),
+                                                "FreeFlightTargetingComputer": (345, 260),
+                                                "FreeFlightPowerSettings": (80, 180),
                                                 "FreeFlightMissileLockIndicator": (90, 80),
-                                                "FreeFlightMiniMap": (305, 235), "FreeFlightScorecard": (285, 185),
+                                                "FreeFlightMiniMap": (410, 310),
+                                                "FreeFlightScorecard": (420, 120),
                                                 "FreeFlightCopilotBark": (245, 90)}):
         GUIParser.__init__(self, file_name, target_items)
 
@@ -345,3 +386,13 @@ class GSFInterface(GUIParser):
 
     def get_spawn_timer_coordinates(self):
         pass
+
+
+if __name__ == '__main__':
+    obj = GSFInterface("Redfantom's Interface.xml")
+    print(obj.get_box_coordinates("FreeFlightScorecard"))
+    print(obj.get_element_anchor(obj.check_element_name("FreeFlightScorecard")))
+    from PIL import Image
+    print(get_player_guiname("Redfantom"))
+    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "testing.png"))).crop(
+        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightScorecard")).show()
