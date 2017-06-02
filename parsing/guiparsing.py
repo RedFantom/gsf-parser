@@ -14,7 +14,8 @@ def get_gui_profiles():
     Returns a list of all GUI profiles available in the SWTOR directory
     :return: list
     """
-    return [item.replace(".xml", "") for item in os.listdir(get_swtor_directory())]
+    return [item.replace(".xml", "") for item in
+            os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
 
 
 def get_player_guiname(player_name):
@@ -214,7 +215,7 @@ class GUIParser(object):
         alpha = self.get_item_value(element, "anchorAlignment")
         return x_offset, y_offset, alpha
 
-    def check_element_name(self, element_name):
+    def get_element_object(self, element_name):
         """
         Check the element name passed as argument and return an appropriate element object
         :param element_name: str name
@@ -239,7 +240,7 @@ class GUIParser(object):
         :param element_name: name of the element
         :return: (x, y, x+~, y+~)
         """
-        element = self.check_element_name(element_name)
+        element = self.get_element_object(element_name)
         x_offset, y_offset, alpha = self.get_essential_element_values(element)
         scale = self.get_element_scale(element)
         anchor = self.get_element_anchor(element)
@@ -340,7 +341,7 @@ class GSFInterface(GUIParser):
                                                 "FreeFlightTargetingComputer": (345, 260),
                                                 "FreeFlightPowerSettings": (80, 180),
                                                 "FreeFlightMissileLockIndicator": (90, 80),
-                                                "FreeFlightMiniMap": (410, 310),
+                                                "FreeFlightMiniMap": (325, 245),
                                                 "FreeFlightScorecard": (420, 120),
                                                 "FreeFlightCopilotBark": (245, 90)}):
         GUIParser.__init__(self, file_name, target_items)
@@ -351,7 +352,7 @@ class GSFInterface(GUIParser):
         :param element_name: str name
         :return: (x, y)
         """
-        element = self.check_element_name(element_name)
+        element = self.get_element_object(element_name)
         x_offset, y_offset, alpha = self.get_essential_element_values(element)
         anchor = self.get_element_anchor(element)
         if alpha is not 0:
@@ -361,22 +362,39 @@ class GSFInterface(GUIParser):
         return self.get_element_absolute_coordinates(self.anchor_dictionary, anchor, x_offset, y_offset)
 
     def get_ship_health_coordinates(self):
-        pass
+        temp_cds = self.get_box_coordinates("FreeFlightShipStatus")
+        temp_scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
+        front_one = (temp_cds[0] + int(25 * temp_scale), temp_cds[1] + int(70 * temp_scale))
+        front_two = (temp_cds[0] + int(40 * temp_scale), temp_cds[1] + int(70 * temp_scale))
+        back_one = temp_cds[0] + int(25 * temp_scale), temp_cds[1] + int(120 * temp_scale)
+        back_two = temp_cds[0] + int(40 * temp_scale), temp_cds[1] + int(120 * temp_scale)
+        return front_one, front_two, back_one, back_two
 
     def get_ship_powermgmt_coordinates(self):
-        pass
+        temp_cds = self.get_box_coordinates("FreeFlightShipStatus")
+        temp_scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
+        weapon_cds = (temp_cds[0] + int(15 * temp_scale), temp_cds[1] + int(70 * temp_scale))
+        shield_cds = (temp_cds[0] + int(37 * temp_scale), temp_cds[1] + int(70 * temp_scale))
+        engine_cds = (temp_cds[0] + int(60 * temp_scale), temp_cds[1] + int(70 * temp_scale))
+        return weapon_cds, shield_cds, engine_cds
 
     def get_ship_buffs_coordinates(self):
-        pass
+        return self.get_box_coordinates("FreeFlightPlayerStatusEffects")
 
     def get_target_name_coordinates(self):
-        pass
+        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
+        temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
+        x_one = temp_cds[0] + int(95 * temp_scale)
+        y_one = temp_cds[1] + int(14 * temp_scale)
+        x_two = temp_cds[0] + int(305 * temp_scale)
+        y_two = temp_cds[1] + int(28 * temp_scale)
+        return x_one, y_one, x_two, y_two
 
     def get_target_shiptype_coordinates(self):
         pass
 
     def get_target_buffs_coordinates(self):
-        pass
+        return self.get_box_coordinates("FreeFlightTargetStatusEffects")
 
     def get_score_coordinates(self):
         pass
@@ -390,9 +408,10 @@ class GSFInterface(GUIParser):
 
 if __name__ == '__main__':
     obj = GSFInterface("Redfantom's Interface.xml")
-    print(obj.get_box_coordinates("FreeFlightScorecard"))
-    print(obj.get_element_anchor(obj.check_element_name("FreeFlightScorecard")))
+    print(obj.get_box_coordinates("FreeFlightTargetingComputer"))
+    print(obj.get_element_anchor(obj.get_element_object("FreeFlightTargetingComputer")))
     from PIL import Image
+
     print(get_player_guiname("Redfantom"))
-    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "testing.png"))).crop(
-        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightScorecard")).show()
+    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "vision.png"))).crop(
+        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightTargetingComputer")).save("image.png")
