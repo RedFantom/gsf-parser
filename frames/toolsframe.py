@@ -136,6 +136,7 @@ class ToolsFrame(ttk.Frame):
             self.cartelfix.listener.join()
             self.cartelfix.destroy()
             self.cartelfix_button.config(text="Open CartelFix")
+            self.cartelfix = None
             return
         options = ["Slug Railgun", "Ion Railgun", "Plasma Railgun"]
         first = self.cartelfix_first.get()
