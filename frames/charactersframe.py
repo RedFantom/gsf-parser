@@ -41,6 +41,7 @@ class CharactersFrame(ttk.Frame):
             "MFR": "Mantle of the Force",
             "TRE": "The Red Eclipse"
         }
+        self.reverse_servers = {value: key for key, value in self.servers.items()}
         if "characters.db" not in os.listdir(self.directory):
             self.new_database()
         try:
@@ -54,9 +55,13 @@ class CharactersFrame(ttk.Frame):
         self.characters_list.heading("Characters", text="Characters")
         self.characters_list["show"] = "headings"
         self.characters_list.column("Characters", width=250, stretch=False, anchor=tk.E)
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450, canvasheight=350)
         self.options_frame = self.scroll_frame.interior
         self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
+
+        self.save_button = ttk.Button(self, text="Save", command=self.save_character_data)
+        self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
+        self.delete_button = ttk.Button(self, text="Delete", command=self.delete_character)
 
         self.republic_logo = ImageTk.PhotoImage(
             Image.open(os.path.join(get_assets_directory(), "icons", "republic_s.png")))
@@ -104,7 +109,8 @@ class CharactersFrame(ttk.Frame):
         self.characters_list.grid(column=0, row=0, sticky="nswe", padx=5, pady=5)
         self.characters_scroll.grid(column=1, row=0, sticky="ns", pady=5)
         self.new_character_button.grid(column=0, row=1, sticky="nswe", pady=5, padx=5)
-        self.scroll_frame.grid(column=2, row=0, rowspan=2, sticky="nswe", padx=5)
+        self.scroll_frame.grid(column=2, row=0, rowspan=2, columnspan=4, sticky="nswe", padx=5)
+
         self.character_name_label.grid(column=0, row=0, sticky="nsw", padx=5, pady=5)
         self.character_name_entry.grid(column=0, row=1, sticky="nswe", padx=5, pady=5)
         self.legacy_name_label.grid(column=1, row=0, sticky="nsw", padx=5, pady=5)
@@ -116,7 +122,12 @@ class CharactersFrame(ttk.Frame):
         self.gui_profile_dropdown.grid(column=0, row=5, sticky="nswe", padx=5, pady=5)
         self.gui_profile_detect_button.grid(column=1, row=5, sticky="nswe", padx=5, pady=5)
         self.lineup_label.grid(column=0, row=6, sticky="nsw", padx=5, pady=5)
-        self.lineup_frame.grid(column=0, row=7, rowspan=2, columnspan=3, sticky="nswe", padx=5, pady=5)
+        self.lineup_frame.grid(column=0, row=7, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
+
+        self.delete_button.grid(column=2, row=1, sticky="nswe", pady=5, padx=5)
+        self.discard_button.grid(column=3, row=1, sticky="nswe", pady=5, padx=5)
+        self.save_button.grid(column=4, row=1, sticky="nswe", pady=5, padx=5)
+
         set_row = 0
         set_column = 0
         if self.faction.get() == "imperial":
@@ -143,7 +154,11 @@ class CharactersFrame(ttk.Frame):
             item.grid_forget()
 
     def new_database(self):
-        characters = {server: None for server in self.servers}
+        characters = {("TRE", "Example"): {"Server": "TRE",
+                                           "Faction": "imperial",
+                                           "Name": "Example",
+                                           "Legacy": "E_Legacy",
+                                           "Ships": ("Blackbolt", "Rycer")}}
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
         self.characters = {}
@@ -161,4 +176,13 @@ class CharactersFrame(ttk.Frame):
         print("Setting faction {0}".format(faction))
         print("self.faction == {0}".format(self.faction.get()))
         self.grid_widgets()
+        pass
+
+    def save_character_data(self):
+        pass
+
+    def discard_character_data(self):
+        pass
+
+    def delete_character(self):
         pass
