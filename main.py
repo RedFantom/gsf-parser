@@ -5,7 +5,8 @@
 # For license see LICENSE
 from os.path import dirname, join, basename
 import sys
-
+from tools import admin
+"""
 try:
     tcl_lib = join(sys._MEIPASS, "lib")
     tcl_new_lib = join(dirname(dirname(tcl_lib)), basename(tcl_lib))
@@ -14,6 +15,7 @@ try:
     shutil.copytree(src=tcl_lib, dst=tcl_new_lib)
 except AttributeError:
     pass
+"""
 import gui
 
 
@@ -23,4 +25,10 @@ def new_window():
 
 
 if __name__ == "__main__":
+    if not admin.is_user_admin():
+        if sys.platform == "win32":
+            admin.run_as_admin()
+        else:
+            print("Please run the GSF Parser as an admin to allow the usage of system wide keyboard hooks for parsing")
+            exit()
     new_window()
