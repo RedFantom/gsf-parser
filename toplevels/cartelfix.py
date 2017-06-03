@@ -33,7 +33,7 @@ class CartelFix(tk.Toplevel):
                 return True
         except AttributeError:
             return True
-        except TypeError:
+        except ValueError:
             return True
         if self.railgun == 1:
             self.label.config(image=self.second)
