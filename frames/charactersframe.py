@@ -14,6 +14,8 @@ from widgets import VerticalScrollFrame
 from PIL import Image, ImageTk
 from tools.utilities import get_assets_directory
 from parsing.guiparsing import GSFInterface, get_gui_profiles
+from toplevels.addcharacter import AddCharacter
+import variables
 
 
 class CharactersFrame(ttk.Frame):
@@ -61,9 +63,9 @@ class CharactersFrame(ttk.Frame):
 
         # Character option widgets
         self.character_name_label = ttk.Label(self.options_frame, text="Character name")
-        self.character_name_entry = ttk.Entry(self.options_frame, width=33)
+        self.character_name_entry = ttk.Entry(self.options_frame, width=35)
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
-        self.legacy_name_entry = ttk.Entry(self.options_frame, width=30)
+        self.legacy_name_entry = ttk.Entry(self.options_frame, width=35)
         self.faction = tk.StringVar()
         self.faction_label = ttk.Label(self.options_frame, text="Faction")
         self.faction_republic_radiobutton = ttk.Radiobutton(self.options_frame, text="Republic",
@@ -106,4 +108,7 @@ class CharactersFrame(ttk.Frame):
         pass
 
     def new_character(self):
+        AddCharacter(variables.main_window, tuple(self.servers.values()), self.insert_character)
+
+    def insert_character(self, name, legacy, server, faction):
         pass
