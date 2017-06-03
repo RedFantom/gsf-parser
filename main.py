@@ -3,10 +3,11 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from os.path import dirname, join, basename
 import sys
 from tools import admin
 """
+from os.path import dirname, join, basename
+
 try:
     tcl_lib = join(sys._MEIPASS, "lib")
     tcl_new_lib = join(dirname(dirname(tcl_lib)), basename(tcl_lib))
