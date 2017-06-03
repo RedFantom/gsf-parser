@@ -29,6 +29,7 @@ if __name__ == "__main__":
     if not admin.is_user_admin():
         if sys.platform == "win32":
             admin.run_as_admin()
+            exit()
         else:
             print("Please run the GSF Parser as an admin to allow the usage of system wide keyboard hooks for parsing")
             exit()
