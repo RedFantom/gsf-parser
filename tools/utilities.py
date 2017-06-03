@@ -60,7 +60,7 @@ def get_cursor_position(screen):
         return get_pointer_position_win32()
     elif platform == "win32":
         return get_pointer_position_cv2(screen)
-    elif platform == "linux2":
+    elif platform == "linux":
         return get_pointer_position_linux()
     elif platform == "darwin":
         raise ValueError("This function does not support macOS")
@@ -79,7 +79,7 @@ def get_pillow_screen():
     elif platform == "win32":
         from PIL import ImageGrab
         return ImageGrab.grab()
-    elif platform == "linux2":
+    elif platform == "linux":
         """
         Source: https://ubuntuforums.org/showthread.php?t=448160&p=2681009#post2681009
         """
@@ -134,7 +134,7 @@ def get_temp_directory():
         except OSError:
             pass
         return path
-    elif sys.platform == "linux2":
+    elif sys.platform == "linux":
         path = "/var/tmp/gsfparser"
         try:
             os.makedirs(path)
