@@ -46,12 +46,13 @@ class CharactersFrame(ttk.Frame):
             self.new_database()
         self.characters_list = ttk.Treeview(self, columns=("Characters",), displaycolumns=("Characters",))
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
-        self.characters_list.configure(yscrollcommand=self.characters_scroll.set)
+        self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=14)
         self.characters_list.heading("Characters", text="Characters")
         self.characters_list["show"] = "headings"
-        self.characters_list.column("Characters", width=300, stretch=False, anchor=tk.E)
+        self.characters_list.column("Characters", width=250, stretch=False, anchor=tk.E)
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450)
         self.options_frame = self.scroll_frame.interior
+        self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
 
         self.republic_logo = ImageTk.PhotoImage(
             Image.open(os.path.join(get_assets_directory(), "icons", "republic_s.png")))
@@ -80,7 +81,8 @@ class CharactersFrame(ttk.Frame):
     def grid_widgets(self):
         self.characters_list.grid(column=0, row=0, sticky="nswe", padx=5, pady=5)
         self.characters_scroll.grid(column=1, row=0, sticky="ns", pady=5)
-        self.scroll_frame.grid(column=2, row=0, sticky="nswe", padx=5)
+        self.new_character_button.grid(column=0, row=1, sticky="nswe", pady=5, padx=5)
+        self.scroll_frame.grid(column=2, row=0, rowspan=2, sticky="nswe", padx=5)
         self.character_name_label.grid(column=0, row=0, sticky="nsw", padx=5, pady=5)
         self.character_name_entry.grid(column=0, row=1, sticky="nswe", padx=5, pady=5)
         self.legacy_name_label.grid(column=1, row=0, sticky="nsw", padx=5, pady=5)
@@ -101,4 +103,7 @@ class CharactersFrame(ttk.Frame):
         self.characters = {}
 
     def detect_profile(self):
+        pass
+
+    def new_character(self):
         pass

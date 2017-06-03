@@ -7,13 +7,16 @@
 # For license see LICENSE
 import tkinter as tk
 import tkinter.ttk as ttk
-from toplevels import cartelfix
+import tkinter.messagebox as mb
+from toplevels.cartelfix import CartelFix
 from tools import simulator
 from tkinter.filedialog import askopenfilename
 import os
 import threading
 import variables
 from widgets import verticalscrollframe
+from parsing.guiparsing import GSFInterface, get_gui_profiles
+from tools.utilities import get_assets_directory
 
 
 class ToolsFrame(ttk.Frame):
@@ -25,6 +28,7 @@ class ToolsFrame(ttk.Frame):
                                                       "and GSF Parser experience. These tools are not actively "
                                                       "supported.", font=("Calibri", 11))
         self.separator_one = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
+        self.cartelfix = None
         self.cartelfix_heading_label = ttk.Label(self.interior_frame.interior, text="CartelFix", font=("Calibri", 12))
         self.cartelfix_description_label = ttk.Label(self.interior_frame.interior,
                                                      text="The Cartel Market Gunships do not properly switch the "
@@ -46,6 +50,9 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_second_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_second,
                                                         "Choose railgun", "Slug Railgun",
                                                         "Ion Railgun", "Plasma Railgun")
+        self.cartelfix_gui_profile = tk.StringVar()
+        self.cartelfix_gui_profile_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_gui_profile,
+                                                             *tuple(get_gui_profiles()))
         self.cartelfix_button = ttk.Button(self.interior_frame.interior, text="Open CartelFix",
                                            command=self.open_cartel_fix)
         self.separator_two = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
@@ -106,7 +113,8 @@ class ToolsFrame(ttk.Frame):
                                                                                                    ))
         self.simulator_thread.start()
 
-    def start_splitter(self):
+    @staticmethod
+    def start_splitter():
         from tools import splitting
 
     def start_importer(self):
@@ -119,7 +127,60 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_label.config(text=os.path.basename(file_name))
 
     def open_cartel_fix(self):
-        pass
+
+        def generate_icon_path(icon):
+            return os.path.join(get_assets_directory(), "icons", icon)
+
+        if self.cartelfix:
+            self.cartelfix.listener.stop()
+            self.cartelfix.listener.join()
+            self.cartelfix.destroy()
+            self.cartelfix_button.config(text="Open CartelFix")
+            return
+        options = ["Slug Railgun", "Ion Railgun", "Plasma Railgun"]
+        first = self.cartelfix_first.get()
+        second = self.cartelfix_second.get()
+        faction = self.cartelfix_faction.get()
+        if first is second:
+            mb.showerror("Error", "Please choose two different railguns, not two the same railguns.")
+            return
+        if first not in options or second not in options:
+            mb.showerror("Error", "Please select the railguns")
+            raise ValueError("Error", "Unkown railgun found: {0}, {1}".format(first, second))
+        if faction == "Imperial":
+            if first == "Slug Railgun":
+                first = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
+            elif first == "Ion Railgun":
+                first = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
+            elif first == "Plasma Railgun":
+                first = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
+            if second == "Slug Railgun":
+                second = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
+            elif second == "Ion Railgun":
+                second = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
+            elif second == "Plasma Railgun":
+                second = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
+        elif faction == "Republic":
+            if first == "Slug Railgun":
+                first = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
+            elif first == "Ion Railgun":
+                first = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
+            elif first == "Plasma Railgun":
+                first = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
+            if second == "Slug Railgun":
+                second = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
+            elif second == "Ion Railgun":
+                second = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
+            elif second == "Plasma Railgun":
+                second = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
+        else:
+            raise ValueError("Unknown faction value found: {0}".format(faction))
+        gui_profile = GSFInterface(self.cartelfix_gui_profile.get() + ".xml")
+        x, y = gui_profile.get_secondary_icon_coordinates()
+        scale = gui_profile.get_element_scale(gui_profile.get_element_object("FreeFlightShipAmmo"))
+        self.cartelfix = CartelFix(variables.main_window, first, second, (x, y), scale)
+        self.cartelfix_button.config(text="Close CartelFix")
+        self.cartelfix.start_listener()
 
     @staticmethod
     def open_old_parser():
@@ -135,7 +196,8 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_faction_dropdown.grid(row=5, column=0, columnspan=2, sticky="we")
         self.cartelfix_first_dropdown.grid(row=5, column=2, columnspan=1, sticky="we")
         self.cartelfix_second_dropdown.grid(row=5, column=3, columnspan=2, sticky="we")
-        self.cartelfix_button.grid(row=5, column=5, columnspan=3, sticky="we")
+        self.cartelfix_gui_profile_dropdown.grid(row=5, column=5, sticky="we")
+        self.cartelfix_button.grid(row=5, column=6, columnspan=4, sticky="we")
         self.separator_two.grid(row=6, column=0, columnspan=10, sticky="we", pady=5)
         self.old_parser_heading_label.grid(row=7, columnspan=10, sticky="w")
         self.old_parser_description_label.grid(row=8, columnspan=10, sticky="w")
@@ -146,7 +208,7 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_label.grid(row=13, column=0, columnspan=2, sticky="w")
         self.simulator_file_selection_button.grid(row=13, column=2, sticky="we")
         self.simulator_button.grid(row=13, column=3, sticky="we")
-        self.separator_four.grid(row=14, column=0, columnspan=10, sticky="we")
+        self.separator_four.grid(row=14, column=0, columnspan=10, sticky="we", pady=5)
         self.splitting_heading_label.grid(row=15, column=0, columnspan=10, sticky="w")
         self.splitting_description_label.grid(row=16, column=0, columnspan=10, sticky="w")
         self.splitting_button.grid(row=17, column=0, columnspan=2, sticky="we")

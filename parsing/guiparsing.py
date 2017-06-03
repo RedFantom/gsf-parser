@@ -405,13 +405,21 @@ class GSFInterface(GUIParser):
     def get_spawn_timer_coordinates(self):
         pass
 
+    def get_secondary_icon_coordinates(self):
+        # (95, 16)
+        box = self.get_box_coordinates("FreeFlightShipAmmo")
+        scale = self.get_element_scale(self.get_element_object("FreeFlightShipAmmo"))
+        x = box[0] + int(95 * scale)
+        y = box[1] + int(16 * scale)
+        return x, y
+
 
 if __name__ == '__main__':
     obj = GSFInterface("Redfantom's Interface.xml")
-    print(obj.get_box_coordinates("FreeFlightTargetingComputer"))
-    print(obj.get_element_anchor(obj.get_element_object("FreeFlightTargetingComputer")))
+    print(obj.get_box_coordinates("FreeFlightShipAmmo"))
+    print(obj.get_element_anchor(obj.get_element_object("FreeFlightShipAmmo")))
     from PIL import Image
 
     print(get_player_guiname("Redfantom"))
-    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "vision.png"))).crop(
-        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightTargetingComputer")).save("image.png")
+    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "testing.jpg"))).crop(
+        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightShipAmmo")).save("image.png")
