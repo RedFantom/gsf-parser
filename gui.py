@@ -33,6 +33,7 @@ class MainWindow(tk.Tk):
         tk.Tk.__init__(self)
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
+        self.protocol("WM_DELETE_WINDOW", self.exit)
         self.finished = False
         variables.main_window = self
         self.style = ttk.Style()
@@ -148,3 +149,11 @@ class MainWindow(tk.Tk):
                                     variables.settings_obj.logo_color + ".ico")
         except:
             print("[DEBUG] No icon found, is this from the GitHub repo?")
+
+    def exit(self):
+        """
+        Function to cancel any running tasks and call any funtions to save the data in use before actually closing the
+        GSF Parser
+        :return: SystemExit(0)
+        """
+        exit()
