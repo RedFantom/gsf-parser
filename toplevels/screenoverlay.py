@@ -28,7 +28,7 @@ class HitChanceOverlay(tk.Toplevel):
         self.running = True
 
     def grid_widgets(self):
-        self.label.grid(sticky=tk.W)
+        self.label.grid(sticky="w")
 
     def set_geometry(self):
         (x, y) = get_pointer_position_win32()

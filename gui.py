@@ -75,13 +75,13 @@ class MainWindow(tk.Tk):
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         # Pack the frames and put their widgets into place
-        self.file_select_frame.grid(column=1, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column=2, row=1, sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
-        self.ship_frame.grid(column=3, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_frame.grid(column=3, row=1, sticky="nswe")
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
         self.graphs_frame.grid(column=0, row=0)
@@ -133,8 +133,8 @@ class MainWindow(tk.Tk):
             print(e)
             self.style.theme_use("default")
         self.style.configure('.', font=("Calibri", 10))
-        self.style.configure('TButton', anchor=tk.W)
-        self.style.configure('Toolbutton', anchor=tk.W)
+        self.style.configure('TButton', anchor="w")
+        self.style.configure('Toolbutton', anchor="w")
         try:
             self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:

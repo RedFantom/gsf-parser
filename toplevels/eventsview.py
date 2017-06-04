@@ -20,8 +20,8 @@ class EventsView(tk.Toplevel):
         self.listbox = tk.Listbox(self, width=100, height=15, font=("Consolas", 10))
         self.scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
         self.listbox.config(yscrollcommand=self.scroll.set)
-        self.listbox.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.scroll.grid(column=2, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.listbox.grid(column=1, row=0, sticky="nswe")
+        self.scroll.grid(column=2, row=0, sticky="nswe")
         self.resizable(width=False, height=False)
         for line in spawn:
             event = print_event(line, variables.spawn_timing, player)

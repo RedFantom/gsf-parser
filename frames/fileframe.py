@@ -134,13 +134,13 @@ class FileFrame(ttk.Frame):
         self.match_box.config(height=6)
         self.spawn_box.config(height=6)
         self.file_box.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
-        self.file_box_scroll.grid(column=2, row=0, rowspan=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.file_box_scroll.grid(column=2, row=0, rowspan=8, columnspan=1, sticky="ns", pady=5)
         self.match_box.grid(column=0, row=8, columnspan=2, padx=5, pady=5)
-        self.match_box_scroll.grid(column=2, row=8, columnspan=1, sticky=tk.N + tk.S, pady=5)
+        self.match_box_scroll.grid(column=2, row=8, columnspan=1, sticky="ns", pady=5)
         self.spawn_box.grid(column=0, row=16, columnspan=2, padx=5, pady=5)
-        self.spawn_box_scroll.grid(column=2, row=16, columnspan=1, sticky=tk.N + tk.S, pady=5)
-        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.spawn_box_scroll.grid(column=2, row=16, columnspan=1, sticky="ns", pady=5)
+        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe")
+        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky="nswe")
 
     def add_matches(self):
         """

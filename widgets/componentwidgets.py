@@ -106,8 +106,8 @@ class MajorComponentWidget(ComponentWidget):
         return
 
     def grid_widgets(self):
-        self.scroll_frame.grid(sticky=tk.N + tk.S + tk.W + tk.E)
-        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=5, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.scroll_frame.grid(sticky="nswe")
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, padx=5, sticky="nswe")
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -179,7 +179,7 @@ class MiddleComponentWidget(ComponentWidget):
         return
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
+        self.description_label.grid(row=0, column=0, columnspan=2, pady=2, sticky="nswe", padx=5)
         set_row = 1
         for widget in self.upgrade_buttons:
             if isinstance(widget, list):
@@ -224,7 +224,7 @@ class MinorComponentWidget(ComponentWidget):
         self.name = data_dictionary["Name"]
 
     def grid_widgets(self):
-        self.description_label.grid(row=0, column=0, pady=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
+        self.description_label.grid(row=0, column=0, pady=2, sticky="nswe", padx=5)
         set_row = 1
         for widget in self.upgrade_buttons:
             widget.grid(row=set_row, column=0, pady=5)
