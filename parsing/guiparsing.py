@@ -53,7 +53,7 @@ def get_player_guiname(player_name):
             break
     if not gui_profile:
         raise ValueError("Could not find GUI_Current_Profile in settings file {0}".format(correct_file))
-    return gui_profile[1:]
+    return gui_profile[1:].replace("\n", "")
 
 
 class GUIParser(object):
