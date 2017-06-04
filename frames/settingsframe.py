@@ -48,7 +48,7 @@ class SettingsFrame(ttk.Frame):
                                    font=("Calibri", 12))
         self.color_label = ttk.Label(self.gui_frame, text="\tParser text color: ")
         self.color = tk.StringVar()
-        self.custom_color_entry = ttk.Entry(self.gui_frame, width=10)
+        self.custom_color_entry = ttk.Entry(self.gui_frame, width=15)
         self.color_choices = {
             "Darkgreen": "Darkgreen",
             "Darkblue": "Darkblue",
@@ -136,7 +136,7 @@ class SettingsFrame(ttk.Frame):
         self.overlay_enable_radio_var = tk.BooleanVar()
         self.overlay_enable_radio_yes = ttk.Radiobutton(self.realtime_frame,
                                                         variable=self.overlay_enable_radio_var,
-                                                        value=True, text="Yes")
+                                                        value=True, text="Yes", width=10)
         self.overlay_enable_radio_no = ttk.Radiobutton(self.realtime_frame,
                                                        variable=self.overlay_enable_radio_var,
                                                        value=False, text="No")
@@ -187,15 +187,14 @@ class SettingsFrame(ttk.Frame):
         self.overlay_bg_label = ttk.Label(self.realtime_frame, text="\tOverlay background color: ")
         self.overlay_tx_label = ttk.Label(self.realtime_frame, text="\tOverlay text color: ")
         self.overlay_tr_label = ttk.Label(self.realtime_frame, text="\tOverlay transparent color: ")
+
         self.overlay_font_label = ttk.Label(self.realtime_frame, text="\tOverlay font: ")
-        self.overlay_font_options = ["Calibri", "Arial", "Consolas"]
-        self.overlay_font_radios = []
+        self.overlay_font_options = ("Default", "Calibri", "Arial", "Consolas")
         self.overlay_font = tk.StringVar()
-        for font in self.overlay_font_options:
-            self.overlay_font_radios.append(ttk.Radiobutton(self.realtime_frame, variable=self.overlay_font,
-                                                            value=font, text=font))
+        self.overlay_font_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_font, *self.overlay_font_options)
+
         self.overlay_text_size_label = ttk.Label(self.realtime_frame, text="\tOverlay text size: ")
-        self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width=5)
+        self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width=10)
         self.overlay_when_gsf_label = ttk.Label(self.realtime_frame,
                                                 text="\tOnly display overlay in a GSF match: ")
         self.overlay_when_gsf = tk.BooleanVar()
@@ -257,15 +256,16 @@ class SettingsFrame(ttk.Frame):
                                             "issues that you can relate to the usage of the GSF Parser on a low-end "
                                             "system.")
 
-    def set_custom_event_colors(self):
+    @staticmethod
+    def set_custom_event_colors():
         """
         Opens a Toplevel to show the settings for the colors of the events
         view. See toplevel.event_colors for more information.
         :return: None
         """
-        self.color_toplevel = EventColors(variables.main_window)
-        self.color_toplevel.grid_widgets()
-        self.color_toplevel.focus_set()
+        color_toplevel = EventColors(variables.main_window)
+        color_toplevel.grid_widgets()
+        color_toplevel.focus_set()
 
     def set_directory_dialog(self):
         """
@@ -339,6 +339,7 @@ class SettingsFrame(ttk.Frame):
         self.overlay_opacity_label.grid(column=0, row=2, sticky="w")
         self.overlay_opacity_input.grid(column=1, row=2, sticky="w")
         self.realtime_settings_label.grid(column=0, row=0, sticky="w", pady=5)
+
         self.overlay_size_label.grid(column=0, row=3, sticky="nswe")
         self.overlay_size_radio_big.grid(column=1, row=3, sticky="nswe")
         self.overlay_size_radio_small.grid(column=2, row=3, sticky="nswe")
@@ -350,8 +351,8 @@ class SettingsFrame(ttk.Frame):
         self.overlay_position_radio_ut.grid(column=1, row=5, sticky="nswe", columnspan=2)
         self.overlay_position_radio_uc.grid(column=5, row=4, sticky="nsw")
         self.overlay_position_radio_nq.grid(column=4, row=5, sticky="nsw", columnspan=2)
-        self.realtime_frame.grid(column=0, row=8, sticky="nswe")
 
+        self.realtime_frame.grid(column=0, row=8, sticky="nswe")
         self.overlay_tx_label.grid(column=0, row=6, sticky="nswe")
         self.overlay_bg_label.grid(column=0, row=7, sticky="nswe")
         self.overlay_tr_label.grid(column=0, row=8, sticky="nswe")
@@ -362,20 +363,16 @@ class SettingsFrame(ttk.Frame):
         self.overlay_font_label.grid(column=0, row=9, sticky="nswe")
         self.overlay_text_size_label.grid(column=0, row=10, sticky="nswe")
         self.overlay_text_size_entry.grid(column=1, row=10, sticky="nswe")
+        self.overlay_font_dropdown.grid(column=1, row=9, sticky="nswe")
 
-
-        set_column = 1
-        for radio in self.overlay_font_radios:
-            radio.grid(column=set_column, row=9, sticky="nswe")
-            set_column += 1
         self.overlay_when_gsf_label.grid(column=0, row=11)
         self.overlay_when_gsf_true.grid(column=1, row=11, sticky="w")
         self.overlay_when_gsf_false.grid(column=2, row=11, sticky="w")
-        self.realtime_timeout_label.grid(column=0, row=12, sticky="w")
-        self.realtime_timeout_entry.grid(column=1, row=12, sticky="w")
-        self.realtime_timeout_help_button.grid(column=2, row=12, sticky="w")
-        self.realtime_timeout_help_label.grid(column=3, row=12, sticky="w", columnspan=5,
-                                              padx=5)
+        # self.realtime_timeout_label.grid(column=0, row=12, sticky="w")
+        # self.realtime_timeout_entry.grid(column=1, row=12, sticky="w")
+        # self.realtime_timeout_help_button.grid(column=2, row=12, sticky="w")
+        # self.realtime_timeout_help_label.grid(column=3, row=12, sticky="w", columnspan=5,
+        #                                      padx=5)
         self.realtime_event_overlay_label.grid(column=0, row=13, sticky="w")
         self.realtime_event_overlay_true.grid(column=1, row=13, sticky="w")
         self.realtime_event_overlay_false.grid(column=2, row=13, sticky="w")
@@ -456,7 +453,7 @@ class SettingsFrame(ttk.Frame):
         """
         print("[DEBUG] Save_settings called!")
         if str(self.color.get()) == variables.settings_obj.color and \
-                        self.logo_color.get() == variables.settings_obj.logo_color:
+           self.logo_color.get() == variables.settings_obj.logo_color:
             reboot = False
         else:
             reboot = True
