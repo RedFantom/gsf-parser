@@ -16,9 +16,10 @@ class AddCharacter(tk.Toplevel):
         self.legacy_name_entry = ttk.Entry(self)
         self.legacy_name_entry.insert(tk.END, "Legacy name...")
         self.server = tk.StringVar()
+        servers = ("Choose server",) + servers
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers)
         self.faction = tk.StringVar()
-        self.faction_dropdown = ttk.OptionMenu(self, self.faction, *("Republic", "Empire"))
+        self.faction_dropdown = ttk.OptionMenu(self, self.faction, *("Choose faction", "Republic", "Empire"))
         self.done_button = ttk.Button(self, text="Add character", command=self.add_character)
         self.grid_widgets()
 
