@@ -10,9 +10,9 @@ import os
 import threading
 import time
 from datetime import datetime
-
 import variables
-import realtime
+from queue import Queue
+from . import realtime
 
 
 class LogStalker(threading.Thread):
@@ -29,7 +29,7 @@ class LogStalker(threading.Thread):
     """
 
     def __init__(self, folder=variables.settings_obj.cl_path, callback=None,
-                 watching_stringvar=None):
+                 watching_stringvar=None, newfilecallback=None):
         """
         Open a LogStalker class
         :param folder: the folder with the files to watch
@@ -41,15 +41,17 @@ class LogStalker(threading.Thread):
         threading.Thread.__init__(self)
         self.folder = folder
         self.stringvar = watching_stringvar
-        print self.folder
-        if not callback:
+        print((self.folder))
+        if not callback or not newfilecallback:
             raise ValueError("callback is not allowed to be None")
         self.callback = callback
+        self.new_file_callback = newfilecallback
         self.list_of_files = os.listdir(self.folder)
         self.current_file = None
         self.read_so_far = 0
         self.lines = []
         self.datetime_dict = {}
+        self.exit_queue = Queue()
 
     def run(self):
         """
@@ -61,7 +63,12 @@ class LogStalker(threading.Thread):
         updated every time the watched file changes.
         :return: None
         """
-        while variables.FLAG:
+        while True:
+            if not self.exit_queue.empty():
+                print("LogStalker exit_queue not empty, getting value")
+                if not self.exit_queue.get():
+                    print("LogStalker value was False, break loop")
+                    break
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
             for name in folder_list:
@@ -72,17 +79,18 @@ class LogStalker(threading.Thread):
                 except ValueError:
                     continue
             temp_datetime_list = []
-            for (key, value) in self.datetime_dict.iteritems():
+            for (key, value) in list(self.datetime_dict.items()):
                 temp_datetime_list.append(key)
             latest_file_datetime = max(temp_datetime_list)
             latest_file_name = self.datetime_dict[latest_file_datetime]
             if self.current_file == latest_file_name:
                 self.callback(self.read_from_file())
             else:
-                print "[DEBUG] Watching: " + latest_file_name
+                print(("[DEBUG] Watching: " + latest_file_name))
                 if self.stringvar:
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
+                self.new_file_callback(self.current_file)
                 with open(variables.settings_obj.cl_path + "/" + self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage

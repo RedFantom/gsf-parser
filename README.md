@@ -1,6 +1,4 @@
 ### Thranta Squadron GSF CombatLog Parser 
-![Build Status](https://ci.appveyor.com/api/projects/status/github/RedFantom/GSF-Parser?branch=master&svg=true)
-[![codecov](https://codecov.io/gh/RedFantom/GSF-Parser/branch/master/graph/badge.svg)](https://codecov.io/gh/RedFantom/GSF-Parser)
 [![Github All Releases](https://img.shields.io/github/downloads/RedFantom/GSF-Parser/total.svg)](https://www.github.com/RedFantom/GSF-Parser/Releases)
 
 

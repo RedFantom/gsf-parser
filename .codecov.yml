@@ -3,3 +3,8 @@ codecov:
   slug: "RedFantom/GSF-Parser"
   branch: master
 comment: false
+coverage:
+  status:
+    project:
+      default:
+        target: 60%

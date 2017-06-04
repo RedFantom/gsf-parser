@@ -3,11 +3,11 @@
 # For license see LICENSE
 
 # UI imports
-import ttk
-import Tkinter as tk
+import tkinter.ttk as ttk
+import tkinter as tk
 
 
-class share_frame(ttk.Frame):
+class SharingFrame(ttk.Frame):
     """
     A Frame to contain widgets to allow uploading of CombatLogs to the server
     and viewing leaderboards that keep track of individual player performance
@@ -19,4 +19,4 @@ class share_frame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame)
         self.label = ttk.Label(self, font=("Calibri", 40),
                                text="Coming soon!", justify=tk.CENTER)
-        self.label.grid(sticky=tk.N+tk.S+tk.W+tk.E, padx=250, pady=150)
+        self.label.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=250, pady=150)

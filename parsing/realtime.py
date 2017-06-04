@@ -5,12 +5,14 @@
 # For license see LICENSE
 
 # Written by Daethyra, edited by RedFantom
-
 from decimal import Decimal
 import datetime
 import re
+from tkinter.messagebox import showerror
 from parsing.stalking import LogStalker
 import variables
+from .lineops import line_to_dictionary
+from tools.utilities import write_debug_log
 
 
 class Parser(object):
@@ -62,7 +64,21 @@ class Parser(object):
 
     DEBUG = False
 
-    def __init__(self, spawn_callback, match_callback, new_match_callback, insert):
+    def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
+                 ship=None, data_queue=None):
+        if not screen and screenoverlay:
+            showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
+            raise ValueError("screenoverlay True but screen False")
+        if screen and not ship:
+            # showerror("Error", "Screen parsing enabled but no ship object acquired.")
+            # raise ValueError("screen True but ship None")
+            pass
+
+        self.data_queue = data_queue
+        if data_queue:
+            self.screenparser = True
+        else:
+            self.screenparser = False
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -101,24 +117,28 @@ class Parser(object):
         self.close()
 
     def parse(self, line, recursion=False):
+        write_debug_log("Parser.parse function called with line: %s" % line)
         self.dprint("[DEBUG] line", line)
         if not line:
-            print "[DEBUG] Line is of NoneType"
+            print("[DEBUG] Line is of NoneType")
             # Should be return for #20?
             return
 
         if "SetLevel" in line:
             return
 
-        for enemy, time in self.recent_enemies.iteritems():
-            # Remove enemies that weren't registered in last ten seconds
-            pass
+        # This block is for keeping track of recent enemies, but it causes RuntimeErrors
+        # time_now = datetime.datetime.now()
+        # for enemy, time in self.recent_enemies.iteritems():
+        #    # Remove enemies that weren't registered in last ten seconds
+        #    if (time_now - time).seconds >= 10:
+        #        del self.recent_enemies[enemy]
 
         # If first line of the file, save the player name
         if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
             variables.rt_name = self.player_name
-            print self.player_name
+            print((self.player_name))
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
         if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
@@ -126,7 +146,7 @@ class Parser(object):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
                 variables.rt_name = self.player_name
-                print self.player_name
+                print((self.player_name))
 
         if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
             self.dprint("[DEBUG] out of match, skip")
@@ -135,9 +155,11 @@ class Parser(object):
         # if the active id is neither source nor destination, the player id has changed
         # meaning a new spawn.
         if self.active_id not in line['source'] and self.active_id not in line['destination']:
-            print("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
-                  sum(self.spawn_selfdmg))
+            print(("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
+                   sum(self.spawn_selfdmg)))
             # Call the new spawn callback
+            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+            self.data_queue.put(("spawn", time))
             self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
             self.spawns += 1
             self.active_id = ''
@@ -183,12 +205,15 @@ class Parser(object):
         self.dprint("[DEBUG] hold", self.hold)
 
         # start of a match
-        if not self.is_match:
-            if '@' not in line['source']:
-                self.is_match = True
-                # Call the callback for a new match
-                self.new_match_callback()
-                variables.rt_timing = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+        if not self.is_match and '@' not in line['source']:
+            self.is_match = True
+            # Call the callback for a new match
+            self.new_match_callback()
+            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+            variables.rt_timing = time
+            if self.screenparser:
+                write_debug_log("Parser announcing new match to ScreenParser")
+                self.data_queue.put(("match", True, time))
 
         if self.is_match:
             if '@' in line['source']:
@@ -199,8 +224,8 @@ class Parser(object):
                 # Call the end of match callback
                 self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
                 self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
-                print("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
-                      sum(self.tmp_selfdmg))
+                print(("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
+                       sum(self.tmp_selfdmg)))
                 self.is_match = False
                 self.dmg_done.append(self.tmp_dmg_done)
                 self.dmg_taken.append(self.tmp_dmg_taken)
@@ -222,7 +247,11 @@ class Parser(object):
                 self.active_id = ''
                 self.spawns = 1
                 self.active_ids = []
-                self.recent_enemies.clear()
+                # self.recent_enemies.clear()
+                if self.screenparser:
+                    write_debug_log("Parser announcing end of match to ScreenParser")
+                    time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                    self.data_queue.put(("match", False, time))
                 return
 
             # Start parsing
@@ -246,8 +275,8 @@ class Parser(object):
                     else:
                         self.spawn_dmg_taken.append(int(line['amount'].replace('*', '')))
                         self.dprint("[DEBUG] damage taken", self.spawn_dmg_taken)
-                        self.recent_enemies[line['destination']] = \
-                            datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
+                        # self.recent_enemies[line['destination']] = \
+                        #    datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
 
             if line['ability'] in self.tmp_abilities:
                 self.tmp_abilities[line['ability']] += 1
@@ -261,37 +290,14 @@ class Parser(object):
         if self.DEBUG:
             print(args)
 
+    def new_file(self, filename):
+        if self.screenparser:
+            self.data_queue.put(("file", filename))
+
 
 # ===================================================================
 # --- Utility Tools
 # ===================================================================
-
-def line_to_dictionary(line):
-    logpaths = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-    logpath = re.compile(logpaths)
-
-    group = logpath.match(line) if isinstance(line, str) else logpath.match(line.decode('cp1252'))
-    try:
-        tuple_ = group.groups()
-    except AttributeError as err:
-        print("[DEBUG] line_to_dictionary(): arg:", line, "'tuple = group.groups()' error raised, with group: ", group)
-        print(err)
-        return
-
-    colnames = ('time', 'source', 'destination', 'ability', 'effect', 'amount')
-    log = dict(zip(colnames, tuple_))
-
-    """
-    if not log['ability'] is '':
-        log['ability'] = log['ability'].rsplit(None, 1)[1][1:-1]
-    """
-
-    if not log['amount'] is '':
-        log['amount'] = log['amount'].split(None, 1)[0]
-
-    return log
-
-
 def read_config():
     """
     Reads the config file and determines all the configuration

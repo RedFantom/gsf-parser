@@ -23,7 +23,7 @@ import stat
 import datetime
 import variables
 import threading
-import tkMessageBox
+import tkinter.messagebox
 
 
 # ===================================================================
@@ -73,7 +73,7 @@ class LogStalker(threading.Thread):
 
         self.update_files()
 
-        for id, file in self._files_map.items():
+        for id, file in list(self._files_map.items()):
             file.seek(os.path.getsize(file.name))  # EOF
             if tail_lines:
                 try:
@@ -100,7 +100,7 @@ class LogStalker(threading.Thread):
         """
         while self.FLAG:
             if not variables.FLAG:
-                print "[DEBUG] Closing because of vars.FLAG"
+                print("[DEBUG] Closing because of vars.FLAG")
                 self.close()
                 return
             self.update_files()
@@ -115,7 +115,7 @@ class LogStalker(threading.Thread):
             time.sleep(interval)
 
     def log(self, line):
-        print(datetime.datetime.now().strftime("%H:%M:%S"), ":", line)
+        print((datetime.datetime.now().strftime("%H:%M:%S"), ":", line))
 
     def listdir(self):
         """List directory and filter files by extension.
@@ -223,8 +223,10 @@ class LogStalker(threading.Thread):
             file = self.open(fname)
             fid = self.get_file_id(os.stat(fname))
         except IOError:
-            tkMessageBox.showerror("Error",
-                                   "The real-time parsing process encountered a known bug. Please restart the GSF Parser.")
+
+            tkinter.messagebox.showerror("Error",
+                                         "The real-time parsing process encountered a known bug. Please restart the "
+                                         "GSF Parser.")
             variables.main_window.destroy()
         except EnvironmentError as err:
             if err.errno != errno.ENOENT:
@@ -254,6 +256,6 @@ class LogStalker(threading.Thread):
             return "%f" % st.st_ctime
 
     def close(self):
-        for id, file in self._files_map.items():
+        for id, file in list(self._files_map.items()):
             file.close()
         self._files_map.clear()

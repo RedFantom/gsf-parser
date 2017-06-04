@@ -7,27 +7,24 @@
 # For license see LICENSE
 
 # UI Imports
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    import Tkinter as tk
-import ttk
-import tkMessageBox
-import matplotlib
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
+import tkinter as tk
+import tkinter.ttk as ttk
+import tkinter.messagebox
 import platform
 import os
 import datetime
 from collections import OrderedDict
-# Own modules
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
 import variables
 from parsing import parse
-import toplevels
+from toplevels.splashscreens import SplashScreen
+
 matplotlib.use('TkAgg')
 
 
-class graphs_frame(ttk.Frame):
+class GraphsFrame(ttk.Frame):
     """
     A frame containing a place for a graph where the user can view his/her performance over time.
     """
@@ -46,27 +43,38 @@ class graphs_frame(ttk.Frame):
         self.type_graph = tk.StringVar()
         self.type_graph.set("play")
         self.graph_label = ttk.Label(self,
-                                     text="Here you can view various types of graphs of your performance over time.",
+                                     text="Here you can view various types of graphs of your performance over "
+                                          "time.",
                                      justify=tk.LEFT, font=("Calibri", 12))
-        self.play_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="play", text="Matches played")
-        self.dmgd_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgd", text="Damage dealt")
-        self.dmgt_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgt", text="Damage taken")
-        self.hrec_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hrec", text="Healing received")
+        self.play_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="play",
+                                                text="Matches played")
+        self.dmgd_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgd",
+                                                text="Damage dealt")
+        self.dmgt_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgt",
+                                                text="Damage taken")
+        self.hrec_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hrec",
+                                                text="Healing received")
         self.enem_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="enem", text="Enemies")
-        self.crit_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="critluck", text="Critical luck")
-        self.hitc_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hitcount", text="Hitcount")
-        self.spawn_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="spawn", text="Spawn length")
-        self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match", text="Match length")
+        self.crit_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="critluck",
+                                                text="Critical luck")
+        self.hitc_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hitcount",
+                                                text="Hitcount")
+        self.spawn_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="spawn",
+                                                 text="Spawn length")
+        self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match",
+                                                 text="Match length")
         self.death_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="deaths", text="Deaths")
         self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
+        self.graph = ttk.Frame(self)
         if platform.release() == "7" or platform.release() == "8" or platform.release() == "8.1":
-            self.figure = Figure(figsize=(8.3, 4.2))
+            self.figure = Figure(figsize=(6.6, 3.3))
         else:
             self.figure = Figure(figsize=(6.7, 3.35))
         self.canvas = FigureCanvasTkAgg(self.figure, self)
+        self.canvas = FigureCanvasTkAgg(self.figure, self.graph)
         self.canvasw = self.canvas.get_tk_widget()
         self.tkcanvas = self.canvas._tkcanvas
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self)
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.graph)
         self.toolbar.update()
 
     def update_graph(self):
@@ -83,9 +91,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
                 if not file.endswith(".txt"):
@@ -107,7 +115,7 @@ class graphs_frame(ttk.Frame):
                 self.splash_screen.update_progress()
             self.axes.set_ylim(ymin=0, ymax=matches_played_date[
                                                 max(matches_played_date, key=matches_played_date.get)] + 2)
-            self.axes.bar(list(matches_played_date.iterkeys()), list(matches_played_date.itervalues()),
+            self.axes.bar(list(matches_played_date.keys()), list(matches_played_date.values()),
                           color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Matches played")
@@ -122,9 +130,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -152,15 +160,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
                     pass
-            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average damage dealt per match")
@@ -175,9 +183,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -205,15 +213,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
                     pass
-            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average damage taken per match")
@@ -228,9 +236,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -258,15 +266,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_dmg_date = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
                     pass
-            avg_dmg_date = OrderedDict(sorted(avg_dmg_date.items(), key=lambda t: t[0]))
+            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average healing received per match")
@@ -281,9 +289,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             enem_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -319,15 +327,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_enem_date = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_enem_date[key] = round(enem_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing damage by matches, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
                     pass
-            avg_dmg_date = OrderedDict(sorted(avg_enem_date.items(), key=lambda t: t[0]))
+            avg_dmg_date = OrderedDict(sorted(list(avg_enem_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
-            self.axes.plot(list(avg_dmg_date.iterkeys()), list(avg_dmg_date.itervalues()),
+            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average enemies damage dealt to per match")
@@ -342,9 +350,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
             critcount_per_date = {}
@@ -375,15 +383,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_crit_luck = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_crit_luck[key] = float(critcount_per_date[key]) / float(hitcount_per_date[key])
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
-            avg_crit_luck = OrderedDict(sorted(avg_crit_luck.items(), key=lambda t: t[0]))
+            avg_crit_luck = OrderedDict(sorted(list(avg_crit_luck.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average percentage critical hits per day")
@@ -398,9 +406,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -428,15 +436,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_hit_match = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_hit_match[key] = round(hitcount_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
-            avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
+            avg_crit_luck = OrderedDict(sorted(list(avg_hit_match.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average hitcount per match per day")
@@ -451,9 +459,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             spawns_played_date = {}
             spawn_length_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -491,17 +499,17 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_spawn_min = {}
-            for key, value in spawns_played_date.iteritems():
+            for key, value in spawns_played_date.items():
                 try:
                     avg_spawn_min[key] = round((float(spawn_length_per_date[key]) / float(value)) / 60, 2)
                     if avg_spawn_min[key] == 0:
                         del avg_spawn_min[key]
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
-            avg_crit_luck = OrderedDict(sorted(avg_spawn_min.items(), key=lambda t: t[0]))
+            avg_crit_luck = OrderedDict(sorted(list(avg_spawn_min.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Length of average spawn per day")
@@ -516,9 +524,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             match_length_day = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -534,7 +542,6 @@ class graphs_frame(ttk.Frame):
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                print match_timings
                 if file_date not in matches_played_date:
                     matches_played_date[file_date] = len(file_cube)
                 else:
@@ -556,19 +563,17 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_match_min = {}
-            for key, value in matches_played_date.iteritems():
-                print match_length_day[key]
-                print value
+            for key, value in matches_played_date.items():
                 try:
                     avg_match_min[key] = round((float(match_length_day[key]) / float(value)) / 60, 2)
                     if avg_match_min[key] == 0:
                         del avg_match_min[key]
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
-            avg_crit_luck = OrderedDict(sorted(avg_match_min.items(), key=lambda t: t[0]))
+            avg_crit_luck = OrderedDict(sorted(list(avg_match_min.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Length of average match per day")
@@ -583,9 +588,9 @@ class graphs_frame(ttk.Frame):
             files_dates = {}
             datetimes = []
             variables.files_done = 0
-            self.splash_screen = toplevels.splash_screen(self.main_window,
-                                                         max=len(os.listdir(variables.settings_obj.cl_path)),
-                                                         title="Calculating graph...")
+            self.splash_screen = SplashScreen(self.main_window,
+                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              title="Calculating graph...")
             matches_played_date = {}
             deaths_per_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -612,15 +617,15 @@ class graphs_frame(ttk.Frame):
                 variables.files_done += 1
                 self.splash_screen.update_progress()
             avg_hit_match = {}
-            for key, value in matches_played_date.iteritems():
+            for key, value in matches_played_date.items():
                 try:
                     avg_hit_match[key] = round(deaths_per_date[key] / value, 0)
                 except ZeroDivisionError:
-                    print "[DEBUG] ZeroDivisionError while dividing by hitcount, passing"
+                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)]+2)
-            self.axes.plot(list(avg_crit_luck.iterkeys()), list(avg_crit_luck.itervalues()),
+            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
+            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
                            color=variables.settings_obj.color)
             self.axes.xaxis_date()
             self.axes.set_title("Average amount of deaths per match per day")
@@ -632,7 +637,7 @@ class graphs_frame(ttk.Frame):
             self.figure.canvas.draw()
             self.splash_screen.destroy()
         else:
-            tkMessageBox.showinfo("Notice", "No correct graph type selected!")
+            tkinter.messagebox.showinfo("Notice", "No correct graph type selected!")
 
     def grid_widgets(self):
         """
@@ -650,7 +655,8 @@ class graphs_frame(ttk.Frame):
         self.spawn_graph_radio.grid(column=0, row=8, sticky=tk.W)
         self.match_graph_radio.grid(column=0, row=9, sticky=tk.W)
         self.death_graph_radio.grid(column=0, row=10, sticky=tk.W)
-        self.update_button.grid(column=0, row=19, sticky=tk.W+tk.E + tk.N + tk.S)
-        self.canvasw.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
-        self.tkcanvas.grid(column=1, row=1, rowspan=20, sticky=tk.N+tk.W, padx=10)
-        self.toolbar.grid(column=1, row=21, sticky=tk.N+tk.W)
+        self.update_button.grid(column=0, row=19, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.canvasw.pack()
+        self.tkcanvas.pack()
+        self.toolbar.pack()
+        self.graph.grid(column=1, row=1, rowspan=20)

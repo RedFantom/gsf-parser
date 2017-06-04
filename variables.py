@@ -18,11 +18,11 @@
 # match_timings is a list of datetimes
 # spawn_timings is a matrix of datetimes
 import os
-import Queue
-import settings
+import queue
+from tools import settings
 
-settings_obj = settings.settings()
-color_scheme = settings.color_schemes()
+settings_obj = settings.Settings()
+color_scheme = settings.ColorSchemes()
 
 FLAG = False
 
@@ -73,7 +73,7 @@ spawn_index = None
 spawn = None
 rt_timing = None
 
-insert_queue = Queue.Queue()
+insert_queue = queue.Queue()
 
 screen_w = 0
 screen_h = 0

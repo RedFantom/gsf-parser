@@ -5,76 +5,156 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
-try:
-    import mttkinter.mtTkinter as tk
-except ImportError:
-    print "mtTkinter not found, please use 'pip install mttkinter'"
-    import Tkinter as tk
-import ttk
-import collections
-import os
-
-from PIL import Image
-from PIL.ImageTk import PhotoImage
-
-import widgets
+from widgets import *
+from parsing.ships import Ship, Component
+from parsing.abilities import all_ships
+import pickle as pickle
+from os import path
+from collections import OrderedDict
+import tkinter as tk
+import tkinter.ttk as ttk
 
 
-class builds_frame(ttk.Frame):
+class BuildsFrame(ttk.Frame):
+    """
+    This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
+    is explained in the README file. This also includes the not-enabled Infiltrator class ships.
+    """
+
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        self.ships = collections.OrderedDict()
-        self.ships['Blackbolt'] = 'blackbolt.png'
-        self.ships['Bloodmark'] = 'bloodmark.png'
-        self.ships['Sting'] = 'sting.png'
-        self.ships['Quell'] = 'quell.png'
-        self.ships['Imperium'] = 'imperium.png'
-        self.ships['Rcyer'] = 'rycer.png'
-        self.ships['Decimus'] = 'decimus.png'
-        self.ships['Razorwire'] = 'razorwire.png'
-        self.ships['Legion'] = 'legion.png'
-        self.ships['Jurgoran'] = 'jurgoran.png'
-        self.ships['Mangler'] = 'mangler.png'
-        self.ships['Dustmaker'] = 'dustmaker.png'
-        self.ship_buttons = {}
-        self.ship_scrollable_frame = widgets.vertical_scroll_frame(self, width=60, height=400)
-        self.ship_frame = self.ship_scrollable_frame.interior
-        self.ship_images = {}
-        for key, value in self.ships.iteritems():
-            temp_img = Image.open(os.path.dirname(__file__) + "\\assets\\ships\\" + value)
-            self.ship_images[key] = PhotoImage(temp_img)
-            self.ship_buttons[key] = ttk.Button(self.ship_frame, image=self.ship_images[key],
-                                                command=lambda ship=key: self.set_ship(ship))
-        self.components = {'engines': {'barrelroll': {'t1': {'icon': 'reducedenginecost',
-                                                             'effect': ['hull', 'reduction', '+', '17'],
-                                                             'description': 'Beacon hull damage reduction increased by 17%'
-                                                             },
-                                                      't2': {'icon': 'reducedcooldown',
-                                                             'effect': ['cooldown', 'reduction', '-', '5'],
-                                                             'description': 'Ability cooldown reduced by 5 seconds'
-                                                             },
-                                                      't3_1': {},
-                                                      't3_2': {}},
+        self.working = [
+            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+            "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+        self.categories = {
+            "Bomber": 0,
+            "Gunship": 1,
+            "Infiltrator": 2,
+            "Scout": 3,
+            "Strike Fighter": 4
+        }
+        self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
+        self.middle_components = ["Engine", "Shield"]
+        self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
+                  "rb") as f:
+            self.ships_data = pickle.load(f)
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
+                  "rb") as f:
+            self.categories_data = pickle.load(f)
+        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
+                  "rb") as f:
+            self.companions_data = pickle.load(f)
+        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=345)
+        self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
+        self.components_lists = OrderedDict()
+        self.faction = "Imperial"
+        self.category = "Scout"
+        self.ship = Ship("Bloodmark")
+        self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
+                                                       justify=tk.LEFT, font=("Calibiri", 12))
+        for category in self.working:
+            if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
+                continue
+            self.components_lists[category] = \
+                ComponentListFrame(self.components_lists_frame.interior, category,
+                                   self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component)
+        self.component_frame = ttk.Frame(self)
+        self.current_component = MajorComponentWidget(self.component_frame,
+                                                      self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
+                                                      self.ship)
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
+        self.ship_stats_image = photo(img.open(path.join(self.icons_path, "spvp_targettracker.jpg")).resize((25, 25)))
+        self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
+                                            image=self.ship_stats_image, compound=tk.LEFT)
 
-                                       'hyperspacebeacon': {'t1': {},
-                                                            't2': {},
-                                                            't3_1': {'icon': 'increasedspeed',
-                                                                     'effect': ['speed', 'increased', '+', '15'],
-                                                                     'description': 'Allies within 3000m of the Hyperspace Beacon '
-                                                                                    'receive a 15% speed boost'},
-                                                            't3_2': {'icon': 'increasedturningrate',
-                                                                     'effect': ['hull', 'strength', '+', '20'],
-                                                                     'description': 'Beacon hull strength increased by 20% and '
-                                                                                    'hull damage reduction by 17%'}}}}
+    def set_ship(self, faction, category, ship):
+        if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
+            self.ship_select_frame[faction][category].toggle()
+        ship_name = ""
+        if faction == "Imperial":
+            for key in all_ships.keys():
+                if key in ship:
+                    ship_name = key
+                    break
+        elif faction == "Republic":
+            for key in all_ships.values():
+                if key in ship:
+                    ship_name = key
+                    break
+        else:
+            raise ValueError("No valid faction given as argument.")
+        if ship_name == "":
+            raise ValueError("No valid ship specified.")
+        self.ship = Ship(ship_name)
+        for widget in self.components_lists_frame.interior.winfo_children():
+            widget.grid_forget()
+        for category in self.working:
+            if category not in self.ship.data:
+                continue
+            self.components_lists[category] = \
+                ComponentListFrame(self.components_lists_frame.interior, category,
+                                   self.ship.data[category], self.set_component)
+        for button in self.ship_select_frame.ship_buttons.values():
+            button.config(state=tk.ACTIVE)
+        for key in self.ship_select_frame.ship_buttons.keys():
+            if ship in key:
+                ship = key
+                break
+        self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
+        print(ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"])
+        self.grid_widgets()
 
-    def set_ship(self, ship):
-        pass
+    def set_component(self, category, component):
+        self.current_component.grid_forget()
+        print("[DEBUG] set_component(%s, %s)" % (category, component))
+        index = -1
+        for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
+            if component == dictionary["Name"]:
+                break
+        if index == -1:
+            raise ValueError("No components found in self.ships_data[%s][%s]" % (self.ship.ship_name, category))
+        if category in self.minor_components:
+            self.current_component = MinorComponentWidget(self.component_frame,
+                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ship)
+        elif category in self.middle_components:
+            self.current_component = MiddleComponentWidget(self.component_frame,
+                                                           self.ships_data[self.ship.ship_name][category][index],
+                                                           self.ship)
+        elif category in self.major_components:
+            self.current_component = MajorComponentWidget(self.component_frame,
+                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ship)
+        else:
+            raise ValueError("Component category not found: %s" % category)
+        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][index]["Stats"])
+        self.current_component.grid_widgets()
+        print("[DEBUG] Gridding DEBUG component")
+        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
 
     def grid_widgets(self):
-        set_row = 0
-        for widget in self.ship_buttons.itervalues():
-            widget.grid(column=0, row=set_row)
-            print widget
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)
+        self.ship_select_frame.grid_widgets()
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.W + tk.E, pady=1)
+        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
+        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
+        self.current_component.grid_widgets()
+        self.components_lists_header_label.grid(row=0, column=0, sticky=tk.W)
+        set_row = 1
+        for frame in self.components_lists.values():
+            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            frame.grid_widgets()
             set_row += 1
-        self.ship_frame.grid(column=0, row=0, rowspan=6, sticky=tk.W + tk.N)
+        self.crew_select_frame.destroy()
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
+        self.crew_select_frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+
+    def show_ship_stats(self):
+        pass
+
+    def set_faction(self, faction):
+        self.faction = faction
+        self.grid_widgets()

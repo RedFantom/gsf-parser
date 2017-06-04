@@ -3,17 +3,17 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import Tkinter as tk
-import ttk
 import webbrowser
-from widgets import *
+from widgets import VerticalScrollFrame
+import tkinter.ttk as ttk
+import tkinter as tk
 
 
-class resources_frame(ttk.Frame):
+class ResourcesFrame(ttk.Frame):
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
-        self.frame = vertical_scroll_frame(self, canvasheight=280)
-        self.frame.grid(column=0, row=0, columnspan=2, sticky=tk.N + tk.S + tk.E + tk.W)
+        self.frame = VerticalScrollFrame(self, canvasheight=280)
+        self.frame.grid(column=0, row=0, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
         self.main_window = main_window
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         resources = ["GSF: A starting point",
@@ -70,7 +70,7 @@ class resources_frame(ttk.Frame):
         self.resource_labels = []
         self.resource_description_labels = {}
         set_row = 0
-        print "[DEBUG] Creating labels"
+        print("[DEBUG] Creating labels")
         self.label_style = ttk.Style()
         self.label_style.configure("Resource.TLabel", foreground="#0000EE")
         for resource in resources:
@@ -80,7 +80,7 @@ class resources_frame(ttk.Frame):
             resource_description = ttk.Label(self.frame.interior, text=resources_descriptions[resource],
                                              justify=tk.LEFT, wraplength=780)
             resource_label.grid(column=0, row=set_row, sticky=tk.N + tk.S + tk.W, padx=5)
-            resource_description.grid(column=0, row=set_row + 1, sticky=tk.N+tk.S+tk.W+tk.E, padx=5)
+            resource_description.grid(column=0, row=set_row + 1, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
             self.resource_labels.append(resource_label)
             self.resource_description_labels[resource_label] = resource_description
             set_row += 2
@@ -93,9 +93,9 @@ class resources_frame(ttk.Frame):
                                                       "be added to this list, please e-mail RedFantom " +
                                                       "at redfantom@outlook.com",
                                            justify=tk.LEFT, wraplength=780)
-        self.separator.grid(column=0, row=1, sticky=tk.N+tk.S+tk.W+tk.E, columnspan=2, pady=10)
+        self.separator.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2, pady=10)
         self.help_label.grid(column=0, row=2, sticky=tk.N + tk.S + tk.W, pady=5)
-        self.explanation_label.grid(column=0, row=3, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.explanation_label.grid(column=0, row=3, sticky=tk.N + tk.S + tk.W + tk.E)
 
     @staticmethod
     def open_link(link):

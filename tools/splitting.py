@@ -6,10 +6,10 @@
 
 import os
 import datetime
-import tkFileDialog
-import tkMessageBox
-import Tkinter as tk
-import ttk
+import tkinter.filedialog
+import tkinter.messagebox
+import tkinter as tk
+import tkinter.ttk as ttk
 
 from parsing import parse
 
@@ -30,22 +30,22 @@ def check_gsf(file_name):
             else:
                 continue
     if not file_obj.closed:
-        raise
+        raise ValueError()
     return False
 
 
 def split():
-    source_folder = tkFileDialog.askdirectory(title="Source folder")
+    source_folder = tkinter.filedialog.askdirectory(title="Source folder")
     try:
         os.chdir(source_folder)
     except OSError:
-        tkMessageBox.showerror("Error", "Folder not valid!")
+        tkinter.messagebox.showerror("Error", "Folder not valid!")
         raise SystemExit(1)
-    target_folder = tkFileDialog.askdirectory(title="Target folder")
+    target_folder = tkinter.filedialog.askdirectory(title="Target folder")
     try:
         os.chdir(target_folder)
     except OSError:
-        tkMessageBox.showerror("Error", "Folder not valid!")
+        tkinter.messagebox.showerror("Error", "Folder not valid!")
         raise SystemExit(1)
     os.chdir(source_folder)
     progress_bar['maximum'] = len(os.listdir(os.getcwd()))
@@ -66,17 +66,17 @@ def split():
         try:
             dt = datetime.datetime.strptime(cl[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%d-%m_%H.%M.%S")
         except ValueError:
-            print "File name is not a valid CombatLog string, but contains GSF matches. Running with it."
+            print("File name is not a valid CombatLog string, but contains GSF matches. Running with it.")
             dt = cl
         match_count = 0
         for match in file_cube:
-            print "Writing a new match."
+            print("Writing a new match.")
             with open(target_folder + "\\" + dt + "   Match " + str(match_count) + ".txt", "w", 0) as mo:
                 for spawn in match:
                     for event in spawn:
                         mo.write(event)
             match_count += 1
-    tkMessageBox.showinfo("Done", "All done separating your matches.")
+    tkinter.messagebox.showinfo("Done", "All done separating your matches.")
 
 
 main_window = tk.Tk()
@@ -86,6 +86,3 @@ button = ttk.Button(main_window, text="Start", command=split)
 button.pack()
 progress_bar.pack()
 main_window.mainloop()
-
-
-
