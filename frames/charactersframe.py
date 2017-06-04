@@ -27,8 +27,13 @@ class CharactersFrame(ttk.Frame):
     of this data in
     """
     def __init__(self, parent):
+        """
+        Initializes the class instance and sets up all instance variables
+        :param parent: tkinter parent
+        """
         ttk.Frame.__init__(self, parent)
         self.directory = utilities.get_temp_directory()
+        # Lists of servers and abbreviations
         self.servers = {
             "BAS": "The Bastion",
             "BEG": "Begeren Colony",
@@ -58,7 +63,9 @@ class CharactersFrame(ttk.Frame):
             "USW": ["BAS", "BEG", "HAR"],
             "EUR": ["T3M", "NTH", "TFN", "JKS", "PRG", "VCH", "BMD", "MFR", "TRE"]
         }
+        # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
+        # Try to load the character database
         if "characters.db" not in os.listdir(self.directory):
             self.new_database()
         try:
@@ -68,6 +75,7 @@ class CharactersFrame(ttk.Frame):
             self.new_database()
         except EOFError:
             self.new_database()
+        # Set up the characters list
         self.characters_list = ttk.Treeview(self)
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
         self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=14)
@@ -75,8 +83,8 @@ class CharactersFrame(ttk.Frame):
         # self.characters_list.column("", width=0)
         self.characters_list.column("#0", width=250)
         self.characters_list["show"] = ("tree", "headings")
-        print(self.characters_list["columns"])
         self.characters_list.columnconfigure(0, minsize=50)
+        # Create all the widgets for the character properties
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450, canvasheight=350)
         self.options_frame = self.scroll_frame.interior
         self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
@@ -135,6 +143,10 @@ class CharactersFrame(ttk.Frame):
         self.update_tree()
 
     def update_ships(self):
+        """
+        Update the ships in the character_data and save the database instantly
+        :return: None
+        """
         if self.character_data["Faction"] == "Imperial":
             ships = tuple(ship for ship, intvar in self.imp_ship_variables.items() if intvar.get() == 1)
         elif self.character_data["Faction"] == "Republic":
@@ -145,6 +157,10 @@ class CharactersFrame(ttk.Frame):
         self.save_button.invoke()
 
     def grid_widgets(self):
+        """
+        Add all the widgets to the UI, after clearing the frame first
+        :return: None
+        """
         self.widgets_grid_forget()
         self.characters_list.grid(column=0, row=0, sticky="nswe", padx=5, pady=5)
         self.characters_scroll.grid(column=1, row=0, sticky="ns", pady=5)
@@ -188,6 +204,10 @@ class CharactersFrame(ttk.Frame):
             raise ValueError("Invalid value for faction found: {0}".format(self.faction.get()))
 
     def update_tree(self):
+        """
+        Update the Treeview self.characters_list with all the characters found in the character database
+        :return:
+        """
         self.characters_list.delete(*self.characters_list.get_children())
 
         for identifier, region in self.zones.items():
@@ -199,16 +219,23 @@ class CharactersFrame(ttk.Frame):
             self.characters_list.insert(data["Server"], tk.END, iid=(data["Server"], data["Name"]), text=data["Name"])
 
     def widgets_grid_forget(self):
+        """
+        Clear the ship Checkbutton widgets
+        :return: None
+        """
         for item in self.imp_ship_widgets.values():
             item.grid_forget()
         for item in self.rep_ship_widgets.values():
             item.grid_forget()
 
     def new_database(self):
+        """
+        Create a new character database with a default entry
+        :return: None
+        """
         mb.showinfo("Info", "The GSF Parser is creating a new characters database, discarding all your character data, "
                             "if you had any, and ship builds. If you did not expect this, please file an issue report "
                             "in the GitHub repository.")
-        print("Creating new characters database")
         characters = {("TRE", "Example"): {"Server": "TRE",
                                            "Faction": "Imperial",
                                            "Name": "Example",
@@ -221,6 +248,11 @@ class CharactersFrame(ttk.Frame):
         self.characters = {}
 
     def detect_profile(self):
+        """
+        Callback for the Auto-detect button, sets the GUI profile according to the result of get_player_guiname or
+        display a message that the profile cannot be determined reliably (because of the same name of different servers)
+        :return:
+        """
         if not self.character_data:
             mb.showinfo("Info", "Please select a character from the list first.")
             return
@@ -235,9 +267,21 @@ class CharactersFrame(ttk.Frame):
         self.save_button.invoke()
 
     def new_character(self):
+        """
+        Open the AddCharacter Toplevel to add a character to the database
+        :return: None
+        """
         AddCharacter(variables.main_window, tuple(self.servers.values()), self.insert_character)
 
     def insert_character(self, name, legacy, server, faction):
+        """
+        Callback for the AddCharacter Toplevel
+        :param name: character name entered
+        :param legacy: legacy name entered
+        :param server: server name entered (full name)
+        :param faction: faction entered
+        :return: None
+        """
         if len(server) is not 3:
             pass
         if faction == "Imperial":
@@ -263,21 +307,38 @@ class CharactersFrame(ttk.Frame):
         self.update_tree()
 
     def set_character_faction(self, faction):
+        """
+        Callback for the faction Radiobuttons, updating the UI and the database
+        :param faction: faction name
+        :return: None
+        """
         self.grid_widgets()
         self.character_data["Faction"] = faction
         self.save_character_data()
 
     def save_character_data(self):
+        """
+        General function to save the character database to the file
+        :return: None
+        """
         self.characters[(self.character_data["Server"], self.character_data["Name"])] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
-        print("Saved characters dictionary")
 
     def discard_character_data(self):
+        """
+        Clear the changes to the character data as far as that is possible, as most functions immediately save the data
+        entered through a callback that calls save_character_data
+        :return: None
+        """
         self.clear_character_data()
         self.set_character()
 
     def delete_character(self):
+        """
+        Delete a character for the database, callback for the delete_button
+        :return: None
+        """
         del self.characters[(self.character_data["Server"], self.character_data["Name"])]
         self.characters_list.delete(*((self.character_data["Server"] + " " + self.character_data["Name"]),))
         self.clear_character_data()
@@ -285,10 +346,13 @@ class CharactersFrame(ttk.Frame):
         self.update_tree()
 
     def get_character_data(self):
+        """
+        Get a character_data dictionary from the selected character in the Treeview
+        :return: None
+        """
         character = self.characters_list.selection()
         if len(character[0]) < 4:
             return
-        print(character)
         server = character[0][:3]
         name = character[0][4:]
         if not server:
@@ -302,6 +366,12 @@ class CharactersFrame(ttk.Frame):
             raise ValueError("Character not found {0} in {1}".format((server, name), self.characters))
 
     def set_character(self, set=True, *args):
+        """
+        Callback for the Treeview to set the character property widgets
+        :param set: if False, then it's just the current data that has to be updated
+        :param args: for tkinter, not used
+        :return: None
+        """
         if not set:
             character_data = self.character_data
         else:
@@ -312,7 +382,6 @@ class CharactersFrame(ttk.Frame):
         self.legacy_name_entry.insert(tk.END, character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
-        print(character_data["Ships"])
         if character_data["Faction"] == "Imperial":
             for name, intvar in self.imp_ship_variables.items():
                 if name in character_data["Ships"]:
@@ -330,6 +399,10 @@ class CharactersFrame(ttk.Frame):
         self.character_data = character_data
 
     def clear_character_data(self):
+        """
+        Clear the character data property widgets
+        :return: None
+        """
         self.character_name_entry.delete(0, tk.END)
         self.legacy_name_entry.delete(0, tk.END)
         self.faction.set("Republic")
