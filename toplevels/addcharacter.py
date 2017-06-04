@@ -17,9 +17,10 @@ class AddCharacter(tk.Toplevel):
         self.legacy_name_entry.insert(tk.END, "Legacy name...")
         self.server = tk.StringVar()
         servers = ("Choose server",) + servers
+        self.callback = callback
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers)
         self.faction = tk.StringVar()
-        self.faction_dropdown = ttk.OptionMenu(self, self.faction, *("Choose faction", "Republic", "Empire"))
+        self.faction_dropdown = ttk.OptionMenu(self, self.faction, *("Choose faction", "Republic", "Imperial"))
         self.done_button = ttk.Button(self, text="Add character", command=self.add_character)
         self.grid_widgets()
 
@@ -31,4 +32,6 @@ class AddCharacter(tk.Toplevel):
         self.done_button.grid(row=4, column=0, sticky="we")
 
     def add_character(self):
-        pass
+        self.callback(self.character_name_entry.get(), self.legacy_name_entry.get(), self.server.get(),
+                      self.faction.get())
+        self.destroy()
