@@ -68,11 +68,11 @@ class SettingsFrame(ttk.Frame):
         self.event_colors_label = ttk.Label(self.gui_frame, text="\tEvent colors: ")
         self.event_colors = tk.StringVar()
         self.event_colors_none = ttk.Radiobutton(self.gui_frame, text="None", variable=self.event_colors,
-                                                 value="none")
+                                                 value="none", width=15)
         self.event_colors_basic = ttk.Radiobutton(self.gui_frame, text="Basic", variable=self.event_colors,
-                                                  value="basic")
+                                                  value="basic", width=15)
         self.event_colors_adv = ttk.Radiobutton(self.gui_frame, text="Advanced", variable=self.event_colors,
-                                                value="advanced")
+                                                value="advanced", width=15)
 
         self.event_scheme = tk.StringVar()
         self.event_scheme_label = ttk.Label(self.gui_frame, text="\tEvent color scheme: ")
@@ -172,23 +172,18 @@ class SettingsFrame(ttk.Frame):
         self.overlay_position_radio_nq = ttk.Radiobutton(self.realtime_frame,
                                                          variable=self.overlay_position_var,
                                                          value="NQ", text="Left from quickbar")
-        self.overlay_color_options = ["White", "Yellow", "Green", "Blue", "Red"]
-        self.overlay_bg_color_radios = []
+        self.overlay_color_options = ("Default", "White", "Yellow", "Green", "Blue", "Red")
         self.overlay_bg_color = tk.StringVar()
-        self.overlay_tx_color_radios = []
         self.overlay_tx_color = tk.StringVar()
-        self.overlay_tr_color_radios = []
         self.overlay_tr_color = tk.StringVar()
-        for color in self.overlay_color_options:
-            self.overlay_bg_color_radios.append(
-                ttk.Radiobutton(self.realtime_frame, variable=self.overlay_bg_color,
-                                value=color.lower(), text=color, width=6))
-            self.overlay_tx_color_radios.append(
-                ttk.Radiobutton(self.realtime_frame, variable=self.overlay_tx_color,
-                                value=color.lower(), text=color, width=6))
-            self.overlay_tr_color_radios.append(
-                ttk.Radiobutton(self.realtime_frame, variable=self.overlay_tr_color,
-                                value=color.lower(), text=color, width=6))
+
+        self.overlay_bg_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_bg_color,
+                                                  *self.overlay_color_options)
+        self.overlay_tx_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_tx_color,
+                                                  *self.overlay_color_options)
+        self.overlay_tr_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_tr_color,
+                                                  *self.overlay_color_options)
+
         self.overlay_bg_label = ttk.Label(self.realtime_frame, text="\tOverlay background color: ")
         self.overlay_tx_label = ttk.Label(self.realtime_frame, text="\tOverlay text color: ")
         self.overlay_tr_label = ttk.Label(self.realtime_frame, text="\tOverlay transparent color: ")
@@ -356,24 +351,19 @@ class SettingsFrame(ttk.Frame):
         self.overlay_position_radio_uc.grid(column=5, row=4, sticky="nsw")
         self.overlay_position_radio_nq.grid(column=4, row=5, sticky="nsw", columnspan=2)
         self.realtime_frame.grid(column=0, row=8, sticky="nswe")
+
         self.overlay_tx_label.grid(column=0, row=6, sticky="nswe")
         self.overlay_bg_label.grid(column=0, row=7, sticky="nswe")
         self.overlay_tr_label.grid(column=0, row=8, sticky="nswe")
+        self.overlay_tx_dropdown.grid(column=1, row=6, sticky="nswe")
+        self.overlay_bg_dropdown.grid(column=1, row=7, sticky="nswe")
+        self.overlay_tr_dropdown.grid(column=1, row=8, sticky="nswe")
+
         self.overlay_font_label.grid(column=0, row=9, sticky="nswe")
         self.overlay_text_size_label.grid(column=0, row=10, sticky="nswe")
         self.overlay_text_size_entry.grid(column=1, row=10, sticky="nswe")
-        set_column = 1
-        for radio in self.overlay_tx_color_radios:
-            radio.grid(column=set_column, row=6, sticky="nswe")
-            set_column += 1
-        set_column = 1
-        for radio in self.overlay_bg_color_radios:
-            radio.grid(column=set_column, row=7, sticky="nswe")
-            set_column += 1
-        set_column = 1
-        for radio in self.overlay_tr_color_radios:
-            radio.grid(column=set_column, row=8, sticky="nswe")
-            set_column += 1
+
+
         set_column = 1
         for radio in self.overlay_font_radios:
             radio.grid(column=set_column, row=9, sticky="nswe")
@@ -466,7 +456,7 @@ class SettingsFrame(ttk.Frame):
         """
         print("[DEBUG] Save_settings called!")
         if str(self.color.get()) == variables.settings_obj.color and \
-           self.logo_color.get() == variables.settings_obj.logo_color:
+                        self.logo_color.get() == variables.settings_obj.logo_color:
             reboot = False
         else:
             reboot = True
