@@ -27,10 +27,12 @@ class CharactersFrame(ttk.Frame):
         self.servers = {
             "BAS": "The Bastion",
             "BEG": "Begeren Colony",
+            "HAR": "The Harbinger",
             "SHA": "The Shadowlands",
             "JUN": "Jung Ma",
             "EBH": "The Ebon Hawk",
             "PRF": "Prophecy of the Five",
+            "JCO": "Jedi Covenant",
             "T3M": "T3-M4",
             "NTH": "Darth Nihilus",
             "TFN": "The Tomb of Freedon Nadd",
@@ -41,6 +43,16 @@ class CharactersFrame(ttk.Frame):
             "MFR": "Mantle of the Force",
             "TRE": "The Red Eclipse"
         }
+        self.zones = OrderedDict()
+        self.zones["USE"] = "US East Coast"
+        self.zones["USW"] = "US West Coast"
+        self.zones["EUR"] = "Europe"
+
+        self.regions = {
+            "USE": ["SHA", "JUN", "EBH", "PRF", "JCO"],
+            "USW": ["BAS", "BEG", "HAR"],
+            "EUR": ["T3M", "NTH", "TFN", "JKS", "PRG", "VCH", "BMD", "MFR", "TRE"]
+        }
         self.reverse_servers = {value: key for key, value in self.servers.items()}
         if "characters.db" not in os.listdir(self.directory):
             self.new_database()
@@ -49,12 +61,15 @@ class CharactersFrame(ttk.Frame):
                 self.characters = pickle.load(f)
         except OSError or EOFError:
             self.new_database()
-        self.characters_list = ttk.Treeview(self, columns=("Characters",), displaycolumns=("Characters",))
+        self.characters_list = ttk.Treeview(self)
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
         self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=14)
-        self.characters_list.heading("Characters", text="Characters")
-        self.characters_list["show"] = "headings"
-        self.characters_list.column("Characters", width=250, stretch=False, anchor=tk.E)
+        self.characters_list.heading("#0", text="Characters")
+        # self.characters_list.column("", width=0)
+        self.characters_list.column("#0", width=250)
+        self.characters_list["show"] = ("tree", "headings")
+        print(self.characters_list["columns"])
+        self.characters_list.columnconfigure(0, minsize=50)
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450, canvasheight=350)
         self.options_frame = self.scroll_frame.interior
         self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
@@ -103,6 +118,11 @@ class CharactersFrame(ttk.Frame):
             self.rep_ship_variables[ship_name] = tk.IntVar()
             self.rep_ship_widgets[ship_name] = ttk.Checkbutton(self.lineup_frame, text=ship_name,
                                                                variable=self.rep_ship_variables[ship_name])
+
+        for identifier, region in self.zones.items():
+            self.characters_list.insert("", tk.END, iid=identifier, text=region)
+            for server in self.regions[identifier]:
+                self.characters_list.insert(identifier, tk.END, iid=server, text=self.servers[server])
 
     def grid_widgets(self):
         self.widgets_grid_forget()
