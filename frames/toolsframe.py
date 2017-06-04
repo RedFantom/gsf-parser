@@ -17,6 +17,7 @@ import variables
 from widgets import verticalscrollframe
 from parsing.guiparsing import GSFInterface, get_gui_profiles
 from tools.utilities import get_assets_directory
+from toplevels.importer import SettingsImporter
 
 
 class ToolsFrame(ttk.Frame):
@@ -117,8 +118,9 @@ class ToolsFrame(ttk.Frame):
     def start_splitter():
         from tools import splitting
 
-    def start_importer(self):
-        pass
+    @staticmethod
+    def start_importer():
+        SettingsImporter(variables.main_window)
 
     def set_simulator_file(self):
         file_name = askopenfilename()

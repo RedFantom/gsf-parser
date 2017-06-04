@@ -18,7 +18,7 @@ from tools import utilities
 # Class with default settings for in the settings file
 class Defaults(object):
     # Version to display in settings tab
-    version = "2.2.1"
+    version = "v3.0.0"
     # Path to get the CombatLogs from
     cl_path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
@@ -68,7 +68,7 @@ class Defaults(object):
 
 
 # Class that loads, stores and saves settings
-class Settings:
+class Settings(object):
     # Set the file_name for use by other functions
     def __init__(self, file_name="settings.ini", directory=utilities.get_temp_directory()):
         self.directory = directory
@@ -148,7 +148,7 @@ class Settings:
             self.conf.add_section("sharing")
             self.conf.add_section("realtime")
             self.conf.add_section("gui")
-        except:
+        except configparser.DuplicateSectionError:
             pass
         self.conf.set("misc", "version", Defaults.version)
         self.conf.set("parsing", "cl_path", Defaults.cl_path)
@@ -184,7 +184,8 @@ class Settings:
     # Write the settings passed as arguments to a pickle in a file
     # Setting defaults to default if not specified, so all settings are always
     # written
-    def write_set(self, version=Defaults.version,
+    def write_set(self,
+                  version=Defaults.version,
                   cl_path=Defaults.cl_path,
                   auto_ident=Defaults.auto_ident,
                   server_address=Defaults.server_address,
@@ -270,9 +271,12 @@ class Settings:
             try:
                 self.conf.set(cat_set_tuple[0], cat_set_tuple[1], value)
             except configparser.NoSectionError:
-                tkinter.messagebox.showerror("Error", "This section does not exist: %s" % cat_set_tuple[0])
+                tkinter.messagebox.showerror("Error", "This section does not exist: {0}".format(cat_set_tuple[0]))
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
+
+    def get_settings_dict(self):
+        return self.conf
 
 
 class ColorSchemes(object):
