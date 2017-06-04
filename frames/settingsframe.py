@@ -49,23 +49,22 @@ class SettingsFrame(ttk.Frame):
         self.color_label = ttk.Label(self.gui_frame, text="\tParser text color: ")
         self.color = tk.StringVar()
         self.custom_color_entry = ttk.Entry(self.gui_frame, width=10)
-        self.color_options = []
-        self.color_choices = ["Darkgreen", "Darkblue", "Darkred", "Black", "Custom: "]
-        self.color_options.append(
-            ttk.Radiobutton(self.gui_frame, value="#236ab2", text="Default", variable=self.color,
-                            width=8))
-        for color in self.color_choices:
-            self.color_options.append(ttk.Radiobutton(self.gui_frame, value=str(color).lower(), text=color,
-                                                      variable=self.color, width=8))
+        self.color_choices = {
+            "Darkgreen": "Darkgreen",
+            "Darkblue": "Darkblue",
+            "Darkred": "Darkred",
+            "Black": "Black",
+            "Custom": "Custom: ",
+            "Default": "#236ab2"
+        }
+        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *tuple(self.color_choices.keys()))
         self.color.set(variables.settings_obj.color)
         self.logo_color_label = ttk.Label(self.gui_frame, text="\tParser logo color: ")
         self.logo_color = tk.StringVar()
-        self.logo_color_choices = ["Green", "Blue", "Red"]
-        self.logo_color_options = []
         self.logo_color.set(variables.settings_obj.logo_color)
-        for color in self.logo_color_choices:
-            self.logo_color_options.append(ttk.Radiobutton(self.gui_frame, value=str(color).lower(), text=color,
-                                                           variable=self.logo_color, width=10))
+        self.logo_color_dropdown = ttk.OptionMenu(self.gui_frame, self.logo_color, *("Default", "Green", "Blue", "Red"))
+
+        # MARK HERE
         self.event_colors_label = ttk.Label(self.gui_frame, text="\tEvent colors: ")
         self.event_colors = tk.StringVar()
         self.event_colors_none = ttk.Radiobutton(self.gui_frame, text="None", variable=self.event_colors,
@@ -294,17 +293,11 @@ class SettingsFrame(ttk.Frame):
         # GUI SETTINGS
         self.gui_label.grid(column=0, row=0, sticky="nswe", pady=5)
         self.gui_frame.grid(column=0, row=1, sticky="nswe")
-        # self.color_label.grid(column=0, row=0, sticky="nswe")
-        set_column = 0
-        # for radio in self.color_options:
-        #     set_column += 1
-        #     radio.grid(column=set_column, row=0, sticky="nswe")
-        # self.custom_color_entry.grid(column=set_column + 1, row=0, sticky="nswe")
+        self.color_label.grid(column=0, row=0, sticky="w")
+        self.color_dropdown.grid(column=1, row=0, sticky="nswe", padx=5)
+        self.custom_color_entry.grid(column=2, row=0, sticky="nswe", padx=5)
         self.logo_color_label.grid(column=0, row=1, sticky="nswe")
-        set_column = 0
-        for radio in self.logo_color_options:
-            set_column += 1
-            radio.grid(column=set_column, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.logo_color_dropdown.grid(column=1, row=1, sticky="nswe", padx=5)
         self.event_colors_label.grid(column=0, row=2, sticky="nswe")
         self.event_colors_basic.grid(column=2, row=2, sticky="nswe")
         self.event_colors_none.grid(column=1, row=2, sticky="nswe")
@@ -440,7 +433,13 @@ class SettingsFrame(ttk.Frame):
         self.overlay_size_var.set(variables.settings_obj.size)
         self.overlay_position_var.set(variables.settings_obj.pos)
         self.logo_color.set(variables.settings_obj.logo_color)
-        self.color.set(variables.settings_obj.color)
+        if re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", variables.settings_obj.color):
+            if variables.settings_obj.color == "#236ab2":
+                self.color.set("Default")
+            else:
+                self.color.set("Custom")
+                self.custom_color_entry.delete(0, tk.END)
+                self.custom_color_entry.insert(tk.END, variables.settings_obj.color)
         self.overlay_bg_color.set(variables.settings_obj.overlay_bg_color)
         self.overlay_tx_color.set(variables.settings_obj.overlay_tx_color)
         self.overlay_tr_color.set(variables.settings_obj.overlay_tr_color)
@@ -466,8 +465,8 @@ class SettingsFrame(ttk.Frame):
         :return: None
         """
         print("[DEBUG] Save_settings called!")
-        if str(
-                self.color.get()) == variables.settings_obj.color and self.logo_color.get() == variables.settings_obj.logo_color:
+        if str(self.color.get()) == variables.settings_obj.color and \
+           self.logo_color.get() == variables.settings_obj.logo_color:
             reboot = False
         else:
             reboot = True
@@ -481,7 +480,7 @@ class SettingsFrame(ttk.Frame):
                 return
             color = self.custom_color_entry.get()
         else:
-            color = self.color.get()
+            color = self.color_choices[self.color.get()]
         if self.overlay_when_gsf.get() and not variables.settings_obj.overlay_when_gsf:
             help_string = ("""This setting makes the overlay only appear inside GSF matches. Please note that the """
                            """overlay will only appear after the first GSF ability is executed, so the overlay """
