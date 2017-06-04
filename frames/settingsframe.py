@@ -491,7 +491,7 @@ class SettingsFrame(ttk.Frame):
                                          auto_ident=str(self.privacy_var.get()),
                                          server_address=str(self.server_address_entry.get()),
                                          server_port=str(self.server_port_entry.get()),
-                                         auto_upl=str(self.auto_upload_var),
+                                         auto_upl=str(self.auto_upload_var.get()),
                                          overlay=str(self.overlay_enable_radio_var.get()),
                                          opacity=str(self.overlay_opacity_input.get()),
                                          size=str(self.overlay_size_var.get()),
