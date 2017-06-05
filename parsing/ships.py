@@ -81,16 +81,27 @@ class Ship(object):
             "thrusters": None,
             "capacitor": None
         }
+        self.crew = {
+            "Engineering": None,
+            "Offfensive": None,
+            "Tactical": None,
+            "Defensive": None,
+            "CoPilot": None
+        }
 
     def __setitem__(self, item, value):
         if item in self.components:
             self.components[item] = value
+        elif item in self.crew:
+            self.crew[item] = value
         else:
             self.data[item] = value
 
     def __getitem__(self, item):
         if item in self.components:
             return self.components[item]
+        elif item in self.crew:
+            return self.crew[item]
         else:
             return self.data[item]
 
