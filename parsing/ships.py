@@ -123,6 +123,7 @@ class Ship(object):
 
 class Component(object):
     def __init__(self, modifiers):
+        print('Creating component with dictionary: ', modifiers)
         self.modifiers = modifiers
 
     def __setitem__(self, key, value):
@@ -134,5 +135,5 @@ class Component(object):
         return self.modifiers[key]
 
     def __iter__(self):
-        for key, value in self.modifiers:
-            yield (key, value)
+        for key, value in self.modifiers.items():
+            yield key, value

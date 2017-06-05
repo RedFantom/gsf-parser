@@ -34,6 +34,7 @@ class CharactersFrame(ttk.Frame):
         :param parent: tkinter parent
         """
         ttk.Frame.__init__(self, parent)
+        self.window = variables.main_window
         self.directory = utilities.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = {
@@ -346,7 +347,10 @@ class CharactersFrame(ttk.Frame):
         General function to save the character database to the file
         :return: None
         """
-        self.characters[(self.character_data["Server"], self.character_data["Name"])] = self.character_data
+        print("[DEBUG] Saving character database")
+        server = self.character_data["Server"]
+        name = self.character_data["Name"]
+        self.characters[(server, name)] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 
@@ -422,6 +426,7 @@ class CharactersFrame(ttk.Frame):
         else:
             raise ValueError("Unknown faction value found: {0}".format(character_data["Faction"]))
         self.character_data = character_data
+        self.window.builds_frame.reset()
 
     def clear_character_data(self):
         """

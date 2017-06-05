@@ -106,10 +106,14 @@ class ShipSelectFrame(ttk.Frame):
             return
         ship_name = ships.other_ships[ship_name]
         if self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
-            ship_object = self.ships[ships.reverse_ships[ship_name]]
+            ship_object = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]
         else:
             ship_object = ships.Ship(ship_name)
         print("Calling callback")
+        for frame in self.window.builds_frame.components_lists.values():
+            frame.toggled_frame.toggle_button.config(state=tk.NORMAL)
+        for frame in self.window.builds_frame.crew_select_frame.category_frames.values():
+            frame.toggle_button.config(state=tk.NORMAL)
         self.callback(faction, category, ship_name, ship_object)
 
     def set_faction(self, faction):
@@ -150,6 +154,7 @@ class ShipSelectFrame(ttk.Frame):
         self.character_tuple = (server, self.character.get())
         self.set_faction(self.window.characters_frame.characters[(server, self.character.get())]["Faction"])
         self.ships = self.window.characters_frame.characters[(server, self.character.get())]["Ship Objects"]
+        self.window.characters_frame.character_data = self.window.characters_frame.characters[self.character_tuple]
 
     def set_server(self, variable, value):
         variable.set(value)

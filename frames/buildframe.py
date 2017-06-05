@@ -22,6 +22,17 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
+    # TODO: Call set_component at loading of set_ship for each component that has been set if the ship has already been
+    # TODO: configured
+
+    # TODO: Save the components entered correctly by creating Component objects and adding those to Ship objects, adding
+    # TODO: in turn to the Character objects, adding those to the database and then immediately saving them
+
+    # TODO: Create a callback system for the upgrades to be saved in a similar manner as described above ^^
+
+    # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
+
+    # TODO: Implement toplevels.shipstats.ShipStats
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
@@ -87,6 +98,7 @@ class BuildsFrame(ttk.Frame):
             os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
+        self.reset()
 
     def set_crew_member_frame(self, member_dict):
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
@@ -163,10 +175,18 @@ class BuildsFrame(ttk.Frame):
                                                           self.ship)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][indexing]["Stats"])
+        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][indexing])
         self.current_component.grid_widgets()
         print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")
+        self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
+        for button in self.current_component.upgrade_buttons:
+            if isinstance(button, list):
+                button[0].config(state=tk.NORMAL)
+                button[1].config(state=tk.NORMAL)
+                continue
+            button.config(state=tk.NORMAL)
+        self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):
         self.grid_forget_widgets()
@@ -211,3 +231,17 @@ class BuildsFrame(ttk.Frame):
     def save_ship_data(self):
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
         self.window.characters_frame.save_button.invoke()
+
+    def reset(self):
+        self.ship_select_frame.character.set("Choose character")
+        self.ship_select_frame.server.set("Choose server")
+        for frame in self.components_lists.values():
+            frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
+        for frame in self.crew_select_frame.category_frames.values():
+            frame.toggle_button.config(state=tk.DISABLED)
+        for button in self.current_component.upgrade_buttons:
+            if isinstance(button, list):
+                button[0].config(state=tk.DISABLED)
+                button[1].config(state=tk.DISABLED)
+                continue
+            button.config(state=tk.DISABLED)
