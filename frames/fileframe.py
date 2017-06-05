@@ -56,7 +56,8 @@ class FileFrame(ttk.Frame):
         self.file_tree = ttk.Treeview(self, height=13)
         self.file_tree.bind("<Double-1>", self.update_parse)
         self.file_tree["show"] = ("tree", "headings")
-        self.file_tree.heading("#0", text="Files")
+        self.file_tree.heading("#0", text="Files", command=self.flip_sorting)
+        self.ascending = False
         self.file_tree.column("#0", width=150)
         self.file_string_dict = OrderedDict()
         self.match_string_dict = OrderedDict()
@@ -87,6 +88,10 @@ class FileFrame(ttk.Frame):
         self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe", padx=5)
         self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky="nswe", pady=5, padx=5)
 
+    def flip_sorting(self):
+        self.ascending = not self.ascending
+        self.add_files()
+
     def add_files(self, silent=False):
         """
         Function that checks files found in the in the settings specified folder for
@@ -110,6 +115,8 @@ class FileFrame(ttk.Frame):
             variables.settings_obj.read_set()
         combatlogs_folder = variables.settings_obj.cl_path
         file_list = os.listdir(combatlogs_folder)
+        if not self.ascending:
+            file_list = list(reversed(file_list))
         if not silent:
             splash_screen = SplashScreen(self.main_window, len(file_list), title="Loading files")
         else:
