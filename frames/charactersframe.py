@@ -292,7 +292,7 @@ class CharactersFrame(ttk.Frame):
             ships = ("Novadive", "Star Guard")
             ships_dict = {name: None for name in abilities.all_ships.values()}
         else:
-            raise ValueError("Unkown value for faction found: {0}".format(faction))
+            raise ValueError("Unknown value for faction found: {0}".format(faction))
         server = self.reverse_servers[server]
         self.characters[(server, name)] = {
             "Server": server,
@@ -327,7 +327,7 @@ class CharactersFrame(ttk.Frame):
             ships = ("Novadive", "Star Guard")
             ships_dict = {name: None for name in abilities.all_ships.values()}
         else:
-            raise ValueError("Unkown value for faction found: {0}".format(faction))
+            raise ValueError("Unknown value for faction found: {0}".format(faction))
         self.character_data["Faction"] = faction
         self.character_data["Ship Objects"] = ships_dict
         self.character_data["Ships"] = ships
@@ -413,7 +413,7 @@ class CharactersFrame(ttk.Frame):
                 else:
                     intvar.set(0)
         else:
-            raise ValueError("Unkown faction value found: {0}".format(character_data["Faction"]))
+            raise ValueError("Unknown faction value found: {0}".format(character_data["Faction"]))
         self.character_data = character_data
 
     def clear_character_data(self):
