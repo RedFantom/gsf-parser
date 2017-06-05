@@ -166,13 +166,6 @@ def get_targeting_computer_targetname(screen):
     pass
 
 
-def get_power_management_cds(screen):
-    image = cv2.imread(os.getcwd() + "/assets/vision/power_management.png")
-    results = cv2.matchTemplate(screen, image, cv2.TM_CCOEFF_NORMED)
-    y, x = numpy.unravel_index(results.argmax(), results.shape)
-    return x, y
-
-
 def get_power_management(screen, cds):
     """
     Uses template matching to determine how the user has divided the power
@@ -226,13 +219,6 @@ def get_ship_health_hull(screen):
     :return: int with percentage
     """
     pass
-
-
-def get_ship_health_cds(screen):
-    health = cv2.imread(os.getcwd() + "/assets/vision/health.png")
-    results = cv2.matchTemplate(screen, health, cv2.TM_CCOEFF_NORMED)
-    y, x = numpy.unravel_index(results.argmax(), results.shape)
-    return x, y
 
 
 def get_ship_health_shields(screen, cds):
