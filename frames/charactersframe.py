@@ -26,6 +26,7 @@ class CharactersFrame(ttk.Frame):
     A frame in which the user can enter his characters in simple, organized manner, so the GSF Parser can make good use
     of this data in
     """
+
     def __init__(self, parent):
         """
         Initializes the class instance and sets up all instance variables
@@ -315,8 +316,23 @@ class CharactersFrame(ttk.Frame):
         :return: None
         """
         self.grid_widgets()
+        if not mb.askyesno("Warning", "Changing the faction of a character removes "
+                                      "all specified builds for this character. "
+                                      "Are you sure you want to change the faction?"):
+            return
+        if faction == "Imperial":
+            ships = ("Blackbolt", "Rycer")
+            ships_dict = {name: None for name in abilities.all_ships.keys()}
+        elif faction == "Republic":
+            ships = ("Novadive", "Star Guard")
+            ships_dict = {name: None for name in abilities.all_ships.values()}
+        else:
+            raise ValueError("Unkown value for faction found: {0}".format(faction))
         self.character_data["Faction"] = faction
+        self.character_data["Ship Objects"] = ships_dict
+        self.character_data["Ships"] = ships
         self.save_character_data()
+        self.update_tree()
 
     def save_character_data(self):
         """
