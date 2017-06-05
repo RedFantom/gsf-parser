@@ -70,6 +70,7 @@ class ShipSelectFrame(ttk.Frame):
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
                                                                                        faction.lower() + "_l.png")))
+                    print("Added to ShipSelectFrame: {0}".format(ship_dict["Name"]))
                     self.ship_buttons[ship_dict["Name"]] = \
                         ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame,
                                    text=ship_dict["Name"],
@@ -108,6 +109,7 @@ class ShipSelectFrame(ttk.Frame):
             ship_object = self.ships[ships.reverse_ships[ship_name]]
         else:
             ship_object = ships.Ship(ship_name)
+        print("Calling callback")
         self.callback(faction, category, ship_name, ship_object)
 
     def set_faction(self, faction):

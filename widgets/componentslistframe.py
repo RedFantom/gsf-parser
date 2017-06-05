@@ -18,19 +18,20 @@ class ComponentListFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         # if not callable(callback):
         #     raise ValueError("Callback passed is not callable")
-        self.names = {"PrimaryWeapon": "Primary Weapon",
-                      "PrimaryWeapon2": "Primary Weapon",
-                      "SecondaryWeapon": "Secondary Weapon",
-                      "SecondaryWeapon2": "Secondary Weapon",
-                      "Engine": "Engine",
-                      "Systems": "Systems",
-                      "ShieldProjector": "Shields",
-                      "Magazine": "Magazine",
-                      "Capacitor": "Capacitor",
-                      "Reactor": "Reactor",
-                      "Armor": "Armor",
-                      "Sensor": "Sensors"
-                      }
+        self.names = {
+            "PrimaryWeapon": "Primary Weapon",
+            "PrimaryWeapon2": "Primary Weapon",
+            "SecondaryWeapon": "Secondary Weapon",
+            "SecondaryWeapon2": "Secondary Weapon",
+            "Engine": "Engine",
+            "Systems": "Systems",
+            "ShieldProjector": "Shields",
+            "Magazine": "Magazine",
+            "Capacitor": "Capacitor",
+            "Reactor": "Reactor",
+            "Armor": "Armor",
+            "Sensor": "Sensors"
+        }
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))

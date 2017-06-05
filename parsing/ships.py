@@ -68,7 +68,7 @@ class Ship(object):
         else:
             self.ship_name = ship_name
         self.name = ship_name
-        self.data = self.ships_data[self.ship_name]["Stats"]
+        self.data = self.ships_data[self.ship_name]
         self.components = {
             "primary": None,
             "primary2": None,

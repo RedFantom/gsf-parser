@@ -36,6 +36,18 @@ class BuildsFrame(ttk.Frame):
             "Scout": 3,
             "Strike Fighter": 4
         }
+        self.component_strings = {
+            "PrimaryWeapon": "Primary Weapon",
+            "SecondaryWeapon": "Secondary Weapon",
+            "Engine": "Engine",
+            "Systems": "Systems",
+            "ShieldProjector": "Shields",
+            "Magazine": "Magazine",
+            "Capacitor": "Capacitor",
+            "Reactor": "Reactor",
+            "Armor": "Armor",
+            "Sensor": "Sensors"
+        }
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
@@ -80,9 +92,9 @@ class BuildsFrame(ttk.Frame):
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
         self.grid_widgets()
 
-    def set_ship(self, faction, category, ship, ship_object):
-        if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
-            self.ship_select_frame[faction][category].toggle()
+    def set_ship(self, faction, type, ship, ship_object):
+        if not bool(self.ship_select_frame.category_frames[faction][type].show.get()):
+            self.ship_select_frame[faction][type].toggle()
         ship_name = ""
         if faction == "Imperial":
             for key in all_ships.keys():
@@ -102,47 +114,56 @@ class BuildsFrame(ttk.Frame):
         self.character = self.ship_select_frame.character_tuple
         for widget in self.components_lists_frame.interior.winfo_children():
             widget.grid_forget()
-        for category in self.working:
-            if category not in self.ship.data:
+        for type in self.working:
+            if type not in self.ship.data:
+                print("type not in self.ship.data: {0}".format(type))
                 continue
-            self.components_lists[category] = \
-                ComponentListFrame(self.components_lists_frame.interior, category,
-                                   self.ship.data[category], self.set_component)
+            self.components_lists[type] = \
+                ComponentListFrame(self.components_lists_frame.interior, type,
+                                   self.ship.data[type], self.set_component)
         for button in self.ship_select_frame.ship_buttons.values():
             button.config(state=tk.ACTIVE)
         for key in self.ship_select_frame.ship_buttons.keys():
             if ship in key:
                 ship = key
                 break
+        if ship == "Novadive":
+            ship = "NovaDive"
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
         print(ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"])
         self.grid_widgets()
 
     def set_component(self, category, component):
         self.current_component.grid_forget()
+        self.current_component.destroy()
+        # category = {value: key for key, value in self.component_strings.items()}[category]
         print("[DEBUG] set_component(%s, %s)" % (category, component))
-        index = -1
+        indexing = -1
         print("[DEBUG] type is: ", type(self.ships_data[self.ship.ship_name][category]))
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
+                indexing = index
                 break
-        if index == -1:
-            raise ValueError("No components found in self.ships_data[%s][%s]" % (self.ship.ship_name, category))
+        print(indexing)
+        if indexing == -1:
+            raise ValueError("Component not found in database with ship {0}, category {1} and component {2}".format(
+                self.ship.ship_name, category, component
+            ))
         if category in self.minor_components:
             self.current_component = MinorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ships_data[self.ship.ship_name][category][indexing],
                                                           self.ship)
         elif category in self.middle_components:
             self.current_component = MiddleComponentWidget(self.component_frame,
-                                                           self.ships_data[self.ship.ship_name][category][index],
+                                                           self.ships_data[self.ship.ship_name][category][indexing],
                                                            self.ship)
         elif category in self.major_components:
             self.current_component = MajorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][index],
+                                                          self.ships_data[self.ship.ship_name][category][indexing],
                                                           self.ship)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][index]["Stats"])
+        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][indexing]["Stats"])
         self.current_component.grid_widgets()
         print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")
