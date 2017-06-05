@@ -241,7 +241,7 @@ class CharactersFrame(ttk.Frame):
                                            "Name": "Example",
                                            "Legacy": "E_Legacy",
                                            "Ships": ("Blackbolt", "Rycer"),
-                                           "Ship Objects": (None, None),
+                                           "Ship Objects": {name: None for name in abilities.all_ships.keys()},
                                            "GUI": "Default"}}
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
@@ -286,8 +286,10 @@ class CharactersFrame(ttk.Frame):
             pass
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
+            ships_dict = {name: None for name in abilities.all_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
+            ships_dict = {name: None for name in abilities.all_ships.values()}
         else:
             raise ValueError("Unkown value for faction found: {0}".format(faction))
         server = self.reverse_servers[server]
@@ -297,7 +299,7 @@ class CharactersFrame(ttk.Frame):
             "Name": name,
             "Legacy": legacy,
             "Ships": ships,
-            "Ship Objects": (None, None),
+            "Ship Objects": ships_dict,
             "GUI": "Default"
         }
         self.character_data = self.characters[(server, name)]
