@@ -83,9 +83,9 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
         self.enemies_treeview.config(columns=("Damage dealt", "Damage taken"))
         self.enemies_treeview["show"] = ("tree", "headings")
-        self.enemies_treeview.column("#0", width=120, anchor="w")
-        self.enemies_treeview.column("Damage dealt", width=78, anchor="e")
-        self.enemies_treeview.column("Damage taken", width=78, anchor="e")
+        self.enemies_treeview.column("#0", width=117, anchor="w")
+        self.enemies_treeview.column("Damage dealt", width=74, anchor="e")
+        self.enemies_treeview.column("Damage taken", width=74, anchor="e")
         self.enemies_treeview.heading("#0", text="Enemy name/ID",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Enemy name/ID", False, "str"))
