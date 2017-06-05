@@ -39,16 +39,19 @@ class ComponentListFrame(ttk.Frame):
         self.icons = {}
         self.buttons = {}
         self.hover_infos = {}
+        self.variable = tk.IntVar()
         for component in data_dictionary:
             try:
                 self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
             except IOError:
                 self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
-            self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
-                                                         text=component["Name"],
-                                                         command=lambda name=component["Name"]:
-                                                         self.set_component(name),
-                                                         compound=tk.LEFT, width=19)
+            self.buttons[component["Name"]] = ttk.Radiobutton(self.frame, image=self.icons[component["Name"]],
+                                                              text=component["Name"],
+                                                              command=lambda name=component["Name"]:
+                                                              self.set_component(name),
+                                                              compound=tk.LEFT, width=19,
+                                                              variable=self.variable,
+                                                              value=data_dictionary.index(component))
             self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
                                                             text=str(component["Name"]) + "\n\n" +
                                                                  str(component["Description"]))

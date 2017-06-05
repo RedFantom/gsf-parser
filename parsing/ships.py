@@ -65,7 +65,7 @@ class Ship(object):
             self.ship_name = ships[ship_name]
         else:
             self.ship_name = ship_name
-        self.data = self.ships_data[self.ship_name]
+        self.data = self.ships_data[self.ship_name]["Stats"]
         self.components = {
             "primary": None,
             "primary2": None,
@@ -86,13 +86,13 @@ class Ship(object):
         if item in self.components:
             self.components[item] = value
         else:
-            self.ships_data[item] = value
+            self.data[item] = value
 
     def __getitem__(self, item):
         if item in self.components:
             return self.components[item]
         else:
-            return self.ships_data[item]
+            return self.data[item]
 
     def __iter__(self):
         for key, value in self.ships_data.items():
