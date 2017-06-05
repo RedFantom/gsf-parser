@@ -182,12 +182,7 @@ class FileFrame(ttk.Frame):
         for enemy in enemies:
             self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
         self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
-        print(shipsdict.items())
-        try:
-            most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
-        except ValueError as e:
-            print(e)
-            most_used_ship = "Bloodmark"
+        most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
         self.main_window.ship_frame.update_ship([most_used_ship])
         self.main_window.ship_frame.update()
 
@@ -315,7 +310,6 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
-        print("Inserting enemy: ", enemy, enemydamaged[enemy], enemydamaget[enemy])
         if enemy == "":
             self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
                                                                   values=("System",
