@@ -87,26 +87,6 @@ class FileFrame(ttk.Frame):
         self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe", padx=5)
         self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky="nswe", pady=5, padx=5)
 
-    def add_matches(self):
-        """
-        Function that adds the matches found in the file selected to the appropriate listbox
-        :return:
-        """
-        self.clear_data_widgets()
-        self.main_window.ship_frame.ship_label_var.set("")
-        with open(variables.settings_obj.cl_path + "/" + variables.file_name, "r") as file:
-            variables.player_name = parse.determinePlayerName(file.readlines())
-        self.match_timing_strings = []
-        self.match_timing_strings = [str(time.time()) for time in variables.match_timings]
-        self.match_timing_strings = self.match_timing_strings[::2]
-
-    def add_spawns(self):
-        """
-        Function that adds the spawns found in the selected match to the appropriate listbox
-        :return:
-        """
-        pass
-
     def add_files(self, silent=False):
         """
         Function that checks files found in the in the settings specified folder for
