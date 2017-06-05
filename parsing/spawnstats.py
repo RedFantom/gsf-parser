@@ -98,5 +98,4 @@ def spawn_statistics(spawn, spawn_timing):
                          str(selfdamage) + "\n" + str(healingreceived) + "\n" +
                          str(hitcount) + "\n" + str(criticalcount) + "\n" +
                          str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
-    print(enemies)
     return abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
