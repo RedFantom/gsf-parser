@@ -12,7 +12,7 @@ ships = {
     "Imperium": "Imperial_FT-3C_Imperium",
     "Rycer": "Imperial_F-T6_Rycer",
     "Mangler": "Imperial_GSS-3_Mangler",
-    "Jurgoran": "Imperial_GSS-4Y_Jurogran",
+    "Jurgoran": "Imperial_GSS-4Y_Jurgoran",
     "Dustmaker": "Imperial_GSS-5C_Dustmaker",
     "Onslaught": "Imperial_G-X1_Onslaught",
     "Frostburn": "Imperial_ICA-2B_Frostburn",
@@ -48,6 +48,9 @@ ships = {
     "Mirage": "Republic_X7-Mirage",
     "Legion": "Imperial_B-4D_Legion"
 }
+
+reverse_ships = {value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key for key, value in
+                 ships.items()}
 
 
 class Ship(object):
