@@ -65,6 +65,9 @@ class MajorComponentWidget(ComponentWidget):
                 except IndexError:
                     self.photos.append([photo(img.open(path.join(self.icons_path, "imperial.png"))),
                                         photo(img.open(path.join(self.icons_path, "imperial.png")))])
+                except FileNotFoundError:
+                    self.photos.append([photo(img.open(path.join(self.icons_path, "imperial.png"))),
+                                        photo(img.open(path.join(self.icons_path, "imperial.png")))])
                 self.upgrade_buttons.append([ttk.Checkbutton(self.interior, image=self.photos[i][0],
                                                              command=lambda i=i: press_button(
                                                                  self.upgrade_buttons[i][0],

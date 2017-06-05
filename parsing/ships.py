@@ -51,6 +51,8 @@ ships = {
 
 reverse_ships = {value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key for key, value in
                  ships.items()}
+other_ships = {value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key for key, value in
+               ships.items()}
 
 
 class Ship(object):
@@ -65,6 +67,7 @@ class Ship(object):
             self.ship_name = ships[ship_name]
         else:
             self.ship_name = ship_name
+        self.name = ship_name
         self.data = self.ships_data[self.ship_name]["Stats"]
         self.components = {
             "primary": None,

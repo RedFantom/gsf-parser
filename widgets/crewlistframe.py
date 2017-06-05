@@ -12,11 +12,14 @@ from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from .toggledframe import ToggledFrame
+import variables
 
 
 class CrewListFrame(ttk.Frame):
-    def __init__(self, parent, data_dictionary):
+    def __init__(self, parent, data_dictionary, callback):
         ttk.Frame.__init__(self, parent)
+        self.callback = callback
+        self.window = variables.main_window
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         self.data = data_dictionary
         self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
@@ -55,7 +58,8 @@ class CrewListFrame(ttk.Frame):
                 self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(self.category_frames[crole].sub_frame,
                                                                            text=member_dict["Name"], compound=tk.LEFT,
                                                                            image=self.member_icons[member_dict["Name"]],
-                                                                           command=self.set_crew_members,
+                                                                           command=lambda i=member_dict:
+                                                                           self.set_crew_members(member_dict),
                                                                            width=19,
                                                                            variable=self.category_variables[crole],
                                                                            value=category.index(member_dict))
@@ -63,9 +67,10 @@ class CrewListFrame(ttk.Frame):
                     self.copilots.append(member_dict["Name"])
         self.update_copilots()
 
-    def set_crew_members(self):
-        for variable in self.category_variables:
-            pass
+    def set_crew_members(self, member_dict):
+        self.callback(member_dict)
+        for name, variable in self.category_variables.items():
+            self.window.builds_frame.ship[name] = variable.get()
 
     def update_copilots(self):
         self.copilot_buttons.clear()

@@ -14,6 +14,7 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from tools.utilities import get_assets_directory
+import variables
 
 
 class BuildsFrame(ttk.Frame):
@@ -24,6 +25,7 @@ class BuildsFrame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
+        self.window = variables.main_window
         self.working = [
             "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
             "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
@@ -54,6 +56,7 @@ class BuildsFrame(ttk.Frame):
         self.category = "Scout"
         self.ship = Ship("Bloodmark")
         self.character = None
+        self.ship_name = None
         self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
                                                        justify=tk.LEFT, font=("Calibiri", 12))
         for category in self.working:
@@ -66,11 +69,16 @@ class BuildsFrame(ttk.Frame):
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
                                                       self.ship)
-        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction],
+                                               self.set_crew_member_frame)
         self.ship_stats_image = photo(Image.open(
             os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
+
+    def set_crew_member_frame(self, member_dict):
+        self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
+        self.grid_widgets()
 
     def set_ship(self, faction, category, ship, ship_object):
         if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
@@ -139,6 +147,7 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid(sticky="nswe")
 
     def grid_widgets(self):
+        self.grid_forget_widgets()
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky="nswe", padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
         self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky="nwe", pady=(6, 5))
@@ -152,9 +161,20 @@ class BuildsFrame(ttk.Frame):
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
-        self.crew_select_frame.destroy()
-        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
+        # self.crew_select_frame.destroy()
+        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction],
+        #                                        self.set_crew_member_frame)
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
+
+    def grid_forget_widgets(self):
+        self.ship_select_frame.grid_forget()
+        self.ship_stats_button.grid_forget()
+        self.components_lists_frame.grid_forget()
+        self.component_frame.grid_forget()
+        self.current_component.grid_forget()
+        self.components_lists_header_label.grid_forget()
+        for frame in self.components_lists.values():
+            frame.grid_forget()
 
     def show_ship_stats(self):
         pass
@@ -165,3 +185,7 @@ class BuildsFrame(ttk.Frame):
 
     def set_character(self, character):
         pass
+
+    def save_ship_data(self):
+        self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
+        self.window.characters_frame.save_button.invoke()
