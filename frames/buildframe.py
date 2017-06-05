@@ -13,6 +13,7 @@ from os import path
 from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
+from tools.utilities import get_assets_directory
 
 
 class BuildsFrame(ttk.Frame):
@@ -46,7 +47,7 @@ class BuildsFrame(ttk.Frame):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
                   "rb") as f:
             self.companions_data = pickle.load(f)
-        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=345)
+        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=315)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
@@ -65,7 +66,10 @@ class BuildsFrame(ttk.Frame):
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
                                                       self.ship)
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
-        self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats)
+        self.ship_stats_image = photo(Image.open(
+            os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
+        self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
+                                            image=self.ship_stats_image, compound=tk.LEFT)
 
     def set_ship(self, faction, category, ship):
         if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
