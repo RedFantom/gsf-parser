@@ -10,4 +10,9 @@ import tkinter.ttk as ttk
 
 
 class ShipStatsToplevel(tk.Toplevel):
-    pass
+    """
+    A Toplevel that shows the statistics for a certain ship in an organized manner, categorized and in alphabetical
+    order where applicable, in human readable format.
+    """
+    def __init__(self, master, ship_object):
+        tk.Toplevel.__init__(self, master)
