@@ -16,7 +16,7 @@ from tools import utilities
 
 
 class SplashScreen(tk.Toplevel):
-    def __init__(self, window, boot=False, max=None, title="GSF Parser"):
+    def __init__(self, window, amount, title="GSF Parser"):
         tk.Toplevel.__init__(self, window)
         self.grab_set()
         self.title(title)
@@ -25,35 +25,12 @@ class SplashScreen(tk.Toplevel):
 
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=300, mode="determinate")
         self.progress_bar.pack()
-        try:
-            list = os.listdir(variables.settings_obj.cl_path)
-        except OSError:
-            tkinter.messagebox.showerror("Error",
-                                         "The CombatLogs folder found in the settings file is not valid. Please "
-                                         "choose another folder.")
-            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
-            list = os.listdir(variables.settings_obj.cl_path)
-        files = []
-        for file in list:
-            if file.endswith(".txt"):
-                files.append(file)
-        variables.files_done = 0
-        if not max:
-            self.amount_files = len(files)
-        else:
-            self.amount_files = max
-        if self.amount_files >= 50 and boot:
-            tkinter.messagebox.showinfo("Notice",
-                                        "You currently have more than 50 CombatLogs in your CombatLogs folder. " + \
-                                        "You may want to archive some of your %s CombatLogs in order to speed up the parsing " + \
-                                        "program and the startup times." % self.amount_files)
-        self.progress_bar["maximum"] = self.amount_files
+        self.progress_bar["maximum"] = amount
         self.progress_bar["value"] = 0
         self.update()
 
-    def update_progress(self):
-        self.progress_bar["value"] = variables.files_done
+    def update_progress(self, number):
+        self.progress_bar["value"] = number
         self.update()
 
 

@@ -58,8 +58,8 @@ class ComponentListFrame(ttk.Frame):
         self.callback(self.category, component)
 
     def grid_widgets(self):
-        self.toggled_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.toggled_frame.grid(row=0, column=0, sticky="nswe")
         set_row = 0
         for button in self.buttons.values():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1

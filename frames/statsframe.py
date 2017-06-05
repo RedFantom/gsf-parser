@@ -91,7 +91,7 @@ class StatsFrame(ttk.Frame):
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Damage taken", False, "int"))
         self.enemies_treeview["show"] = "headings"
-        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor=tk.W)
+        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor="w")
         self.enemies_treeview.column("Damage taken", width=80, stretch=False, anchor=tk.E)
         self.enemies_treeview.column("Damage dealt", width=80, stretch=False, anchor=tk.E)
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
@@ -101,7 +101,7 @@ class StatsFrame(ttk.Frame):
         self.notebook.add(self.abilities_frame, text="Abilities")
         self.abilities_treeview = ttk.Treeview(self.abilities_frame, columns=("Ability", "Times used"),
                                                displaycolumns=("Ability", "Times used"), height=14)
-        self.abilities_treeview.column("Ability", width=200, stretch=False, anchor=tk.W)
+        self.abilities_treeview.column("Ability", width=200, stretch=False, anchor="w")
         self.abilities_treeview.column("Times used", width=85, stretch=False, anchor=tk.E)
         self.abilities_treeview.heading("Ability", text="Ability",
                                         command=lambda: self.treeview_sort_column(self.abilities_treeview,
@@ -123,23 +123,24 @@ class StatsFrame(ttk.Frame):
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
         """
-        self.toplevel = EventsView(self.window, variables.spawn, variables.player_numbers)
+        spawn, player_numbers, spawn_timing, match_timing = self.window.file_select_frame.get_spawn()
+        EventsView(self.window, spawn, player_numbers, spawn_timing, match_timing)
 
     def grid_widgets(self):
         """
         Put all widgets in the right place
         :return:
         """
-        self.abilities_treeview.grid(column=0, row=0, sticky=tk.N + tk.W)
-        self.abilities_scrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.notebook.grid(column=0, row=0, columnspan=4, sticky=tk.N + tk.W + tk.E)
-        self.events_frame.grid(column=0, row=1, columnspan=4, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.events_button.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=4, pady=2)
-        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky=tk.N + tk.W + tk.E)
-        self.notice_label.grid(column=0, row=3, columnspan=4, sticky=tk.W + tk.E + tk.S)
-        self.enemies_treeview.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.enemies_scrollbar.grid(column=1, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.abilities_treeview.grid(column=0, row=0, sticky="nw")
+        self.abilities_scrollbar.grid(column=1, row=0, sticky="nswe")
+        self.notebook.grid(column=0, row=0, columnspan=4, sticky="nwe")
+        self.events_frame.grid(column=0, row=1, columnspan=4, sticky="nswe")
+        self.events_button.grid(column=0, row=1, sticky="nswe", columnspan=4, pady=2)
+        self.statistics_label.grid(column=0, row=2, columnspan=2, sticky="nswe", padx=(5, 0), pady=5)
+        self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
+        self.notice_label.grid(column=0, row=3, columnspan=4, sticky="swe", padx=5, pady=5)
+        self.enemies_treeview.grid(column=0, row=0, sticky="nswe")
+        self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe")
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]

@@ -6,7 +6,6 @@
 
 # UI imports
 import decimal
-import variables
 from . import parse
 from parsing import abilities
 
@@ -33,16 +32,17 @@ def file_statistics(file_cube):
                          total_shipsdict, if there was more than one
                          possibility
     """
-    player_list = []
+    lines = []
     for match in file_cube:
         for spawn in match:
-            player = parse.determinePlayer(spawn)
-            for id in player:
-                player_list.append(id)
+            for line in spawn:
+                lines.append(line)
+    player_list = parse.determinePlayer(lines)
+    _, match_timings, spawn_timings = parse.splitter(lines, player_list)
 
     (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
-        parse.parse_file(file_cube, player_list, variables.match_timings, variables.spawn_timings)
+        parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
     total_abilities = {}
     total_damagetaken = 0
     total_damagedealt = 0

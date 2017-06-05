@@ -75,13 +75,13 @@ class MainWindow(tk.Tk):
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         # Pack the frames and put their widgets into place
-        self.file_select_frame.grid(column=1, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column=2, row=1, sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.middle_frame.grid_widgets()
         self.realtime_frame.pack()
         self.realtime_frame.grid_widgets()
-        self.ship_frame.grid(column=3, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_frame.grid(column=3, row=1, sticky="nswe")
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
         self.graphs_frame.grid(column=0, row=0)
@@ -94,12 +94,11 @@ class MainWindow(tk.Tk):
         self.toolsframe.grid_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
+        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
-        # TODO Finish Sharing and Leaderboards tab
-        self.notebook.add(self.share_tab_frame, text="Sharing and Leaderboards")
+        self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
@@ -114,27 +113,23 @@ class MainWindow(tk.Tk):
         # Start the main loop
 
     def update_style(self, start=False):
-        try:
-            print((self.tk.call('package', 'require', 'tile-themes')))
-        except tk.TclError:
-            print("[DEBUG] tile-themes is not available")
         old_dir = os.getcwd()
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.tk.eval("source theme/arc.tcl")
-        except:
+        except tk.TclError:
             print("Error evaluating arc.tcl")
         os.chdir(old_dir)
         print((list(self.tk.call("ttk::themes"))))
         try:
             self.style.theme_use("arc")
         except tk.TclError as e:
-            print("[DEBUG] Theme plastik is not available. Using default.")
+            print("[DEBUG] Theme arc is not available. Using default.")
             print(e)
-            self.style.theme_use("default")
+            self.style.theme_use("vista")
         self.style.configure('.', font=("Calibri", 10))
-        self.style.configure('TButton', anchor=tk.W)
-        self.style.configure('Toolbutton', anchor=tk.W)
+        self.style.configure('TButton', anchor="w")
+        self.style.configure('Toolbutton', anchor="w")
         try:
             self.style.configure('.', foreground=variables.settings_obj.color)
         except AttributeError:

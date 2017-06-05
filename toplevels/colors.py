@@ -207,20 +207,20 @@ class EventColors(tk.Toplevel):
         self.destroy()
 
     def grid_widgets(self):
-        self.column_label_one.grid(column=0, columnspan=2, row=0, sticky=tk.W)
-        self.column_label_two.grid(column=2, columnspan=2, row=0, sticky=tk.W)
-        self.column_label_three.grid(column=4, columnspan=2, row=0, sticky=tk.W)
+        self.column_label_one.grid(column=0, columnspan=2, row=0, sticky="w")
+        self.column_label_two.grid(column=2, columnspan=2, row=0, sticky="w")
+        self.column_label_three.grid(column=4, columnspan=2, row=0, sticky="w")
         set_row = 1
         for key in self.colors.keys():
-            self.color_labels[key].grid(column=0, columnspan=2, row=set_row, sticky=tk.W)
-            self.color_entry_widgets_bg[key].grid(column=2, row=set_row, sticky=tk.W, padx=5)
-            self.color_button_widgets_bg[key].grid(column=3, row=set_row, sticky=tk.W)
-            self.color_entry_widgets_fg[key].grid(column=4, row=set_row, sticky=tk.W, padx=5)
-            self.color_button_widgets_fg[key].grid(column=5, row=set_row, sticky=tk.W)
+            self.color_labels[key].grid(column=0, columnspan=2, row=set_row, sticky="w")
+            self.color_entry_widgets_bg[key].grid(column=2, row=set_row, sticky="w", padx=5)
+            self.color_button_widgets_bg[key].grid(column=3, row=set_row, sticky="w")
+            self.color_entry_widgets_fg[key].grid(column=4, row=set_row, sticky="w", padx=5)
+            self.color_button_widgets_fg[key].grid(column=5, row=set_row, sticky="w")
             set_row += 1
-        self.separator.grid(column=0, columnspan=6, sticky=tk.N + tk.S + tk.W + tk.E, pady=5)
+        self.separator.grid(column=0, columnspan=6, sticky="nswe", pady=5)
         set_row += 1
-        self.cancel_button.grid(column=3, columnspan=2, row=set_row, sticky=tk.N + tk.S + tk.E)
-        self.ok_button.grid(column=5, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.import_button.grid(column=0, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.export_button.grid(column=1, row=set_row, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.cancel_button.grid(column=3, columnspan=2, row=set_row, sticky="ns" + tk.E)
+        self.ok_button.grid(column=5, row=set_row, sticky="nswe")
+        self.import_button.grid(column=0, row=set_row, sticky="nswe")
+        self.export_button.grid(column=1, row=set_row, sticky="nswe")

@@ -38,19 +38,21 @@ class ShipFrame(ttk.Frame):
         Create all labels and variables
         :param root_frame:
         """
-        ttk.Frame.__init__(self, root_frame, width=300, height=410)
+        ttk.Frame.__init__(self, root_frame, width=265, height=410)
         self.ship_label_var = tk.StringVar()
         self.ship_label_var.set("No match or spawn selected yet.")
         self.ship_label = ttk.Label(self, textvariable=self.ship_label_var, justify=tk.LEFT, wraplength=495)
         self.ship_image = ttk.Label(self)
+        self.img = None  # Variable for the Image
+        self.pic = None  # Variable for the PhotoImage
 
     def grid_widgets(self):
         """
         Put the widgets in the right place
         :return:
         """
-        self.ship_image.grid(column=0, row=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.ship_label.grid(column=0, row=1, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_image.grid(column=0, row=0, sticky="nswe")
+        self.ship_label.grid(column=0, row=1, sticky="nswe", padx=5)
         self.remove_image()
 
     def update_ship(self, ships_list):
@@ -68,8 +70,8 @@ class ShipFrame(ttk.Frame):
                                replace("\\", "/"))
             except IOError:
                 print("[DEBUG] File not found.")
-                tkinter.messagebox.showerror("Error",
-                                             "The specified picture can not be found. Is the assets folder copied correctly?")
+                tkinter.messagebox.showerror("Error", "The specified picture can not be found. Is the assets folder "
+                                                      "copied correctly?")
                 return
         elif len(ships_list) == 0:
             raise ValueError("Ships_list == 0")
@@ -83,8 +85,8 @@ class ShipFrame(ttk.Frame):
                 self.set_image(os.path.dirname(__file__).replace("frames", "") +
                                ("\\assets\\img\\" + img + ".png").replace("\\", "/"))
             except IOError:
-                tkinter.messagebox.showerror("Error",
-                                             "The specified picture can not be found. Is the assets folder copied correctly?")
+                tkinter.messagebox.showerror("Error", "The specified picture can not be found. Is the assets folder "
+                                                      "copied correctly?")
                 return
         return
 
@@ -96,7 +98,7 @@ class ShipFrame(ttk.Frame):
         """
         try:
             self.img = Image.open(file)
-            self.img = self.img.resize((300, 180), Image.ANTIALIAS)
+            self.img = self.img.resize((260, 156), Image.ANTIALIAS)
             self.pic = ImageTk.PhotoImage(self.img)
             self.ship_image.config(image=self.pic)
         except tk.TclError as e:
@@ -110,7 +112,7 @@ class ShipFrame(ttk.Frame):
         try:
             self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)).
                                                      replace("frames", "") +
-                                                     "assets\\img\\default.png").resize((300, 180), Image.ANTIALIAS))
+                                                     "assets\\img\\default.png").resize((260, 156), Image.ANTIALIAS))
         except IOError:
             print("[DEBUG] default.png can not be opened.")
             return
