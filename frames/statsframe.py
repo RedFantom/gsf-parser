@@ -123,7 +123,8 @@ class StatsFrame(ttk.Frame):
         Open a TopLevel of the overlay module to show the lines of a Combatlog in a human-readable manner
         :return:
         """
-        EventsView(self.window, variables.spawn, variables.player_numbers)
+        spawn, player_numbers, spawn_timing, match_timing = self.window.file_select_frame.get_spawn()
+        EventsView(self.window, spawn, player_numbers, spawn_timing, match_timing)
 
     def grid_widgets(self):
         """

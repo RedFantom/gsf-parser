@@ -54,7 +54,7 @@ class FileFrame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
         self.file_tree = ttk.Treeview(self, height=13)
-        self.file_tree.bind("<Double-1>", self.update_parse)
+        self.file_tree.bind("<1>", self.update_parse)
         self.file_tree["show"] = ("tree", "headings")
         self.file_tree.heading("#0", text="Files")
         self.file_tree.column("#0", width=150)
@@ -331,3 +331,17 @@ class FileFrame(ttk.Frame):
                                                                   values=(enemy,
                                                                           str(enemydamaged[enemy]),
                                                                           str(enemydamaget[enemy])))
+
+    def get_spawn(self):
+        selection = self.file_tree.selection()[0]
+        elements = selection.split(" ")
+        if len(elements) is not 3:
+            tkinter.messagebox.showinfo("Requirement", "Please select a spawn to view the events of.")
+            return
+        with open(os.path.join(variables.settings_obj.cl_path, elements[0])) as f:
+            lines = f.readlines()
+        player_list = parse.determinePlayer(lines)
+        file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
+        match_index, spawn_index = int(elements[1]), int(elements[2])
+        return (file_cube[match_index][spawn_index], player_list, spawn_timings[match_index][spawn_index],
+                match_timings[match_index])
