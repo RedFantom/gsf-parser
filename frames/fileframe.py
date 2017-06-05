@@ -172,7 +172,7 @@ class FileFrame(ttk.Frame):
                        enemydamaget, uncounted):
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         for key, value in abilities_dict.items():
-            self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
+            self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
         self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         ships_string = "Ships used:\t\tCount:\n"
         for ship in abilities.ships_strings:
@@ -196,7 +196,7 @@ class FileFrame(ttk.Frame):
     def update_widgets_spawn(self, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                              enemydamaget):
         for key, value in abilitiesdict.items():
-            self.main_window.middle_frame.abilities_treeview.insert('', tk.END, values=(key, value))
+            self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         ships_string = "Possible ships used:\n"
         for ship in ships_list:
@@ -321,19 +321,16 @@ class FileFrame(ttk.Frame):
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         if enemy == "":
-            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                  values=("System",
-                                                                          str(enemydamaged[enemy]),
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text="enemy",
+                                                                  values=(str(enemydamaged[enemy]),
                                                                           str(enemydamaget[enemy])))
         elif re.search('[a-zA-Z]', enemy):
-            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                  values=(enemy,
-                                                                          str(enemydamaged[enemy]),
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text=enemy,
+                                                                  values=(str(enemydamaged[enemy]),
                                                                           str(enemydamaget[enemy])))
         else:
-            self.main_window.middle_frame.enemies_treeview.insert('', tk.END,
-                                                                  values=(enemy,
-                                                                          str(enemydamaged[enemy]),
+            self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text=enemy,
+                                                                  values=(str(enemydamaged[enemy]),
                                                                           str(enemydamaget[enemy])))
 
     def get_spawn(self):
