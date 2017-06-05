@@ -209,7 +209,10 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.update_ship(ships_list)
 
     def update_parse(self, *args):
-        selection = self.file_tree.selection()[0]
+        try:
+            selection = self.file_tree.selection()[0]
+        except IndexError:
+            return
         elements = selection.split(" ")
         if selection == "all":
             # Whole folder
