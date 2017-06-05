@@ -6,6 +6,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import tkinter as tk
+from tkinter import messagebox as mb
 import tkinter.ttk as ttk
 from os import path
 import pickle as pickle
@@ -13,6 +14,7 @@ from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import ToggledFrame, VerticalScrollFrame
 import variables
+from parsing import ships
 
 
 class ShipSelectFrame(ttk.Frame):
@@ -38,6 +40,7 @@ class ShipSelectFrame(ttk.Frame):
         self.category_frames = {faction: {} for faction in self.data}
         self.faction_photos = {}
         self.ships = None
+        self.character_tuple = (None, None)
 
         toggled = False
 
@@ -95,9 +98,13 @@ class ShipSelectFrame(ttk.Frame):
             button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
 
-    def set_ship(self, faction, category, shipname):
-        print("Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, shipname))
-        self.callback(faction, category, shipname)
+    def set_ship(self, faction, category, ship_name):
+        print("Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, ship_name))
+        if not self.ships:
+            mb.showinfo("Request", "Please choose a character first.")
+            return
+        ship_object = self.ships[ships.reverse_ships[ship_name]]
+        self.callback(faction, category, ship_name, ship_object)
 
     def set_faction(self, faction):
         self.faction = faction
@@ -134,6 +141,8 @@ class ShipSelectFrame(ttk.Frame):
     def load_character(self):
         print("Loading character {0}".format((self.server.get(), self.character.get())))
         server = self.window.characters_frame.reverse_servers[self.server.get()]
+        self.character_tuple = (server, self.character.get())
+        self.set_faction(self.window.characters_frame.characters[(server, self.character.get())]["Faction"])
         self.ships = self.window.characters_frame.characters[(server, self.character.get())]["Ship Objects"]
 
     def set_server(self, variable, value):
