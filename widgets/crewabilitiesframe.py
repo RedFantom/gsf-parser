@@ -33,7 +33,7 @@ class CrewAbilitiesFrame(ttk.Frame):
                                            wraplength=250)
 
     def grid_widgets(self):
-        self.description_label.grid(column=0, row=0, sticky=tk.W + tk.E)
-        self.active_label.grid(column=0, row=1, sticky=tk.W + tk.E)
-        self.passive_one_label.grid(column=0, row=2, sticky=tk.W + tk.E)
-        self.passive_two_label.grid(column=0, row=3, sticky=tk.W + tk.E)
+        self.description_label.grid(column=0, row=0, sticky="we")
+        self.active_label.grid(column=0, row=1, sticky="we")
+        self.passive_one_label.grid(column=0, row=2, sticky="we")
+        self.passive_two_label.grid(column=0, row=3, sticky="we")

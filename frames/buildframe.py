@@ -134,25 +134,25 @@ class BuildsFrame(ttk.Frame):
         self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][index]["Stats"])
         self.current_component.grid_widgets()
         print("[DEBUG] Gridding DEBUG component")
-        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
+        self.current_component.grid(sticky="nswe")
 
     def grid_widgets(self):
-        self.ship_select_frame.grid(row=0, column=0, rowspan=20, sticky=tk.N + tk.S + tk.W + tk.E, padx=1, pady=1)
+        self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky="nswe", padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
-        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky=tk.N + tk.W + tk.E, pady=(6, 5))
-        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky=tk.N + tk.S + tk.W + tk.E, pady=1)
-        self.component_frame.grid(row=0, rowspan=2, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.current_component.grid(sticky=tk.N + tk.S + tk.W + tk.E)
+        self.ship_stats_button.grid(row=0, column=1, rowspan=1, sticky="nwe", pady=(6, 5))
+        self.components_lists_frame.grid(row=1, column=1, rowspan=1, sticky="nswe", pady=1)
+        self.component_frame.grid(row=0, rowspan=2, column=2, sticky="nswe")
+        self.current_component.grid(sticky="nswe")
         self.current_component.grid_widgets()
-        self.components_lists_header_label.grid(row=0, column=0, sticky=tk.W)
+        self.components_lists_header_label.grid(row=0, column=0, sticky="w")
         set_row = 1
         for frame in self.components_lists.values():
-            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
         self.crew_select_frame.destroy()
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction])
-        self.crew_select_frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 
     def show_ship_stats(self):
         pass

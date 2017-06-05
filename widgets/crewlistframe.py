@@ -77,11 +77,11 @@ class CrewListFrame(ttk.Frame):
         self.grid_widgets()
 
     def grid_widgets(self):
-        self.header_label.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.header_label.grid(row=0, column=0, sticky="nswe")
         set_row = 1
         for frame in self.category_frames.values():
-            frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            frame.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
         for button in self.member_buttons.values():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1

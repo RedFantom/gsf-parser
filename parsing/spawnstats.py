@@ -6,13 +6,12 @@
 # UI imports
 import tkinter.messagebox
 import datetime
-import variables
 from . import abilities
 from . import parse
 from . import realtime
 
 
-def spawn_statistics(spawn):
+def spawn_statistics(spawn, spawn_timing):
     """
     Does the same as match_statistics but for a spawn
 
@@ -34,9 +33,9 @@ def spawn_statistics(spawn):
                         total_shipsdict, if there was more than one
                         possibility
     """
+    player_numbers = parse.determinePlayer(spawn)
     (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-     criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn,
-                                                                                         variables.player_numbers)
+     criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
     killsassists = 0
     for enemy in enemies:
         if enemydamaget[enemy] > 0:
@@ -83,7 +82,7 @@ def spawn_statistics(spawn):
         del comps[comps.index("System")]
     last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) - 1])
     timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
-    delta = timing - datetime.datetime.strptime(variables.spawn_timing.strip(), "%H:%M:%S")
+    delta = timing - spawn_timing
     elapsed = divmod(delta.total_seconds(), 60)
     string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     try:

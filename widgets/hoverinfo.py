@@ -42,7 +42,7 @@ class HoverInfo(tk.Tk):
             self.labels.append(ttk.Label(self, text=t, justify=tk.LEFT, wraplength=width * 7))
         self.width = 0
         for i, label in enumerate(self.labels):
-            label.grid(row=i, sticky=tk.N + tk.W)
+            label.grid(row=i, sticky="nw")
             if len(label["text"]) * 6 > self.width:
                 self.width = len(label["text"]) * 6
 

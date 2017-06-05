@@ -80,19 +80,19 @@ class ShipSelectFrame(ttk.Frame):
         self.server_dropdown.grid(row=0, column=0, columnspan=2, sticky="nswe", pady=(5, 0))
         self.character_dropdown.grid(row=1, column=0, columnspan=2, sticky="nswe", pady=(5, 5))
         # self.character_update_button.grid(row=2, column=0, columnspan=2, sticky="nswe", pady=5)
-        self.scroll_frame.grid(row=3, rowspan=2, columnspan=2, sticky=tk.N + tk.S + tk.W + tk.E, pady=2)
+        self.scroll_frame.grid(row=3, rowspan=2, columnspan=2, sticky="nswe", pady=2)
         set_row = 20
         for faction in self.category_frames:
             if faction == self.faction:
                 for category, frame in self.category_frames[faction].items():
-                    frame.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E, columnspan=2)
+                    frame.grid(row=set_row, column=0, sticky="nswe", columnspan=2)
                     set_row += 1
             else:
                 for frame in self.category_frames[faction].values():
                     frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.values():
-            button.grid(row=set_row, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+            button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
 
     def set_ship(self, faction, category, shipname):

@@ -214,37 +214,37 @@ class Filters(tk.Toplevel):
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=1, columnspan=len(self.filter_types),
-                                    sticky=tk.N + tk.S + tk.W + tk.E)
+                                    sticky="nswe")
         set_column = 1
         for widget in self.filter_type_checkbuttons:
-            widget.grid(row=1, column=set_column, sticky=tk.W)
+            widget.grid(row=1, column=set_column, sticky="w")
             set_column += 1
-        self.type_frame.grid(row=2, column=1, columnspan=len(self.filter_types), sticky=tk.N + tk.S + tk.W + tk.E)
-        self.dateframe.grid(row=3, column=1, columnspan=len(self.filter_types), sticky=tk.N + tk.S + tk.W + tk.E)
-        self.components_frame.grid(row=4, column=1, columnspan=len(self.filter_types), sticky=tk.N + tk.S + tk.W + tk.E)
-        self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky=tk.N + tk.S + tk.W + tk.E)
-        self.complete_button.grid(row=6, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.search_button.grid(row=6, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.cancel_button.grid(row=6, column=3, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.type_frame.grid(row=2, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        self.dateframe.grid(row=3, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        self.components_frame.grid(row=4, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        self.complete_button.grid(row=6, column=1, sticky="nswe")
+        self.search_button.grid(row=6, column=2, sticky="nswe")
+        self.cancel_button.grid(row=6, column=3, sticky="nswe")
 
-        self.logs_radio.grid(row=1, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.matches_radio.grid(row=1, column=3, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.spawns_radio.grid(row=1, column=4, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.logs_radio.grid(row=1, column=2, sticky="nswe")
+        self.matches_radio.grid(row=1, column=3, sticky="nswe")
+        self.spawns_radio.grid(row=1, column=4, sticky="nswe")
 
-        self.start_date_widget.grid(row=1, column=1, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.end_date_widget.grid(row=1, column=2, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.start_date_widget.grid(row=1, column=1, sticky="nswe")
+        self.end_date_widget.grid(row=1, column=2, sticky="nswe")
 
-        self.primaries_frame.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.secondaries_frame.grid(row=1, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.engines_frame.grid(row=2, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.shields_frame.grid(row=3, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
-        self.systems_frame.grid(row=4, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.primaries_frame.grid(row=0, column=0, sticky="nswe")
+        self.secondaries_frame.grid(row=1, column=0, sticky="nswe")
+        self.engines_frame.grid(row=2, column=0, sticky="nswe")
+        self.shields_frame.grid(row=3, column=0, sticky="nswe")
+        self.systems_frame.grid(row=4, column=0, sticky="nswe")
 
         start_row = 1
         start_column = 1
         for dictionary in self.comps_dicts:
             for widget in dictionary.values():
-                widget.grid(row=start_row, column=start_column, sticky=tk.W + tk.N)
+                widget.grid(row=start_row, column=start_column, sticky="w" + tk.N)
                 start_column += 1
                 if start_column == 5:
                     start_column = 1
@@ -256,7 +256,7 @@ class Filters(tk.Toplevel):
         set_row = 1
         set_column = 1
         for widget in self.ships_checkboxes.values():
-            widget.grid(row=set_row, column=set_column, sticky=tk.N + tk.W)
+            widget.grid(row=set_row, column=set_column, sticky="nw")
             set_column += 1
             if set_column == 7:
                 set_column = 1
