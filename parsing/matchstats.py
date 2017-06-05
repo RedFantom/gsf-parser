@@ -7,16 +7,16 @@
 # UI imports
 import decimal
 import datetime
-import variables
 from . import parse
 from . import realtime
 
 
-def match_statistics(match):
+def match_statistics(match, match_timing):
     """
     Does the same as file_statistics but for a match
 
     :param match: a parse.splitter(...)[match] matrix of spawns
+    :param match_timing:
     :return: abilities_string, a string for in the abilities tab
              statistics_string, a string for in the statistics label in the
                                 statistics tab
@@ -47,10 +47,11 @@ def match_statistics(match):
     total_enemydamaget = {}
     total_killsassists = 0
     ships_uncounted = 0
+
     for spawn in match:
+        player_numbers = parse.determinePlayer(spawn)
         (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn,
-                                                                                             variables.player_numbers)
+         criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
         total_abilitiesdict.update(abilitiesdict)
         total_damagetaken += damagetaken
         total_damagedealt += damagedealt
@@ -87,11 +88,9 @@ def match_statistics(match):
         total_criticalluck = round(total_criticalluck * 100, 2)
     except ZeroDivisionError:
         total_criticalluck = 0
-    total_shipsdict["Uncounted"] = ships_uncounted
     delta = datetime.datetime.strptime(
         realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1])
-        ['time'][:-4].strip(), "%H:%M:%S") - \
-            datetime.datetime.strptime(variables.match_timing.strip(), "%H:%M:%S")
+        ['time'][:-4].strip(), "%H:%M:%S") - match_timing
     elapsed = divmod(delta.total_seconds(), 60)
     string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     try:
@@ -110,4 +109,4 @@ def match_statistics(match):
                          str(total_criticalluck) + "%" + "\n" + str(len(match) - 1) + "\n" + string + "\n" + str(
         dps))
     return (total_abilitiesdict, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
-            total_enemydamaget)
+            total_enemydamaget, ships_uncounted)

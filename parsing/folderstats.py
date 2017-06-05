@@ -7,10 +7,10 @@
 # UI imports
 import os
 import decimal
-import variables
 from . import abilities
 from . import parse
 from toplevels.splashscreens import SplashScreen
+import variables
 
 
 def folder_statistics():
@@ -41,8 +41,8 @@ def folder_statistics():
     # Add a CombatLogs in a folder with GSF matches to a list of names
     file_list = []
     for file_name in os.listdir(variables.settings_obj.cl_path):
-        if file_name.endswith(".txt") and parse.check_gsf(variables.settings_obj.cl_path + "/" + file_name):
-            file_list.append(variables.settings_obj.cl_path + "/" + file_name)
+        if file_name.endswith(".txt") and parse.check_gsf(os.path.join(variables.settings_obj.cl_path, file_name)):
+            file_list.append(os.path.join(variables.settings_obj.cl_path, file_name))
 
     # Define all variables needed to store the statistics
     total_ddealt = 0
@@ -67,13 +67,13 @@ def folder_statistics():
     # TODO: interface as an addtional statistic
     player_names = []
     # Create a splash screen for the user to see the progress of parsing
-    splash = SplashScreen(variables.main_window, max=len(file_list))
+    splash = SplashScreen(variables.main_window, len(file_list))
     # Start looping through the files
-    variables.files_done = 0
+    files_done = 0
     for name in file_list:
-        variables.files_done += 1
+        files_done += 1
         # Update the progress of the progress bar of the splash screen
-        splash.update_progress()
+        splash.update_progress(files_done)
         # Open the file and read the lines into memory (up to ~2MiB)
         with open(name, "r") as file_object:
             lines = file_object.readlines()
