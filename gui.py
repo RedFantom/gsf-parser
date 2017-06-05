@@ -94,12 +94,11 @@ class MainWindow(tk.Tk):
         self.toolsframe.grid_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
+        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
-        # TODO Finish Sharing and Leaderboards tab
-        self.notebook.add(self.share_tab_frame, text="Sharing and Leaderboards")
+        self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
@@ -114,24 +113,20 @@ class MainWindow(tk.Tk):
         # Start the main loop
 
     def update_style(self, start=False):
-        try:
-            print((self.tk.call('package', 'require', 'tile-themes')))
-        except tk.TclError:
-            print("[DEBUG] tile-themes is not available")
         old_dir = os.getcwd()
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.tk.eval("source theme/arc.tcl")
-        except:
+        except tk.TclError:
             print("Error evaluating arc.tcl")
         os.chdir(old_dir)
         print((list(self.tk.call("ttk::themes"))))
         try:
             self.style.theme_use("arc")
         except tk.TclError as e:
-            print("[DEBUG] Theme plastik is not available. Using default.")
+            print("[DEBUG] Theme arc is not available. Using default.")
             print(e)
-            self.style.theme_use("default")
+            self.style.theme_use("vista")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
