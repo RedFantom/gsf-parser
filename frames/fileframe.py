@@ -93,6 +93,7 @@ class FileFrame(ttk.Frame):
         GSF matches and if those are found in a file, it gets added to the listbox
         :return: None
         """
+        self.file_tree.delete(*self.file_tree.get_children())
         number = 0
         self.clear_data_widgets()
         self.main_window.ship_frame.ship_label_var.set("")
