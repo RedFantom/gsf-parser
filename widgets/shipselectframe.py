@@ -37,6 +37,8 @@ class ShipSelectFrame(ttk.Frame):
         self.ship_buttons = {}
         self.category_frames = {faction: {} for faction in self.data}
         self.faction_photos = {}
+        self.ships = None
+
         toggled = False
 
         self.server = tk.StringVar()
@@ -131,6 +133,8 @@ class ShipSelectFrame(ttk.Frame):
 
     def load_character(self):
         print("Loading character {0}".format((self.server.get(), self.character.get())))
+        server = self.window.characters_frame.reverse_servers[self.server.get()]
+        self.ships = self.window.characters_frame.characters[(server, self.character.get())]["Ship Objects"]
 
     def set_server(self, variable, value):
         variable.set(value)
