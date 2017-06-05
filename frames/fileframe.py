@@ -54,7 +54,7 @@ class FileFrame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
         self.file_tree = ttk.Treeview(self, height=13)
-        self.file_tree.bind("<1>", self.update_parse)
+        self.file_tree.bind("<Double-1>", self.update_parse)
         self.file_tree["show"] = ("tree", "headings")
         self.file_tree.heading("#0", text="Files")
         self.file_tree.column("#0", width=150)
