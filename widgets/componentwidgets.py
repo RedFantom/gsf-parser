@@ -138,7 +138,7 @@ class MiddleComponentWidget(ComponentWidget):
         self.photos = []
         self.intvars = []
         for i in range(3):
-            if i >= 3:
+            if i >= 2:
                 self.intvars.append([tk.IntVar(), tk.IntVar()])
                 self.intvars[i][0].set(0)
                 self.intvars[i][1].set(0)
@@ -156,7 +156,8 @@ class MiddleComponentWidget(ComponentWidget):
                                                              command=lambda i=i: press_button(
                                                                  self.upgrade_buttons[i][1],
                                                                  self.set_level, i + 1),
-                                                             variable=self.intvars[i][1])])
+                                                             variable=self.intvars[i][1])
+                                             ])
                 # style="TButton")])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
                                                    text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +

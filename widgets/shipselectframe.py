@@ -104,8 +104,8 @@ class ShipSelectFrame(ttk.Frame):
             mb.showinfo("Request", "Please choose a character first.")
             return
         ship_name = ships.other_ships[ship_name]
-        if not self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
-            ship_object = self.ships[ships.reverse_ships[self.character_tuple][ship_name]]
+        if self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
+            ship_object = self.ships[ships.reverse_ships[ship_name]]
         else:
             ship_object = ships.Ship(ship_name)
         self.callback(faction, category, ship_name, ship_object)

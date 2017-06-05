@@ -28,7 +28,7 @@ class BuildsFrame(ttk.Frame):
         self.window = variables.main_window
         self.working = [
             "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
-            "Shield", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+            "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.categories = {
             "Bomber": 0,
             "Gunship": 1,
@@ -37,7 +37,7 @@ class BuildsFrame(ttk.Frame):
             "Strike Fighter": 4
         }
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
-        self.middle_components = ["Engine", "Shield"]
+        self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
@@ -122,6 +122,7 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid_forget()
         print("[DEBUG] set_component(%s, %s)" % (category, component))
         index = -1
+        print("[DEBUG] type is: ", type(self.ships_data[self.ship.ship_name][category]))
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
                 break

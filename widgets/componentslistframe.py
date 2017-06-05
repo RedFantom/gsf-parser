@@ -24,7 +24,7 @@ class ComponentListFrame(ttk.Frame):
                       "SecondaryWeapon2": "Secondary Weapon",
                       "Engine": "Engine",
                       "Systems": "Systems",
-                      "Shield": "Shields",
+                      "ShieldProjector": "Shields",
                       "Magazine": "Magazine",
                       "Capacitor": "Capacitor",
                       "Reactor": "Reactor",
