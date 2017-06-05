@@ -19,6 +19,7 @@ import variables
 from parsing import abilities
 from collections import OrderedDict
 from tkinter import messagebox as mb
+from parsing.ships import Ship
 
 
 class CharactersFrame(ttk.Frame):
@@ -234,15 +235,15 @@ class CharactersFrame(ttk.Frame):
         Create a new character database with a default entry
         :return: None
         """
-        mb.showinfo("Info", "The GSF Parser is creating a new characters database, discarding all your character data, "
-                            "if you had any, and ship builds. If you did not expect this, please file an issue report "
-                            "in the GitHub repository.")
+        mb.showinfo("Notification", "The GSF Parser is creating a new characters database, discarding all your "
+                                    "character data, if you had any, and ship builds. If you did not expect this, "
+                                    "please file an issue report in the GitHub repository.")
         characters = {("TRE", "Example"): {"Server": "TRE",
                                            "Faction": "Imperial",
                                            "Name": "Example",
                                            "Legacy": "E_Legacy",
                                            "Ships": ("Blackbolt", "Rycer"),
-                                           "Ship Objects": {name: None for name in abilities.all_ships.keys()},
+                                           "Ship Objects": {name: Ship(name) for name in abilities.all_ships.keys()},
                                            "GUI": "Default"}}
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
@@ -287,10 +288,10 @@ class CharactersFrame(ttk.Frame):
             pass
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: None for name in abilities.all_ships.keys()}
+            ships_dict = {name: Ship(name) for name in abilities.all_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: None for name in abilities.all_ships.values()}
+            ships_dict = {name: Ship(name) for name in abilities.all_ships.values()}
         else:
             raise ValueError("Unknown value for faction found: {0}".format(faction))
         server = self.reverse_servers[server]
