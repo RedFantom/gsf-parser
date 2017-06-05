@@ -53,6 +53,7 @@ class BuildsFrame(ttk.Frame):
         self.faction = "Imperial"
         self.category = "Scout"
         self.ship = Ship("Bloodmark")
+        self.character = None
         self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
                                                        justify=tk.LEFT, font=("Calibiri", 12))
         for category in self.working:
@@ -71,7 +72,7 @@ class BuildsFrame(ttk.Frame):
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
 
-    def set_ship(self, faction, category, ship):
+    def set_ship(self, faction, category, ship, ship_object):
         if not bool(self.ship_select_frame.category_frames[faction][category].show.get()):
             self.ship_select_frame[faction][category].toggle()
         ship_name = ""
@@ -89,7 +90,8 @@ class BuildsFrame(ttk.Frame):
             raise ValueError("No valid faction given as argument.")
         if ship_name == "":
             raise ValueError("No valid ship specified.")
-        self.ship = Ship(ship_name)
+        self.ship = ship_object
+        self.character = self.ship_select_frame.character_tuple
         for widget in self.components_lists_frame.interior.winfo_children():
             widget.grid_forget()
         for category in self.working:
