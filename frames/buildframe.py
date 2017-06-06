@@ -39,7 +39,7 @@ class BuildsFrame(ttk.Frame):
         self.window = variables.main_window
         self.working = [
             "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
-            "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+            "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         self.categories = {
             "Bomber": 0,
             "Gunship": 1,
@@ -57,11 +57,12 @@ class BuildsFrame(ttk.Frame):
             "Capacitor": "Capacitor",
             "Reactor": "Reactor",
             "Armor": "Armor",
-            "Sensor": "Sensors"
+            "Sensor": "Sensors",
+            "Thruster": "Thrusters"
         }
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
-        self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor"]
+        self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
@@ -130,6 +131,8 @@ class BuildsFrame(ttk.Frame):
             if type not in self.ship.data:
                 print("type not in self.ship.data: {0}".format(type))
                 continue
+            print("self.ship.data is {0}".format(self.ship.data))
+            print("self.ship.data[{0}] is {1}".format(type, self.ship.data[type]))
             self.components_lists[type] = \
                 ComponentListFrame(self.components_lists_frame.interior, type,
                                    self.ship.data[type], self.set_component)
@@ -175,7 +178,7 @@ class BuildsFrame(ttk.Frame):
                                                           self.ship)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship[category] = Component(self.ships_data[self.ship.ship_name][category][indexing])
+        self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing])
         self.current_component.grid_widgets()
         print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")

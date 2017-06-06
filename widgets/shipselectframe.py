@@ -15,6 +15,7 @@ from PIL.ImageTk import PhotoImage as photo
 from widgets import ToggledFrame, VerticalScrollFrame
 import variables
 from parsing import ships
+from collections import OrderedDict
 
 
 class ShipSelectFrame(ttk.Frame):
@@ -32,13 +33,13 @@ class ShipSelectFrame(ttk.Frame):
             self.data = pickle.load(db)
         self.callback = callback
         self.faction_callback = faction_callback
-        self.faction_frames = {}
-        self.faction_buttons = {}
-        self.ship_frames = {}
-        self.ship_photos = {}
-        self.ship_buttons = {}
+        self.faction_frames = OrderedDict()
+        self.faction_buttons = OrderedDict()
+        self.ship_frames = OrderedDict()
+        self.ship_photos = OrderedDict()
+        self.ship_buttons = OrderedDict()
         self.category_frames = {faction: {} for faction in self.data}
-        self.faction_photos = {}
+        self.faction_photos = OrderedDict()
         self.ships = None
         self.character_tuple = (None, None)
 
@@ -110,7 +111,10 @@ class ShipSelectFrame(ttk.Frame):
         else:
             ship_object = ships.Ship(ship_name)
         print("Calling callback")
-        for frame in self.window.builds_frame.components_lists.values():
+        for item, frame in self.window.builds_frame.components_lists.items():
+            if item not in ship_object:
+                frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
+                continue
             frame.toggled_frame.toggle_button.config(state=tk.NORMAL)
         for frame in self.window.builds_frame.crew_select_frame.category_frames.values():
             frame.toggle_button.config(state=tk.NORMAL)

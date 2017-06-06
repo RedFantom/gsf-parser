@@ -93,6 +93,7 @@ class Ship(object):
         }
 
     def __setitem__(self, item, value):
+        print("Setting item...")
         if item in self.components:
             self.components[item] = value
         elif item in self.crew:
@@ -122,9 +123,10 @@ class Ship(object):
 
 
 class Component(object):
-    def __init__(self, modifiers):
-        print('Creating component with dictionary: ', modifiers)
-        self.modifiers = modifiers
+    def __init__(self, data):
+        self.data = data
+        self.modifiers = self.data["Stats"]
+        print('Creating component with dictionary: ', data)
 
     def __setitem__(self, key, value):
         self.modifiers[key] = value
