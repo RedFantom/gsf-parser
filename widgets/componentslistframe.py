@@ -42,10 +42,9 @@ class ComponentListFrame(ttk.Frame):
         self.buttons = {}
         self.hover_infos = {}
         self.variable = tk.IntVar()
-        print("[DEBUG] data_list is {0}".format(data_list))
+        self.variable.set(-1)
         if type(data_list) != list:
             raise ValueError("data_list should be a list, but it is {0}".format(type(data_list)))
-        print("data_dictionary received is: {0}".format(data_list))
         for component in data_list:
             component_dictionary = None
             if isinstance(component, tuple):
@@ -56,8 +55,7 @@ class ComponentListFrame(ttk.Frame):
                 if not component_dictionary:
                     raise ValueError("component_dictionary not set: {0}".format(category))
             else:
-                print("Setting component_dictionary to {0}".format(component))
-                component_dictionary = component
+                 component_dictionary = component
             try:
                 name = component_dictionary["Name"]
                 icon = component_dictionary["Icon"]

@@ -22,6 +22,7 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
+
     # TODO: Call set_component at loading of set_ship for each component that has been set if the ship has already been
     # TODO: configured
 
@@ -131,11 +132,16 @@ class BuildsFrame(ttk.Frame):
             if type not in self.ship.data:
                 print("type not in self.ship.data: {0}".format(type))
                 continue
-            print("self.ship.data is {0}".format(self.ship.data))
-            print("self.ship.data[{0}] is {1}".format(type, self.ship.data[type]))
             self.components_lists[type] = \
                 ComponentListFrame(self.components_lists_frame.interior, type,
                                    self.ship.data[type], self.set_component)
+            try:
+                index = self.ship.components[type].index
+                print("Setting type {0} to index {1}".format(type, index))
+                self.components_lists[type].variable.set(index)
+            except KeyError as e:
+                print(e)
+                print("KeyError while setting index of type {0}".format(type))
         for button in self.ship_select_frame.ship_buttons.values():
             button.config(state=tk.ACTIVE)
         for key in self.ship_select_frame.ship_buttons.keys():
@@ -145,7 +151,6 @@ class BuildsFrame(ttk.Frame):
         if ship == "Novadive":
             ship = "NovaDive"
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
-        print(ship, "  Style: ", self.ship_select_frame.ship_buttons[ship]["style"])
         self.grid_widgets()
 
     def set_component(self, category, component):
@@ -178,7 +183,8 @@ class BuildsFrame(ttk.Frame):
                                                           self.ship)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing])
+        self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing], indexing,
+                                                   category)
         self.current_component.grid_widgets()
         print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")

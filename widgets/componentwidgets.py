@@ -18,7 +18,7 @@ class ComponentWidget(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.data_dictionary = data_dictionary
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.intvars= []
+        self.intvars = []
 
     def __getitem__(self, key):
         return self.data_dictionary[key]

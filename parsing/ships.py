@@ -59,16 +59,16 @@ class Ship(object):
     def __init__(self, ship_name):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
-            self.ships_data = pickle.load(f)
+            ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as f:
-            self.categories_data = pickle.load(f)
-        if ship_name not in self.ships_data:
+            categories_data = pickle.load(f)
+        if ship_name not in ships_data:
             self.ship_name = ships[ship_name]
         else:
             self.ship_name = ship_name
         self.name = ship_name
-        self.data = self.ships_data[self.ship_name]
+        self.data = ships_data[self.ship_name]
         self.components = {
             "primary": None,
             "primary2": None,
@@ -110,7 +110,7 @@ class Ship(object):
             return self.data[item]
 
     def __iter__(self):
-        for key, value in self.ships_data.items():
+        for key, value in self.data.items():
             yield (key, value)
 
     def update(self, dictionary):
@@ -123,19 +123,47 @@ class Ship(object):
 
 
 class Component(object):
-    def __init__(self, data):
-        self.data = data
-        self.modifiers = self.data["Stats"]
-        print('Creating component with dictionary: ', data)
+    def __init__(self, data, index, category):
+        """
+        :param data:
+        """
+        self.index = index
+        self.category = category
+        self.name = data["Name"]
+        self.upgrades = {
+            0: False,
+            1: False,
+            2: False,
+            (3, 0): False,
+            (3, 1): False,
+            (4, 0): False,
+            (4, 1): False
+        }
 
     def __setitem__(self, key, value):
-        self.modifiers[key] = value
+        if isinstance(key, tuple):
+            tier, upgrade = key
+            if upgrade is 0:
+                if self[(tier, 1)]:
+                    self.upgrades[(tier, 1)] = False
+                elif self[(tier, 0)]:
+                    return
+                else:
+                    pass
+            elif upgrade is 1:
+                if self[(tier, 0)]:
+                    self.upgrades[(tier, 1)] = False
+                elif self[(tier, 1)]:
+                    return
+                else:
+                    pass
+            else:
+                raise ValueError("Invalid value passed in tuple key: {0}".format(key))
+        self.upgrades[key] = value
 
     def __getitem__(self, key):
-        if key not in self.modifiers:
-            self.modifiers[key] = 1.0
-        return self.modifiers[key]
+        return self.upgrades[key]
 
     def __iter__(self):
-        for key, value in self.modifiers.items():
+        for key, value in self.upgrades.items():
             yield key, value
