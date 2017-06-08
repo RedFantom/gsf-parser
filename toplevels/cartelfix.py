@@ -7,10 +7,20 @@ import tkinter as tk
 from pynput import keyboard
 from PIL import Image, ImageTk
 import variables
+from tools import admin
+import sys
+from tkinter.messagebox import showinfo
 
 
 class CartelFix(tk.Toplevel):
     def __init__(self, master, first, second, coordinates, scale):
+        if not admin.is_user_admin():
+            if sys.platform == "win32":
+                variables.main_window.destroy()
+                admin.run_as_admin()
+                exit()
+            else:
+                showinfo("Information", "This feature is currently not supported on Unix machines.")
         tk.Toplevel.__init__(self, master)
         self.label = tk.Label(self)
         self.railgun = 1
