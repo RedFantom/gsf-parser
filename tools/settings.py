@@ -105,7 +105,7 @@ class Settings(object):
         self.auto_ident = eval(self.conf.get("parsing", "auto_ident"))
         self.server_address = self.conf.get("sharing", "server_address")
         self.server_port = int(self.conf.get("sharing", "server_port"))
-        self.auto_upl = eval(self.conf.get("sharing", "auto_ident"))
+        self.auto_upl = eval(self.conf.get("sharing", "auto_upl"))
         self.overlay = eval(self.conf.get("realtime", "overlay"))
         self.overlay_bg_color = self.conf.get("realtime", "overlay_bg_color")
         self.overlay_tr_color = self.conf.get("realtime", "overlay_tr_color")
