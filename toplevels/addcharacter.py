@@ -5,7 +5,6 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from parsing import characters
 
 
 class AddCharacter(tk.Toplevel):
