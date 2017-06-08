@@ -58,6 +58,7 @@ class MainWindow(tk.Tk):
             print("[DEBUG] Connection initialized")
         # self.splash.update_progress()
         self.geometry("800x425")
+        self.bind("<F10>", self.screenshot)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=800)
         self.file_tab_frame = ttk.Frame(self.notebook)
@@ -152,3 +153,18 @@ class MainWindow(tk.Tk):
         :return: SystemExit(0)
         """
         exit()
+
+    def screenshot(self, *args):
+        """
+        Take a screenshot of the GSF Parser window and save, only works on Windows
+        :return: None
+        """
+        from PIL import ImageGrab
+        from tools.utilities import get_temp_directory
+        from datetime import datetime
+        screenshot = ImageGrab.grab()
+        x = self.winfo_x()
+        y = self.winfo_y()
+        result_box = (x, y, self.winfo_reqwidth() + x, self.winfo_reqheight() + y)
+        screenshot = screenshot.crop(result_box)
+        screenshot.save(os.path.join(get_temp_directory(), datetime.now().strftime("%H-%M-%S")), "PNG")
