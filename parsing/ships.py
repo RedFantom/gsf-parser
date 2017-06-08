@@ -134,6 +134,8 @@ class Component(object):
             0: False,
             1: False,
             2: False,
+            (2, 0): False,
+            (2, 1): False,
             (3, 0): False,
             (3, 1): False,
             (4, 0): False,

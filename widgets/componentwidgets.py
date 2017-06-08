@@ -11,14 +11,43 @@ from os import path
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, VerticalScrollFrame
+from parsing import abilities
+import variables
 
 
 class ComponentWidget(ttk.Frame):
-    def __init__(self, parent, data_dictionary):
+    def __init__(self, parent, data_dictionary, ship):
         ttk.Frame.__init__(self, parent)
         self.data_dictionary = data_dictionary
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.intvars = []
+        self.boolvars = []
+        self.ship = ship
+        self.name = self.data_dictionary["Name"]
+        self.window = variables.main_window
+        if self.name in abilities.primaries:
+            self.category = "PrimaryWeapon"
+        elif self.name in abilities.secondaries:
+            self.category = "SecondaryWeapon"
+        elif self.name in abilities.engines:
+            self.category = "Engine"
+        elif self.name in abilities.systems:
+            self.category = "Systems"
+        elif self.name in abilities.shields:
+            self.category = "ShieldProjector"
+        elif "Extender" in self.name:
+            self.category = "Magazine"
+        elif "Reactor" in self.name:
+            self.category = "Reactor"
+        elif "Thruster" in self.name:
+            self.category = "Thruster"
+        elif "Sensor" in self.name:
+            self.category = "Sensor"
+        elif "Armor" in self.name:
+            self.category = "Armor"
+        elif "Capacitor" in self.name:
+            self.category = "Capacitor"
+        else:
+            raise ValueError("Category for {0} not found".format(self.name))
 
     def __getitem__(self, key):
         return self.data_dictionary[key]
@@ -26,9 +55,21 @@ class ComponentWidget(ttk.Frame):
     def __setitem__(self, key, value):
         self.data_dictionary[key] = value
 
-    def set_level(self):
-        for item in self.intvars:
-            pass
+    def set_level(self, index):
+        if isinstance(index, tuple):
+            index, value = index[0], index[1]
+            item = self.boolvars[index][value]
+            if value == 1 and self.boolvars[index][0].get() == 1:
+                self.boolvars[index][0].set(False)
+            elif value == 0 and self.boolvars[index][1].get() == 1:
+                self.boolvars[index][1].set(False)
+            self.ship.components[self.category][(index, value)] = item.get()
+        else:
+            item = self.boolvars[index]
+            self.ship.components[self.category][index] = item.get()
+        self.window.characters_frame.characters[self.window.builds_frame.character]["Ship Objects"][
+            self.ship.name] = self.ship
+        self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):
         raise NotImplementedError
@@ -36,7 +77,7 @@ class ComponentWidget(ttk.Frame):
 
 class MajorComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
-        ComponentWidget.__init__(self, parent, data_dictionary)
+        ComponentWidget.__init__(self, parent, data_dictionary, ship)
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=300)
         self.interior = self.scroll_frame.interior
         self.description = data_dictionary["Description"]
@@ -51,12 +92,17 @@ class MajorComponentWidget(ComponentWidget):
         self.upgrade_buttons = []
         self.hover_infos = []
         self.photos = []
-        self.intvars = []
+        self.boolvars = []
         for i in range(5):
             if i >= 3:
-                self.intvars.append([tk.IntVar(), tk.IntVar()])
-                self.intvars[i][0].set(0)
-                self.intvars[i][1].set(0)
+                self.boolvars.append([tk.BooleanVar(), tk.BooleanVar()])
+                try:
+                    self.boolvars[i][0].set(self.ship.components[self.category][(i, 0)])
+                    self.boolvars[i][1].set(self.ship.components[self.category][(i, 1)])
+                except KeyError as e:
+                    self.boolvars[i][0].set(False)
+                    self.boolvars[i][1].set(False)
+                    print(e)
                 try:
                     self.photos.append([photo(img.open(path.join(self.icons_path,
                                                                  data_dictionary["TalentTree"][i][0][
@@ -71,13 +117,13 @@ class MajorComponentWidget(ComponentWidget):
                     self.photos.append([photo(img.open(path.join(self.icons_path, "imperial.png"))),
                                         photo(img.open(path.join(self.icons_path, "imperial.png")))])
                 self.upgrade_buttons.append([ttk.Checkbutton(self.interior, image=self.photos[i][0],
-                                                             command=self.set_level,
+                                                             command=lambda index=i: self.set_level((index, 0)),
                                                              # style="TButton",
-                                                             variable=self.intvars[i][0]),
+                                                             variable=self.boolvars[i][0]),
                                              ttk.Checkbutton(self.interior, image=self.photos[i][1],
-                                                             command=self.set_level,
+                                                             command=lambda index=i: self.set_level((index, 1)),
                                                              # style="TButton",
-                                                             variable=self.intvars[i][1])])
+                                                             variable=self.boolvars[i][1])])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
                                                    text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
                                                         str(data_dictionary["TalentTree"][i][0]["Description"]),
@@ -87,16 +133,19 @@ class MajorComponentWidget(ComponentWidget):
                                                         str(data_dictionary["TalentTree"][i][1]["Description"]),
                                                    width=50)])
             else:
-                self.intvars.append(tk.IntVar())
-                self.intvars[i].set(0)
+                self.boolvars.append(tk.BooleanVar())
+                try:
+                    self.boolvars[i].set(self.ship.components[self.category][i])
+                except KeyError:
+                    self.boolvars[i].set(False)
                 try:
                     self.photos.append(photo(img.open(path.join(self.icons_path,
                                                                 data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
                 except IndexError:
                     self.photos.append(photo(img.open(path.join(self.icons_path, "imperial.png"))))
                 self.upgrade_buttons.append(ttk.Checkbutton(self.interior, image=self.photos[i],
-                                                            command=self.set_level,
-                                                            variable=self.intvars[i]))  # , style="TButton"))
+                                                            command=lambda index=i: self.set_level(index),
+                                                            variable=self.boolvars[i]))  # , style="TButton"))
                 try:
                     self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
                                                       text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
@@ -120,7 +169,7 @@ class MajorComponentWidget(ComponentWidget):
 
 class MiddleComponentWidget(ComponentWidget):
     def __init__(self, parent, data_dictionary, ship):
-        ComponentWidget.__init__(self, parent, data_dictionary)
+        ComponentWidget.__init__(self, parent, data_dictionary, ship)
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
@@ -130,23 +179,27 @@ class MiddleComponentWidget(ComponentWidget):
         self.upgrade_buttons = []
         self.hover_infos = []
         self.photos = []
-        self.intvars = []
+        self.boolvars = []
         for i in range(3):
             if i >= 2:
-                self.intvars.append([tk.IntVar(), tk.IntVar()])
-                self.intvars[i][0].set(0)
-                self.intvars[i][1].set(0)
+                self.boolvars.append([tk.BooleanVar(), tk.BooleanVar()])
+                try:
+                    self.boolvars[i][0].set(self.ship.components[self.category][(i, 0)])
+                    self.boolvars[i][1].set(self.ship.components[self.category][(i, 1)])
+                except KeyError:
+                    self.boolvars[i][0].set(False)
+                    self.boolvars[i][1].set(False)
                 self.photos.append([photo(img.open(path.join(self.icons_path,
                                                              data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))),
                                     photo(img.open(path.join(self.icons_path,
                                                              data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")))])
                 self.upgrade_buttons.append([ttk.Checkbutton(self, image=self.photos[i][0],
-                                                             command=lambda i=i: self.set_level,
+                                                             command=lambda index=i: self.set_level((index, 0)),
                                                              # style="TButton",
-                                                             variable=self.intvars[i][0]),
+                                                             variable=self.boolvars[i][0]),
                                              ttk.Checkbutton(self, image=self.photos[i][1],
-                                                             command=self.set_level,
-                                                             variable=self.intvars[i][1])
+                                                             command=lambda index=i: self.set_level((index, 1)),
+                                                             variable=self.boolvars[i][1])
                                              ])
                 # style="TButton")])
                 self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
@@ -158,13 +211,16 @@ class MiddleComponentWidget(ComponentWidget):
                                                         str(data_dictionary["TalentTree"][i][1]["Description"]),
                                                    width=50)])
             else:
-                self.intvars.append(tk.IntVar())
-                self.intvars[i].set(0)
+                self.boolvars.append(tk.BooleanVar())
+                try:
+                    self.boolvars[i].set(self.ship.components[self.category][i])
+                except KeyError:
+                    self.boolvars[i].set(False)
                 self.photos.append(photo(img.open(path.join(self.icons_path,
                                                             data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))))
                 self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
-                                                            command=self.set_level,
-                                                            variable=self.intvars[i]))
+                                                            command=lambda index=i: self.set_level(index),
+                                                            variable=self.boolvars[i]))
                 # style="TButton"))
                 self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
@@ -194,7 +250,7 @@ class MinorComponentWidget(ComponentWidget):
     """
 
     def __init__(self, parent, data_dictionary, ship):
-        ComponentWidget.__init__(self, parent, data_dictionary)
+        ComponentWidget.__init__(self, parent, data_dictionary, ship)
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
@@ -203,12 +259,16 @@ class MinorComponentWidget(ComponentWidget):
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
         self.hover_infos = []
-        self.upgrade_variables = []
+        self.boolvars = []
         for i in range(3):
-            self.upgrade_variables.append(tk.IntVar())
+            self.boolvars.append(tk.BooleanVar())
+            try:
+                self.boolvars[i].set(self.ship.components[self.category][i])
+            except KeyError:
+                self.boolvars[i].set(False)
             self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.icon_photo,
-                                                        command=self.set_level,
-                                                        variable=self.upgrade_variables[i]))
+                                                        command=lambda index=i: self.set_level(index),
+                                                        variable=self.boolvars[i]))
             self.hover_infos.append(HoverInfo(self.upgrade_buttons[i], str(data_dictionary["TalentTree"][i][0]["Name"])
                                               + "\n\n" + str(data_dictionary["TalentTree"][i][0]["Description"]),
                                               width=50))
