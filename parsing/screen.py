@@ -18,6 +18,7 @@ import variables
 import tkinter.messagebox as messagebox
 import tkinter.filedialog as filedialog
 from shutil import copyfile
+from parsing.guiparsing import GSFInterface
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -170,8 +171,16 @@ class ScreenParser(threading.Thread):
         # self._ms_listener.start()
         # Start the loop to parse the screen data
 
-        power_mgmt_cds = None
-        health_cds = None
+        power_mgmt_cds = self.interface.get_ship_powermgmt_coordinates()
+        health_cds = self.interface.get_ship_health_coordinates()
+        name_cds = self.interface.get_target_name_coordinates()
+        ship_type_cds = self.interface.get_target_shiptype_coordinates()
+        player_buff_cds = self.interface.get_ship_buffs_coordinates()
+        target_buff_cds = self.interface.get_target_buffs_coordinates()
+        score_cds = self.interface.get_score_coordinates()
+        spawn_timer_cds = self.interface.get_spawn_timer_coordinates()
+        match_timer_cds = self.interface.get_match_timer_coordinates()
+
 
         # TODO: Ship health
         # TODO: TTK
