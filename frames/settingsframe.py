@@ -215,18 +215,36 @@ class SettingsFrame(ttk.Frame):
                                                            variable=self.realtime_event_overlay_var, value=True)
         self.realtime_event_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
                                                             variable=self.realtime_event_overlay_var, value=False)
-        self.screenparsing_label = ttk.Label(self.realtime_frame, text="\tEnable screen parsing: ")
+        # Screen parsing settings
+        self.screenparsing_frame = ttk.Frame(self.frame.interior)
+        self.screenparsing_setoff_label = ttk.Label(self.screenparsing_frame, text="\t")
+        self.screenparsing_header_label = ttk.Label(self.frame.interior, text="Screen parsing", justify=tk.LEFT,
+                                                    font=("Calibri", 12))
         self.screenparsing_var = tk.BooleanVar()
-        self.screenparsing_true = ttk.Radiobutton(self.realtime_frame, text="Yes", variable=self.screenparsing_var,
-                                                  value=True)
-        self.screenparsing_false = ttk.Radiobutton(self.realtime_frame, text="No", variable=self.screenparsing_var,
-                                                   value=False)
-        self.screenparsing_overlay_label = ttk.Label(self.realtime_frame, text="\tShow overlay for screen parsing: ")
+        self.screenparsing_checkbox = ttk.Checkbutton(self.screenparsing_frame, text="Enable screen parsing",
+                                                      variable=self.screenparsing_var)
         self.screenparsing_overlay_var = tk.BooleanVar()
-        self.screenparsing_overlay_true = ttk.Radiobutton(self.realtime_frame, text="Yes",
-                                                          variable=self.screenparsing_overlay_var, value=True)
-        self.screenparsing_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
-                                                           variable=self.screenparsing_overlay_var, value=False)
+        self.screenparsing_overlay_checkbox = ttk.Checkbutton(self.screenparsing_frame,
+                                                              text="Enable screen parsing overlay",
+                                                              variable=self.screenparsing_overlay_var)
+        self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
+                                                      text="Features enabled for screen parsing:")
+        self.screenparsing_powermgmt_var = tk.BooleanVar()
+        self.screenparsing_powermgmt_box = ttk.Checkbutton(self.screenparsing_frame, text="Power management",
+                                                           variable=self.screenparsing_powermgmt_var)
+        self.screenparsing_health_var = tk.BooleanVar()
+        self.screenparsing_health_box = ttk.Checkbutton(self.screenparsing_frame, text="Ship health",
+                                                        variable=self.screenparsing_health_var)
+        self.screenparsing_name_var = tk.BooleanVar()
+        self.screenparsing_name_box = ttk.Checkbutton(self.screenparsing_frame, text="Enemy name",
+                                                      variable=self.screenparsing_name_var)
+        self.screenparsing_ttk_var = tk.BooleanVar()
+        self.screenparsing_ttk_box = ttk.Checkbutton(self.screenparsing_frame, text="Time To Kill",
+                                                     variable=self.screenparsing_ttk_var)
+        self.screenparsing_tracking_var = tk.BooleanVar()
+        self.screenparsing_tracking_box = ttk.Checkbutton(self.screenparsing_frame, text="Tracking penalty",
+                                                          variable=self.screenparsing_tracking_var)
+
         # MISC
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -376,12 +394,17 @@ class SettingsFrame(ttk.Frame):
         self.realtime_event_overlay_label.grid(column=0, row=13, sticky="w")
         self.realtime_event_overlay_true.grid(column=1, row=13, sticky="w")
         self.realtime_event_overlay_false.grid(column=2, row=13, sticky="w")
-        self.screenparsing_label.grid(column=0, row=14, sticky="w")
-        self.screenparsing_true.grid(column=1, row=14, sticky="w")
-        self.screenparsing_false.grid(column=2, row=14, sticky="w")
-        self.screenparsing_overlay_label.grid(column=0, row=15, sticky="w")
-        self.screenparsing_overlay_true.grid(column=1, row=15, sticky="w")
-        self.screenparsing_overlay_false.grid(column=2, row=15, sticky="w")
+        # Screen parsing
+        self.screenparsing_header_label.grid(column=0, row=9, sticky="w")
+        self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
+        self.screenparsing_checkbox.grid(column=0, row=0, sticky="w", padx=(55, 0), pady=5)
+        self.screenparsing_features_label.grid(column=0, row=1, sticky="w", padx=(55, 0), pady=(0, 5))
+        self.screenparsing_powermgmt_box.grid(column=0, row=2, sticky="w", padx=(75, 0), pady=(0, 5))
+        self.screenparsing_health_box.grid(column=0, row=3, sticky="w", padx=(75, 0), pady=(0, 5))
+        self.screenparsing_name_box.grid(column=0, row=4, sticky="w", padx=(75, 0), pady=(0, 5))
+        self.screenparsing_ttk_box.grid(column=0, row=5, sticky="w", padx=(75, 0), pady=(0, 5))
+        self.screenparsing_overlay_checkbox.grid(column=0, row=6, sticky="w", padx=(55, 0), pady=(0, 5))
+
         # MISC
         self.save_settings_button.grid(column=0, row=1, padx=2)
         self.discard_settings_button.grid(column=1, row=1, padx=2)
@@ -453,7 +476,7 @@ class SettingsFrame(ttk.Frame):
         """
         print("[DEBUG] Save_settings called!")
         if str(self.color.get()) == variables.settings_obj.color and \
-           self.logo_color.get() == variables.settings_obj.logo_color:
+                        self.logo_color.get() == variables.settings_obj.logo_color:
             reboot = False
         else:
             reboot = True
