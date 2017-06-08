@@ -83,12 +83,16 @@ class FileHandler(object):
 
 
 class ScreenParser(threading.Thread):
-    def __init__(self, data_queue, exit_queue, query_queue, return_queue, rgb=False, cooldowns=None):
+    def __init__(self, data_queue, exit_queue, query_queue, return_queue, ship, interface, rgb=False, cooldowns=None,
+                 powermgmt=True, health=True, name=True, ttk=True, enemy=True, tracking=True):
         threading.Thread.__init__(self)
         if rgb and not cooldowns:
             write_debug_log("ScreenParser encountered the following error during initialization: "
                             "rgb requested but cooldowns not specified")
             raise ValueError("rgb requested but cooldowns not specified")
+        if not isinstance(interface, GSFInterface):
+            interface = GSFInterface(interface)
+        self.interface = interface
         self.rgb = rgb
         self.cooldowns = cooldowns
         self.query_queue = query_queue
@@ -97,6 +101,16 @@ class ScreenParser(threading.Thread):
         self._internal_queue = Queue()
         self.return_queue = return_queue
         self.pickle_name = os.path.join(get_temp_directory(), "realtime.db")
+        self.features = {
+            "powermgmt": powermgmt,
+            "health": health,
+            "name": name,
+            "ttk": ttk,
+            "enemy": enemy,
+            "tracking": tracking
+        }
+        self.ship = ship
+        self.features_list = [key for key, value in self.features.items() if value]
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
         if variables.settings_obj.screenparsing_overlay:
             self.screenoverlay = HitChanceOverlay(variables.main_window)
@@ -218,9 +232,6 @@ class ScreenParser(threading.Thread):
                 continue
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
-            if not power_mgmt_cds or not health_cds:
-                power_mgmt_cds = vision.get_power_management_cds(screen)
-                health_cds = vision.get_ship_health_cds(screen)
             pointer_cds = get_cursor_position(screen)
             power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
             health_hull = vision.get_ship_health_hull(screen)
