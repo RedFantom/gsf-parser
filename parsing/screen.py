@@ -84,13 +84,14 @@ class FileHandler(object):
 
 
 class ScreenParser(threading.Thread):
-    def __init__(self, data_queue, exit_queue, query_queue, return_queue, ship, interface, rgb=False, cooldowns=None,
+    def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
                  powermgmt=True, health=True, name=True, ttk=True, enemy=True, tracking=True):
         threading.Thread.__init__(self)
         if rgb and not cooldowns:
             write_debug_log("ScreenParser encountered the following error during initialization: "
                             "rgb requested but cooldowns not specified")
             raise ValueError("rgb requested but cooldowns not specified")
+        interface = character_data["GUI"]
         if not isinstance(interface, GSFInterface):
             interface = GSFInterface(interface)
         self.interface = interface
@@ -110,7 +111,7 @@ class ScreenParser(threading.Thread):
             "enemy": enemy,
             "tracking": tracking
         }
-        self.ship = ship
+        self.character = character_data
         self.features_list = [key for key, value in self.features.items() if value]
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
         if variables.settings_obj.screenparsing_overlay:
