@@ -242,9 +242,28 @@ class ScreenParser(threading.Thread):
             write_debug_log("Start pulling vision functions data")
             screen = vision.get_cv2_screen()
             pointer_cds = get_cursor_position(screen)
-            power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
-            health_hull = vision.get_ship_health_hull(screen)
-            (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
+            if "powermgmt" in self.features_list:
+                power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
+            else:
+                power_mgmt = None
+            if "healh" in self.features_list:
+                health_hull = vision.get_ship_health_hull(screen)
+                (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
+            else:
+                health_hull = None
+                health_shields_f, health_shields_r = None, None
+            if "ttk" in self.features_list:
+                # Calculate TTK
+                pass
+            else:
+                # Assign None value
+                pass
+            if "name" in self.features_list:
+                # Perform OCR on target name
+                pass
+            else:
+                pass
+
             current_time = datetime.now()
             distance = vision.get_distance_from_center(pointer_cds)
             tracking_degrees = vision.get_tracking_degrees(distance)
