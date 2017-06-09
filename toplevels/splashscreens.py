@@ -18,6 +18,7 @@ from tools import utilities
 class SplashScreen(tk.Toplevel):
     def __init__(self, window, amount, title="GSF Parser"):
         tk.Toplevel.__init__(self, window)
+        self.window = window
         self.grab_set()
         self.title(title)
         self.label = ttk.Label(self, text="Working...")
@@ -32,6 +33,7 @@ class SplashScreen(tk.Toplevel):
     def update_progress(self, number):
         self.progress_bar["value"] = number
         self.update()
+        self.window.update()
 
 
 class BootSplash(tk.Toplevel):
