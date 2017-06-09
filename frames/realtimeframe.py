@@ -9,10 +9,7 @@
 # UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox
-import tkinter.simpledialog
 import time
-import platform
 from queue import Queue
 import variables
 from parsing import stalking_alt, realtime, lineops
@@ -44,6 +41,7 @@ class RealtimeFrame(ttk.Frame):
 
     def __init__(self, root_frame, main_window):
         ttk.Frame.__init__(self, root_frame)
+        self.window = variables.main_window
         self.parser = None
         self.overlay = None
         self.main_window = main_window
@@ -59,33 +57,30 @@ class RealtimeFrame(ttk.Frame):
                                               justify=tk.LEFT)
         self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.start_parsing,
                                                width=25)
-        self.upload_results_button = ttk.Button(self, text="Start uploading events", command=self.upload_events,
-                                                width=25)
         self.server = tk.StringVar()
-        self.faction = tk.StringVar()
-        self.faction_list = ttk.OptionMenu(self, self.faction,
-                                           "Select a faction",
-                                           "Imperial Faction",
-                                           "Republic Faction")
-        self.server_list = ttk.OptionMenu(self, self.server,
-                                          "Select a server",
-                                          "The Bastion",
-                                          "Begeren Colony",
-                                          "The Harbinger",
-                                          "The Shadowlands",
-                                          "Jung Ma",
-                                          "The Ebon Hawk",
-                                          "Prophecy of the Five",
-                                          "Jedi Covenant",
-                                          "T3-M4",
-                                          "Darth Nihilus",
-                                          "The Tomb of Freedon Nadd",
-                                          "Jar'kai Sword",
-                                          "The Progenitor",
-                                          "Vanjervalis Chain",
-                                          "Battle Meditation",
-                                          "Mantle of the Force",
-                                          "The Red Eclipse")
+        self.character = tk.StringVar()
+        self.character_dropdown = ttk.OptionMenu(self, self.character, "Select a character",
+                                                 command=self.load_character)
+        self.server_dropdown = ttk.OptionMenu(self, self.server,
+                                              "Select a server",
+                                              "The Bastion",
+                                              "Begeren Colony",
+                                              "The Harbinger",
+                                              "The Shadowlands",
+                                              "Jung Ma",
+                                              "The Ebon Hawk",
+                                              "Prophecy of the Five",
+                                              "Jedi Covenant",
+                                              "T3-M4",
+                                              "Darth Nihilus",
+                                              "The Tomb of Freedon Nadd",
+                                              "Jar'kai Sword",
+                                              "The Progenitor",
+                                              "Vanjervalis Chain",
+                                              "Battle Meditation",
+                                              "Mantle of the Force",
+                                              "The Red Eclipse",
+                                              command=self.update_characters)
         self.parsing = False
         self.parse = []
         self.parsing_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
@@ -98,6 +93,9 @@ class RealtimeFrame(ttk.Frame):
         if not self.parsing:
             # self.main_window.file_select_frame.add_files()
             # self.start_parsing_button.config(relief=tk.SUNKEN)
+            self.window.notebook.tab(2, state=tk.DISABLED)
+            self.window.notebook.tab(3, state=tk.DISABLED)
+            self.window.notebook.tab(8, state=tk.DISABLED)
             self.parsing = True
             self.main_window.after(100, self.insert)
             if variables.settings_obj.screenparsing:
@@ -128,6 +126,9 @@ class RealtimeFrame(ttk.Frame):
             self.stalker_obj.start()
             self.stalking_exit_queue = self.stalker_obj.exit_queue
         elif self.parsing:
+            self.window.notebook.tab(2, state=tk.NORMAL)
+            self.window.notebook.tab(3, state=tk.NORMAL)
+            self.window.notebook.tab(8, state=tk.NORMAL)
             write_debug_log("Stopping real-time parsing")
             if self.screenparser:
                 self.exit_queue.put(False)
@@ -152,24 +153,13 @@ class RealtimeFrame(ttk.Frame):
             self.watching_stringvar.set("Watching no CombatLog...")
             write_debug_log("Finished stopping parsing...")
 
-    def upload_events(self):
-        tkinter.messagebox.showinfo("Notice", "This button is not yet functional.")
-        return
-        mainname = tkinter.simpledialog.askstring("Main character name",
-                                                  "Please enter the name of the main character you " + \
-                                                  "want the character you're playing now to belong to in the database. Enter" + \
-                                                  "nothing or the name of the character you're currently playing on to " + \
-                                                  "create a new main character.")
-
     def grid_widgets(self):
         self.start_parsing_button.grid(column=0, row=1, padx=5, pady=5)
-        self.upload_results_button.grid(column=1, row=1, padx=5, pady=5)
-        self.server_list.config(width=15)
-        self.faction_list.config(width=15)
-        self.server_list.grid(column=2, row=1, padx=5, pady=5, sticky="nswe")
-        self.faction_list.grid(column=3, row=1, padx=5, pady=5, sticky="nswe")
+        self.server_dropdown.config(width=15)
+        self.character_dropdown.config(width=15)
+        self.server_dropdown.grid(column=2, row=1, padx=5, pady=5, sticky="nswe")
+        self.character_dropdown.grid(column=3, row=1, padx=5, pady=5, sticky="nswe")
         self.parsing_bar.grid(column=0, columnspan=1, row=2, padx=5, pady=10, sticky="nswe")
-        self.uploading_bar.grid(column=1, row=2, padx=5, pady=10, sticky="nswe")
         self.statistics_label_one.grid(column=3, row=2, padx=5, pady=5, sticky="nw")
         self.statistics_list_label_one.grid(column=2, row=2, padx=5, pady=5, sticky="nw")
         self.listbox.grid(column=0, row=3, columnspan=4, padx=5, pady=5, sticky="nswe")
@@ -267,3 +257,28 @@ class RealtimeFrame(ttk.Frame):
             self.listbox.yview(tk.END)
         else:
             return
+
+    def load_character(self, *args):
+        print("Loading character {0}".format((self.server.get(), self.character.get())))
+        server = self.window.characters_frame.reverse_servers[self.server.get()]
+        self.character_tuple = (server, self.character.get())
+        self.ships = self.window.characters_frame.characters[(server, self.character.get())]["Ship Objects"]
+        self.window.characters_frame.character_data = self.window.characters_frame.characters[self.character_tuple]
+
+    def update_characters(self, *args):
+        self.character_dropdown["menu"].delete(0, tk.END)
+        characters = ["Select a character"]
+        for data in self.window.characters_frame.characters:
+            server = self.window.characters_frame.servers[data[0]]
+            if server != self.server.get():
+                continue
+            characters.append(data[1])
+        for character in characters:
+            self.character_dropdown["menu"].add_command(label=character,
+                                                        command=lambda var=self.character, val=character:
+                                                        self.set_character(var, val))
+        return
+
+    def set_character(self, var, val):
+        var.set(val)
+        self.load_character()
