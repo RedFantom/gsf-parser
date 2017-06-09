@@ -15,6 +15,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from tools.utilities import get_assets_directory
 import variables
+from tkinter import messagebox
 
 
 class BuildsFrame(ttk.Frame):
@@ -244,7 +245,7 @@ class BuildsFrame(ttk.Frame):
             frame.grid_forget()
 
     def show_ship_stats(self):
-        pass
+        messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
 
     def set_faction(self, faction):
         self.faction = faction

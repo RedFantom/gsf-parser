@@ -16,6 +16,7 @@ import variables
 from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
 from toplevels.privacy import Privacy
+from collections import OrderedDict
 
 
 class SettingsFrame(ttk.Frame):
@@ -229,22 +230,14 @@ class SettingsFrame(ttk.Frame):
                                                               variable=self.screenparsing_overlay_var)
         self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
                                                       text="Features enabled for screen parsing:")
-        self.screenparsing_powermgmt_var = tk.BooleanVar()
-        self.screenparsing_powermgmt_box = ttk.Checkbutton(self.screenparsing_frame, text="Power management",
-                                                           variable=self.screenparsing_powermgmt_var)
-        self.screenparsing_health_var = tk.BooleanVar()
-        self.screenparsing_health_box = ttk.Checkbutton(self.screenparsing_frame, text="Ship health",
-                                                        variable=self.screenparsing_health_var)
-        self.screenparsing_name_var = tk.BooleanVar()
-        self.screenparsing_name_box = ttk.Checkbutton(self.screenparsing_frame, text="Enemy name",
-                                                      variable=self.screenparsing_name_var)
-        self.screenparsing_ttk_var = tk.BooleanVar()
-        self.screenparsing_ttk_box = ttk.Checkbutton(self.screenparsing_frame, text="Time To Kill",
-                                                     variable=self.screenparsing_ttk_var)
-        self.screenparsing_tracking_var = tk.BooleanVar()
-        self.screenparsing_tracking_box = ttk.Checkbutton(self.screenparsing_frame, text="Tracking penalty",
-                                                          variable=self.screenparsing_tracking_var)
-
+        self.screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                                       "Power management"]
+        self.screenparsing_checkboxes = OrderedDict()
+        self.screenparsing_variables = {}
+        for feature in self.screenparsing_features:
+            self.screenparsing_variables[feature] = tk.BooleanVar()
+            self.screenparsing_checkboxes[feature] = ttk.Checkbutton(self.screenparsing_frame, text=feature,
+                                                                     variable=self.screenparsing_variables[feature])
         # MISC
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -399,11 +392,11 @@ class SettingsFrame(ttk.Frame):
         self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
         self.screenparsing_checkbox.grid(column=0, row=0, sticky="w", padx=(55, 0), pady=5)
         self.screenparsing_features_label.grid(column=0, row=1, sticky="w", padx=(55, 0), pady=(0, 5))
-        self.screenparsing_powermgmt_box.grid(column=0, row=2, sticky="w", padx=(75, 0), pady=(0, 5))
-        self.screenparsing_health_box.grid(column=0, row=3, sticky="w", padx=(75, 0), pady=(0, 5))
-        self.screenparsing_name_box.grid(column=0, row=4, sticky="w", padx=(75, 0), pady=(0, 5))
-        self.screenparsing_ttk_box.grid(column=0, row=5, sticky="w", padx=(75, 0), pady=(0, 5))
-        self.screenparsing_overlay_checkbox.grid(column=0, row=6, sticky="w", padx=(55, 0), pady=(0, 5))
+        set_row = 3
+        for feature in self.screenparsing_features:
+            self.screenparsing_checkboxes[feature].grid(column=0, row=set_row, sticky="w", padx=(75, 0), pady=(0, 5))
+            set_row += 1
+        self.screenparsing_overlay_checkbox.grid(column=0, row=10, sticky="w", padx=(55, 0), pady=(0, 5))
 
         # MISC
         self.save_settings_button.grid(column=0, row=1, padx=2)
@@ -466,6 +459,11 @@ class SettingsFrame(ttk.Frame):
         self.realtime_event_overlay_var.set(variables.settings_obj.events_overlay)
         self.screenparsing_var.set(variables.settings_obj.screenparsing)
         self.screenparsing_overlay_var.set(variables.settings_obj.screenparsing_overlay)
+        for feature in self.screenparsing_features:
+            if feature in variables.settings_obj.screenparsing_features:
+                self.screenparsing_variables[feature].set(True)
+            else:
+                self.screenparsing_variables[feature].set(False)
 
     def save_settings(self):
         """
@@ -520,7 +518,9 @@ class SettingsFrame(ttk.Frame):
                                          faction=self.faction.get(),
                                          events_overlay=self.realtime_event_overlay_var.get(),
                                          screenparsing=self.screenparsing_var.get(),
-                                         screenparsing_overlay=self.screenparsing_overlay_var.get())
+                                         screenparsing_overlay=self.screenparsing_overlay_var.get(),
+                                         screenparsing_features=[feature for feature in self.screenparsing_features if
+                                                                 self.screenparsing_variables[feature].get() is True])
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:

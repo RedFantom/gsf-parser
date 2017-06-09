@@ -74,8 +74,10 @@ class Defaults(object):
 
     faction = "imperial"
     events_overlay = False
-    screenparsing = False
-    screenparsing_overlay = False
+    screenparsing = True
+    screenparsing_overlay = True
+    screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                              "Power management"]
 
 
 # Class that loads, stores and saves settings
@@ -125,6 +127,7 @@ class Settings(object):
         self.overlay_when_gsf = eval(self.conf.get("realtime", "overlay_when_gsf"))
         self.events_overlay = eval(self.conf.get("realtime", "events_overlay"))
         self.screenparsing = eval(self.conf.get("realtime", "screenparsing"))
+        self.screenparsing_features = eval(self.conf.get("realtime", "screenparsing_features"))
         self.screenparsing_overlay = eval(self.conf.get("realtime", "screenparsing_overlay"))
         print("[DEBUG] Settings read")
 
@@ -166,6 +169,7 @@ class Settings(object):
         self.conf.set("realtime", "events_overlay", Defaults.events_overlay)
         self.conf.set("realtime", "screenparsing", Defaults.screenparsing)
         self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
+        self.conf.set("realtime", "screenparsing_features", Defaults.screenparsing_features)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print("[DEBUG] Defaults written")
@@ -200,7 +204,8 @@ class Settings(object):
                   faction=Defaults.faction,
                   events_overlay=Defaults.events_overlay,
                   screenparsing=Defaults.screenparsing,
-                  screenparsing_overlay=Defaults.screenparsing_overlay):
+                  screenparsing_overlay=Defaults.screenparsing_overlay,
+                  screenparsing_features=Defaults.screenparsing_features):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -240,6 +245,7 @@ class Settings(object):
         self.conf.set("realtime", "events_overlay", events_overlay)
         self.conf.set("realtime", "screenparsing", screenparsing)
         self.conf.set("realtime", "screenparsing_overlay", screenparsing_overlay)
+        self.conf.set("realtime", "screenparsing_features", screenparsing_features)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)

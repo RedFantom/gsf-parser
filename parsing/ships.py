@@ -176,3 +176,22 @@ class Component(object):
     def __iter__(self):
         for key, value in self.upgrades.items():
             yield key, value
+
+
+class ShipStats(object):
+    def __init__(self, ship):
+        self.stats = ship.data["Stats"]
+        self.components = {}
+        for category, component in ship.components.items():
+            pass
+
+    def __getitem__(self, item):
+        return self.stats[item]
+
+    def __setitem__(self, item, value):
+        self.stats[item] = value
+
+    def __iter__(self):
+        for key, value in self.stats.items():
+            yield key, value
+

@@ -276,8 +276,9 @@ class ScreenParser(threading.Thread):
                 # Assign None value
                 pass
             if "name" in self.features_list:
-                # Perform OCR on target name
-                pass
+                name = vision.perform_ocr(pil_screen, name_cds)
+                type = vision.perform_ocr(pil_screen, ship_type_cds)
+                self._target_dict[current_time] = (type, name)
             else:
                 pass
             if "tracking" in self.features_list:
@@ -286,7 +287,11 @@ class ScreenParser(threading.Thread):
             else:
                 pass
             if "distance" in self.features_list:
-                distance = int(vision.perform_ocr(pil_screen, distance_cds))
+                try:
+                    distance = int(vision.perform_ocr(pil_screen, distance_cds))
+                    self._distance_dict[current_time] = distance
+                except ValueError as e:
+                    print(e)
             else:
                 pass
             if "ammo" in self.features_list:
