@@ -385,12 +385,3 @@ class ScreenParser(threading.Thread):
         self._clicks_dict.clear()
         self._keys_dict.clear()
         self._health_dict.clear()
-
-
-class MouseCounter(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.gathered_date = {}
-
-    def run(self):
-        pass
