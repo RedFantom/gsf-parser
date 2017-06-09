@@ -167,4 +167,6 @@ class MainWindow(tk.Tk):
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x, self.winfo_reqheight() + y)
         screenshot = screenshot.crop(result_box)
-        screenshot.save(os.path.join(get_temp_directory(), datetime.now().strftime("%H-%M-%S")), "PNG")
+        file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
+                                 ".png")
+        screenshot.save(file_name, "PNG")
