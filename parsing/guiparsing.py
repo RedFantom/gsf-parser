@@ -444,6 +444,12 @@ class GSFInterface(GUIParser):
         y = box[1] + int(16 * scale)
         return x, y
 
+    def get_ammo_coordinates(self):
+        pass
+
+    def get_distance_coordinates(self):
+        pass
+
 
 if __name__ == '__main__':
     obj = GSFInterface("HUD.xml")

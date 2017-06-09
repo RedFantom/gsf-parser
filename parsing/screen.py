@@ -12,7 +12,7 @@ import time
 import pynput
 from . import vision
 from .keys import keys
-from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
+from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_pillow_screen
 from toplevels.screenoverlay import HitChanceOverlay
 import variables
 import tkinter.messagebox as messagebox
@@ -40,6 +40,10 @@ spawn_dictionary["keys"] = keys_dict
     keys_dict[datetime_obj] = keyname
 spawn_dictionary["health"] = health_dict
     health_dict[datetime_obj] = (hull, shieldsf, shieldsr), all ints
+spawn_dictionary["distance"] = distance_dict
+    distance_dict[datetime_obj] = distance, int
+spawn_dictionary["target"] = target_dict
+    target_dict[datetime_obj] = (type, name)
 
 
 The realtime screen parsing uses Queue objects to communicate with other parts of the program. This is required because
@@ -85,7 +89,8 @@ class FileHandler(object):
 
 class ScreenParser(threading.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
-                 powermgmt=True, health=True, name=True, ttk=True, enemy=True, tracking=True):
+                 powermgmt=True, health=True, name=True, ttk=True, enemy=True, tracking=True, ammo=True, distance=True,
+                 cursor=True):
         threading.Thread.__init__(self)
         if rgb and not cooldowns:
             write_debug_log("ScreenParser encountered the following error during initialization: "
@@ -109,7 +114,10 @@ class ScreenParser(threading.Thread):
             "name": name,
             "ttk": ttk,
             "enemy": enemy,
-            "tracking": tracking
+            "tracking": tracking,
+            "ammo": ammo,
+            "distance": distance,
+            "cursor": cursor
         }
         self.character = character_data
         self.features_list = [key for key, value in self.features.items() if value]
@@ -154,6 +162,10 @@ class ScreenParser(threading.Thread):
         self._clicks_dict = {}
         self._keys_dict = {}
         self._health_dict = {}
+        self._distance_dict = {}
+        self._target_dict = {}
+        self._ammo_dict = {}
+
         # Listeners for keyboard and mouse input
         self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
         self._ms_listener = pynput.mouse.Listener(on_click=self.on_click)
@@ -181,7 +193,8 @@ class ScreenParser(threading.Thread):
         score_cds = self.interface.get_score_coordinates()
         spawn_timer_cds = self.interface.get_spawn_timer_coordinates()
         match_timer_cds = self.interface.get_match_timer_coordinates()
-
+        ammo_cds = self.interface.get_ammo_coordinates()
+        distance_cds = self.interface.get_distance_coordinates()
 
         # TODO: Ship health
         # TODO: TTK
@@ -241,10 +254,13 @@ class ScreenParser(threading.Thread):
                 time.sleep(1)
                 continue
             write_debug_log("Start pulling vision functions data")
-            screen = vision.get_cv2_screen()
+            pil_screen = get_pillow_screen()
+            screen = vision.pillow_to_numpy(pil_screen)
             pointer_cds = get_cursor_position(screen)
+            current_time = datetime.now()
             if "powermgmt" in self.features_list:
                 power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
+                self._power_mgmt_dict[current_time] = power_mgmt
             else:
                 power_mgmt = None
             if "healh" in self.features_list:
@@ -264,10 +280,24 @@ class ScreenParser(threading.Thread):
                 pass
             else:
                 pass
-
-            current_time = datetime.now()
-            distance = vision.get_distance_from_center(pointer_cds)
-            tracking_degrees = vision.get_tracking_degrees(distance)
+            if "tracking" in self.features_list:
+                distance = vision.get_distance_from_center(pointer_cds)
+                tracking_degrees = vision.get_tracking_degrees(distance)
+            else:
+                pass
+            if "distance" in self.features_list:
+                distance = int(vision.perform_ocr(pil_screen, distance_cds))
+            else:
+                pass
+            if "ammo" in self.features_list:
+                try:
+                    ammo = int(vision.perform_ocr(pil_screen, ammo_cds))
+                    self._ammo_dict[current_time] = ammo
+                except ValueError:
+                    pass
+            else:
+                pass
+            self._cursor_pos_dict[current_time] = pointer_cds
             if not self.exit_queue.empty():
                 print("ScreenParser exit_queue is not empty")
                 if not self.exit_queue.get():
@@ -276,8 +306,6 @@ class ScreenParser(threading.Thread):
             if self.screenoverlay:
                 self.screenoverlay.set_percentage(str(tracking_degrees) + "%")
             write_debug_log("Start logging and saving vision functions data")
-            self._cursor_pos_dict[current_time] = pointer_cds
-            self._power_mgmt_dict[current_time] = power_mgmt
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             self._tracking_dict[current_time] = tracking_degrees * 1
             if not self._internal_queue.empty():
@@ -300,12 +328,18 @@ class ScreenParser(threading.Thread):
                     self.return_queue.put((health_hull, health_shields_f, health_shields_r))
                 elif command == "tracking":
                     self.return_queue.put(tracking_degrees)
+                else:
+                    raise ValueError("Command not supported: {0}".format(command))
                 write_debug_log("Requested data returned to in the return_queue")
             self._spawn_dict["power_mgmt"] = self._power_mgmt_dict
             self._spawn_dict["cursor_pos"] = self._cursor_pos_dict
             self._spawn_dict["clicks"] = self._clicks_dict
             self._spawn_dict["keys"] = self._keys_dict
             self._spawn_dict["health"] = self._health_dict
+            self._spawn_dict["distance"] = self._distance_dict
+            self._spawn_dict["target"] = self._target_dict
+            self._spawn_dict["ammo"] = self._ammo_dict
+            self._spawn_dict["tracking"] = self._tracking_dict
             self._match_dict[self._spawn] = self._spawn_dict
             self._file_dict[self._match] = self._match_dict
             self.data_dictionary[self._file] = self._file_dict
@@ -369,11 +403,18 @@ class ScreenParser(threading.Thread):
         write_debug_log("ScreenParser getting ready for a new spawn")
         self._match_dict[self._spawn] = self._spawn_dict
         self._spawn_dict.clear()
+        self.clear_feature_dicts()
+
+    def clear_feature_dicts(self):
         self._power_mgmt_dict.clear()
         self._cursor_pos_dict.clear()
         self._clicks_dict.clear()
         self._keys_dict.clear()
         self._health_dict.clear()
+        self._distance_dict.clear()
+        self._target_dict.clear()
+        self._tracking_dict.clear()
+        self._ammo_dict.clear()
 
     def set_new_match(self):
         write_debug_log("ScreenParser getting ready for a new match")
@@ -381,8 +422,4 @@ class ScreenParser(threading.Thread):
         self.data_dictionary[self._file][self._match] = self._match_dict
         self._match_dict.clear()
         self._spawn_dict.clear()
-        self._power_mgmt_dict.clear()
-        self._cursor_pos_dict.clear()
-        self._clicks_dict.clear()
-        self._keys_dict.clear()
-        self._health_dict.clear()
+        self.clear_feature_dicts()

@@ -10,6 +10,7 @@ import cv2
 from PIL import Image
 import numpy
 from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
+import pytesseract
 
 
 def get_cv2_screen(testing=False):
@@ -146,24 +147,19 @@ def get_targeting_computer_pos(screen):
     pass
 
 
-def get_targeting_computer_shiptype(screen):
+def perform_ocr(pil_screen, coordinates):
     """
     Perform OCR on a screenshot to determine the ship type of the enemy player
     currently targeted by the user.
-    :param screen: cv2 array of screenshot
+    :param pil_screen: PIL Image
+    :param coordinates: (x, y, x, y) box tuple
     :return: string of ship type
     """
-    pass
+    if not isinstance(pil_screen, Image):
+        raise ValueError("Parameter is not Image object")
+    pil_screen.crop(coordinates, Image.ANTIALIAS)
+    return pytesseract.image_to_string(pil_screen)
 
-
-def get_targeting_computer_targetname(screen):
-    """
-    Perform OCR on a screenshot to determine the name of the enemy player
-    currently targeted by the user.
-    :param screen: cv2 array of screenshot
-    :return: string of player name
-    """
-    pass
 
 
 def get_power_management(screen, cds):
