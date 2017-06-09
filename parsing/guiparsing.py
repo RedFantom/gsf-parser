@@ -3,7 +3,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from tools.utilities import get_swtor_directory, get_screen_resolution
+from tools.utilities import get_swtor_directory, get_screen_resolution, get_assets_directory
 import xml.etree.cElementTree as et
 import os
 from tkinter import messagebox
@@ -112,7 +112,10 @@ class GUIParser(object):
         if not os.path.exists(file_name):
             file_name = os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles", file_name)
         if not os.path.exists(file_name):
-            raise ValueError("file_name specified is not valid: {0}".format(file_name))
+            if "Default.xml" in file_name:
+                file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
+            else:
+                raise ValueError("file_name specified is not valid: {0}".format(file_name))
         self.file_name = file_name
         self.tree = et.parse(file_name)
         self.root = self.tree.getroot()
