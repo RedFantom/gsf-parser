@@ -16,7 +16,7 @@ import variables
 
 
 class CrewListFrame(ttk.Frame):
-    def __init__(self, parent, data_dictionary, callback):
+    def __init__(self, parent, faction, data_dictionary, callback):
         ttk.Frame.__init__(self, parent)
         self.callback = callback
         self.window = variables.main_window
@@ -58,8 +58,9 @@ class CrewListFrame(ttk.Frame):
                 self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(self.category_frames[crole].sub_frame,
                                                                            text=member_dict["Name"], compound=tk.LEFT,
                                                                            image=self.member_icons[member_dict["Name"]],
-                                                                           command=lambda i=member_dict:
-                                                                           self.set_crew_members(member_dict),
+                                                                           command=lambda i=(faction, crole,
+                                                                                             member_dict["Name"]):
+                                                                                   self.set_crew_member(i),
                                                                            width=19,
                                                                            variable=self.category_variables[crole],
                                                                            value=category.index(member_dict))
@@ -67,10 +68,9 @@ class CrewListFrame(ttk.Frame):
                     self.copilots.append(member_dict["Name"])
         self.update_copilots()
 
-    def set_crew_members(self, member_dict):
-        self.callback(member_dict)
-        for name, variable in self.category_variables.items():
-            self.window.builds_frame.ship[name] = variable.get()
+    def set_crew_member(self, member):
+        self.callback(member)
+        self.update_copilots()
 
     def update_copilots(self):
         self.copilot_buttons.clear()
@@ -81,7 +81,7 @@ class CrewListFrame(ttk.Frame):
             self.member_buttons[name] = ttk.Radiobutton(self.category_frames["CoPilot"].sub_frame,
                                                         text=name, compound=tk.LEFT,
                                                         image=self.member_icons[name],
-                                                        command=self.set_crew_members,
+                                                        command=lambda i=name: self.set_crew_member(("CoPilot", i)),
                                                         width=21,
                                                         variable=self.copilot_variable, value=self.copilots.index(name))
         self.grid_widgets()

@@ -141,6 +141,13 @@ class Component(object):
             (4, 0): False,
             (4, 1): False
         }
+        self.crew = {
+            "CoPilot": None,
+            "Engineering": None,
+            "Defensive": None,
+            "Offensive": None,
+            "Tactical": None
+        }
 
     def __setitem__(self, key, value):
         if isinstance(key, tuple):

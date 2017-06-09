@@ -94,16 +94,32 @@ class BuildsFrame(ttk.Frame):
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
                                                       self.ship)
-        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction],
-                                               self.set_crew_member_frame)
+        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.faction,
+                                               self.companions_data[self.faction], self.set_crew_member)
         self.ship_stats_image = photo(Image.open(
             os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
                                             image=self.ship_stats_image, compound=tk.LEFT)
         self.reset()
 
-    def set_crew_member_frame(self, member_dict):
+    def set_crew_member(self, member):
+        print("set_crew_member received member: {0}".format(member))
+        print("Looking for companion {0} in category {1}".format(member[2], member[1]))
+        value = None
+        print(self.companions_data["Imperial"][0]["Engineering"][0]["Name"])
+        for index, companion in enumerate(self.companions_data[member[0]][0][member[1]]):
+            print("Checking companion: {0}".format(companion["Name"]))
+            if member[2] == companion["Name"]:
+                print("Companion is valid!")
+                value = index
+                print("Index was {0}, so value set to {1}".format(index, value))
+                break
+        if value is None:
+            raise ValueError()
+        member_dict = self.companions_data[member[0]][0][member[1]][value]
+        self.current_component.destroy()
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
+        self.current_component.grid_widgets()
         self.grid_widgets()
 
     def set_ship(self, faction, type, ship, ship_object):
