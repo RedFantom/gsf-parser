@@ -16,6 +16,7 @@ from parsing import stalking_alt, realtime, lineops
 from toplevels.realtimeoverlay import RealtimeOverlay
 from tools.utilities import write_debug_log
 from parsing.screen import ScreenParser
+from tkinter import messagebox as mb
 
 
 class RealtimeFrame(ttk.Frame):
@@ -89,7 +90,20 @@ class RealtimeFrame(ttk.Frame):
         self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
         self.watching_stringvar.set("Watching no CombatLog...")
 
+        # Create all objects
+        self.exit_queue = None
+        self.data_queue = None
+        self.query_queue = None
+        self.return_queue = None
+        self.screenparser = None
+        self.stalker_obj = None
+        self.stalking_exit_queue = None
+        self.character_tuple = None
+
     def start_parsing(self):
+        if not self.character_tuple:
+            mb.showinfo("Requirement", "You have to select a character before starting this process.")
+            return
         if not self.parsing:
             # self.main_window.file_select_frame.add_files()
             # self.start_parsing_button.config(relief=tk.SUNKEN)
@@ -104,8 +118,8 @@ class RealtimeFrame(ttk.Frame):
                 self.query_queue = Queue()
                 self.return_queue = Queue()
                 self.return_queue.put(0)
-                self.screenparser = ScreenParser(data_queue=self.data_queue, exit_queue=self.exit_queue,
-                                                 query_queue=self.query_queue, return_queue=self.return_queue)
+                self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
+                                                 self.window.characters_frame.character_data)
                 self.screenparser.start()
             else:
                 self.screenparser = None
@@ -118,7 +132,7 @@ class RealtimeFrame(ttk.Frame):
                                                        folder=variables.settings_obj.cl_path,
                                                        watching_stringvar=self.watching_stringvar,
                                                        newfilecallback=self.parser.new_file)
-            variables.FLAG = True
+            variables.realtime_flag = True
             if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
                 self.overlay = RealtimeOverlay(self.main_window)
             self.parsing_bar.start(3)
@@ -209,15 +223,15 @@ class RealtimeFrame(ttk.Frame):
             # self.listbox.see(tk.END)
             process = realtime.line_to_dictionary(line)
             self.parser.parse(process)
-            self.dmg_done = self.parser.spawn_dmg_done
-            self.dmg_taken = self.parser.spawn_dmg_taken
-            self.selfdamage = self.parser.spawn_selfdmg
-            self.healing = self.parser.spawn_healing_rcvd
-            self.abilities = self.parser.tmp_abilities
-            self.enemies = self.parser.recent_enemies
-            self.spawns = self.parser.active_ids
-            self.update_stats(self.dmg_done, self.dmg_taken, self.selfdamage, self.healing, self.abilities,
-                              len(self.enemies), len(self.spawns))
+            dmg_done = self.parser.spawn_dmg_done
+            dmg_taken = self.parser.spawn_dmg_taken
+            selfdamage = self.parser.spawn_selfdmg
+            healing = self.parser.spawn_healing_rcvd
+            abilities = self.parser.tmp_abilities
+            enemies = self.parser.recent_enemies
+            spawns = self.parser.active_ids
+            self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
+                              len(enemies), len(spawns))
         for obj in self.parse:
             obj.close()
 
