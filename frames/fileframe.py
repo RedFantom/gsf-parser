@@ -321,6 +321,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
+        self.main_window.middle_frame.screen_label_var.set("")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         if enemy == "":
