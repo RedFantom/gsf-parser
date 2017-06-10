@@ -33,8 +33,7 @@ class VerticalScrollFrame(ttk.Frame):
         vscrollbar.config(command=canvas.yview)
 
         def mousewheel(event):
-            print("[DEBUG] Being scrolled")
-            canvas.yview_scroll(-1 * (event.delta / 100), "units")
+            canvas.yview_scroll(int(-1 * (event.delta / 100)), "units")
 
         canvas.bind("<MouseWheel>", mousewheel)
         canvas.xview_moveto(0)

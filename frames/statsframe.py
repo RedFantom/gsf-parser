@@ -59,7 +59,7 @@ class StatsFrame(ttk.Frame):
         """
         ttk.Frame.__init__(self, root_frame)
         self.window = main_window
-        self.notebook = ttk.Notebook(self, width=300, height=310)
+        self.notebook = ttk.Notebook(self, width=300, height=327)
         self.stats_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
         self.screen_frame = ttk.Frame(self.notebook)
@@ -78,11 +78,16 @@ class StatsFrame(ttk.Frame):
         self.statistics_label.setvar()
         self.statistics_numbers = ttk.Label(self.stats_frame, textvariable=self.statistics_numbers_var,
                                             justify=tk.LEFT, wraplength=145)
-        self.enemies_treeview = ttk.Treeview(self.enemies_frame, columns=("Enemy name/ID", "Damage dealt",
-                                                                          "Damage taken"),
-                                             displaycolumns=("Enemy name/ID", "Damage dealt", "Damage taken"),
-                                             height=14)
-        self.enemies_treeview.heading("Enemy name/ID", text="Enemy name/ID",
+
+        self.enemies_treeview = ttk.Treeview(self.enemies_frame)
+        self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, command=self.enemies_treeview.yview)
+        self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
+        self.enemies_treeview.config(columns=("Damage dealt", "Damage taken"))
+        self.enemies_treeview["show"] = ("tree", "headings")
+        self.enemies_treeview.column("#0", width=117, anchor="w")
+        self.enemies_treeview.column("Damage dealt", width=74, anchor="e")
+        self.enemies_treeview.column("Damage taken", width=74, anchor="e")
+        self.enemies_treeview.heading("#0", text="Enemy name/ID",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Enemy name/ID", False, "str"))
         self.enemies_treeview.heading("Damage dealt", text="Damage dealt",
@@ -91,29 +96,25 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.heading("Damage taken", text="Damage taken",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Damage taken", False, "int"))
-        self.enemies_treeview["show"] = "headings"
-        self.enemies_treeview.column("Enemy name/ID", width=125, stretch=False, anchor="w")
-        self.enemies_treeview.column("Damage taken", width=80, stretch=False, anchor=tk.E)
-        self.enemies_treeview.column("Damage dealt", width=80, stretch=False, anchor=tk.E)
-        self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, orient=tk.VERTICAL,
-                                               command=self.enemies_treeview.yview)
-        self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
-        self.abilities_frame = ttk.Frame(self.notebook)
+        self.enemies_treeview.config(height=13)
+
+        self.abilities_frame = ttk.Frame(self.notebook, width=300)
+
         self.notebook.add(self.abilities_frame, text="Abilities")
-        self.abilities_treeview = ttk.Treeview(self.abilities_frame, columns=("Ability", "Times used"),
-                                               displaycolumns=("Ability", "Times used"), height=14)
-        self.abilities_treeview.column("Ability", width=200, stretch=False, anchor="w")
-        self.abilities_treeview.column("Times used", width=85, stretch=False, anchor=tk.E)
-        self.abilities_treeview.heading("Ability", text="Ability",
-                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
-                                                                                  "Ability", False, "str"))
+        self.abilities_treeview = ttk.Treeview(self.abilities_frame)
+        self.abilities_scrollbar = ttk.Scrollbar(self.abilities_frame, command=self.abilities_treeview.yview)
+        self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
+        self.abilities_treeview.config(columns=("Times used",))
+        self.abilities_treeview["show"] = ("tree", "headings")
+        self.abilities_treeview.column("#0", width=180)
+        self.abilities_treeview.config(height=13)
+        self.abilities_treeview.column("Times used", width=85)
         self.abilities_treeview.heading("Times used", text="Times used",
                                         command=lambda: self.treeview_sort_column(self.abilities_treeview,
                                                                                   "Times used", False, "int"))
-        self.abilities_treeview["show"] = "headings"
-        self.abilities_scrollbar = ttk.Scrollbar(self.abilities_frame, orient=tk.VERTICAL,
-                                                 command=self.abilities_treeview.yview)
-        self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
+        self.abilities_treeview.heading("#0", text="Ability",
+                                        command=lambda: self.treeview_sort_column(self.abilities_treeview,
+                                                                                  "Ability", False, "str"))
         self.notice_label = ttk.Label(self.stats_frame, text="\n\n\n\nThe damage dealt for bombers can not be " +
                                                              "accurately calculated due to CombatLog limitations, "
                                                              "as damage dealt by bombs is not recorded.",
@@ -135,18 +136,18 @@ class StatsFrame(ttk.Frame):
         Put all widgets in the right place
         :return:
         """
-        self.abilities_treeview.grid(column=0, row=0, sticky="nw")
-        self.abilities_scrollbar.grid(column=1, row=0, sticky="nswe")
+        self.abilities_treeview.grid(column=0, row=0, pady=5, padx=5)
+        self.abilities_scrollbar.grid(column=1, row=0, sticky="ns", pady=5)
         self.notebook.grid(column=0, row=0, columnspan=4, sticky="nwe")
         self.events_frame.grid(column=0, row=1, columnspan=4, sticky="nswe")
-        self.events_button.grid(column=0, row=1, sticky="nswe", columnspan=4, pady=2)
+        self.events_button.grid(column=0, row=1, sticky="nswe", columnspan=4, pady=5)
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky="nswe", padx=(5, 0), pady=5)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky="swe", padx=5, pady=5)
-        self.enemies_treeview.grid(column=0, row=0, sticky="nswe")
-        self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe")
         self.screen_label.grid()
-
+        self.enemies_treeview.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
+        self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe", pady=5)
+    
     def treeview_sort_column(self, treeview, column, reverse, type):
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
         if type == "int":

@@ -90,9 +90,9 @@ class GraphsFrame(ttk.Frame):
         if self.type_graph.get() == "play":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             for file in os.listdir(variables.settings_obj.cl_path):
@@ -111,8 +111,8 @@ class GraphsFrame(ttk.Frame):
                     matches_played_date[file_date] = len(file_cube)
                 else:
                     matches_played_date[file_date] += len(file_cube)
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             self.axes.set_ylim(ymin=0, ymax=matches_played_date[
                                                 max(matches_played_date, key=matches_played_date.get)] + 2)
             self.axes.bar(list(matches_played_date.keys()), list(matches_played_date.values()),
@@ -129,9 +129,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "dmgd":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
@@ -157,8 +157,8 @@ class GraphsFrame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[2]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[2]])
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_dmg_date = {}
             for key, value in matches_played_date.items():
                 try:
@@ -182,9 +182,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "dmgt":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
@@ -210,8 +210,8 @@ class GraphsFrame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[1]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[1]])
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_dmg_date = {}
             for key, value in matches_played_date.items():
                 try:
@@ -235,9 +235,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "hrec":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
@@ -263,8 +263,8 @@ class GraphsFrame(ttk.Frame):
                     damage_per_date[file_date] = sum([sum(match) for match in results_tuple[4]])
                 else:
                     damage_per_date[file_date] += sum([sum(match) for match in results_tuple[4]])
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_dmg_date = {}
             for key, value in matches_played_date.items():
                 try:
@@ -288,9 +288,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "enem":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             enem_per_date = {}
@@ -324,8 +324,8 @@ class GraphsFrame(ttk.Frame):
                     enem_per_date[file_date] += amount_enem
                 else:
                     enem_per_date[file_date] = amount_enem
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_enem_date = {}
             for key, value in matches_played_date.items():
                 try:
@@ -349,9 +349,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "critluck":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
@@ -380,8 +380,8 @@ class GraphsFrame(ttk.Frame):
                 else:
                     hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
                     critcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[6]))
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_crit_luck = {}
             for key, value in matches_played_date.items():
                 try:
@@ -405,9 +405,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "hitcount":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
@@ -433,8 +433,8 @@ class GraphsFrame(ttk.Frame):
                     hitcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
                 else:
                     hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_hit_match = {}
             for key, value in matches_played_date.items():
                 try:
@@ -458,9 +458,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "spawn":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             spawns_played_date = {}
             spawn_length_per_date = {}
@@ -496,8 +496,8 @@ class GraphsFrame(ttk.Frame):
                     spawn_length_per_date[file_date] += spawns_length
                 else:
                     spawn_length_per_date[file_date] = spawns_length
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_spawn_min = {}
             for key, value in spawns_played_date.items():
                 try:
@@ -523,9 +523,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "match":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             match_length_day = {}
@@ -560,8 +560,8 @@ class GraphsFrame(ttk.Frame):
                     match_length_day[file_date] += match_length
                 else:
                     match_length_day[file_date] = match_length
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_match_min = {}
             for key, value in matches_played_date.items():
                 try:
@@ -587,9 +587,9 @@ class GraphsFrame(ttk.Frame):
         elif self.type_graph.get() == "deaths":
             files_dates = {}
             datetimes = []
-            variables.files_done = 0
+            files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              max=len(os.listdir(variables.settings_obj.cl_path)),
+                                              len(os.listdir(variables.settings_obj.cl_path)),
                                               title="Calculating graph...")
             matches_played_date = {}
             deaths_per_date = {}
@@ -614,8 +614,8 @@ class GraphsFrame(ttk.Frame):
                     deaths_per_date[file_date] = sum((len(match) - 1) for match in file_cube)
                 else:
                     deaths_per_date[file_date] += sum((len(match) - 1) for match in file_cube)
-                variables.files_done += 1
-                self.splash_screen.update_progress()
+                files_done += 1
+                self.splash_screen.update_progress(files_done)
             avg_hit_match = {}
             for key, value in matches_played_date.items():
                 try:

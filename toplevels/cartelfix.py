@@ -64,7 +64,3 @@ class CartelFix(tk.Toplevel):
 
     def start_listener(self):
         self.listener.start()
-
-    def destroy(self):
-        variables.main_window.realtime_frame.cartelfix = None
-        super(tk.Toplevel, self)
