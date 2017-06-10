@@ -384,9 +384,9 @@ class SettingsFrame(ttk.Frame):
         # self.realtime_timeout_help_button.grid(column=2, row=12, sticky="w")
         # self.realtime_timeout_help_label.grid(column=3, row=12, sticky="w", columnspan=5,
         #                                      padx=5)
-        self.realtime_event_overlay_label.grid(column=0, row=13, sticky="w")
-        self.realtime_event_overlay_true.grid(column=1, row=13, sticky="w")
-        self.realtime_event_overlay_false.grid(column=2, row=13, sticky="w")
+        # self.realtime_event_overlay_label.grid(column=0, row=13, sticky="w")
+        # self.realtime_event_overlay_true.grid(column=1, row=13, sticky="w")
+        # self.realtime_event_overlay_false.grid(column=2, row=13, sticky="w")
         # Screen parsing
         self.screenparsing_header_label.grid(column=0, row=9, sticky="w")
         self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
