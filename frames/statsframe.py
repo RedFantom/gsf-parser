@@ -62,6 +62,7 @@ class StatsFrame(ttk.Frame):
         self.notebook = ttk.Notebook(self, width=300, height=327)
         self.stats_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
+        self.screen_frame = ttk.Frame(self.notebook)
         self.notebook.add(self.stats_frame, text="Statistics")
         self.notebook.add(self.enemies_frame, text="Enemies")
         self.events_frame = ttk.Frame(self, width=300)
@@ -118,6 +119,9 @@ class StatsFrame(ttk.Frame):
                                                              "accurately calculated due to CombatLog limitations, "
                                                              "as damage dealt by bombs is not recorded.",
                                       justify=tk.LEFT, wraplength=290)
+        self.screen_label_var = tk.StringVar()
+        self.screen_label = ttk.Label(self.screen_frame, textvariable=self.screen_label_var, justify=tk.LEFT)
+        self.notebook.add(self.screen_frame, text="Screen parsing")
 
     def show_events(self):
         """
@@ -140,9 +144,10 @@ class StatsFrame(ttk.Frame):
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky="nswe", padx=(5, 0), pady=5)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky="swe", padx=5, pady=5)
+        self.screen_label.grid()
         self.enemies_treeview.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
         self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe", pady=5)
-
+    
     def treeview_sort_column(self, treeview, column, reverse, type):
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
         if type == "int":

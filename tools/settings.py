@@ -13,6 +13,17 @@ import configparser
 import collections
 import ast
 from tools import utilities
+from ast import literal_eval
+
+
+def eval(value):
+    literal = literal_eval(value)
+    if literal == 1:
+        return True
+    elif literal == 0:
+        return False
+    else:
+        return literal
 
 
 # Class with default settings for in the settings file
@@ -39,13 +50,13 @@ class Defaults(object):
     # Set the text color of the parser
     color = "#236ab2"
     # Set the logo color
-    logo_color = "green"
+    logo_color = "Green"
     # Overlay background color
-    overlay_bg_color = "white"
+    overlay_bg_color = "White"
     # Overlay color that is displayed as transparent
-    overlay_tr_color = "white"
+    overlay_tr_color = "White"
     # Overlay text color
-    overlay_tx_color = "yellow"
+    overlay_tx_color = "Yellow"
     # Overlay text font
     overlay_tx_font = "Calibri"
     # Overlay text size
@@ -63,8 +74,10 @@ class Defaults(object):
 
     faction = "imperial"
     events_overlay = False
-    screenparsing = False
-    screenparsing_overlay = False
+    screenparsing = True
+    screenparsing_overlay = True
+    screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                              "Power management"]
 
 
 # Class that loads, stores and saves settings
@@ -80,10 +93,10 @@ class Settings(object):
                 self.read_set()
             except configparser.NoOptionError:
                 self.write_def()
+                self.read_set()
         else:
             self.write_def()
             self.read_set()
-            # variables.path = self.cl_path
 
     # Read the settings from a file containing a pickle and store them as class variables
     def read_set(self):
@@ -91,20 +104,11 @@ class Settings(object):
         self.conf.read(self.file_name)
         self.version = self.conf.get("misc", "version")
         self.cl_path = self.conf.get("parsing", "cl_path")
-        if self.conf.get("parsing", "auto_ident") == "True" or self.conf.get("parsing", "auto_ident") == 1:
-            self.auto_ident = True
-        else:
-            self.auto_ident = False
+        self.auto_ident = eval(self.conf.get("parsing", "auto_ident"))
         self.server_address = self.conf.get("sharing", "server_address")
         self.server_port = int(self.conf.get("sharing", "server_port"))
-        if self.conf.get("sharing", "auto_upl") == "True" or self.conf.get("sharing", "auto_upl") == 1:
-            self.auto_upl = True
-        else:
-            self.auto_upl = False
-        if self.conf.get("realtime", "overlay") == "True" or self.conf.get("realtime", "overlay") == 1:
-            self.overlay = True
-        else:
-            self.overlay = False
+        self.auto_upl = eval(self.conf.get("sharing", "auto_upl"))
+        self.overlay = eval(self.conf.get("realtime", "overlay"))
         self.overlay_bg_color = self.conf.get("realtime", "overlay_bg_color")
         self.overlay_tr_color = self.conf.get("realtime", "overlay_tr_color")
         self.overlay_tx_color = self.conf.get("realtime", "overlay_tx_color")
@@ -120,23 +124,11 @@ class Settings(object):
         self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
         self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
         self.faction = self.conf.get("gui", "faction")
-        if self.conf.get("realtime", "overlay_when_gsf") == "True" or \
-           self.conf.get("realtime", "overlay_when_gsf") == 1:
-            self.overlay_when_gsf = True
-        else:
-            self.overlay_when_gsf = False
-        if self.conf.get("realtime", "events_overlay") == "True":
-            self.events_overlay = True
-        else:
-            self.events_overlay = False
-        if self.conf.get("realtime", "screenparsing") == "True":
-            self.screenparsing = True
-        else:
-            self.screenparsing = False
-        if self.conf.get("realtime", "screenparsing_overlay") == "True":
-            self.screenparsing_overlay = True
-        else:
-            self.screenparsing_overlay = False
+        self.overlay_when_gsf = eval(self.conf.get("realtime", "overlay_when_gsf"))
+        self.events_overlay = eval(self.conf.get("realtime", "events_overlay"))
+        self.screenparsing = eval(self.conf.get("realtime", "screenparsing"))
+        self.screenparsing_features = eval(self.conf.get("realtime", "screenparsing_features"))
+        self.screenparsing_overlay = eval(self.conf.get("realtime", "screenparsing_overlay"))
         print("[DEBUG] Settings read")
 
     # Write the defaults settings found in the class defaults to a pickle in a
@@ -177,6 +169,7 @@ class Settings(object):
         self.conf.set("realtime", "events_overlay", Defaults.events_overlay)
         self.conf.set("realtime", "screenparsing", Defaults.screenparsing)
         self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
+        self.conf.set("realtime", "screenparsing_features", Defaults.screenparsing_features)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print("[DEBUG] Defaults written")
@@ -211,7 +204,8 @@ class Settings(object):
                   faction=Defaults.faction,
                   events_overlay=Defaults.events_overlay,
                   screenparsing=Defaults.screenparsing,
-                  screenparsing_overlay=Defaults.screenparsing_overlay):
+                  screenparsing_overlay=Defaults.screenparsing_overlay,
+                  screenparsing_features=Defaults.screenparsing_features):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -251,6 +245,7 @@ class Settings(object):
         self.conf.set("realtime", "events_overlay", events_overlay)
         self.conf.set("realtime", "screenparsing", screenparsing)
         self.conf.set("realtime", "screenparsing_overlay", screenparsing_overlay)
+        self.conf.set("realtime", "screenparsing_features", screenparsing_features)
         self.conf.set("gui", "color", color)
         self.conf.set("gui", "logo_color", logo_color)
         self.conf.set("gui", "event_colors", event_colors)

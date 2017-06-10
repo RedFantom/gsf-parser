@@ -35,7 +35,7 @@ class TestUI(unittest.TestCase):
         tkinter.messagebox.showinfo = messagebox
 
     def tearDown(self):
-        variables.FLAG = False
+        variables.realtime_flag = False
         self.window.update()
         self.window.destroy()
 

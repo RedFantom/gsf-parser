@@ -3,7 +3,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from tools.utilities import get_swtor_directory, get_screen_resolution
+from tools.utilities import get_swtor_directory, get_screen_resolution, get_assets_directory
 import xml.etree.cElementTree as et
 import os
 from tkinter import messagebox
@@ -53,7 +53,7 @@ def get_player_guiname(player_name):
             break
     if not gui_profile:
         raise ValueError("Could not find GUI_Current_Profile in settings file {0}".format(correct_file))
-    return gui_profile[1:]
+    return gui_profile[1:].replace("\n", "")
 
 
 class GUIParser(object):
@@ -112,7 +112,10 @@ class GUIParser(object):
         if not os.path.exists(file_name):
             file_name = os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles", file_name)
         if not os.path.exists(file_name):
-            raise ValueError("file_name specified is not valid: {0}".format(file_name))
+            if "Default.xml" in file_name:
+                file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
+            else:
+                raise ValueError("file_name specified is not valid: {0}".format(file_name))
         self.file_name = file_name
         self.tree = et.parse(file_name)
         self.root = self.tree.getroot()
@@ -241,6 +244,7 @@ class GUIParser(object):
         :return: (x, y, x+~, y+~)
         """
         element = self.get_element_object(element_name)
+        print("Getting data for element: {0}".format(element_name))
         x_offset, y_offset, alpha = self.get_essential_element_values(element)
         scale = self.get_element_scale(element)
         anchor = self.get_element_anchor(element)
@@ -383,7 +387,11 @@ class GSFInterface(GUIParser):
 
     def get_target_name_coordinates(self):
         temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
-        temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
+        try:
+            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
+        except AttributeError:
+            # TODO: Figure this out
+            temp_scale = 1.0
         x_one = temp_cds[0] + int(95 * temp_scale)
         y_one = temp_cds[1] + int(14 * temp_scale)
         x_two = temp_cds[0] + int(305 * temp_scale)
@@ -391,7 +399,30 @@ class GSFInterface(GUIParser):
         return x_one, y_one, x_two, y_two
 
     def get_target_shiptype_coordinates(self):
-        pass
+        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
+        try:
+            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
+        except AttributeError:
+            # TODO: Figure this out
+            temp_scale = 1.0
+        x_one = temp_cds[0] + int(80 * temp_scale)
+        y_one = temp_cds[1] + int(165 * temp_scale)
+        x_two = temp_cds[0] + int(220 * temp_scale)
+        y_two = temp_cds[1] + int(175 * temp_scale)
+        return x_one, y_one, x_two, y_two
+
+    def get_target_distance_coordinates(self):
+        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
+        try:
+            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
+        except AttributeError:
+            # TODO: Figure this out
+            temp_scale = 1.0
+        x_one = temp_cds[0] + int(120 * temp_scale)
+        y_one = temp_cds[1] + int(183 * temp_scale)
+        x_two = temp_cds[0] + int(185 * temp_scale)
+        y_two = temp_cds[1] + int(193 * temp_scale)
+        return x_one, y_one, x_two, y_two
 
     def get_target_buffs_coordinates(self):
         return self.get_box_coordinates("FreeFlightTargetStatusEffects")
@@ -413,13 +444,19 @@ class GSFInterface(GUIParser):
         y = box[1] + int(16 * scale)
         return x, y
 
+    def get_ammo_coordinates(self):
+        pass
+
+    def get_distance_coordinates(self):
+        pass
+
 
 if __name__ == '__main__':
-    obj = GSFInterface("Redfantom's Interface.xml")
-    print(obj.get_box_coordinates("FreeFlightShipAmmo"))
-    print(obj.get_element_anchor(obj.get_element_object("FreeFlightShipAmmo")))
+    obj = GSFInterface("HUD.xml")
+    print(obj.get_box_coordinates("FreeFlightScorecard"))
+    print(obj.get_element_anchor(obj.get_element_object("FreeFlightScorecard")))
     from PIL import Image
 
     print(get_player_guiname("Redfantom"))
     Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "testing.jpg"))).crop(
-        GSFInterface("Redfantom's Interface.xml").get_box_coordinates("FreeFlightShipAmmo")).save("image.png")
+        GSFInterface("HUD.xml").get_box_coordinates("FreeFlightScorecard")).save("image.png")

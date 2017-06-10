@@ -20,6 +20,7 @@ from parsing import parse, abilities, folderstats, filestats, matchstats, spawns
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from collections import OrderedDict
+from parsing.screen import FileHandler
 
 
 # Class for the _frame in the fileTab of the parser
@@ -311,6 +312,8 @@ class FileFrame(ttk.Frame):
                                                      spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                                   enemydamaget)
+        self.main_window.middle_frame.screen_label_var.set(
+            FileHandler.get_spawn_stats(file_name, match_timings[match_index * 2], spawn_timings[spawn_index]))
 
     def clear_data_widgets(self):
         self.main_window.middle_frame.abilities_treeview.delete(
@@ -318,6 +321,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
+        self.main_window.middle_frame.screen_label_var.set("")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         if enemy == "":

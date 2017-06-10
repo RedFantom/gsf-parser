@@ -24,7 +24,7 @@ from tools import settings
 settings_obj = settings.Settings()
 color_scheme = settings.ColorSchemes()
 
-FLAG = False
+realtime_flag = False
 
 files_done = 0
 abilities = None
