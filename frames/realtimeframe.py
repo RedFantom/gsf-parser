@@ -136,7 +136,7 @@ class RealtimeFrame(ttk.Frame):
                 else:
                     powermgmt = False
                 self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
-                                                 self.window.characters_frame.character_data, name=name,
+                                                 self.window.characters_frame.character_data, name=False,
                                                  tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
                                                  distance=False, ammo=False)
                 self.screenparser.start()
