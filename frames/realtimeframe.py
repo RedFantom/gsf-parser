@@ -118,8 +118,27 @@ class RealtimeFrame(ttk.Frame):
                 self.query_queue = Queue()
                 self.return_queue = Queue()
                 self.return_queue.put(0)
+                features = variables.settings_obj.screenparsing_features
+                if "Enemy name and ship type" in features:
+                    name = True
+                else:
+                    name = False
+                if "Tracking penalty" in features:
+                    tracking = True
+                else:
+                    tracking = False
+                if "Ship health" in features:
+                    health = True
+                else:
+                    health = False
+                if "Power management" in features:
+                    powermgmt = True
+                else:
+                    powermgmt = False
                 self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
-                                                 self.window.characters_frame.character_data)
+                                                 self.window.characters_frame.character_data, name=name,
+                                                 tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
+                                                 distance=False, ammo=False)
                 self.screenparser.start()
             else:
                 self.screenparser = None
@@ -131,7 +150,7 @@ class RealtimeFrame(ttk.Frame):
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
                                                        folder=variables.settings_obj.cl_path,
                                                        watching_stringvar=self.watching_stringvar,
-                                                       newfilecallback=self.parser.new_file)
+                                                       newfilecallback=self.parser.new_file, )
             variables.realtime_flag = True
             if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
                 self.overlay = RealtimeOverlay(self.main_window)

@@ -89,7 +89,7 @@ class FileHandler(object):
 
 class ScreenParser(threading.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
-                 powermgmt=True, health=True, name=True, ttk=True, enemy=True, tracking=True, ammo=True, distance=True,
+                 powermgmt=True, health=True, name=True, ttk=True, tracking=True, ammo=True, distance=True,
                  cursor=True):
         threading.Thread.__init__(self)
         if rgb and not cooldowns:
@@ -113,7 +113,6 @@ class ScreenParser(threading.Thread):
             "health": health,
             "name": name,
             "ttk": ttk,
-            "enemy": enemy,
             "tracking": tracking,
             "ammo": ammo,
             "distance": distance,
