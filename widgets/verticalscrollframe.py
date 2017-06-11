@@ -41,9 +41,19 @@ class VerticalScrollFrame(ttk.Frame):
         self.interior = interior = ttk.Frame(canvas)
         interior_id = canvas.create_window(0, 0, window=interior, anchor=tk.NW)
 
+        scroll_area = ScrollingArea(parent)
+        scroll_area.add_scrolling(canvas, yscrollbar=vscrollbar)
+
         def _configure_interior(event):
-            if interior.winfo_reqwidth() == canvaswidth and interior.winfo_reqheight() == canvasheight:
+            if interior.winfo_reqwidth() <= canvaswidth and interior.winfo_reqheight() <= canvasheight:
+                canvas.unbind("<MouseWheel>")
+                scroll_area.mouse_wheel_unbind()
+                canvas.unbind("<Enter>")
+                canvas.unbind("<Leave>")
                 return
+            canvas.bind("<Enter>", lambda event: scroll_area.mouse_wheel_bind(canvas))
+            canvas.bind("<Leave>", lambda event: scroll_area.mouse_wheel_unbind())
+            canvas.bind("<MouseWheel>", mousewheel)
             canvas.config(scrollregion=canvas.bbox("all"))
             if interior.winfo_reqwidth() != canvas.winfo_width():
                 canvas.config(width=interior.winfo_reqwidth())
@@ -55,7 +65,6 @@ class VerticalScrollFrame(ttk.Frame):
                 canvas.itemconfigure(interior_id, width=canvas.winfo_width())
 
         canvas.bind('<Configure>', _configure_canvas)
-        ScrollingArea(parent).add_scrolling(canvas, yscrollbar=vscrollbar)
 
 
 # Cross-platform scrollable area class
