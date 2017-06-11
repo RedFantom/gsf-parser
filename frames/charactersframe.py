@@ -347,6 +347,7 @@ class CharactersFrame(ttk.Frame):
         General function to save the character database to the file
         :return: None
         """
+        self.character_data["GUI"] = self.gui_profile.get()
         print("[DEBUG] Saving character database")
         server = self.character_data["Server"]
         name = self.character_data["Name"]
