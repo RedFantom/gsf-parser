@@ -41,20 +41,21 @@ class EventColors(tk.Toplevel):
         self.column_label_three = ttk.Label(self, text="Text color", font=("Calibri", 12))
         self.colors = collections.OrderedDict()
         variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
-        self.color_descriptions = {'dmgd_pri': "Damage dealt by Primary Weapons: ",
-                                   'dmgt_pri': "Damage taken from Primary Weapons: ",
-                                   'dmgd_sec': "Damage dealt by Secondary Weapons: ",
-                                   'dmgt_sec': "Damage taken from Secondary Weapons: ",
-                                   'selfdmg': "Selfdamage: ",
-                                   'healing': "Healing received from others: ",
-                                   'selfheal': "Healing received from yourself: ",
-                                   'engine': "Activation of engine abilities: ",
-                                   'shield': "Activation of shield abilities: ",
-                                   'system': "Activation of system abilities: ",
-                                   'other': "Activation of other abilities: ",
-                                   'spawn': "End of a spawn: ",
-                                   'match': "End of a match: ",
-                                   'default': "Unmatched categories: "}
+        self.color_descriptions = collections.OrderedDict()
+        self.color_descriptions["dmgd_pri"] = "Damage dealt by Primary Weapons: "
+        self.color_descriptions["dmgt_pri"] = "Damage taken from Primary Weapons: "
+        self.color_descriptions["dmgd_sec"] = "Damage dealt by Secondary Weapons: "
+        self.color_descriptions["dmgt_sec"] = "Damage taken from Secondary Weapons: "
+        self.color_descriptions["selfdmg"] = "Selfdamage: "
+        self.color_descriptions["healing"] = "Healing received from others: "
+        self.color_descriptions["selfheal"] = "Healing received from yourself: "
+        self.color_descriptions["engine"] = "Activation of engine abilities: "
+        self.color_descriptions["shield"] = "Activation of shield abilities: "
+        self.color_descriptions["system"] = "Activation of system abilities: "
+        self.color_descriptions["other"] = "Activation of other abilities: "
+        self.color_descriptions["spawn"] = "End of a spawn: "
+        self.color_descriptions["match"] = "End of a match: "
+        self.color_descriptions["default"] = "Unmatched categories: "
         for color in self.color_descriptions.keys():
             self.colors[color] = [variables.color_scheme[color][0], variables.color_scheme[color][1]]
         self.color_labels = {}
