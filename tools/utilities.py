@@ -53,13 +53,10 @@ def get_cursor_position(screen):
     :param screen: cv2 array of screenshot
     :return:
     """
-    if isinstance(screen, Image):
-        from parsing.vision import pillow_to_numpy
-        screen = pillow_to_numpy(screen)
     if debug:
-        return get_pointer_position_win32()
-    elif platform == "win32":
         return get_pointer_position_cv2(screen)
+    elif platform == "win32":
+        return get_pointer_position_win32()
     elif platform == "linux":
         return get_pointer_position_linux()
     elif platform == "darwin":
