@@ -312,6 +312,7 @@ class CharactersFrame(ttk.Frame):
         self.clear_character_data()
         self.set_character(set=False)
         self.save_button.invoke()
+        self.window.realtime_frame.update_characters()
         self.update_tree()
 
     def set_character_faction(self, faction):
