@@ -313,7 +313,8 @@ class FileFrame(ttk.Frame):
         self.update_widgets_spawn(abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                                   enemydamaget)
         self.main_window.middle_frame.screen_label_var.set(
-            FileHandler.get_spawn_stats(file_name, match_timings[match_index * 2], spawn_timings[spawn_index]))
+            FileHandler.get_spawn_stats(file_name, match_timings[::2][match_index],
+                                        spawn_timings[match_index][spawn_index]))
 
     def clear_data_widgets(self):
         self.main_window.middle_frame.abilities_treeview.delete(
