@@ -87,7 +87,7 @@ class ToolsFrame(ttk.Frame):
         self.splitting_heading_label = ttk.Label(self.interior_frame.interior, text="CombatLogs Splitting",
                                                  font=("Calibri", 12))
         self.splitting_description_label = ttk.Label(self.interior_frame.interior,
-                                                     text="This tools splits your CombatLogs into separatte files that "
+                                                     text="This tools splits your CombatLogs into separate files that "
                                                           "contain a single match each without the non-match lines. "
                                                           "You can choose the directory to put them in yourself.",
                                                      justify=tk.LEFT, wraplength=780)
