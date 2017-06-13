@@ -161,22 +161,20 @@ def perform_ocr(pil_screen, coordinates):
     return pytesseract.image_to_string(pil_screen)
 
 
-
-def get_power_management(screen, cds):
+def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
     """
     Uses template matching to determine how the user has divided the power
     among the different ship components.
     :param screen: cv2 array of screenshot
+    :param weapon_cds:
+    :param shield_cds:
+    :param engine_cds:
     :return: int 1, 2, 3, 4
              1: power to weapons
              2: power to shields
              3: power to engines
              4: power to all
     """
-    x, y = cds
-    weapon_cds = get_xy_tuple((x + 10, y - 50))
-    shield_cds = get_xy_tuple((x + 32, y - 50))
-    engine_cds = get_xy_tuple((x + 54, y - 50))
     power_mgmt = 4
     try:
         weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
