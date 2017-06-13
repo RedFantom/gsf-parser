@@ -97,7 +97,8 @@ class FileHandler:
         try:
             spawn_dicts = data[file_name][match_dt][spawn_dt]
         except KeyError:
-            return None
+            return "Not available for this spawn\n\nScreen parsing results are not available for spawns which were " \
+                   "not  spawned while screen parsing was enabled and real-time parsing was running."
         power_mgmt = {1: 0, 2: 0, 3: 0, 4: 0}
         for key, value in spawn_dicts["power_mgmt"].items():
             if not value:
