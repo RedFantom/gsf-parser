@@ -302,7 +302,7 @@ class ScreenParser(threading.Thread):
             pointer_cds = get_cursor_position(screen)
             current_time = datetime.now()
             if "powermgmt" in self.features_list:
-                power_mgmt = vision.get_power_management(screen, power_mgmt_cds)
+                power_mgmt = vision.get_power_management(screen, *power_mgmt_cds)
                 self._power_mgmt_dict[current_time] = power_mgmt
             else:
                 power_mgmt = None

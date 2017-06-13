@@ -17,6 +17,7 @@ from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsfr
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
+from sys import exit
 
 
 # Class that contains all code to start the parser
