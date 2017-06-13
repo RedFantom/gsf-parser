@@ -164,13 +164,15 @@ class MainWindow(tk.Tk):
         exit()
 
     def check_update(self):
-        print(Github().rate_limiting)
+        print("Rate limit: ", Github().rate_limiting)
         user = Github().get_user("RedFantom")
         repo = user.get_repo("GSF-Parser")
         current = Version(variables.settings_obj.version.replace("v", ""))
         for item in repo.get_tags():
             try:
-                if Version(item.name) > current:
+                if Version(item.name.replace("v", "")) > current:
                     UpdateWindow(self, item.name)
-            except ValueError:
+                    break
+            except ValueError as e:
+                print(e)
                 continue
