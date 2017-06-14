@@ -18,6 +18,9 @@ from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
 from sys import exit
+from github import Github
+from semantic_version import Version
+from toplevels.update import UpdateWindow
 
 
 # Class that contains all code to start the parser
@@ -109,6 +112,10 @@ class MainWindow(tk.Tk):
         self.notebook.grid(column=0, row=0)
         self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
+        # Check for updates
+        self.splash.label_var.set("Checking for updates")
+        self.update()
+        self.check_update()
         # Give focus to the main window
         self.deiconify()
         self.finished = True
@@ -155,3 +162,19 @@ class MainWindow(tk.Tk):
         :return: SystemExit(0)
         """
         exit()
+
+    def check_update(self):
+        print("Rate limit: ", Github().rate_limiting)
+        if not variables.settings_obj.autoupdate:
+            return
+        user = Github().get_user("RedFantom")
+        repo = user.get_repo("GSF-Parser")
+        current = Version(variables.settings_obj.version.replace("v", ""))
+        for item in repo.get_tags():
+            try:
+                if Version(item.name.replace("v", "")) > current:
+                    UpdateWindow(self, item.name)
+                    break
+            except ValueError as e:
+                print(e)
+                continue
