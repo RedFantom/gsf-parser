@@ -19,6 +19,7 @@ from toplevels.privacy import Privacy
 from collections import OrderedDict
 from ast import literal_eval as eval
 
+
 class SettingsFrame(ttk.Frame):
     """
     A rather complicated Frame with lots of widgets containing the widgets for
@@ -58,7 +59,8 @@ class SettingsFrame(ttk.Frame):
             "Custom": "Custom: ",
             "Default": "#236ab2"
         }
-        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *tuple(self.color_choices.keys()))
+        self.color_choices_tuple = ("Default", "Default", "Custom", "Darkblue", "Darkgreen", "Darkred", "Black")
+        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *self.color_choices_tuple)
         self.color.set(variables.settings_obj["gui"]["color"])
         self.logo_color_label = ttk.Label(self.gui_frame, text="\tParser logo color: ")
         self.logo_color = tk.StringVar()
@@ -431,9 +433,16 @@ class SettingsFrame(ttk.Frame):
         if "#" not in variables.settings_obj["gui"]["color"]:
             self.color.set(variables.settings_obj["gui"]["color"])
         else:
-            self.color.set("custom")
-            self.custom_color_entry.delete(0, tk.END)
-            self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
+            print("Set color: {0}, default color {1}".format(variables.settings_obj["gui"]["color"],
+                                                             variables.settings_obj.defaults["gui"]["color"]))
+            if variables.settings_obj["gui"]["color"] is variables.settings_obj.defaults["gui"]["color"]:
+                self.color.set("Default")
+                self.custom_color_entry.delete(0, tk.END)
+                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
+            else:
+                self.color.set("Custom")
+                self.custom_color_entry.delete(0, tk.END)
+                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
         self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
         self.event_colors.set(variables.settings_obj["gui"]["event_colors"])
         self.event_scheme.set(variables.settings_obj["gui"]["event_scheme"])
@@ -462,7 +471,12 @@ class SettingsFrame(ttk.Frame):
         self.realtime_event_overlay_var.set(variables.settings_obj["realtime"]["events_overlay"])
         self.screenparsing_var.set(variables.settings_obj["realtime"]["screenparsing"])
         self.screenparsing_overlay_var.set(variables.settings_obj["realtime"]["screenparsing_overlay"])
-        self.screenparsing_features = eval(variables.settings_obj["realtime"]["screenparsing_features"])
+        for key, value in self.screenparsing_variables.items():
+            if key in eval(variables.settings_obj["realtime"]["screenparsing_features"]):
+                value.set(True)
+            else:
+                value.set(False)
+        return
 
     def save_settings(self):
         """
@@ -478,7 +492,7 @@ class SettingsFrame(ttk.Frame):
         else:
             reboot = True
         print(self.color.get())
-        if "Custom" in self.color.get():
+        if self.color.get() is "custom":
             hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
             print(hex_color)
             if not hex_color:
