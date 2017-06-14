@@ -18,7 +18,7 @@ from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
 from sys import exit
-from github import Github
+from github import Github, GithubException
 from semantic_version import Version
 from toplevels.update import UpdateWindow
 
@@ -164,17 +164,29 @@ class MainWindow(tk.Tk):
         exit()
 
     def check_update(self):
+        """
+        Function to check for GSF Parser updates by checking tags and opening a window if an update is available
+        :return: None
+        """
         print("Rate limit: ", Github().rate_limiting)
         if not variables.settings_obj["misc"]["autoupdate"]:
             return
-        user = Github().get_user("RedFantom")
-        repo = user.get_repo("GSF-Parser")
-        current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
-        for item in repo.get_tags():
-            try:
-                if Version(item.name.replace("v", "")) > current:
-                    UpdateWindow(self, item.name)
-                    break
-            except ValueError as e:
-                print(e)
-                continue
+        try:
+            user = Github().get_user("RedFantom")
+            repo = user.get_repo("GSF-Parser")
+            current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
+            for item in repo.get_tags():
+                try:
+                    if Version(item.name.replace("v", "")) > current:
+                        UpdateWindow(self, item.name)
+                        break
+                    elif Version(item.name.replace("v", "")) < current:
+                        # The newest tags come first in the loop
+                        # If the tag is older than the current version, an update isn't needed
+                        # The loop is stopped to preserve the rate limit
+                        break
+                except ValueError as e:
+                    print(e)
+                    continue
+        except GithubException:
+            pass

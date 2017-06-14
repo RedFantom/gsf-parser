@@ -10,7 +10,6 @@ import tkinter.ttk as ttk
 import variables
 import tkinter.colorchooser
 import collections
-import struct
 import tkinter.filedialog
 from tools import utilities
 import os
@@ -42,34 +41,23 @@ class EventColors(tk.Toplevel):
         self.column_label_three = ttk.Label(self, text="Text color", font=("Calibri", 12))
         self.colors = collections.OrderedDict()
         variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
-        self.colors['dmgd_pri'] = [variables.color_scheme['dmgd_pri'][0], variables.color_scheme['dmgd_pri'][1]]
-        self.colors['dmgt_pri'] = [variables.color_scheme['dmgt_pri'][0], variables.color_scheme['dmgt_pri'][1]]
-        self.colors['dmgd_sec'] = [variables.color_scheme['dmgd_sec'][0], variables.color_scheme['dmgd_sec'][1]]
-        self.colors['dmgt_sec'] = [variables.color_scheme['dmgt_sec'][0], variables.color_scheme['dmgt_sec'][1]]
-        self.colors['selfdmg'] = [variables.color_scheme['selfdmg'][0], variables.color_scheme['selfdmg'][1]]
-        self.colors['healing'] = [variables.color_scheme['healing'][0], variables.color_scheme['healing'][1]]
-        self.colors['selfheal'] = [variables.color_scheme['selfheal'][0], variables.color_scheme['selfheal'][1]]
-        self.colors['engine'] = [variables.color_scheme['engine'][0], variables.color_scheme['engine'][1]]
-        self.colors['shield'] = [variables.color_scheme['shield'][0], variables.color_scheme['shield'][1]]
-        self.colors['system'] = [variables.color_scheme['system'][0], variables.color_scheme['system'][1]]
-        self.colors['other'] = [variables.color_scheme['other'][0], variables.color_scheme['other'][1]]
-        self.colors['spawn'] = [variables.color_scheme['spawn'][0], variables.color_scheme['spawn'][1]]
-        self.colors['match'] = [variables.color_scheme['match'][0], variables.color_scheme['match'][1]]
-        self.colors['default'] = [variables.color_scheme['default'][0], variables.color_scheme['default'][1]]
-        self.color_descriptions = {'dmgd_pri': "Damage dealt by Primary Weapons: ",
-                                   'dmgt_pri': "Damage taken from Primary Weapons: ",
-                                   'dmgd_sec': "Damage dealt by Secondary Weapons: ",
-                                   'dmgt_sec': "Damage taken from Secondary Weapons: ",
-                                   'selfdmg': "Selfdamage: ",
-                                   'healing': "Healing received from others: ",
-                                   'selfheal': "Healing received from yourself: ",
-                                   'engine': "Activation of engine abilities: ",
-                                   'shield': "Activation of shield abilities: ",
-                                   'system': "Activation of system abilities: ",
-                                   'other': "Activation of other abilities: ",
-                                   'spawn': "End of a spawn: ",
-                                   'match': "End of a match: ",
-                                   'default': "Unmatched categories: "}
+        self.color_descriptions = collections.OrderedDict()
+        self.color_descriptions["dmgd_pri"] = "Damage dealt by Primary Weapons: "
+        self.color_descriptions["dmgt_pri"] = "Damage taken from Primary Weapons: "
+        self.color_descriptions["dmgd_sec"] = "Damage dealt by Secondary Weapons: "
+        self.color_descriptions["dmgt_sec"] = "Damage taken from Secondary Weapons: "
+        self.color_descriptions["selfdmg"] = "Selfdamage: "
+        self.color_descriptions["healing"] = "Healing received from others: "
+        self.color_descriptions["selfheal"] = "Healing received from yourself: "
+        self.color_descriptions["engine"] = "Activation of engine abilities: "
+        self.color_descriptions["shield"] = "Activation of shield abilities: "
+        self.color_descriptions["system"] = "Activation of system abilities: "
+        self.color_descriptions["other"] = "Activation of other abilities: "
+        self.color_descriptions["spawn"] = "End of a spawn: "
+        self.color_descriptions["match"] = "End of a match: "
+        self.color_descriptions["default"] = "Unmatched categories: "
+        for color in self.color_descriptions.keys():
+            self.colors[color] = [variables.color_scheme[color][0], variables.color_scheme[color][1]]
         self.color_labels = {}
         self.color_entry_vars_bg = {}
         self.color_entry_vars_fg = {}
@@ -117,20 +105,8 @@ class EventColors(tk.Toplevel):
             self.focus_set()
             return
         variables.color_scheme.set_scheme("custom", custom_file=file_to_open)
-        self.colors['dmgd_pri'] = [variables.color_scheme['dmgd_pri'][0], variables.color_scheme['dmgd_pri'][1]]
-        self.colors['dmgt_pri'] = [variables.color_scheme['dmgt_pri'][0], variables.color_scheme['dmgt_pri'][1]]
-        self.colors['dmgd_sec'] = [variables.color_scheme['dmgd_sec'][0], variables.color_scheme['dmgd_sec'][1]]
-        self.colors['dmgt_sec'] = [variables.color_scheme['dmgt_sec'][0], variables.color_scheme['dmgt_sec'][1]]
-        self.colors['selfdmg'] = [variables.color_scheme['selfdmg'][0], variables.color_scheme['selfdmg'][1]]
-        self.colors['healing'] = [variables.color_scheme['healing'][0], variables.color_scheme['healing'][1]]
-        self.colors['selfheal'] = [variables.color_scheme['selfheal'][0], variables.color_scheme['selfheal'][1]]
-        self.colors['engine'] = [variables.color_scheme['engine'][0], variables.color_scheme['engine'][1]]
-        self.colors['shield'] = [variables.color_scheme['shield'][0], variables.color_scheme['shield'][1]]
-        self.colors['system'] = [variables.color_scheme['system'][0], variables.color_scheme['system'][1]]
-        self.colors['other'] = [variables.color_scheme['other'][0], variables.color_scheme['other'][1]]
-        self.colors['spawn'] = [variables.color_scheme['spawn'][0], variables.color_scheme['spawn'][1]]
-        self.colors['match'] = [variables.color_scheme['match'][0], variables.color_scheme['match'][1]]
-        self.colors['default'] = [variables.color_scheme['default'][0], variables.color_scheme['default'][1]]
+        for color in self.color_descriptions.keys():
+            self.colors[color] = [variables.color_scheme[color][0], variables.color_scheme[color][1]]
         for key in self.color_entry_vars_bg.keys():
             self.color_entry_widgets_bg[key].delete(0, tk.END)
             self.color_entry_widgets_fg[key].delete(0, tk.END)
