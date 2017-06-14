@@ -499,34 +499,50 @@ class SettingsFrame(ttk.Frame):
                            """overlay will only appear after the first GSF ability is executed, so the overlay """
                            """may appear to display a little late, but this is normal behaviour.""")
             tkinter.messagebox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
-        variables.settings_obj.write_set(cl_path=str(self.path_var.get()),
-                                         auto_ident=str(self.privacy_var.get()),
-                                         server_address=str(self.server_address_entry.get()),
-                                         server_port=str(self.server_port_entry.get()),
-                                         auto_upl=str(self.auto_upload_var.get()),
-                                         overlay=str(self.overlay_enable_radio_var.get()),
-                                         opacity=str(self.overlay_opacity_input.get()),
-                                         size=str(self.overlay_size_var.get()),
-                                         pos=str(self.overlay_position_var.get()),
-                                         color=color,
-                                         logo_color=self.logo_color.get(),
-                                         bg_color=self.overlay_bg_color.get(),
-                                         tr_color=self.overlay_tr_color.get(),
-                                         tx_color=self.overlay_tx_color.get(),
-                                         tx_font=self.overlay_font.get(),
-                                         tx_size=self.overlay_text_size_entry.get(),
-                                         overlay_when_gsf=self.overlay_when_gsf.get(),
-                                         timeout=self.realtime_timeout.get(),
-                                         event_colors=self.event_colors.get(),
-                                         event_scheme=self.event_scheme.get(),
-                                         date_format=self.date_format.get(),
-                                         faction=self.faction.get(),
-                                         events_overlay=self.realtime_event_overlay_var.get(),
-                                         screenparsing=self.screenparsing_var.get(),
-                                         screenparsing_overlay=self.screenparsing_overlay_var.get(),
-                                         screenparsing_features=[feature for feature in self.screenparsing_features if
-                                                                 self.screenparsing_variables[feature].get() is True],
-                                         autoupdate=self.auto_update.get())
+        dictionary = {
+            "misc": {
+                "version": "v3.0.0",
+                "autoupdate": True
+            },
+            "gui": {
+                "color": "#236ab2",
+                "logo_color": "Green",
+                "event_colors": "basic",
+                "event_scheme": "default",
+                "date_format": "ymd",
+                "faction": "imperial"
+            },
+            "parsing": {
+                "cl_path": os.path.realpath(
+                    os.path.join(os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs")),
+                "auto_ident": False
+            },
+            "sharing": {
+                "server_address": "parser.thrantasquadron.tk",
+                "server_port": 83,
+                "auto_upl": False
+            },
+            "realtime": {
+                "overlay": True,
+                "opacity": 1.0,
+                "size": "big",
+                "pos": "UT",
+                "overlay_bg_color": "White",
+                "overlay_tr_color": "White",
+                "overlay_tx_color": "Yellow",
+                "overlay_tx_font": "Calibri",
+                "overlay_tx_size": 12,
+                "overlay_when_gsf": True,
+                "timeout": 0.2,
+                "events_overlay": False,
+                "screenparsing": True,
+                "screenparsing_overlay": True,
+                "screenparsing_features": ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                                           "Power management"],
+
+            }
+        }
+        variables.settings_obj.write_settings(dictionary)
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
