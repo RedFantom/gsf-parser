@@ -42,14 +42,14 @@ class MainWindow(tk.Tk):
         variables.main_window = self
         self.style = ttk.Style()
         self.set_icon()
-        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj.cl_path
+        variables.path = variables.settings_obj["parsing"]["cl_path"]
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings_obj.cl_path
+        self.default_path = variables.settings_obj["parsing"]["cl_path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width=False, height=False)
         self.wm_title("GSF Parser")
@@ -57,7 +57,7 @@ class MainWindow(tk.Tk):
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
         # TODO Enable connecting to the server in a later phase
-        if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
+        if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj.auto_ident:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
         # self.splash.update_progress()
@@ -141,9 +141,9 @@ class MainWindow(tk.Tk):
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
         try:
-            self.style.configure('.', foreground=variables.settings_obj.color)
-        except AttributeError:
-            self.style.configure('.', foreground='#8B0000')
+            self.style.configure('.', foreground=variables.settings_obj["gui"]["color"])
+        except KeyError:
+            self.style.configure('.', foreground='#2f77d0')
         if not start:
             self.destroy()
             main.new_window()
@@ -151,7 +151,7 @@ class MainWindow(tk.Tk):
     def set_icon(self):
         try:
             self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
-                                    variables.settings_obj.logo_color + ".ico")
+                                    variables.settings_obj["gui"]["logo_color"] + ".ico")
         except:
             print("[DEBUG] No icon found, is this from the GitHub repo?")
 
@@ -165,11 +165,11 @@ class MainWindow(tk.Tk):
 
     def check_update(self):
         print("Rate limit: ", Github().rate_limiting)
-        if not variables.settings_obj.autoupdate:
+        if not variables.settings_obj["misc"]["autoupdate"]:
             return
         user = Github().get_user("RedFantom")
         repo = user.get_repo("GSF-Parser")
-        current = Version(variables.settings_obj.version.replace("v", ""))
+        current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
         for item in repo.get_tags():
             try:
                 if Version(item.name.replace("v", "")) > current:

@@ -73,7 +73,7 @@ def pretty_event(line_dict, start_of_match, active_id):
         else:
             string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
-            if variables.settings_obj.event_colors == "basic":
+            if variables.settings_obj["gui"]["event_colors"] == "basic":
                 if line_dict['source'] == active_id:
                     bg_color = variables.color_scheme['selfdmg'][0]
                     fg_color = variables.color_scheme['selfdmg'][1]
@@ -114,7 +114,7 @@ def pretty_event(line_dict, start_of_match, active_id):
             fg_color = variables.color_scheme['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-        if variables.settings_obj.event_colors == "advanced":
+        if variables.settings_obj["gui"]["event_colors"] == "advanced":
             for engine in abilities.engines:
                 if engine in string:
                     bg_color = variables.color_scheme['engine'][0]
@@ -133,7 +133,7 @@ def pretty_event(line_dict, start_of_match, active_id):
             if not bg_color:
                 bg_color = variables.color_scheme['other'][0]
                 fg_color = variables.color_scheme['other'][1]
-        elif variables.settings_obj.event_colors == "basic":
+        elif variables.settings_obj["gui"]["event_colors"] == "basic":
             bg_color = variables.color_scheme['other'][0]
             fg_color = variables.color_scheme['other'][1]
     else:
@@ -212,7 +212,7 @@ def print_event(line_dict, start_of_match, player):
         else:
             string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] in player:
-            if variables.settings_obj.event_colors == "basic":
+            if variables.settings_obj["gui"]["event_colors"] == "basic":
                 if line_dict['source'] in player:
                     bg_color = variables.color_scheme['selfdmg'][0]
                     fg_color = variables.color_scheme['selfdmg'][1]
@@ -253,7 +253,7 @@ def print_event(line_dict, start_of_match, player):
             fg_color = variables.color_scheme['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-        if variables.settings_obj.event_colors == "advanced":
+        if variables.settings_obj["gui"]["event_colors"] == "advanced":
             for engine in abilities.engines:
                 if engine in string:
                     bg_color = variables.color_scheme['engine'][0]
@@ -272,7 +272,7 @@ def print_event(line_dict, start_of_match, player):
             if not bg_color:
                 bg_color = variables.color_scheme['other'][0]
                 fg_color = variables.color_scheme['other'][1]
-        elif variables.settings_obj.event_colors == "basic":
+        elif variables.settings_obj["gui"]["event_colors"] == "basic":
             bg_color = variables.color_scheme['other'][0]
             fg_color = variables.color_scheme['other'][1]
     else:

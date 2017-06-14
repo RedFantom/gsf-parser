@@ -89,7 +89,7 @@ class Settings(object):
             "autoupdate": True
         },
         "gui": {
-            "color": "#236ab2",
+            "color": "#2f77d0",
             "logo_color": "Green",
             "event_colors": "basic",
             "event_scheme": "default",
@@ -138,17 +138,20 @@ class Settings(object):
     def write_defaults(self):
         conf = configparser.ConfigParser()
         conf.read_dict(self.defaults)
-        conf.write(self.file_name)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
 
     def write_settings(self, dictionary):
         conf = configparser.ConfigParser()
         conf.read_dict(dictionary)
-        conf.write(self.file_name)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
 
     def read_settings(self):
-        if self.file_name not in os.listdir(self.directory):
+        if os.path.basename(self.file_name) not in os.listdir(self.directory):
             self.write_defaults()
-        self.conf.read_file(self.file_name)
+        with open(self.file_name, "r") as fi:
+            self.conf.read_file(fi)
 
     def __getitem__(self, section):
         return self.conf[section]

@@ -41,10 +41,10 @@ class ClientConnection(object):
         if not silent:
             self.splash = ConnectionSplash(window=variables.main_window)
         self.conn_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
+        self.address = (variables.settings_obj["sharing"]["server_address"], variables.settings_obj["sharing"]["server_port"])
         self.TIME_OUT = 4
         self.conn_obj.settimeout(self.TIME_OUT)
-        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
+        self.address = (variables.settings_obj["sharing"]["server_address"], variables.settings_obj["sharing"]["server_port"])
         self.conn = self.wrap_conn_obj(self.conn_obj)
         try:
             self.conn.connect(self.address)
@@ -209,7 +209,7 @@ class ClientConnection(object):
         elif message != "READY":
             self.unexpected()
             return
-        with open(variables.settings_obj.cl_path + "/" + file_name, "r") as file_obj:
+        with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file_name, "r") as file_obj:
             lines = file_obj.readlines()
         if self.send("LEN=%s" % len(lines)) == -1: return
         if self.send(hashlib.sha512(lines)) == -1: return
@@ -505,7 +505,7 @@ class RealtimeConnection(threading.Thread):
 
     def init_conn(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = (variables.settings_obj.server_address, variables.settings_obj.server_port)
+        self.address = (variables.settings_obj["sharing"]["server_address"], variables.settings_obj["sharing"]["server_port"])
         try:
             self.conn.connect(self.address)
         except ssl.SSLError:

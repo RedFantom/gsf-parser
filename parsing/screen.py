@@ -165,7 +165,7 @@ class ScreenParser(threading.Thread):
         self.character = character_data
         self.features_list = [key for key, value in self.features.items() if value]
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
-        if variables.settings_obj.screenparsing_overlay:
+        if variables.settings_obj["realtime"]["screenparsing_overlay"]:
             self.screenoverlay = HitChanceOverlay(variables.main_window)
         else:
             self.screenoverlay = None

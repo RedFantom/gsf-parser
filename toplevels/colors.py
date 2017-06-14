@@ -41,7 +41,7 @@ class EventColors(tk.Toplevel):
         self.column_label_two = ttk.Label(self, text="Background color", font=("Calibri", 12))
         self.column_label_three = ttk.Label(self, text="Text color", font=("Calibri", 12))
         self.colors = collections.OrderedDict()
-        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
         self.colors['dmgd_pri'] = [variables.color_scheme['dmgd_pri'][0], variables.color_scheme['dmgd_pri'][1]]
         self.colors['dmgt_pri'] = [variables.color_scheme['dmgt_pri'][0], variables.color_scheme['dmgt_pri'][1]]
         self.colors['dmgd_sec'] = [variables.color_scheme['dmgd_sec'][0], variables.color_scheme['dmgd_sec'][1]]
