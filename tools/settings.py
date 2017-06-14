@@ -78,6 +78,7 @@ class Defaults(object):
     screenparsing_overlay = True
     screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
                               "Power management"]
+    autoupdate = True
 
 
 # Class that loads, stores and saves settings
@@ -129,6 +130,7 @@ class Settings(object):
         self.screenparsing = eval(self.conf.get("realtime", "screenparsing"))
         self.screenparsing_features = eval(self.conf.get("realtime", "screenparsing_features"))
         self.screenparsing_overlay = eval(self.conf.get("realtime", "screenparsing_overlay"))
+        self.autoupdate = eval(self.conf.get("misc", "autoupdate"))
         print("[DEBUG] Settings read")
 
     # Write the defaults settings found in the class defaults to a pickle in a
@@ -170,6 +172,7 @@ class Settings(object):
         self.conf.set("realtime", "screenparsing", Defaults.screenparsing)
         self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
         self.conf.set("realtime", "screenparsing_features", Defaults.screenparsing_features)
+        self.conf.set("misc", "autoupdate", Defaults.autoupdate)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         print("[DEBUG] Defaults written")
@@ -205,7 +208,8 @@ class Settings(object):
                   events_overlay=Defaults.events_overlay,
                   screenparsing=Defaults.screenparsing,
                   screenparsing_overlay=Defaults.screenparsing_overlay,
-                  screenparsing_features=Defaults.screenparsing_features):
+                  screenparsing_features=Defaults.screenparsing_features,
+                  autoupdate=Defaults.autoupdate):
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         try:
             self.conf.add_section("misc")
@@ -252,6 +256,7 @@ class Settings(object):
         self.conf.set("gui", "event_scheme", event_scheme)
         self.conf.set("gui", "date_format", date_format)
         self.conf.set("gui", "faction", faction)
+        self.conf.set("misc", "autoupdate", autoupdate)
         with open(self.file_name, "w") as settings_file_object:
             self.conf.write(settings_file_object)
         self.read_set()

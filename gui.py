@@ -165,6 +165,8 @@ class MainWindow(tk.Tk):
 
     def check_update(self):
         print("Rate limit: ", Github().rate_limiting)
+        if not variables.settings_obj.autoupdate:
+            return
         user = Github().get_user("RedFantom")
         repo = user.get_repo("GSF-Parser")
         current = Version(variables.settings_obj.version.replace("v", ""))

@@ -99,6 +99,9 @@ class SettingsFrame(ttk.Frame):
         for faction in self.faction_choices:
             self.faction_options.append(ttk.Radiobutton(self.gui_frame, value=str(faction).lower(), text=faction,
                                                         variable=self.faction, width=8))
+        self.auto_update = tk.BooleanVar()
+        self.auto_update_checkbox = ttk.Checkbutton(self.gui_frame, variable=self.auto_update,
+                                                    text="Automatically check for updates on startup")
 
         # PARSING SETTINGS
         self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
@@ -322,6 +325,7 @@ class SettingsFrame(ttk.Frame):
         for radio in self.faction_options:
             set_column += 1
             radio.grid(column=set_column, row=5, sticky="nswe")
+        self.auto_update_checkbox.grid(column=0, row=6, columnspan=2, padx=(55, 0))
         # PARSING SETTINGS
         self.parsing_label.grid(column=0, row=2, sticky="w", pady=5)
         self.path_entry_label.grid(column=0, row=0, sticky="nswe", padx=5)
@@ -464,6 +468,7 @@ class SettingsFrame(ttk.Frame):
                 self.screenparsing_variables[feature].set(True)
             else:
                 self.screenparsing_variables[feature].set(False)
+        self.auto_update.set(variables.settings_obj.autoupdate)
 
     def save_settings(self):
         """
@@ -520,7 +525,8 @@ class SettingsFrame(ttk.Frame):
                                          screenparsing=self.screenparsing_var.get(),
                                          screenparsing_overlay=self.screenparsing_overlay_var.get(),
                                          screenparsing_features=[feature for feature in self.screenparsing_features if
-                                                                 self.screenparsing_variables[feature].get() is True])
+                                                                 self.screenparsing_variables[feature].get() is True],
+                                         autoupdate=self.auto_update.get())
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
