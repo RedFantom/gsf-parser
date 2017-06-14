@@ -28,7 +28,7 @@ class LogStalker(threading.Thread):
     changed.
     """
 
-    def __init__(self, folder=variables.settings_obj.cl_path, callback=None,
+    def __init__(self, folder=variables.settings_obj["parsing"]["cl_path"], callback=None,
                  watching_stringvar=None, newfilecallback=None):
         """
         Open a LogStalker class
@@ -91,10 +91,10 @@ class LogStalker(threading.Thread):
                     self.stringvar.set("Watching: " + latest_file_name)
                 self.current_file = latest_file_name
                 self.new_file_callback(self.current_file)
-                with open(variables.settings_obj.cl_path + "/" + self.current_file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + self.current_file, "r") as file_obj:
                     self.read_so_far = len(file_obj.readlines())
             # sleep 0.1 seconds to reduce IO usage
-            time.sleep(variables.settings_obj.timeout)
+            time.sleep(variables.settings_obj["realtime"]["timeout"])
 
     def read_from_file(self):
         """
@@ -103,7 +103,7 @@ class LogStalker(threading.Thread):
         :return: list of lines
         """
         self.lines = []
-        with open(variables.settings_obj.cl_path + "/" + self.current_file, "rb") as file_obj:
+        with open(variables.settings_obj["parsing"]["cl_path"] + "/" + self.current_file, "rb") as file_obj:
             lines_temp = file_obj.readlines()[self.read_so_far:]
         try:
             line_temp = lines_temp[-1]

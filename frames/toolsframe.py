@@ -108,7 +108,7 @@ class ToolsFrame(ttk.Frame):
 
     def start_simulator(self):
         self.simulator_thread = threading.Thread(target=lambda file_name=self.simulator_file,
-                                                               dir=variables.settings_obj.cl_path: simulator.simulate(
+                                                               dir=variables.settings_obj["parsing"]["cl_path"]: simulator.simulate(
                                                                                                     file_name,
                                                                                                     output_directory=dir
                                                                                                    ))

@@ -17,6 +17,7 @@ from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
 from toplevels.privacy import Privacy
 from collections import OrderedDict
+from ast import literal_eval as eval
 
 
 class SettingsFrame(ttk.Frame):
@@ -58,11 +59,12 @@ class SettingsFrame(ttk.Frame):
             "Custom": "Custom: ",
             "Default": "#236ab2"
         }
-        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *tuple(self.color_choices.keys()))
-        self.color.set(variables.settings_obj.color)
+        self.color_choices_tuple = ("Default", "Default", "Custom", "Darkblue", "Darkgreen", "Darkred", "Black")
+        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *self.color_choices_tuple)
+        self.color.set(variables.settings_obj["gui"]["color"])
         self.logo_color_label = ttk.Label(self.gui_frame, text="\tParser logo color: ")
         self.logo_color = tk.StringVar()
-        self.logo_color.set(variables.settings_obj.logo_color)
+        self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
         self.logo_color_dropdown = ttk.OptionMenu(self.gui_frame, self.logo_color, *("Default", "Green", "Blue", "Red"))
 
         # MARK HERE
@@ -95,7 +97,7 @@ class SettingsFrame(ttk.Frame):
         self.faction = tk.StringVar()
         self.faction_choices = ["Imperial", "Republic"]
         self.faction_options = []
-        self.faction.set(variables.settings_obj.faction)
+        self.faction.set(variables.settings_obj["gui"]["faction"])
         for faction in self.faction_choices:
             self.faction_options.append(ttk.Radiobutton(self.gui_frame, value=str(faction).lower(), text=faction,
                                                         variable=self.faction, width=8))
@@ -154,7 +156,7 @@ class SettingsFrame(ttk.Frame):
                                                         value="small", text="Small")
         self.overlay_position_label = ttk.Label(self.realtime_frame, text="\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
-        self.overlay_position_var.set(variables.settings_obj.pos)
+        self.overlay_position_var.set(variables.settings_obj["realtime"]["pos"])
         self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame,
                                                          variable=self.overlay_position_var,
                                                          value="TL", text="Top left")
@@ -427,48 +429,54 @@ class SettingsFrame(ttk.Frame):
         module and update the settings shown in the GUI accordingly.
         :return: None
         """
-        self.path_var.set(variables.settings_obj.cl_path)
-        self.privacy_var.set(bool(variables.settings_obj.auto_ident))
-        self.server_address_entry.delete(0, tk.END)
-        self.server_address_entry.insert(0, str(variables.settings_obj.server_address))
-        self.server_port_entry.delete(0, tk.END)
-        self.server_port_entry.insert(0, int(variables.settings_obj.server_port))
-        self.auto_upload_var.set(bool(variables.settings_obj.auto_upl))
-        self.overlay_enable_radio_var.set(bool(variables.settings_obj.overlay))
-        self.overlay_opacity_input.delete(0, tk.END)
-        self.overlay_opacity_input.insert(0, variables.settings_obj.opacity)
-        self.overlay_size_var.set(variables.settings_obj.size)
-        self.overlay_position_var.set(variables.settings_obj.pos)
-        self.logo_color.set(variables.settings_obj.logo_color)
-        if re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", variables.settings_obj.color):
-            if variables.settings_obj.color == "#236ab2":
+        self.auto_update.set(variables.settings_obj["misc"]["autoupdate"])
+        if "#" not in variables.settings_obj["gui"]["color"]:
+            self.color.set(variables.settings_obj["gui"]["color"])
+        else:
+            print("Set color: {0}, default color {1}".format(variables.settings_obj["gui"]["color"],
+                                                             variables.settings_obj.defaults["gui"]["color"]))
+            if variables.settings_obj["gui"]["color"] is variables.settings_obj.defaults["gui"]["color"]:
                 self.color.set("Default")
+                self.custom_color_entry.delete(0, tk.END)
+                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
             else:
                 self.color.set("Custom")
                 self.custom_color_entry.delete(0, tk.END)
-                self.custom_color_entry.insert(tk.END, variables.settings_obj.color)
-        self.overlay_bg_color.set(variables.settings_obj.overlay_bg_color)
-        self.overlay_tx_color.set(variables.settings_obj.overlay_tx_color)
-        self.overlay_tr_color.set(variables.settings_obj.overlay_tr_color)
-        self.overlay_font.set(variables.settings_obj.overlay_tx_font)
+                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
+        self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
+        self.event_colors.set(variables.settings_obj["gui"]["event_colors"])
+        self.event_scheme.set(variables.settings_obj["gui"]["event_scheme"])
+        self.date_format.set(variables.settings_obj["gui"]["date_format"])
+        self.faction.set(variables.settings_obj["gui"]["faction"])
+        self.path_var.set(variables.settings_obj["parsing"]["cl_path"])
+        self.privacy_var.set(variables.settings_obj["parsing"]["auto_ident"])
+        self.server_address_entry.delete(0, tk.END)
+        self.server_address_entry.insert(0, variables.settings_obj["sharing"]["server_address"])
+        self.server_port_entry.delete(0, tk.END)
+        self.server_port_entry.insert(0, variables.settings_obj["sharing"]["server_port"])
+        self.auto_upload_var.set(variables.settings_obj["sharing"]["auto_upl"])
+        self.overlay_enable_radio_var.set(variables.settings_obj["realtime"]["overlay"])
+        self.overlay_opacity_input.delete(0, tk.END)
+        self.overlay_opacity_input.insert(0, variables.settings_obj["realtime"]["opacity"])
+        self.overlay_size_var.set(variables.settings_obj["realtime"]["size"])
+        self.overlay_position_var.set(variables.settings_obj["realtime"]["pos"])
+        self.overlay_bg_color.set(variables.settings_obj["realtime"]["overlay_bg_color"])
+        self.overlay_tr_color.set(variables.settings_obj["realtime"]["overlay_tr_color"])
+        self.overlay_tx_color.set(variables.settings_obj["realtime"]["overlay_tx_color"])
+        self.overlay_font.set(variables.settings_obj["realtime"]["overlay_tx_font"])
         self.overlay_text_size_entry.delete(0, tk.END)
-        self.overlay_text_size_entry.insert(0, variables.settings_obj.overlay_tx_size)
-        self.overlay_when_gsf.set(variables.settings_obj.overlay_when_gsf)
-        self.event_colors.set(variables.settings_obj.event_colors)
-        self.event_scheme.set(variables.settings_obj.event_scheme)
-        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
-        self.date_format.set(variables.settings_obj.date_format)
-        self.realtime_timeout.set(variables.settings_obj.timeout)
-        self.faction.set(variables.settings_obj.faction)
-        self.realtime_event_overlay_var.set(variables.settings_obj.events_overlay)
-        self.screenparsing_var.set(variables.settings_obj.screenparsing)
-        self.screenparsing_overlay_var.set(variables.settings_obj.screenparsing_overlay)
-        for feature in self.screenparsing_features:
-            if feature in variables.settings_obj.screenparsing_features:
-                self.screenparsing_variables[feature].set(True)
+        self.overlay_text_size_entry.insert(0, variables.settings_obj["realtime"]["overlay_tx_size"])
+        self.overlay_when_gsf.set(variables.settings_obj["realtime"]["overlay_when_gsf"])
+        self.realtime_timeout.set(variables.settings_obj["realtime"]["timeout"])
+        self.realtime_event_overlay_var.set(variables.settings_obj["realtime"]["events_overlay"])
+        self.screenparsing_var.set(variables.settings_obj["realtime"]["screenparsing"])
+        self.screenparsing_overlay_var.set(variables.settings_obj["realtime"]["screenparsing_overlay"])
+        for key, value in self.screenparsing_variables.items():
+            if key in eval(variables.settings_obj["realtime"]["screenparsing_features"]):
+                value.set(True)
             else:
-                self.screenparsing_variables[feature].set(False)
-        self.auto_update.set(variables.settings_obj.autoupdate)
+                value.set(False)
+        return
 
     def save_settings(self):
         """
@@ -478,13 +486,13 @@ class SettingsFrame(ttk.Frame):
         :return: None
         """
         print("[DEBUG] Save_settings called!")
-        if str(self.color.get()) == variables.settings_obj.color and \
-                        self.logo_color.get() == variables.settings_obj.logo_color:
+        if str(self.color.get()) == variables.settings_obj["gui"]["color"] and \
+                        self.logo_color.get() == variables.settings_obj["gui"]["logo_color"]:
             reboot = False
         else:
             reboot = True
         print(self.color.get())
-        if "custom" in self.color.get():
+        if self.color.get() is "custom":
             hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
             print(hex_color)
             if not hex_color:
@@ -494,39 +502,54 @@ class SettingsFrame(ttk.Frame):
             color = self.custom_color_entry.get()
         else:
             color = self.color_choices[self.color.get()]
-        if self.overlay_when_gsf.get() and not variables.settings_obj.overlay_when_gsf:
+        if self.overlay_when_gsf.get() and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
             help_string = ("""This setting makes the overlay only appear inside GSF matches. Please note that the """
                            """overlay will only appear after the first GSF ability is executed, so the overlay """
                            """may appear to display a little late, but this is normal behaviour.""")
             tkinter.messagebox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
-        variables.settings_obj.write_set(cl_path=str(self.path_var.get()),
-                                         auto_ident=str(self.privacy_var.get()),
-                                         server_address=str(self.server_address_entry.get()),
-                                         server_port=str(self.server_port_entry.get()),
-                                         auto_upl=str(self.auto_upload_var.get()),
-                                         overlay=str(self.overlay_enable_radio_var.get()),
-                                         opacity=str(self.overlay_opacity_input.get()),
-                                         size=str(self.overlay_size_var.get()),
-                                         pos=str(self.overlay_position_var.get()),
-                                         color=color,
-                                         logo_color=self.logo_color.get(),
-                                         bg_color=self.overlay_bg_color.get(),
-                                         tr_color=self.overlay_tr_color.get(),
-                                         tx_color=self.overlay_tx_color.get(),
-                                         tx_font=self.overlay_font.get(),
-                                         tx_size=self.overlay_text_size_entry.get(),
-                                         overlay_when_gsf=self.overlay_when_gsf.get(),
-                                         timeout=self.realtime_timeout.get(),
-                                         event_colors=self.event_colors.get(),
-                                         event_scheme=self.event_scheme.get(),
-                                         date_format=self.date_format.get(),
-                                         faction=self.faction.get(),
-                                         events_overlay=self.realtime_event_overlay_var.get(),
-                                         screenparsing=self.screenparsing_var.get(),
-                                         screenparsing_overlay=self.screenparsing_overlay_var.get(),
-                                         screenparsing_features=[feature for feature in self.screenparsing_features if
-                                                                 self.screenparsing_variables[feature].get() is True],
-                                         autoupdate=self.auto_update.get())
+        dictionary = {
+            "misc": {
+                "version": "v3.0.0",
+                "autoupdate": self.auto_update.get()
+            },
+            "gui": {
+                "color": color,
+                "logo_color": self.logo_color.get(),
+                "event_colors": self.event_colors.get(),
+                "event_scheme": self.event_scheme.get(),
+                "date_format": self.date_format.get(),
+                "faction": self.faction.get()
+            },
+            "parsing": {
+                "cl_path": self.path_var.get(),
+                "auto_ident": self.privacy_var.get()
+            },
+            "sharing": {
+                "server_address": self.server_address_entry.get(),
+                "server_port": int(self.server_port_entry.get()),
+                "auto_upl": self.auto_upload_var.get()
+            },
+            "realtime": {
+                "overlay": self.overlay_enable_radio_var.get(),
+                "opacity": float(self.overlay_opacity_input.get()),
+                "size": self.overlay_size_var.get(),
+                "pos": self.overlay_position_var.get(),
+                "overlay_bg_color": self.overlay_bg_color.get(),
+                "overlay_tr_color": self.overlay_tr_color.get(),
+                "overlay_tx_color": self.overlay_tx_color.get(),
+                "overlay_tx_font": self.overlay_font.get(),
+                "overlay_tx_size": int(self.overlay_text_size_entry.get()),
+                "overlay_when_gsf": self.overlay_when_gsf.get(),
+                "timeout": float(self.realtime_timeout.get()),
+                "events_overlay": self.realtime_event_overlay_var.get(),
+                "screenparsing": self.screenparsing_var.get(),
+                "screenparsing_overlay": self.screenparsing_overlay_var.get(),
+                "screenparsing_features": [key for key, value in self.screenparsing_variables.items() if
+                                           value.get() is True],
+
+            }
+        }
+        variables.settings_obj.write_settings(dictionary)
         self.update_settings()
         self.main_window.file_select_frame.add_files()
         if reboot:
@@ -547,7 +570,7 @@ class SettingsFrame(ttk.Frame):
         settings.defaults class and then update the settings shown
         :return: None
         """
-        variables.settings_obj.write_def()
+        variables.settings_obj.write_defaults()
         self.update_settings()
 
     @staticmethod

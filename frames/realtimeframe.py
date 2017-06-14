@@ -112,13 +112,13 @@ class RealtimeFrame(ttk.Frame):
             self.window.notebook.tab(8, state=tk.DISABLED)
             self.parsing = True
             self.main_window.after(100, self.insert)
-            if variables.settings_obj.screenparsing:
+            if variables.settings_obj["realtime"]["screenparsing"]:
                 self.data_queue = Queue()
                 self.exit_queue = Queue()
                 self.query_queue = Queue()
                 self.return_queue = Queue()
                 self.return_queue.put(0)
-                features = variables.settings_obj.screenparsing_features
+                features = variables.settings_obj["realtime"]["screenparsing_features"]
                 if "Enemy name and ship type" in features:
                     name = True
                 else:
@@ -144,15 +144,15 @@ class RealtimeFrame(ttk.Frame):
                 self.screenparser = None
                 self.data_queue = None
             self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          lineops.pretty_event, screen=variables.settings_obj.screenparsing,
-                                          screenoverlay=variables.settings_obj.screenparsing_overlay,
+                                          lineops.pretty_event, screen=variables.settings_obj["realtime"]["screenparsing"],
+                                          screenoverlay=variables.settings_obj["realtime"]["screenparsing_overlay"],
                                           data_queue=self.data_queue)
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
-                                                       folder=variables.settings_obj.cl_path,
+                                                       folder=variables.settings_obj["parsing"]["cl_path"],
                                                        watching_stringvar=self.watching_stringvar,
                                                        newfilecallback=self.parser.new_file, )
             variables.realtime_flag = True
-            if variables.settings_obj.overlay and not variables.settings_obj.overlay_when_gsf:
+            if variables.settings_obj.overlay and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
                 self.overlay = RealtimeOverlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
@@ -167,7 +167,7 @@ class RealtimeFrame(ttk.Frame):
                 self.exit_queue.put(False)
             write_debug_log("Put False in exit_queue of Parser")
             print("Joining threads")
-            if variables.settings_obj.screenparsing:
+            if variables.settings_obj["realtime"]["screenparsing"]:
                 print("Joining ScreenParser thread")
                 self.screenparser.join()
                 print("Screenparser thread joined")
@@ -262,14 +262,14 @@ class RealtimeFrame(ttk.Frame):
     def match_callback(self, dd, dt, hr, sd):
         variables.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
                                                                                            str(sum(hr)), str(sum(sd))))
-        if variables.settings_obj.overlay_when_gsf and self.overlay:
+        if variables.settings_obj["realtime"]["overlay_when_gsf"] and self.overlay:
             self.overlay.destroy()
             self.overlay = None
 
     def new_match_callback(self):
         self.listbox.delete(0, tk.END)
         self.parser.rt_timing = None
-        if variables.settings_obj.overlay_when_gsf and not self.overlay:
+        if variables.settings_obj["realtime"]["overlay_when_gsf"] and not self.overlay:
             self.overlay = RealtimeOverlay(self.main_window)
 
     def insert(self):

@@ -42,7 +42,7 @@ class BootSplash(tk.Toplevel):
         self.title("GSF Parser: Starting...")
         self.logo = ImageTk.PhotoImage(
             Image.open(os.path.join(utilities.get_assets_directory(),
-                                    "logos", "logo_" + variables.settings_obj.logo_color + ".png")))
+                                    "logos", "logo_" + variables.settings_obj["gui"]["logo_color"] + ".png")))
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         self.window = window
@@ -66,7 +66,7 @@ class BootSplash(tk.Toplevel):
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-            os.chdir(variables.settings_obj.cl_path)
+            os.chdir(variables.settings_obj["parsing"]["cl_path"])
             directory = os.listdir(os.getcwd())
         files = []
         for file in directory:
