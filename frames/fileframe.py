@@ -193,6 +193,7 @@ class FileFrame(ttk.Frame):
         most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
         self.main_window.ship_frame.update_ship([most_used_ship])
         self.main_window.ship_frame.update()
+        self.main_window.middle_frame.screen_label_var.set("Not available for files and matches")
 
     def update_widgets_spawn(self, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                              enemydamaget):
@@ -322,7 +323,8 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
-        self.main_window.middle_frame.screen_label_var.set("")
+        self.main_window.middle_frame.screen_label_var.set(
+            "Please select an available spawn for screen parsing information")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         if enemy == "":
