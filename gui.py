@@ -17,6 +17,9 @@ from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsfr
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
+import pyscreenshot
+from tools.utilities import get_temp_directory
+from datetime import datetime
 
 
 # Class that contains all code to start the parser
@@ -159,14 +162,10 @@ class MainWindow(tk.Tk):
         Take a screenshot of the GSF Parser window and save, only works on Windows
         :return: None
         """
-        from PIL import ImageGrab
-        from tools.utilities import get_temp_directory
-        from datetime import datetime
-        screenshot = ImageGrab.grab()
         x = self.winfo_x()
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x, self.winfo_reqheight() + y)
-        screenshot = screenshot.crop(result_box)
+        screenshot = pyscreenshot.grab(result_box)
         file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
                                  ".png")
         screenshot.save(file_name, "PNG")
