@@ -98,6 +98,7 @@ class MainWindow(ThemedTk):
         self.characters_frame.grid()
         self.characters_frame.grid_widgets()
         self.toolsframe.grid_widgets()
+        self.file_select_frame.clear_data_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
