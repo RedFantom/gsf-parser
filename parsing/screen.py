@@ -319,16 +319,16 @@ class ScreenParser(threading.Thread):
             current_time = datetime.now()
             if "powermgmt" in self.features_list:
                 power_mgmt = vision.get_power_management(screen, *power_mgmt_cds)
-                self._power_mgmt_dict[current_time] = power_mgmt
             else:
                 power_mgmt = None
+            self._power_mgmt_dict[current_time] = power_mgmt
             if "healh" in self.features_list:
                 health_hull = vision.get_ship_health_hull(screen)
                 (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
-                self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             else:
                 health_hull = None
                 health_shields_f, health_shields_r = None, None
+            self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             if "ttk" in self.features_list:
                 # Calculate TTK
                 pass
@@ -345,23 +345,26 @@ class ScreenParser(threading.Thread):
                 distance = vision.get_distance_from_center(pointer_cds)
                 tracking_degrees = vision.get_tracking_degrees(distance)
             else:
-                pass
+                tracking_degrees = None
+            self._tracking_dict[current_time] = tracking_degrees
             if "distance" in self.features_list:
                 try:
                     distance = int(vision.perform_ocr(pil_screen, distance_cds))
-                    self._distance_dict[current_time] = distance
                 except ValueError as e:
                     print(e)
+                    distance = None
             else:
-                pass
+                distance = None
+            self._distance_dict[current_time] = distance
             if "ammo" in self.features_list:
                 try:
                     ammo = int(vision.perform_ocr(pil_screen, ammo_cds))
-                    self._ammo_dict[current_time] = ammo
-                except ValueError:
-                    pass
+                except ValueError as e:
+                    print(e)
+                    ammo = None
             else:
-                pass
+                ammo = None
+            self._ammo_dict[current_time] = ammo
             self._cursor_pos_dict[current_time] = pointer_cds
             if not self.exit_queue.empty():
                 print("ScreenParser exit_queue is not empty")
