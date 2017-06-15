@@ -7,7 +7,7 @@
 # For license see LICENSE
 
 # UI imports
-import tkinter as tk
+from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 import os
 import variables
@@ -20,12 +20,15 @@ from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
 from datetime import datetime
+from sys import exit
+from github import Github, GithubException
+from semantic_version import Version
 
 
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
 # Main loop is started at the end
-class MainWindow(tk.Tk):
+class MainWindow(ThemedTk):
     """
     Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
     various functions of the parser an
@@ -33,7 +36,7 @@ class MainWindow(tk.Tk):
 
     def __init__(self):
         # Initialize window
-        tk.Tk.__init__(self)
+        ThemedTk.__init__(self)
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.protocol("WM_DELETE_WINDOW", self.exit)
@@ -41,14 +44,14 @@ class MainWindow(tk.Tk):
         variables.main_window = self
         self.style = ttk.Style()
         self.set_icon()
-        variables.color_scheme.set_scheme(variables.settings_obj.event_scheme)
+        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj.cl_path
+        variables.path = variables.settings_obj["parsing"]["cl_path"]
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings_obj.cl_path
+        self.default_path = variables.settings_obj["parsing"]["cl_path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.resizable(width=False, height=False)
         self.wm_title("GSF Parser")
@@ -56,7 +59,7 @@ class MainWindow(tk.Tk):
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
         # TODO Enable connecting to the server in a later phase
-        if variables.settings_obj.auto_upl or variables.settings_obj.auto_ident:
+        if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj.auto_ident:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
         # self.splash.update_progress()
@@ -75,8 +78,9 @@ class MainWindow(tk.Tk):
         self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
         self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
-        self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
+        self.builds_wrapper_frame = ttk.Frame(self.notebook)
+        self.builds_frame = buildframe.BuildsFrame(self.builds_wrapper_frame)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
@@ -93,14 +97,16 @@ class MainWindow(tk.Tk):
         self.resources_frame.grid()
         self.builds_frame.grid_widgets()
         self.builds_frame.grid()
+        self.builds_wrapper_frame.grid()
         self.characters_frame.grid()
         self.characters_frame.grid_widgets()
         self.toolsframe.grid_widgets()
+        self.file_select_frame.clear_data_widgets()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
-        self.notebook.add(self.builds_frame, text="Builds")
+        self.notebook.add(self.builds_wrapper_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
@@ -110,6 +116,10 @@ class MainWindow(tk.Tk):
         self.notebook.grid(column=0, row=0)
         self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
+        # Check for updates
+        self.splash.label_var.set("Checking for updates")
+        self.update()
+        self.check_update()
         # Give focus to the main window
         self.deiconify()
         self.finished = True
@@ -117,27 +127,15 @@ class MainWindow(tk.Tk):
         # Start the main loop
 
     def update_style(self, start=False):
-        old_dir = os.getcwd()
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        try:
-            self.tk.eval("source theme/arc.tcl")
-        except tk.TclError:
-            print("Error evaluating arc.tcl")
-        os.chdir(old_dir)
+        self.set_theme("arc")
         print((list(self.tk.call("ttk::themes"))))
-        try:
-            self.style.theme_use("arc")
-        except tk.TclError as e:
-            print("[DEBUG] Theme arc is not available. Using default.")
-            print(e)
-            self.style.theme_use("vista")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
         try:
-            self.style.configure('.', foreground=variables.settings_obj.color)
-        except AttributeError:
-            self.style.configure('.', foreground='#8B0000')
+            self.style.configure('.', foreground=variables.settings_obj["gui"]["color"])
+        except KeyError:
+            self.style.configure('.', foreground='#2f77d0')
         if not start:
             self.destroy()
             main.new_window()
@@ -145,7 +143,7 @@ class MainWindow(tk.Tk):
     def set_icon(self):
         try:
             self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
-                                    variables.settings_obj.logo_color + ".ico")
+                                    variables.settings_obj["gui"]["logo_color"] + ".ico")
         except:
             print("[DEBUG] No icon found, is this from the GitHub repo?")
 
@@ -169,3 +167,31 @@ class MainWindow(tk.Tk):
         file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
                                  ".png")
         screenshot.save(file_name, "PNG")
+
+    def check_update(self):
+        """
+        Function to check for GSF Parser updates by checking tags and opening a window if an update is available
+        :return: None
+        """
+        print("Rate limit: ", Github().rate_limiting)
+        if not variables.settings_obj["misc"]["autoupdate"]:
+            return
+        try:
+            user = Github().get_user("RedFantom")
+            repo = user.get_repo("GSF-Parser")
+            current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
+            for item in repo.get_tags():
+                try:
+                    if Version(item.name.replace("v", "")) > current:
+                        UpdateWindow(self, item.name)
+                        break
+                    elif Version(item.name.replace("v", "")) < current:
+                        # The newest tags come first in the loop
+                        # If the tag is older than the current version, an update isn't needed
+                        # The loop is stopped to preserve the rate limit
+                        break
+                except ValueError as e:
+                    print(e)
+                    continue
+        except GithubException:
+            pass

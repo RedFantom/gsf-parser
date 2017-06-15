@@ -73,6 +73,10 @@ class SettingsImporter(tk.Toplevel):
             pass
         version = "v3.0.0"
         try:
+            autoupdate = config.get("misc", "autoupdate")
+        except configparser.NoOptionError:
+            autoupdate = settings.Defaults.autoupdate
+        try:
             cl_path = config.get("parsing", "cl_path")
         except configparser.NoOptionError:
             cl_path = settings.Defaults.cl_path
@@ -201,8 +205,46 @@ class SettingsImporter(tk.Toplevel):
                 screenparsing_overlay = settings.Defaults.screenparsing_overlay
         except configparser.NoOptionError:
             screenparsing_overlay = settings.Defaults.screenparsing_overlay
-        variables.settings_obj.write_set(version, cl_path, auto_ident, server_address, server_port, auto_upl, overlay,
-                                         opacity, size, pos, color, logo_color, overlay_bg_color, overlay_tx_color,
-                                         overlay_tr_color, overlay_tx_font, overlay_tx_size, overlay_when_gsf, timeout,
-                                         event_colors, event_scheme, date_format, faction, events_overlay,
-                                         screenparsing, screenparsing_overlay)
+        try:
+            screenparsing_features = config.get("realtime", "screenparsing_features")
+        except configparser.NoOptionError:
+            screenparsing_features = settings.Defaults.screenparsing_features
+        variables.settings_obj.write_settings({
+            "misc": {
+                "version": version,
+                "autoupdate": autoupdate
+            },
+            "gui": {
+                "color": color,
+                "logo_color": logo_color,
+                "event_colors": event_colors,
+                "event_scheme": event_scheme,
+                "date_format": date_format,
+                "faction": faction
+            },
+            "parsing": {
+                "cl_path": cl_path,
+                "auto_ident": auto_ident
+            },
+            "sharing": {
+                "server_address": server_address,
+                "server_port": server_port
+            },
+            "realtime": {
+                "overlay": overlay,
+                "opacity": opacity,
+                "size": size,
+                "pos": pos,
+                "overlay_bg_color": overlay_bg_color,
+                "overlay_tr_color": overlay_tr_color,
+                "overlay_tx_color": overlay_tr_color,
+                "overlay_tx_font": overlay_tx_font,
+                "overlay_tx_size": overlay_tx_size,
+                "overlay_when_gsf": overlay_when_gsf,
+                "timeout": timeout,
+                "events_overlay": events_overlay,
+                "screenparsing": screenparsing,
+                "screenparsing_overlay": screenparsing_overlay,
+                "screenparsing_features": screenparsing_features
+            }
+        })

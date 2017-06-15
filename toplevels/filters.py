@@ -116,12 +116,12 @@ class Filters(tk.Toplevel):
         self.ships_frame = widgets.ToggledFrame(self, text="Ships", labelwidth=100)
         self.ships_checkboxes = {}
         self.ships_intvars = {}
-        if variables.settings_obj.faction == "imperial":
+        if variables.settings_obj["gui"]["faction"] == "imperial":
             for name in abls.rep_ships.keys():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = tkinter.ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
                                                                       variable=self.ships_intvars[name], width=12)
-        elif variables.settings_obj.faction == "republic":
+        elif variables.settings_obj["gui"]["faction"] == "republic":
             for name in abls.rep_ships.values():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = tkinter.ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
@@ -152,7 +152,7 @@ class Filters(tk.Toplevel):
         results = []
         results_toplevel = Results(self.window)
         if self.type_variable.get() == "logs":
-            files = os.listdir(variables.settings_obj.cl_path)
+            files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
             variables.files_done = 0
             splash = splashscreens.SplashScreen(self, max=len(files))
             for file_name in files:
@@ -161,7 +161,7 @@ class Filters(tk.Toplevel):
                 splash.update_progress()
                 if not file_name.endswith(".txt"):
                     continue
-                with open(os.path.join(variables.settings_obj.cl_path, file_name)) as f:
+                with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
                     lines = f.readlines()
                 player_list = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
@@ -265,7 +265,7 @@ class Filters(tk.Toplevel):
 
     @staticmethod
     def setup_frame_file(frame, file_name):
-        with open(os.path.join(variables.settings_obj.cl_path, file_name)) as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, _, _ = parse.splitter(lines, player_list)
@@ -324,9 +324,9 @@ class Filters(tk.Toplevel):
                 for ship, intvar in dictionary.items():
                     if intvar.get() == 1:
                         print("Required: ", ship)
-                        if variables.settings_obj.faction == "imperial":
+                        if variables.settings_obj["gui"]["faction"] == "imperial":
                             pass
-                        elif variables.settings_obj.faction == "republic":
+                        elif variables.settings_obj["gui"]["faction"] == "republic":
                             ships_list = [abls.rep_ships[name] for name in ships_list]
                         else:
                             raise ValueError("faction found not valid")
@@ -340,9 +340,9 @@ class Filters(tk.Toplevel):
     @staticmethod
     def parse_file_name(name):
         try:
-            if variables.settings_obj.date_format == "ymd":
+            if variables.settings_obj["gui"]["date_format"] == "ymd":
                 return datetime.strptime(name[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-            elif variables.settings_obj.date_format == "ydm":
+            elif variables.settings_obj["gui"]["date_format"] == "ydm":
                 return datetime.strptime(name[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime(
                     "%Y-%d-%m   %H:%M:%S")
             else:

@@ -4,7 +4,6 @@
 *.pyc
 *.gsf
 *.ini
-*.xml
 *.spec
 Release
 .idea
@@ -12,3 +11,4 @@ __pycache__
 realtime.db
 *.xcf
 debug.txt
+/.idea

@@ -10,6 +10,7 @@ import cv2
 from PIL import Image
 import numpy
 from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
+import pytesseract
 
 
 def get_cv2_screen(testing=False):
@@ -146,48 +147,34 @@ def get_targeting_computer_pos(screen):
     pass
 
 
-def get_targeting_computer_shiptype(screen):
+def perform_ocr(pil_screen, coordinates):
     """
     Perform OCR on a screenshot to determine the ship type of the enemy player
     currently targeted by the user.
-    :param screen: cv2 array of screenshot
+    :param pil_screen: PIL Image
+    :param coordinates: (x, y, x, y) box tuple
     :return: string of ship type
     """
-    pass
+    if not isinstance(pil_screen, Image):
+        raise ValueError("Parameter is not Image object")
+    pil_screen.crop(coordinates, Image.ANTIALIAS)
+    return pytesseract.image_to_string(pil_screen)
 
 
-def get_targeting_computer_targetname(screen):
-    """
-    Perform OCR on a screenshot to determine the name of the enemy player
-    currently targeted by the user.
-    :param screen: cv2 array of screenshot
-    :return: string of player name
-    """
-    pass
-
-
-def get_power_management_cds(screen):
-    image = cv2.imread(os.getcwd() + "/assets/vision/power_management.png")
-    results = cv2.matchTemplate(screen, image, cv2.TM_CCOEFF_NORMED)
-    y, x = numpy.unravel_index(results.argmax(), results.shape)
-    return x, y
-
-
-def get_power_management(screen, cds):
+def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
     """
     Uses template matching to determine how the user has divided the power
     among the different ship components.
     :param screen: cv2 array of screenshot
+    :param weapon_cds:
+    :param shield_cds:
+    :param engine_cds:
     :return: int 1, 2, 3, 4
              1: power to weapons
              2: power to shields
              3: power to engines
              4: power to all
     """
-    x, y = cds
-    weapon_cds = get_xy_tuple((x + 10, y - 50))
-    shield_cds = get_xy_tuple((x + 32, y - 50))
-    engine_cds = get_xy_tuple((x + 54, y - 50))
     power_mgmt = 4
     try:
         weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
@@ -226,13 +213,6 @@ def get_ship_health_hull(screen):
     :return: int with percentage
     """
     pass
-
-
-def get_ship_health_cds(screen):
-    health = cv2.imread(os.getcwd() + "/assets/vision/health.png")
-    results = cv2.matchTemplate(screen, health, cv2.TM_CCOEFF_NORMED)
-    y, x = numpy.unravel_index(results.argmax(), results.shape)
-    return x, y
 
 
 def get_ship_health_shields(screen, cds):

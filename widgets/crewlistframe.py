@@ -12,11 +12,14 @@ from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from .toggledframe import ToggledFrame
+import variables
 
 
 class CrewListFrame(ttk.Frame):
-    def __init__(self, parent, data_dictionary):
+    def __init__(self, parent, faction, data_dictionary, callback):
         ttk.Frame.__init__(self, parent)
+        self.callback = callback
+        self.window = variables.main_window
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         self.data = data_dictionary
         self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
@@ -28,6 +31,8 @@ class CrewListFrame(ttk.Frame):
         self.copilot_dicts = {}
         self.copilot_icons = {}
         self.copilot_buttons = {}
+        self.category_variables = {}
+        self.copilot_variable = tk.IntVar()
         for category in self.data:
             crole = ""
             for role in self.roles:
@@ -39,28 +44,33 @@ class CrewListFrame(ttk.Frame):
                     continue
             if crole == "CoPilot":
                 for member_dict in category:
-                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=28)
+                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=29)
                     self.copilot_dicts[member_dict["Name"]] = member_dict
                 continue
             elif crole == "":
                 raise ValueError("Invalid role detected.")
             self.category_frames[crole] = ToggledFrame(self, text=crole)
+            self.category_variables[crole] = tk.IntVar()
+            print("crole is ", crole)
             for member_dict in category:
                 self.member_icons[member_dict["Name"]] = photo(img.open(path.join(self.icons_path,
                                                                                   member_dict["Icon"] + ".jpg")))
-                self.member_buttons[member_dict["Name"]] = ttk.Button(self.category_frames[crole].sub_frame,
-                                                                      text=member_dict["Name"], compound=tk.LEFT,
-                                                                      image=self.member_icons[member_dict["Name"]],
-                                                                      command=(lambda name=member_dict["Name"],
-                                                                                      crole=crole:
-                                                                               self.set_crew_member(name, crole)),
-                                                                      width=19)
+                self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(self.category_frames[crole].sub_frame,
+                                                                           text=member_dict["Name"], compound=tk.LEFT,
+                                                                           image=self.member_icons[member_dict["Name"]],
+                                                                           command=lambda i=(faction, crole,
+                                                                                             member_dict["Name"]):
+                                                                                   self.set_crew_member(i),
+                                                                           width=19,
+                                                                           variable=self.category_variables[crole],
+                                                                           value=category.index(member_dict))
                 if member_dict["IsDefaultCompanion"]:
                     self.copilots.append(member_dict["Name"])
         self.update_copilots()
 
-    def set_crew_member(self, name, role):
-        pass
+    def set_crew_member(self, member):
+        self.callback(member)
+        self.update_copilots()
 
     def update_copilots(self):
         self.copilot_buttons.clear()
@@ -68,12 +78,12 @@ class CrewListFrame(ttk.Frame):
         for name in self.copilots:
             self.member_icons[name] = photo(img.open(path.join(self.icons_path,
                                                                self.copilot_dicts[name]["Icon"] + ".jpg")))
-            self.member_buttons[name] = ttk.Button(self.category_frames["CoPilot"].sub_frame,
-                                                   text=name, compound=tk.LEFT,
-                                                   image=self.member_icons[name],
-                                                   command=(lambda name=name, category="CoPilot":
-                                                            self.set_crew_member(name, category)),
-                                                   width=21)
+            self.member_buttons[name] = ttk.Radiobutton(self.category_frames["CoPilot"].sub_frame,
+                                                        text=name, compound=tk.LEFT,
+                                                        image=self.member_icons[name],
+                                                        command=lambda i=name: self.set_crew_member(("CoPilot", i)),
+                                                        width=21,
+                                                        variable=self.copilot_variable, value=self.copilots.index(name))
         self.grid_widgets()
 
     def grid_widgets(self):

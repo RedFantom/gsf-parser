@@ -14,23 +14,25 @@ from widgets import HoverInfo, ToggledFrame
 
 
 class ComponentListFrame(ttk.Frame):
-    def __init__(self, parent, category, data_dictionary, callback):
+    def __init__(self, parent, category, data_list, callback):
         ttk.Frame.__init__(self, parent)
         # if not callable(callback):
         #     raise ValueError("Callback passed is not callable")
-        self.names = {"PrimaryWeapon": "Primary Weapon",
-                      "PrimaryWeapon2": "Primary Weapon",
-                      "SecondaryWeapon": "Secondary Weapon",
-                      "SecondaryWeapon2": "Secondary Weapon",
-                      "Engine": "Engine",
-                      "Systems": "Systems",
-                      "Shield": "Shields",
-                      "Magazine": "Magazine",
-                      "Capacitor": "Capacitor",
-                      "Reactor": "Reactor",
-                      "Armor": "Armor",
-                      "Sensor": "Sensors"
-                      }
+        self.names = {
+            "PrimaryWeapon": "Primary Weapon",
+            "PrimaryWeapon2": "Primary Weapon",
+            "SecondaryWeapon": "Secondary Weapon",
+            "SecondaryWeapon2": "Secondary Weapon",
+            "Engine": "Engine",
+            "Systems": "Systems",
+            "ShieldProjector": "Shields",
+            "Magazine": "Magazine",
+            "Capacitor": "Capacitor",
+            "Reactor": "Reactor",
+            "Armor": "Armor",
+            "Sensor": "Sensors",
+            "Thruster": "Thrusters"
+        }
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
@@ -39,20 +41,41 @@ class ComponentListFrame(ttk.Frame):
         self.icons = {}
         self.buttons = {}
         self.hover_infos = {}
-        for component in data_dictionary:
+        self.variable = tk.IntVar()
+        self.variable.set(-1)
+        if type(data_list) != list:
+            raise ValueError("data_list should be a list, but it is {0}".format(type(data_list)))
+        for component in data_list:
+            component_dictionary = None
+            if isinstance(component, tuple):
+                for item in component:
+                    if isinstance(item, dict):
+                        component_dictionary = item
+                        break
+                if not component_dictionary:
+                    raise ValueError("component_dictionary not set: {0}".format(category))
+            else:
+                 component_dictionary = component
             try:
-                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, component["Icon"] + ".jpg")))
+                name = component_dictionary["Name"]
+                icon = component_dictionary["Icon"]
+                self.icons[name] = photo(img.open(path.join(self.icons_path, icon + ".jpg")))
             except IOError:
-                self.icons[component["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
-            self.buttons[component["Name"]] = ttk.Button(self.frame, image=self.icons[component["Name"]],
-                                                         text=component["Name"],
-                                                         command=lambda name=component["Name"]:
-                                                         self.set_component(name),
-                                                         compound=tk.LEFT, width=19)
-            self.hover_infos[component["Name"]] = HoverInfo(self.buttons[component["Name"]],
-                                                            text=str(component["Name"]) + "\n\n" +
-                                                                 str(component["Description"]))
-        self.data = data_dictionary
+                self.icons[component_dictionary["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
+            self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(self.frame,
+                                                                         image=self.icons[component_dictionary["Name"]],
+                                                                         text=component_dictionary["Name"],
+                                                                         command=lambda
+                                                                             name=component_dictionary["Name"]:
+                                                                         self.set_component(name),
+                                                                         compound=tk.LEFT, width=19,
+                                                                         variable=self.variable,
+                                                                         value=data_list.index(
+                                                                             component_dictionary))
+            self.hover_infos[component_dictionary["Name"]] = HoverInfo(self.buttons[component_dictionary["Name"]],
+                                                                       text=str(component_dictionary["Name"]) + "\n\n" +
+                                                                            str(component_dictionary["Description"]))
+        self.data = data_list
 
     def set_component(self, component):
         self.callback(self.category, component)

@@ -9,6 +9,7 @@ This file contains lists and dictionaries of the abilities and ships used in Gal
 in order for the parser to be able to identify ships by their components and abilities and print
 them neatly onto the screen.
 """
+from collections import OrderedDict
 
 # A list of ALL components available in Galactic StarFighter
 components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
@@ -257,6 +258,25 @@ all_ships = {
     "Ocula": "Skybolt",
     "Onslaught": "Firehauler",
     "Mailoc": "Redeemer",
-    "Strongarm": "Strongarm",
+    "Demolisher": "Strongarm",
     "Gladiator": "Enforcer"
 }
+
+sorted_ships = OrderedDict()
+sorted_ships["Legion"] = "Warcarrier"
+sorted_ships["Razorwire"] = "Rampart Mark Four"
+sorted_ships["Decimus"] = "Sledgehammer"
+sorted_ships["Mangler"] = "Quarrel"
+sorted_ships["Jurgoran"] = "Condor"
+sorted_ships["Dustmaker"] = "Comet Breaker"
+sorted_ships["Rycer"] = "Star Guard"
+sorted_ships["Imperium"] = "Clarion"
+sorted_ships["Quell"] = "Pike"
+sorted_ships["Sting"] = "Flashfire"
+sorted_ships["Bloodmark"] = "Spearpoint"
+sorted_ships["Blackbolt"] = "Novadive"
+sorted_ships["Onslaught"] = "Firehauler"
+sorted_ships["Mailoc"] = "Redeemer"
+sorted_ships["Demolisher"] = "Strongarm"
+sorted_ships["Ocula"] = "Skybolt"
+sorted_ships["Gladiator"] = "Enforcer"

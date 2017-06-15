@@ -13,6 +13,17 @@ import configparser
 import collections
 import ast
 from tools import utilities
+from ast import literal_eval
+
+
+def eval(value):
+    literal = literal_eval(value)
+    if literal == 1:
+        return True
+    elif literal == 0:
+        return False
+    else:
+        return literal
 
 
 # Class with default settings for in the settings file
@@ -39,13 +50,13 @@ class Defaults(object):
     # Set the text color of the parser
     color = "#236ab2"
     # Set the logo color
-    logo_color = "green"
+    logo_color = "Green"
     # Overlay background color
-    overlay_bg_color = "white"
+    overlay_bg_color = "White"
     # Overlay color that is displayed as transparent
-    overlay_tr_color = "white"
+    overlay_tr_color = "White"
     # Overlay text color
-    overlay_tx_color = "yellow"
+    overlay_tx_color = "Yellow"
     # Overlay text font
     overlay_tx_font = "Calibri"
     # Overlay text size
@@ -63,221 +74,87 @@ class Defaults(object):
 
     faction = "imperial"
     events_overlay = False
-    screenparsing = False
-    screenparsing_overlay = False
+    screenparsing = True
+    screenparsing_overlay = True
+    screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                              "Power management"]
+    autoupdate = True
 
 
 # Class that loads, stores and saves settings
 class Settings(object):
+    defaults = {
+        "misc": {
+            "version": "v3.0.0",
+            "autoupdate": True
+        },
+        "gui": {
+            "color": "#2f77d0",
+            "logo_color": "Green",
+            "event_colors": "basic",
+            "event_scheme": "default",
+            "date_format": "ymd",
+            "faction": "imperial"
+        },
+        "parsing": {
+            "cl_path": os.path.realpath(
+                os.path.join(os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs")),
+            "auto_ident": False
+        },
+        "sharing": {
+            "server_address": "parser.thrantasquadron.tk",
+            "server_port": 83,
+            "auto_upl": False
+        },
+        "realtime": {
+            "overlay": True,
+            "opacity": 1.0,
+            "size": "big",
+            "pos": "UT",
+            "overlay_bg_color": "White",
+            "overlay_tr_color": "White",
+            "overlay_tx_color": "Yellow",
+            "overlay_tx_font": "Calibri",
+            "overlay_tx_size": 12,
+            "overlay_when_gsf": True,
+            "timeout": 0.2,
+            "events_overlay": False,
+            "screenparsing": True,
+            "screenparsing_overlay": True,
+            "screenparsing_features": ["Enemy name and ship type", "Tracking penalty", "Ship health",
+                                       "Power management"],
+
+        }
+    }
+
     # Set the file_name for use by other functions
     def __init__(self, file_name="settings.ini", directory=utilities.get_temp_directory()):
         self.directory = directory
         self.file_name = os.path.join(directory, file_name)
-        self.conf = configparser.RawConfigParser()
-        # variables.install_path = os.getcwd()
-        if file_name in os.listdir(self.directory):
-            try:
-                self.read_set()
-            except configparser.NoOptionError:
-                self.write_def()
-        else:
-            self.write_def()
-            self.read_set()
-            # variables.path = self.cl_path
+        self.conf = configparser.ConfigParser()
+        self.settings = {}
+        self.read_settings()
 
-    # Read the settings from a file containing a pickle and store them as class variables
-    def read_set(self):
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        self.conf.read(self.file_name)
-        self.version = self.conf.get("misc", "version")
-        self.cl_path = self.conf.get("parsing", "cl_path")
-        if self.conf.get("parsing", "auto_ident") == "True" or self.conf.get("parsing", "auto_ident") == 1:
-            self.auto_ident = True
-        else:
-            self.auto_ident = False
-        self.server_address = self.conf.get("sharing", "server_address")
-        self.server_port = int(self.conf.get("sharing", "server_port"))
-        if self.conf.get("sharing", "auto_upl") == "True" or self.conf.get("sharing", "auto_upl") == 1:
-            self.auto_upl = True
-        else:
-            self.auto_upl = False
-        if self.conf.get("realtime", "overlay") == "True" or self.conf.get("realtime", "overlay") == 1:
-            self.overlay = True
-        else:
-            self.overlay = False
-        self.overlay_bg_color = self.conf.get("realtime", "overlay_bg_color")
-        self.overlay_tr_color = self.conf.get("realtime", "overlay_tr_color")
-        self.overlay_tx_color = self.conf.get("realtime", "overlay_tx_color")
-        self.opacity = float(self.conf.get("realtime", "opacity"))
-        self.size = self.conf.get("realtime", "size")
-        self.pos = self.conf.get("realtime", "pos")
-        self.timeout = float(self.conf.get("realtime", "timeout"))
-        self.color = self.conf.get("gui", "color")
-        self.event_colors = self.conf.get("gui", "event_colors")
-        self.event_scheme = self.conf.get("gui", "event_scheme")
-        self.logo_color = self.conf.get("gui", "logo_color")
-        self.date_format = self.conf.get("gui", "date_format")
-        self.overlay_tx_font = self.conf.get("realtime", "overlay_tx_font")
-        self.overlay_tx_size = self.conf.get("realtime", "overlay_tx_size")
-        self.faction = self.conf.get("gui", "faction")
-        if self.conf.get("realtime", "overlay_when_gsf") == "True" or \
-           self.conf.get("realtime", "overlay_when_gsf") == 1:
-            self.overlay_when_gsf = True
-        else:
-            self.overlay_when_gsf = False
-        if self.conf.get("realtime", "events_overlay") == "True":
-            self.events_overlay = True
-        else:
-            self.events_overlay = False
-        if self.conf.get("realtime", "screenparsing") == "True":
-            self.screenparsing = True
-        else:
-            self.screenparsing = False
-        if self.conf.get("realtime", "screenparsing_overlay") == "True":
-            self.screenparsing_overlay = True
-        else:
-            self.screenparsing_overlay = False
-        print("[DEBUG] Settings read")
+    def write_defaults(self):
+        conf = configparser.ConfigParser()
+        conf.read_dict(self.defaults)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
 
-    # Write the defaults settings found in the class defaults to a pickle in a
-    # file
-    def write_def(self):
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        try:
-            self.conf.add_section("misc")
-            self.conf.add_section("parsing")
-            self.conf.add_section("sharing")
-            self.conf.add_section("realtime")
-            self.conf.add_section("gui")
-        except configparser.DuplicateSectionError:
-            pass
-        self.conf.set("misc", "version", Defaults.version)
-        self.conf.set("parsing", "cl_path", Defaults.cl_path)
-        self.conf.set("parsing", "auto_ident", Defaults.auto_ident)
-        self.conf.set("sharing", "server_address", Defaults.server_address)
-        self.conf.set("sharing", "server_port", Defaults.server_port)
-        self.conf.set("sharing", "auto_upl", Defaults.auto_upl)
-        self.conf.set("realtime", "overlay", Defaults.overlay)
-        self.conf.set("realtime", "opacity", Defaults.opacity)
-        self.conf.set("realtime", "size", Defaults.size)
-        self.conf.set("realtime", "pos", Defaults.pos)
-        self.conf.set("realtime", "overlay_bg_color", Defaults.overlay_bg_color)
-        self.conf.set("realtime", "overlay_tx_color", Defaults.overlay_tx_color)
-        self.conf.set("realtime", "overlay_tr_color", Defaults.overlay_tr_color)
-        self.conf.set("gui", "color", Defaults.color)
-        self.conf.set("gui", "logo_color", Defaults.logo_color)
-        self.conf.set("gui", "event_colors", Defaults.event_colors)
-        self.conf.set("gui", "event_scheme", Defaults.event_scheme)
-        self.conf.set("gui", "date_format", Defaults.date_format)
-        self.conf.set("realtime", "overlay_tx_font", Defaults.overlay_tx_font)
-        self.conf.set("realtime", "overlay_tx_size", Defaults.overlay_tx_size)
-        self.conf.set("realtime", "overlay_when_gsf", Defaults.overlay_when_gsf)
-        self.conf.set("realtime", "timeout", Defaults.timeout)
-        self.conf.set("gui", "faction", Defaults.faction)
-        self.conf.set("realtime", "events_overlay", Defaults.events_overlay)
-        self.conf.set("realtime", "screenparsing", Defaults.screenparsing)
-        self.conf.set("realtime", "screenparsing_overlay", Defaults.screenparsing_overlay)
-        with open(self.file_name, "w") as settings_file_object:
-            self.conf.write(settings_file_object)
-        print("[DEBUG] Defaults written")
-        self.read_set()
+    def write_settings(self, dictionary):
+        conf = configparser.ConfigParser()
+        conf.read_dict(dictionary)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
 
-    # Write the settings passed as arguments to a pickle in a file
-    # Setting defaults to default if not specified, so all settings are always
-    # written
-    def write_set(self,
-                  version=Defaults.version,
-                  cl_path=Defaults.cl_path,
-                  auto_ident=Defaults.auto_ident,
-                  server_address=Defaults.server_address,
-                  server_port=Defaults.server_port,
-                  auto_upl=Defaults.auto_upl,
-                  overlay=Defaults.overlay,
-                  opacity=Defaults.opacity,
-                  size=Defaults.size,
-                  pos=Defaults.pos,
-                  color=Defaults.color,
-                  logo_color=Defaults.logo_color,
-                  bg_color=Defaults.overlay_bg_color,
-                  tx_color=Defaults.overlay_tx_color,
-                  tr_color=Defaults.overlay_tr_color,
-                  tx_font=Defaults.overlay_tx_font,
-                  tx_size=Defaults.overlay_tx_size,
-                  overlay_when_gsf=Defaults.overlay_when_gsf,
-                  timeout=Defaults.timeout,
-                  event_colors=Defaults.event_colors,
-                  event_scheme=Defaults.event_scheme,
-                  date_format=Defaults.date_format,
-                  faction=Defaults.faction,
-                  events_overlay=Defaults.events_overlay,
-                  screenparsing=Defaults.screenparsing,
-                  screenparsing_overlay=Defaults.screenparsing_overlay):
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        try:
-            self.conf.add_section("misc")
-            self.conf.add_section("parsing")
-            self.conf.add_section("sharing")
-            self.conf.add_section("realtime")
-            self.conf.add_section("gui")
-        except:
-            pass
-        # TODO Make this setting changeable without restarting
-        if str(auto_upl) != self.conf.get("sharing", "auto_upl"):
-            tkinter.messagebox.showinfo("Notice", "In order to change the setting for "
-                                                  "auto uploading CombatLogs, the "
-                                                  "parser must be restarted.")
-        if str(auto_ident) != self.conf.get("parsing", "auto_ident"):
-            tkinter.messagebox.showinfo("Notice", "In order to change the setting "
-                                                  "for auto identifying enemies in "
-                                                  "CombatLogs, the parser must be "
-                                                  "restarted.")
-        self.conf.set("misc", "version", version)
-        self.conf.set("parsing", "cl_path", cl_path)
-        self.conf.set("parsing", "auto_ident", auto_ident)
-        self.conf.set("sharing", "server_address", server_address)
-        self.conf.set("sharing", "server_port", server_port)
-        self.conf.set("sharing", "auto_upl", auto_upl)
-        self.conf.set("realtime", "overlay", overlay)
-        self.conf.set("realtime", "opacity", opacity)
-        self.conf.set("realtime", "size", size)
-        self.conf.set("realtime", "pos", pos)
-        self.conf.set("realtime", "overlay_bg_color", bg_color)
-        self.conf.set("realtime", "overlay_tx_color", tx_color)
-        self.conf.set("realtime", "overlay_tr_color", tr_color)
-        self.conf.set("realtime", "overlay_tx_font", tx_font)
-        self.conf.set("realtime", "overlay_tx_size", tx_size)
-        self.conf.set("realtime", "overlay_when_gsf", overlay_when_gsf)
-        self.conf.set("realtime", "timeout", timeout)
-        self.conf.set("realtime", "events_overlay", events_overlay)
-        self.conf.set("realtime", "screenparsing", screenparsing)
-        self.conf.set("realtime", "screenparsing_overlay", screenparsing_overlay)
-        self.conf.set("gui", "color", color)
-        self.conf.set("gui", "logo_color", logo_color)
-        self.conf.set("gui", "event_colors", event_colors)
-        self.conf.set("gui", "event_scheme", event_scheme)
-        self.conf.set("gui", "date_format", date_format)
-        self.conf.set("gui", "faction", faction)
-        with open(self.file_name, "w") as settings_file_object:
-            self.conf.write(settings_file_object)
-        self.read_set()
-        print("[DEBUG] Settings written")
+    def read_settings(self):
+        if os.path.basename(self.file_name) not in os.listdir(self.directory):
+            self.write_defaults()
+        with open(self.file_name, "r") as fi:
+            self.conf.read_file(fi)
 
-    def write_settings_dict(self, settings_dict):
-        """
-        :param settings_dict: Dictonary of settings with {cat_set_tuple: value} with
-                              cat_set_tuple as (section, setting)
-        :return: None
-        """
-        for cat_set_tuple, value in list(settings_dict.items()):
-            try:
-                self.conf.set(cat_set_tuple[0], cat_set_tuple[1], value)
-            except configparser.NoSectionError:
-                tkinter.messagebox.showerror("Error", "This section does not exist: {0}".format(cat_set_tuple[0]))
-        with open(self.file_name, "w") as settings_file_object:
-            self.conf.write(settings_file_object)
-
-    def get_settings_dict(self):
-        return self.conf
+    def __getitem__(self, section):
+        return self.conf[section]
 
 
 class ColorSchemes(object):

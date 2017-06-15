@@ -3,8 +3,6 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import sys
-from tools import admin
 """
 from os.path import dirname, join, basename
 
@@ -26,11 +24,4 @@ def new_window():
 
 
 if __name__ == "__main__":
-    if not admin.is_user_admin():
-        if sys.platform == "win32":
-            admin.run_as_admin()
-            exit()
-        else:
-            print("Please run the GSF Parser as an admin to allow the usage of system wide keyboard hooks for parsing")
-            exit()
     new_window()

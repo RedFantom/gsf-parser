@@ -99,7 +99,7 @@ class LogStalker(threading.Thread):
         If 'blocking' is False make one loop and then return.
         """
         while self.FLAG:
-            if not variables.FLAG:
+            if not variables.realtime_flag:
                 print("[DEBUG] Closing because of vars.FLAG")
                 self.close()
                 return
@@ -109,7 +109,7 @@ class LogStalker(threading.Thread):
 
             if not blocking:
                 return
-            if not variables.FLAG:
+            if not variables.realtime_flag:
                 self.close()
                 return
             time.sleep(interval)

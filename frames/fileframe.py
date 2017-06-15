@@ -20,6 +20,7 @@ from parsing import parse, abilities, folderstats, filestats, matchstats, spawns
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from collections import OrderedDict
+from parsing.screen import FileHandler
 
 
 # Class for the _frame in the fileTab of the parser
@@ -104,7 +105,7 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
         try:
             old_cwd = os.getcwd()
-            os.chdir(variables.settings_obj.cl_path)
+            os.chdir(variables.settings_obj["parsing"]["cl_path"])
             os.chdir(old_cwd)
         except OSError:
             tkinter.messagebox.showerror("Error",
@@ -113,7 +114,7 @@ class FileFrame(ttk.Frame):
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
             variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
             variables.settings_obj.read_set()
-        combatlogs_folder = variables.settings_obj.cl_path
+        combatlogs_folder = variables.settings_obj["parsing"]["cl_path"]
         file_list = os.listdir(combatlogs_folder)
         if not self.ascending:
             file_list = list(reversed(file_list))
@@ -153,7 +154,7 @@ class FileFrame(ttk.Frame):
     def insert_file(self, file_string):
         file_name = self.file_string_dict[file_string]
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        with open(os.path.join(variables.settings_obj.cl_path, file_name), "r") as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
             player_list = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
@@ -176,7 +177,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
         ships_string = "Ships used:\t\tCount:\n"
         for ship in abilities.ships_strings:
-            if variables.settings_obj.faction == "republic":
+            if variables.settings_obj["gui"]["faction"] == "republic":
                 name = abilities.rep_strings[ship]
             else:
                 name = ship
@@ -192,6 +193,7 @@ class FileFrame(ttk.Frame):
         most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
         self.main_window.ship_frame.update_ship([most_used_ship])
         self.main_window.ship_frame.update()
+        self.main_window.middle_frame.screen_label_var.set("Not available for files and matches")
 
     def update_widgets_spawn(self, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                              enemydamaget):
@@ -200,7 +202,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         ships_string = "Possible ships used:\n"
         for ship in ships_list:
-            if variables.settings_obj.faction == "republic":
+            if variables.settings_obj["gui"]["faction"] == "republic":
                 name = abilities.rep_ships[ship]
             else:
                 name = ship
@@ -251,7 +253,7 @@ class FileFrame(ttk.Frame):
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        with open(os.path.join(variables.settings_obj.cl_path, file_name), "r") as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, _, _ = parse.splitter(lines, player_list)
@@ -279,7 +281,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index = elements[0], int(elements[1])
-        with open(os.path.join(variables.settings_obj.cl_path, file_name), "r") as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, _ = parse.splitter(lines, player_list)
@@ -300,7 +302,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
-        with open(os.path.join(variables.settings_obj.cl_path, file_name), "r") as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
@@ -311,6 +313,9 @@ class FileFrame(ttk.Frame):
                                                      spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                                   enemydamaget)
+        self.main_window.middle_frame.screen_label_var.set(
+            FileHandler.get_spawn_stats(file_name, match_timings[::2][match_index],
+                                        spawn_timings[match_index][spawn_index]))
 
     def clear_data_widgets(self):
         self.main_window.middle_frame.abilities_treeview.delete(
@@ -318,6 +323,8 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
+        self.main_window.middle_frame.screen_label_var.set(
+            "Please select an available spawn for screen parsing information")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         if enemy == "":
@@ -339,7 +346,7 @@ class FileFrame(ttk.Frame):
         if len(elements) is not 3:
             tkinter.messagebox.showinfo("Requirement", "Please select a spawn to view the events of.")
             return
-        with open(os.path.join(variables.settings_obj.cl_path, elements[0])) as f:
+        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], elements[0])) as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)

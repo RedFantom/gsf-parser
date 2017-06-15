@@ -12,7 +12,7 @@ ships = {
     "Imperium": "Imperial_FT-3C_Imperium",
     "Rycer": "Imperial_F-T6_Rycer",
     "Mangler": "Imperial_GSS-3_Mangler",
-    "Jurgoran": "Imperial_GSS-4Y_Jurogran",
+    "Jurgoran": "Imperial_GSS-4Y_Jurgoran",
     "Dustmaker": "Imperial_GSS-5C_Dustmaker",
     "Onslaught": "Imperial_G-X1_Onslaught",
     "Frostburn": "Imperial_ICA-2B_Frostburn",
@@ -49,20 +49,26 @@ ships = {
     "Legion": "Imperial_B-4D_Legion"
 }
 
+reverse_ships = {value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key for key, value in
+                 ships.items()}
+other_ships = {value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key for key, value in
+               ships.items()}
+
 
 class Ship(object):
     def __init__(self, ship_name):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
-            self.ships_data = pickle.load(f)
+            ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as f:
-            self.categories_data = pickle.load(f)
-        if ship_name not in self.ships_data:
+            categories_data = pickle.load(f)
+        if ship_name not in ships_data:
             self.ship_name = ships[ship_name]
         else:
             self.ship_name = ship_name
-        self.data = self.ships_data[self.ship_name]
+        self.name = ship_name
+        self.data = ships_data[self.ship_name]
         self.components = {
             "primary": None,
             "primary2": None,
@@ -78,21 +84,33 @@ class Ship(object):
             "thrusters": None,
             "capacitor": None
         }
+        self.crew = {
+            "Engineering": None,
+            "Offfensive": None,
+            "Tactical": None,
+            "Defensive": None,
+            "CoPilot": None
+        }
 
     def __setitem__(self, item, value):
+        print("Setting item...")
         if item in self.components:
             self.components[item] = value
+        elif item in self.crew:
+            self.crew[item] = value
         else:
-            self.ships_data[item] = value
+            self.data[item] = value
 
     def __getitem__(self, item):
         if item in self.components:
             return self.components[item]
+        elif item in self.crew:
+            return self.crew[item]
         else:
-            return self.ships_data[item]
+            return self.data[item]
 
     def __iter__(self):
-        for key, value in self.ships_data.items():
+        for key, value in self.data.items():
             yield (key, value)
 
     def update(self, dictionary):
@@ -105,17 +123,75 @@ class Ship(object):
 
 
 class Component(object):
-    def __init__(self, modifiers):
-        self.modifiers = modifiers
+    def __init__(self, data, index, category):
+        """
+        :param data:
+        """
+        self.index = index
+        self.category = category
+        self.name = data["Name"]
+        self.upgrades = {
+            0: False,
+            1: False,
+            2: False,
+            (2, 0): False,
+            (2, 1): False,
+            (3, 0): False,
+            (3, 1): False,
+            (4, 0): False,
+            (4, 1): False
+        }
+        self.crew = {
+            "CoPilot": None,
+            "Engineering": None,
+            "Defensive": None,
+            "Offensive": None,
+            "Tactical": None
+        }
 
     def __setitem__(self, key, value):
-        self.modifiers[key] = value
+        if isinstance(key, tuple):
+            tier, upgrade = key
+            if upgrade is 0:
+                if self[(tier, 1)]:
+                    self.upgrades[(tier, 1)] = False
+                elif self[(tier, 0)]:
+                    return
+                else:
+                    pass
+            elif upgrade is 1:
+                if self[(tier, 0)]:
+                    self.upgrades[(tier, 1)] = False
+                elif self[(tier, 1)]:
+                    return
+                else:
+                    pass
+            else:
+                raise ValueError("Invalid value passed in tuple key: {0}".format(key))
+        self.upgrades[key] = value
 
     def __getitem__(self, key):
-        if key not in self.modifiers:
-            self.modifiers[key] = 1.0
-        return self.modifiers[key]
+        return self.upgrades[key]
 
     def __iter__(self):
-        for key, value in self.modifiers:
-            yield (key, value)
+        for key, value in self.upgrades.items():
+            yield key, value
+
+
+class ShipStats(object):
+    def __init__(self, ship):
+        self.stats = ship.data["Stats"]
+        self.components = {}
+        for category, component in ship.components.items():
+            pass
+
+    def __getitem__(self, item):
+        return self.stats[item]
+
+    def __setitem__(self, item, value):
+        self.stats[item] = value
+
+    def __iter__(self):
+        for key, value in self.stats.items():
+            yield key, value
+
