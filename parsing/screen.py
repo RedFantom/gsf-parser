@@ -94,11 +94,26 @@ class FileHandler:
     @staticmethod
     def get_spawn_stats(file_name, match_dt, spawn_dt):
         data = FileHandler.get_data_dictionary()
-        try:
-            spawn_dicts = data[file_name][match_dt][spawn_dt]
-        except KeyError:
+        if file_name not in data:
+            return "Not available for this file\n\nScreen parsing results are only available for spawns in files " \
+                   "which were spawned while screen parsing was enabled and real-time parsing was running."
+        elif match_dt not in data[file_name]:
+            return "Not available for this match\n\nScreen parsing results are only available for spawns in matches " \
+                   "which were spawned while screen parsing was enabled and real-time parsing was running"
+        elif spawn_dt not in data[file_name][match_dt]:
             return "Not available for this spawn\n\nScreen parsing results are not available for spawns which were " \
-                   "not  spawned while screen parsing was enabled and real-time parsing was running."
+                   "not  spawned while screen parsing was enabled and real-time parsing were running."
+        try:
+            print(list(data.keys()))
+            print(list(data[file_name].keys()))
+            print(list(data[file_name][match_dt].keys()))
+            print(list(data[file_name][match_dt][spawn_dt].keys()))
+            spawn_dicts = data[file_name][match_dt][spawn_dt]
+        except KeyError as e:
+            print(e)
+            print("KeyError!")
+            return
+        print(spawn_dicts)
         power_mgmt = {1: 0, 2: 0, 3: 0, 4: 0}
         for key, value in spawn_dicts["power_mgmt"].items():
             if not value:
