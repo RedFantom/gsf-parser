@@ -123,6 +123,7 @@ class Settings(object):
             "screenparsing_overlay": True,
             "screenparsing_features": ["Enemy name and ship type", "Tracking penalty", "Ship health",
                                        "Power management"],
+            "screenparsing_overlay_geometry": False
 
         }
     }
