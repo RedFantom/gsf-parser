@@ -22,7 +22,7 @@ class HitChanceOverlay(tk.Toplevel):
         self.wm_attributes("-transparentcolor", variables.settings_obj["realtime"]["overlay_tr_color"])
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.attributes("-alpha", variables.settings_obj.opacity)
+        self.attributes("-alpha", variables.settings_obj["realtime"]["opacity"])
         self.grid_widgets()
         self.after(50, self.set_geometry)
         self.running = True

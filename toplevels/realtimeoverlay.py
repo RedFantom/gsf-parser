@@ -35,14 +35,14 @@ class RealtimeOverlay(tk.Toplevel):
                                              "installed?")
         print("[DEBUG] Setting overlay font to: ", (
             variables.settings_obj["realtime"]["overlay_tx_font"], variables.settings_obj["realtime"]["overlay_tx_size"]))
-        if variables.settings_obj.size == "big":
+        if variables.settings_obj["realtime"]["size"] == "big":
             self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
                                                    "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
                                         justify=tk.LEFT, font=(variables.settings_obj["realtime"]["overlay_tx_font"],
                                                                int(variables.settings_obj["realtime"]["overlay_tx_size"])),
                                         foreground=variables.settings_obj["realtime"]["overlay_tx_color"],
                                         background=variables.settings_obj["realtime"]["overlay_bg_color"])
-        elif variables.settings_obj.size == "small":
+        elif variables.settings_obj["realtime"]["size"] == "small":
             self.text_label = ttk.Label(self, text="DD:\nDT:\nHR:\nSD:", justify=tk.LEFT,
                                         font=(variables.settings_obj["realtime"]["overlay_tx_font"],
                                               int(variables.settings_obj["realtime"]["overlay_tx_size"])),
@@ -62,13 +62,13 @@ class RealtimeOverlay(tk.Toplevel):
         self.wm_attributes("-transparentcolor", variables.settings_obj["realtime"]["overlay_tr_color"])
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.attributes("-alpha", variables.settings_obj.opacity)
+        self.attributes("-alpha", variables.settings_obj["realtime"]["opacity"])
 
     def update_position(self):
-        if variables.settings_obj.size == "big":
+        if variables.settings_obj["realtime"]["size"] == "big":
             h_req = (int(variables.settings_obj["realtime"]["overlay_tx_size"]) * 1.6) * 6
             w_req = ((int(variables.settings_obj["realtime"]["overlay_tx_size"]) / 1.5) + 2) * (14 + 6)
-        elif variables.settings_obj.size == "small":
+        elif variables.settings_obj["realtime"]["size"] == "small":
             h_req = (int(variables.settings_obj["realtime"]["overlay_tx_size"]) * 1.6) * 4
             w_req = ((int(variables.settings_obj["realtime"]["overlay_tx_size"]) / 1.5) + 2) * (4 + 6)
         else:

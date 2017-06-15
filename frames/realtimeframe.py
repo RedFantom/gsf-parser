@@ -152,7 +152,7 @@ class RealtimeFrame(ttk.Frame):
                                                        watching_stringvar=self.watching_stringvar,
                                                        newfilecallback=self.parser.new_file, )
             variables.realtime_flag = True
-            if variables.settings_obj.overlay and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
+            if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
                 self.overlay = RealtimeOverlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
@@ -178,7 +178,7 @@ class RealtimeFrame(ttk.Frame):
             print("Threads joined")
             self.parsing = False
             write_debug_log("Real-time parsing joining threads")
-            if variables.settings_obj.overlay and self.overlay:
+            if variables.settings_obj["realtime"]["overlay"] and self.overlay:
                 self.overlay.destroy()
             self.overlay = None
             self.parsing_bar.stop()
@@ -220,14 +220,14 @@ class RealtimeFrame(ttk.Frame):
                                            str(healing) + "\n" +
                                            str(spawns))
         if self.overlay:
-            if variables.settings_obj.size == "big":
+            if variables.settings_obj["realtime"]["size"] == "big":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
                                            str(selfdamage) + "\n" +
                                            str(enemies) + "\n" +
                                            str(spawns))
-            elif variables.settings_obj.size == "small":
+            elif variables.settings_obj["realtime"]["size"] == "small":
                 self.overlay.stats_var.set(str(damage_done) + "\n" +
                                            str(damage_taken) + "\n" +
                                            str(healing) + "\n" +
