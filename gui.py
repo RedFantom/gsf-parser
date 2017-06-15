@@ -164,7 +164,7 @@ class MainWindow(tk.Tk):
         """
         x = self.winfo_x()
         y = self.winfo_y()
-        result_box = (x, y, self.winfo_reqwidth() + x, self.winfo_reqheight() + y)
+        result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)
         screenshot = pyscreenshot.grab(result_box)
         file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
                                  ".png")
