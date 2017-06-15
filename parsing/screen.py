@@ -20,6 +20,7 @@ import tkinter.filedialog as filedialog
 from shutil import copyfile
 import operator
 from parsing.guiparsing import GSFInterface
+from time import sleep
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -414,6 +415,7 @@ class ScreenParser(threading.Thread):
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
             write_debug_log("Finished a screen parsing cycle")
+            time.sleep(0.05)
         print("ScreenParser stopping activities")
         write_debug_log("ScreenParser stopping activities")
         try:
