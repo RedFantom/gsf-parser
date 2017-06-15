@@ -24,6 +24,7 @@ from sys import exit
 from github import Github, GithubException
 from semantic_version import Version
 from ast import literal_eval as eval
+from toplevels.update import UpdateWindow
 
 
 # Class that contains all code to start the parser
