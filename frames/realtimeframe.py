@@ -171,6 +171,8 @@ class RealtimeFrame(ttk.Frame):
                 print("Joining ScreenParser thread")
                 self.screenparser.join()
                 print("Screenparser thread joined")
+                if variables.settings_obj["realtime"]["screenparsing_overlay"]:
+                    self.screenparser.screenoverlay.destroy()
             self.stalking_exit_queue.put(False)
             print("Joining LogStalker thread")
             self.stalker_obj.join()

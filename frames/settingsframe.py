@@ -243,6 +243,10 @@ class SettingsFrame(ttk.Frame):
             self.screenparsing_variables[feature] = tk.BooleanVar()
             self.screenparsing_checkboxes[feature] = ttk.Checkbutton(self.screenparsing_frame, text=feature,
                                                                      variable=self.screenparsing_variables[feature])
+        self.screenparsing_overlay_geometry = tk.BooleanVar()
+        self.screenparsing_overlay_geometry_checkbox = ttk.Checkbutton(self.screenparsing_frame,
+                                                                       text="Move screen parsing overlay with cursor",
+                                                                       variable=self.screenparsing_overlay_geometry)
         # MISC
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
         self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
@@ -403,6 +407,7 @@ class SettingsFrame(ttk.Frame):
             self.screenparsing_checkboxes[feature].grid(column=0, row=set_row, sticky="w", padx=(75, 0), pady=(0, 5))
             set_row += 1
         self.screenparsing_overlay_checkbox.grid(column=0, row=10, sticky="w", padx=(55, 0), pady=(0, 5))
+        self.screenparsing_overlay_geometry_checkbox.grid(column=0, row=11, sticky="w", padx=(55, 0), pady=(0, 5))
 
         # MISC
         self.save_settings_button.grid(column=0, row=1, padx=2)
@@ -471,6 +476,8 @@ class SettingsFrame(ttk.Frame):
         self.realtime_event_overlay_var.set(variables.settings_obj["realtime"]["events_overlay"])
         self.screenparsing_var.set(variables.settings_obj["realtime"]["screenparsing"])
         self.screenparsing_overlay_var.set(variables.settings_obj["realtime"]["screenparsing_overlay"])
+        self.screenparsing_overlay_geometry.set(
+            eval(variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]))
         for key, value in self.screenparsing_variables.items():
             if key in eval(variables.settings_obj["realtime"]["screenparsing_features"]):
                 value.set(True)
@@ -546,6 +553,7 @@ class SettingsFrame(ttk.Frame):
                 "screenparsing_overlay": self.screenparsing_overlay_var.get(),
                 "screenparsing_features": [key for key, value in self.screenparsing_variables.items() if
                                            value.get() is True],
+                "screenparsing_overlay_geometry": self.screenparsing_overlay_geometry.get()
 
             }
         }
