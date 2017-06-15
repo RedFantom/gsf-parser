@@ -7,7 +7,7 @@
 # For license see LICENSE
 
 # UI imports
-import tkinter as tk
+from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 import os
 import variables
@@ -26,7 +26,7 @@ from toplevels.update import UpdateWindow
 # Class that contains all code to start the parser
 # Creates various frames and gets all widgets into place
 # Main loop is started at the end
-class MainWindow(tk.Tk):
+class MainWindow(ThemedTk):
     """
     Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
     various functions of the parser an
@@ -34,7 +34,7 @@ class MainWindow(tk.Tk):
 
     def __init__(self):
         # Initialize window
-        tk.Tk.__init__(self)
+        ThemedTk.__init__(self)
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.protocol("WM_DELETE_WINDOW", self.exit)
@@ -123,20 +123,8 @@ class MainWindow(tk.Tk):
         # Start the main loop
 
     def update_style(self, start=False):
-        old_dir = os.getcwd()
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        try:
-            self.tk.eval("source theme/arc.tcl")
-        except tk.TclError:
-            print("Error evaluating arc.tcl")
-        os.chdir(old_dir)
+        self.set_theme("arc")
         print((list(self.tk.call("ttk::themes"))))
-        try:
-            self.style.theme_use("arc")
-        except tk.TclError as e:
-            print("[DEBUG] Theme arc is not available. Using default.")
-            print(e)
-            self.style.theme_use("vista")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
