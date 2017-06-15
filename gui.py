@@ -17,10 +17,12 @@ from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsfr
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from toplevels.splashscreens import BootSplash
+import pyscreenshot
+from tools.utilities import get_temp_directory
+from datetime import datetime
 from sys import exit
 from github import Github, GithubException
 from semantic_version import Version
-from toplevels.update import UpdateWindow
 
 
 # Class that contains all code to start the parser
@@ -62,6 +64,7 @@ class MainWindow(ThemedTk):
             print("[DEBUG] Connection initialized")
         # self.splash.update_progress()
         self.geometry("800x425")
+        self.bind("<F10>", self.screenshot)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=800)
         self.file_tab_frame = ttk.Frame(self.notebook)
@@ -151,6 +154,19 @@ class MainWindow(ThemedTk):
         :return: SystemExit(0)
         """
         exit()
+
+    def screenshot(self, *args):
+        """
+        Take a screenshot of the GSF Parser window and save, only works on Windows
+        :return: None
+        """
+        x = self.winfo_x()
+        y = self.winfo_y()
+        result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)
+        screenshot = pyscreenshot.grab(result_box)
+        file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
+                                 ".png")
+        screenshot.save(file_name, "PNG")
 
     def check_update(self):
         """
