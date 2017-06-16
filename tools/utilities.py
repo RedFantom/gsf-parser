@@ -12,6 +12,7 @@ import cv2
 import numpy
 from sys import platform
 import tkinter as tk
+import mss
 
 debug = False
 
@@ -67,37 +68,12 @@ def get_cursor_position(screen):
 
 def get_pillow_screen():
     """
-    Returns the appropriate Image object for the screen depending on the operating system and whether DEBUG mode is
-    enabled or not. ImageGrab is used on Windows, but this does not support Linux, so the GTK toolkit is used.
+    Returns the appropriate Image object
     :return: Image object
     """
-    if debug:
-        return Image.open(os.path.join(get_assets_directory(), "vision", "testing.png"))
-    elif platform == "win32":
-        from PIL import ImageGrab
-        return ImageGrab.grab()
-    elif platform == "linux":
-        """
-        Source: https://ubuntuforums.org/showthread.php?t=448160&p=2681009#post2681009
-        """
-        from gtk import gdk
-        window = gdk.get_default_root_window()
-        size = window.get_size()
-        pixbuff = gdk.Pixbuf(gdk.COLORSPACE_RGB, False, 8, size[0], size[1])
-        pixbuff = pixbuff.get_from_drawable(window, window.get_colormap(), 0, 0, 0, 0, size[0], size[1])
-        if not pixbuff:
-            raise ValueError("Obtaining screenshot failed")
-        """
-        Source: http://bredsaal.dk/converting-a-gtk-gdk-pixbuf-object-to-a-imageobject
-        """
-        image = Image.frombuffer("RGB", (pixbuff.get_width(), pixbuff.get_height()),
-                                 pixbuff.pixel_array, 'raw', 'RGB', 0, 1)
-        image.transpose(Image.FLIP_TOP_BOTTOM)
-        return image
-    elif platform == "darwin":
-        raise ValueError("This function does not support macOS")
-    else:
-        raise ValueError("Unknown platform detected")
+    sct = mss.mss()
+    sct.get_pixels()
+    return Image.frombytes("RGB", (sct.width, sct.height), sct.image)
 
 
 def write_debug_log(line):
