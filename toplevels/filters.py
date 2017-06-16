@@ -6,7 +6,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import tkinter as tk
-import tkinter.ttk
+from tkinter import ttk
 import tkinter.messagebox
 import os
 import re
@@ -14,7 +14,6 @@ import widgets
 import variables
 import parsing.parse as parse
 from datetime import datetime
-from frames.statsframe import StatsFrame
 from widgets.verticalscrollframe import VerticalScrollFrame
 from . import splashscreens
 from parsing import abilities as abls
@@ -35,30 +34,34 @@ class Filters(tk.Toplevel):
         else:
             self.window = variables.main_window
         self.wm_resizable(False, False)
-        self.description_label = tkinter.ttk.Label(self, text="Please enter the filters you want to apply",
-                                                   font=("Calibri", 12))
-        self.filter_types = ["Date", "Components", "Ships", "Statistics", "Duration"]
+        self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
+                                           font=("Calibri", 12))
+        self.filter_types = ["Date", "Components", "Ships", "Statistics"]  # , "Duration"]
         self.filter_type_checkbuttons = []
         self.filter_type_vars = {}
         for type in self.filter_types:
-            self.filter_type_vars[type] = tk.IntVar()
+            self.filter_type_vars[type] = tk.BooleanVar()
             self.filter_type_checkbuttons.append(
-                tkinter.ttk.Checkbutton(self, text=type, variable=self.filter_type_vars[type]))
+                ttk.Checkbutton(self, text=type, variable=self.filter_type_vars[type]))
         print("[DEBUG] Setting up Type filters")
         self.type_frame = widgets.ToggledFrame(self, text="Type", labelwidth=100)
         self.type_variable = tk.StringVar()
         self.type_variable.set("logs")
-        self.logs_radio = tkinter.ttk.Radiobutton(self.type_frame.sub_frame, text="CombatLogs",
-                                                  variable=self.type_variable,
-                                                  value="logs", width=20)
-        self.matches_radio = tkinter.ttk.Radiobutton(self.type_frame.sub_frame, text="Matches",
-                                                     variable=self.type_variable,
-                                                     value="matches", width=20)
-        self.spawns_radio = tkinter.ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns",
-                                                    variable=self.type_variable,
-                                                    value="spawns", width=20)
+        self.logs_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="CombatLogs",
+                                          variable=self.type_variable,
+                                          value="logs", width=20)
+        self.matches_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Matches",
+                                             variable=self.type_variable,
+                                             value="matches", width=20)
+        self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns",
+                                            variable=self.type_variable,
+                                            value="spawns", width=20)
         print("[DEBUG] Setting up date filters")
         self.dateframe = widgets.ToggledFrame(self, text="Date", labelwidth=100)
+        self.start_date_label = ttk.Label(self.dateframe.sub_frame, text="Start date", font=("default", 12),
+                                          justify=tk.CENTER)
+        self.end_date_label = ttk.Label(self.dateframe.sub_frame, text="End date", font=("default", 12),
+                                        justify=tk.CENTER)
         self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
         self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
         print("[DEBUG] Setting up components filters")
@@ -81,33 +84,33 @@ class Filters(tk.Toplevel):
         self.systems_tickboxes_vars = {}
         for primary in abls.primaries:
             primary_var = tk.IntVar()
-            primary_chk = tkinter.ttk.Checkbutton(self.primaries_frame.sub_frame, text=primary, variable=primary_var,
-                                                  width=20)
+            primary_chk = ttk.Checkbutton(self.primaries_frame.sub_frame, text=primary, variable=primary_var,
+                                          width=20)
             self.primaries_tickboxes[primary] = primary_chk
             self.primaries_tickboxes_vars[primary] = primary_var
         for secondary in abls.secondaries:
             secondary_var = tk.IntVar()
-            secondary_chk = tkinter.ttk.Checkbutton(self.secondaries_frame.sub_frame, text=secondary,
-                                                    variable=secondary_var,
-                                                    width=20)
+            secondary_chk = ttk.Checkbutton(self.secondaries_frame.sub_frame, text=secondary,
+                                            variable=secondary_var,
+                                            width=20)
             self.secondaries_tickboxes[secondary] = secondary_chk
             self.secondaries_tickboxes_vars[secondary] = secondary_var
         for engine in abls.engines:
             engine_var = tk.IntVar()
-            engine_chk = tkinter.ttk.Checkbutton(self.engines_frame.sub_frame, text=engine, variable=engine_var,
-                                                 width=20)
+            engine_chk = ttk.Checkbutton(self.engines_frame.sub_frame, text=engine, variable=engine_var,
+                                         width=20)
             self.engines_tickboxes[engine] = engine_chk
             self.engines_tickboxes_vars[engine] = engine_var
         for shield in abls.shields:
             shield_var = tk.IntVar()
-            shield_chk = tkinter.ttk.Checkbutton(self.shields_frame.sub_frame, text=shield, variable=shield_var,
-                                                 width=20)
+            shield_chk = ttk.Checkbutton(self.shields_frame.sub_frame, text=shield, variable=shield_var,
+                                         width=20)
             self.shields_tickboxes[shield] = shield_chk
             self.shields_tickboxes_vars[shield] = shield_var
         for system in abls.systems:
             system_var = tk.IntVar()
-            system_chk = tkinter.ttk.Checkbutton(self.systems_frame.sub_frame, text=system, variable=system_var,
-                                                 width=20)
+            system_chk = ttk.Checkbutton(self.systems_frame.sub_frame, text=system, variable=system_var,
+                                         width=20)
             self.systems_tickboxes[system] = system_chk
             self.systems_tickboxes_vars[system] = system_var
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
@@ -119,19 +122,19 @@ class Filters(tk.Toplevel):
         if variables.settings_obj["gui"]["faction"] == "imperial":
             for name in abls.rep_ships.keys():
                 self.ships_intvars[name] = tk.IntVar()
-                self.ships_checkboxes[name] = tkinter.ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
-                                                                      variable=self.ships_intvars[name], width=12)
+                self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
+                                                              variable=self.ships_intvars[name], width=12)
         elif variables.settings_obj["gui"]["faction"] == "republic":
             for name in abls.rep_ships.values():
                 self.ships_intvars[name] = tk.IntVar()
-                self.ships_checkboxes[name] = tkinter.ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
-                                                                      variable=self.ships_intvars[name], width=12)
+                self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
+                                                              variable=self.ships_intvars[name], width=12)
         else:
             raise ValueError("No valid faction found.")
 
-        self.complete_button = tkinter.ttk.Button(self, text="Filter", command=self.filter)
-        self.cancel_button = tkinter.ttk.Button(self, text="Cancel", command=self.destroy)
-        self.search_button = tkinter.ttk.Button(self, text="Search", command=self.search)
+        self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
+        self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
+        self.search_button = ttk.Button(self, text="Search", command=self.search)
         print("[DEBUG] Gridding widgets")
         self.grid_widgets()
 
@@ -148,59 +151,55 @@ class Filters(tk.Toplevel):
         self.filter(search=True)
 
     def filter(self, search=False):
+        self.window.file_select_frame.clear_data_widgets()
         # logs, matches or spawns
         results = []
         results_toplevel = Results(self.window)
-        if self.type_variable.get() == "logs":
-            files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
-            variables.files_done = 0
-            splash = splashscreens.SplashScreen(self, max=len(files))
-            for file_name in files:
-                passed = True
-                variables.files_done += 1
-                splash.update_progress()
-                if not file_name.endswith(".txt"):
+        files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
+        files_done = 0
+        splash = splashscreens.SplashScreen(self, len(files))
+        for file_name in files:
+            passed = True
+            files_done += 1
+            splash.update_progress(files_done)
+            if not file_name.endswith(".txt"):
+                continue
+            with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
+                lines = f.readlines()
+            player_list = parse.determinePlayer(lines)
+            file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
+            (abilities, damagetaken, damagedealt,
+             selfdamage, healingreceived, enemies,
+             criticalcount, criticalluck, hitcount,
+             enemydamaged, enemydamaget, match_timings,
+             spawn_timings) = parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
+            damagetaken = self.file_number(damagetaken)
+            damagedealt = self.file_number(damagedealt)
+            selfdamage = self.file_number(selfdamage)
+            healingreceived = self.file_number(healingreceived)
+            if self.filter_type_vars["Ships"].get() is True:
+                if not self.check_ships_file(self.ships_intvars, abilities):
                     continue
-                with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
-                    lines = f.readlines()
-                player_list = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
-                (abilities, damagetaken, damagedealt,
-                 selfdamage, healingreceived, enemies,
-                 criticalcount, criticalluck, hitcount,
-                 enemydamaged, enemydamaget, match_timings,
-                 spawn_timings) = parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
-                damagetaken = self.file_number(damagetaken)
-                damagedealt = self.file_number(damagedealt)
-                selfdamage = self.file_number(selfdamage)
-                healingreceived = self.file_number(healingreceived)
-                if self.filter_type_vars["Ships"].get() == 1:
-                    tkinter.messagebox.showerror("Error", "Ships filters have not yet been implemented.")
-                    return
-                    print("Checking ships")
-                    if not self.check_ships_file(self.ships_intvars, abilities):
-                        continue
-                abilities = self.file_dictionary(abilities)
-                if self.filter_type_vars["Components"].get() == 1:
-                    for dictionary in self.comps_dicts:
-                        if not self.check_components(dictionary, abilities):
-                            passed = False
-                            break
+            abilities = self.file_dictionary(abilities)
+            if self.filter_type_vars["Components"].get() is True:
+                for dictionary in self.comps_dicts:
+                    if not self.check_components(dictionary, abilities):
+                        passed = False
+                        break
                 if not passed:
                     continue
-                frame = StatsFrame(results_toplevel.frame.interior, variables.main_window)
-                self.setup_frame_file(frame, file_name)
-                results.append((tkinter.ttk.Label(results_toplevel.frame.interior, text=self.parse_file_name(file_name),
-                                                  font=("Calibiri", 12)),
-                                frame))
-                print(len(files))
-            splash.destroy()
-        elif self.type_variable.get() == "matches":
-            pass
-        elif self.type_variable.get() == "spawns":
-            pass
-        else:
-            raise ValueError("type_variable.get() did not return a valid value")
+            if self.filter_type_vars["Date"].get() is True:
+                pass
+            if self.filter_type_vars["Statistics"].get() is True:
+                pass
+            # Duration filters are not implemented yet, as they cannot be implemented for CombatLogs
+            # if self.filter_type_vars["Duration"].get() is True:
+            #     pass
+            try:
+                self.window.file_select_frame.insert_file(file_name)
+            except tk.TclError as e:
+                print(e)
+        splash.destroy()
         if search:
             tkinter.messagebox.showinfo("Search results", "With the filters you specified, %s results were found." %
                                         len(results))
@@ -219,7 +218,7 @@ class Filters(tk.Toplevel):
         for widget in self.filter_type_checkbuttons:
             widget.grid(row=1, column=set_column, sticky="w")
             set_column += 1
-        self.type_frame.grid(row=2, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        # self.type_frame.grid(row=2, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.dateframe.grid(row=3, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.components_frame.grid(row=4, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky="nswe")
@@ -231,6 +230,8 @@ class Filters(tk.Toplevel):
         self.matches_radio.grid(row=1, column=3, sticky="nswe")
         self.spawns_radio.grid(row=1, column=4, sticky="nswe")
 
+        self.start_date_label.grid(row=0, column=1, sticky="we")
+        self.end_date_label.grid(row=0, column=2, sticky="we")
         self.start_date_widget.grid(row=1, column=1, sticky="nswe")
         self.end_date_widget.grid(row=1, column=2, sticky="nswe")
 
@@ -334,7 +335,7 @@ class Filters(tk.Toplevel):
                             passed = False
                 if not passed:
                     return False
-        print("Returning True")
+        print("Ships file filter returning True")
         return True
 
     @staticmethod

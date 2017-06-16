@@ -152,7 +152,12 @@ class FileFrame(ttk.Frame):
         return
 
     def insert_file(self, file_string):
-        file_name = self.file_string_dict[file_string]
+        if file_string in self.file_string_dict:
+            file_name = self.file_string_dict[file_string]
+        elif file_string.endswith(".txt"):
+            file_name = file_string
+        else:
+            raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
         with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
