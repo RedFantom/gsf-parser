@@ -9,7 +9,6 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import os
-import re
 import widgets
 import variables
 import parsing.parse as parse
@@ -17,7 +16,6 @@ from datetime import datetime
 from widgets.verticalscrollframe import VerticalScrollFrame
 from . import splashscreens
 from parsing import abilities as abls
-from parsing.filestats import file_statistics
 
 
 class Filters(tk.Toplevel):
@@ -29,12 +27,15 @@ class Filters(tk.Toplevel):
 
     def __init__(self, window=None):
         tk.Toplevel.__init__(self, window)
+        self.wm_geometry("670x400")
         if window:
             self.window = window
         else:
             self.window = variables.main_window
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=670, canvasheight=400)
         self.wm_resizable(False, False)
-        self.description_label = ttk.Label(self, text="Please enter the filters you want to apply",
+        self.description_label = ttk.Label(self.scroll_frame.interior,
+                                           text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
         self.filter_types = ["Date", "Components", "Ships", "Statistics"]  # , "Duration"]
         self.filter_type_checkbuttons = []
@@ -42,22 +43,11 @@ class Filters(tk.Toplevel):
         for type in self.filter_types:
             self.filter_type_vars[type] = tk.BooleanVar()
             self.filter_type_checkbuttons.append(
-                ttk.Checkbutton(self, text=type, variable=self.filter_type_vars[type]))
+                ttk.Checkbutton(self.scroll_frame.interior, text=type, variable=self.filter_type_vars[type]))
         print("[DEBUG] Setting up Type filters")
-        self.type_frame = widgets.ToggledFrame(self, text="Type", labelwidth=100)
-        self.type_variable = tk.StringVar()
-        self.type_variable.set("logs")
-        self.logs_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="CombatLogs",
-                                          variable=self.type_variable,
-                                          value="logs", width=20)
-        self.matches_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Matches",
-                                             variable=self.type_variable,
-                                             value="matches", width=20)
-        self.spawns_radio = ttk.Radiobutton(self.type_frame.sub_frame, text="Spawns",
-                                            variable=self.type_variable,
-                                            value="spawns", width=20)
+        self.type_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Type", labelwidth=90)
         print("[DEBUG] Setting up date filters")
-        self.dateframe = widgets.ToggledFrame(self, text="Date", labelwidth=100)
+        self.dateframe = widgets.ToggledFrame(self.scroll_frame.interior, text="Date", labelwidth=90)
         self.start_date_label = ttk.Label(self.dateframe.sub_frame, text="Start date", font=("default", 12),
                                           justify=tk.CENTER)
         self.end_date_label = ttk.Label(self.dateframe.sub_frame, text="End date", font=("default", 12),
@@ -65,13 +55,13 @@ class Filters(tk.Toplevel):
         self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
         self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
         print("[DEBUG] Setting up components filters")
-        self.components_frame = widgets.ToggledFrame(self, text="Components", labelwidth=100)
-        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries", labelwidth=100)
+        self.components_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Components", labelwidth=90)
+        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries", labelwidth=90)
         self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries",
-                                                      labelwidth=100)
-        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines", labelwidth=100)
-        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields", labelwidth=100)
-        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems", labelwidth=100)
+                                                      labelwidth=90)
+        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines", labelwidth=90)
+        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields", labelwidth=90)
+        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems", labelwidth=90)
         self.primaries_tickboxes = {}
         self.primaries_tickboxes_vars = {}
         self.secondaries_tickboxes = {}
@@ -116,7 +106,7 @@ class Filters(tk.Toplevel):
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
 
-        self.ships_frame = widgets.ToggledFrame(self, text="Ships", labelwidth=100)
+        self.ships_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
         self.ships_checkboxes = {}
         self.ships_intvars = {}
         if variables.settings_obj["gui"]["faction"] == "imperial":
@@ -131,6 +121,45 @@ class Filters(tk.Toplevel):
                                                               variable=self.ships_intvars[name], width=12)
         else:
             raise ValueError("No valid faction found.")
+
+        self.statistics_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Statistics", labelwidth=90)
+        self.statistics_header_label = ttk.Label(self.statistics_frame.sub_frame,
+                                                 text="All statistics are averages per match", font=("default", 11))
+        self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "killassists"]
+        self.statistics_dict = {
+            "damagedealt": "Damage dealt: ",
+            "damagetaken": "Damage taken: ",
+            "selfdamage": "Selfdamage: ",
+            "healing": "Healing received: ",
+            "killassists": "Enemies damage dealt to: ",
+            "enemies": "Enemies damage taken from: "
+        }
+        self.statistics_limits = {
+            "damagedealt": (0, 200000),
+            "damagetaken": (0, 200000),
+            "selfdamage": (0, 50000),
+            "healing": (0, 20000),
+            "killassists": (0, 100),
+            "enemies": (0, 100)
+        }
+
+        self.statistics_variables = {}
+        self.statistics_scales = {}
+        self.statistics_labels = {}
+        self.statistics_entries = {}
+
+        for stat in self.statistics:
+            self.statistics_variables[stat] = IntVar()
+            self.statistics_labels[stat] = ttk.Label(self.statistics_frame.sub_frame, text=self.statistics_dict[stat])
+
+            self.statistics_scales[stat] = ttk.Scale(self.statistics_frame.sub_frame,
+                                                     from_=self.statistics_limits[stat][0],
+                                                     to=self.statistics_limits[stat][1],
+                                                     variable=self.statistics_variables[stat],
+                                                     length=200)
+            self.statistics_entries[stat] = ttk.Entry(self.statistics_frame.sub_frame,
+                                                      width=20,
+                                                      textvariable=self.statistics_variables[stat])
 
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
@@ -154,7 +183,6 @@ class Filters(tk.Toplevel):
         self.window.file_select_frame.clear_data_widgets()
         # logs, matches or spawns
         results = []
-        results_toplevel = Results(self.window)
         files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
         files_done = 0
         splash = splashscreens.SplashScreen(self, len(files))
@@ -203,17 +231,17 @@ class Filters(tk.Toplevel):
         if search:
             tkinter.messagebox.showinfo("Search results", "With the filters you specified, %s results were found." %
                                         len(results))
-            results_toplevel.destroy()
         else:
             if len(results) == 0:
-                tkinter.messagebox.showinfo("Search results", "With the filters you specified, no results were found.")
+                tkinter.messagebox.showinfo("Search results",
+                                            "With the filters you specified, no results were found.")
                 return
-            results_toplevel.grid_widgets(results)
             self.destroy()
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=1, columnspan=len(self.filter_types),
                                     sticky="nswe")
+        self.scroll_frame.grid()
         set_column = 1
         for widget in self.filter_type_checkbuttons:
             widget.grid(row=1, column=set_column, sticky="w")
@@ -222,13 +250,11 @@ class Filters(tk.Toplevel):
         self.dateframe.grid(row=3, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.components_frame.grid(row=4, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky="nswe")
-        self.complete_button.grid(row=6, column=1, sticky="nswe")
-        self.search_button.grid(row=6, column=2, sticky="nswe")
-        self.cancel_button.grid(row=6, column=3, sticky="nswe")
+        self.statistics_frame.grid(row=6, column=1, columnspan=len(self.filter_types), sticky="nswe")
 
-        self.logs_radio.grid(row=1, column=2, sticky="nswe")
-        self.matches_radio.grid(row=1, column=3, sticky="nswe")
-        self.spawns_radio.grid(row=1, column=4, sticky="nswe")
+        self.complete_button.grid(row=10, column=1, sticky="nswe", pady=5, padx=5)
+        self.search_button.grid(row=10, column=2, sticky="nswe", pady=5, padx=(0, 5))
+        self.cancel_button.grid(row=10, column=3, sticky="nswe", pady=5, padx=(0, 5))
 
         self.start_date_label.grid(row=0, column=1, sticky="we")
         self.end_date_label.grid(row=0, column=2, sticky="we")
@@ -247,7 +273,7 @@ class Filters(tk.Toplevel):
             for widget in dictionary.values():
                 widget.grid(row=start_row, column=start_column, sticky="w" + tk.N)
                 start_column += 1
-                if start_column == 5:
+                if start_column == 4:
                     start_column = 1
                     start_row += 1
             start_row = 1
@@ -259,39 +285,18 @@ class Filters(tk.Toplevel):
         for widget in self.ships_checkboxes.values():
             widget.grid(row=set_row, column=set_column, sticky="nw")
             set_column += 1
-            if set_column == 7:
+            if set_column == 6:
                 set_column = 1
                 set_row += 1
-        return
 
-    @staticmethod
-    def setup_frame_file(frame, file_name):
-        with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
-            lines = f.readlines()
-        player_list = parse.determinePlayer(lines)
-        file_cube, _, _ = parse.splitter(lines, player_list)
-        (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
-         enemydamaget, uncounted) = file_statistics(file_cube)
-        frame.statistics_numbers_var.set(statistics_string)
-        for key, value in abilities_dict.items():
-            frame.abilities_treeview.insert('', tk.END, values=(key, value))
-        frame.events_button.grid_forget()
-        for enemy in enemies:
-            if enemy == "":
-                frame.enemies_treeview.insert('', tk.END,
-                                              values=("System",
-                                                      str(enemydamaged[enemy]),
-                                                      str(enemydamaget[enemy])))
-            elif re.search('[a-zA-Z]', enemy):
-                frame.enemies_treeview.insert('', tk.END,
-                                              values=(enemy,
-                                                      str(enemydamaged[enemy]),
-                                                      str(enemydamaget[enemy])))
-            else:
-                frame.enemies_treeview.insert('', tk.END,
-                                              values=(enemy,
-                                                      str(enemydamaged[enemy]),
-                                                      str(enemydamaget[enemy])))
+        self.statistics_header_label.grid(row=1, column=1, columnspan=2, sticky="w", padx=5, pady=5)
+        set_row = 2
+        for stat in self.statistics:
+            self.statistics_labels[stat].grid(row=set_row, column=1, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_scales[stat].grid(row=set_row, column=2, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_entries[stat].grid(row=set_row, column=3, sticky="nw", padx=5, pady=(0, 5))
+            set_row += 1
+        return
 
     @staticmethod
     def file_dictionary(abilities):
@@ -338,48 +343,11 @@ class Filters(tk.Toplevel):
         print("Ships file filter returning True")
         return True
 
-    @staticmethod
-    def parse_file_name(name):
-        try:
-            if variables.settings_obj["gui"]["date_format"] == "ymd":
-                return datetime.strptime(name[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime("%Y-%m-%d   %H:%M")
-            elif variables.settings_obj["gui"]["date_format"] == "ydm":
-                return datetime.strptime(name[:-10], "combat_%Y-%m-%d_%H_%M_%S_").strftime(
-                    "%Y-%d-%m   %H:%M:%S")
-            else:
-                tkinter.messagebox.showerror("No valid date format setting found.")
-                return -1
-        except ValueError:
-            return name
 
+class IntVar(tk.IntVar):
+    def __init__(self):
+        tk.IntVar.__init__(self)
 
-class Results(tk.Toplevel):
-    def __init__(self, parent):
-        tk.Toplevel.__init__(self, parent)
-        self.frame = VerticalScrollFrame(self, canvaswidth=650, canvasheight=395)
-        self.wm_resizable(False, False)
-        self.wm_title("GSF Parser: Search Results")
-        self.iconify()
-
-    def grid_widgets(self, results_list):
-        self.frame.grid()
-        self.deiconify()
-        set_row = 0
-        set_column = 0
-        for (title, item) in results_list:
-            item.grid_widgets()
-            item.notice_label.grid_forget()
-            item.notebook.config(height=200, width=310)
-            item.config(width=310)
-            item.events_frame.grid_forget()
-            item.enemies_treeview.config(height=8)
-            item.abilities_treeview.config(height=8)
-            title.grid(row=set_row, column=set_column)
-            item.grid(row=set_row + 1, column=set_column)
-            set_column += 1
-            if set_column == 2:
-                set_column = 0
-                set_row += 2
-            print("Gridded a widget with title: ", title["text"])
-        print("Gridded the results")
-        return
+    def set(self, value):
+        value = int(round(float(value), 0))
+        tk.IntVar.set(self, value)
