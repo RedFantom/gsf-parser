@@ -16,6 +16,7 @@ from datetime import datetime
 from widgets.verticalscrollframe import VerticalScrollFrame
 from . import splashscreens
 from parsing import abilities as abls
+import platform
 
 
 class Filters(tk.Toplevel):
@@ -32,7 +33,8 @@ class Filters(tk.Toplevel):
             self.window = window
         else:
             self.window = variables.main_window
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=670, canvasheight=400)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=670, canvasheight=355)
+
         self.wm_resizable(False, False)
         self.description_label = ttk.Label(self.scroll_frame.interior,
                                            text="Please enter the filters you want to apply",
@@ -124,7 +126,11 @@ class Filters(tk.Toplevel):
 
         self.statistics_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Statistics", labelwidth=90)
         self.statistics_header_label = ttk.Label(self.statistics_frame.sub_frame,
-                                                 text="All statistics are averages per match", font=("default", 11))
+                                                 text="All statistics are averages per match, if the maximum is set to"
+                                                      "zero the setting is ignored.")
+        self.statistics_max_label = ttk.Label(self.statistics_frame.sub_frame, text="Maximum")
+        self.statistics_min_label = ttk.Label(self.statistics_frame.sub_frame, text="Minimum")
+
         self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "killassists"]
         self.statistics_dict = {
             "damagedealt": "Damage dealt: ",
@@ -143,23 +149,35 @@ class Filters(tk.Toplevel):
             "enemies": (0, 100)
         }
 
-        self.statistics_variables = {}
-        self.statistics_scales = {}
+        self.statistics_variables_max = {}
+        self.statistics_scales_max = {}
         self.statistics_labels = {}
-        self.statistics_entries = {}
+        self.statistics_entries_max = {}
+        self.statistics_variables_min = {}
+        self.statistics_entries_min = {}
+        self.statistics_scales_min = {}
 
         for stat in self.statistics:
-            self.statistics_variables[stat] = IntVar()
+            self.statistics_variables_min[stat] = IntVar()
             self.statistics_labels[stat] = ttk.Label(self.statistics_frame.sub_frame, text=self.statistics_dict[stat])
 
-            self.statistics_scales[stat] = ttk.Scale(self.statistics_frame.sub_frame,
-                                                     from_=self.statistics_limits[stat][0],
-                                                     to=self.statistics_limits[stat][1],
-                                                     variable=self.statistics_variables[stat],
-                                                     length=200)
-            self.statistics_entries[stat] = ttk.Entry(self.statistics_frame.sub_frame,
-                                                      width=20,
-                                                      textvariable=self.statistics_variables[stat])
+            self.statistics_scales_min[stat] = ttk.Scale(self.statistics_frame.sub_frame,
+                                                         from_=self.statistics_limits[stat][0],
+                                                         to=self.statistics_limits[stat][1],
+                                                         variable=self.statistics_variables_min[stat],
+                                                         length=150)
+            self.statistics_entries_min[stat] = ttk.Entry(self.statistics_frame.sub_frame,
+                                                          width=10,
+                                                          textvariable=self.statistics_variables_min[stat])
+            self.statistics_variables_max[stat] = IntVar()
+            self.statistics_scales_max[stat] = ttk.Scale(self.statistics_frame.sub_frame,
+                                                         from_=self.statistics_limits[stat][0],
+                                                         to=self.statistics_limits[stat][1],
+                                                         variable=self.statistics_variables_max[stat],
+                                                         length=150)
+            self.statistics_entries_max[stat] = ttk.Entry(self.statistics_frame.sub_frame,
+                                                    width=10,
+                                                    textvariable=self.statistics_variables_max[stat])
 
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
@@ -241,7 +259,7 @@ class Filters(tk.Toplevel):
     def grid_widgets(self):
         self.description_label.grid(row=0, column=1, columnspan=len(self.filter_types),
                                     sticky="nswe")
-        self.scroll_frame.grid()
+        self.scroll_frame.grid(row=1, column=1, columnspan=6, sticky="nswe")
         set_column = 1
         for widget in self.filter_type_checkbuttons:
             widget.grid(row=1, column=set_column, sticky="w")
@@ -252,9 +270,9 @@ class Filters(tk.Toplevel):
         self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.statistics_frame.grid(row=6, column=1, columnspan=len(self.filter_types), sticky="nswe")
 
-        self.complete_button.grid(row=10, column=1, sticky="nswe", pady=5, padx=5)
-        self.search_button.grid(row=10, column=2, sticky="nswe", pady=5, padx=(0, 5))
-        self.cancel_button.grid(row=10, column=3, sticky="nswe", pady=5, padx=(0, 5))
+        self.complete_button.grid(row=2, column=1, sticky="nswe", pady=5, padx=5)
+        self.search_button.grid(row=2, column=2, sticky="nswe", pady=5, padx=(0, 5))
+        self.cancel_button.grid(row=2, column=3, sticky="nswe", pady=5, padx=(0, 5))
 
         self.start_date_label.grid(row=0, column=1, sticky="we")
         self.end_date_label.grid(row=0, column=2, sticky="we")
@@ -289,12 +307,16 @@ class Filters(tk.Toplevel):
                 set_column = 1
                 set_row += 1
 
-        self.statistics_header_label.grid(row=1, column=1, columnspan=2, sticky="w", padx=5, pady=5)
-        set_row = 2
+        self.statistics_header_label.grid(row=1, column=1, columnspan=5, sticky="w", padx=5, pady=5)
+        self.statistics_max_label.grid(row=2, column=4, sticky="w", pady=(0, 5), padx=5)
+        self.statistics_min_label.grid(row=2, column=2, sticky="w", pady=(0, 5), padx=5)
+        set_row = 3
         for stat in self.statistics:
             self.statistics_labels[stat].grid(row=set_row, column=1, sticky="nw", padx=5, pady=(0, 5))
-            self.statistics_scales[stat].grid(row=set_row, column=2, sticky="nw", padx=5, pady=(0, 5))
-            self.statistics_entries[stat].grid(row=set_row, column=3, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_scales_min[stat].grid(row=set_row, column=2, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_entries_min[stat].grid(row=set_row, column=3, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_scales_max[stat].grid(row=set_row, column=4, sticky="nw", padx=5, pady=(0, 5))
+            self.statistics_entries_max[stat].grid(row=set_row, column=5, sticky="nw", padx=5, pady=(0, 5))
             set_row += 1
         return
 
@@ -349,5 +371,6 @@ class IntVar(tk.IntVar):
         tk.IntVar.__init__(self)
 
     def set(self, value):
+        print("IntVar set called!")
         value = int(round(float(value), 0))
         tk.IntVar.set(self, value)
