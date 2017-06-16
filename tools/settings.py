@@ -147,6 +147,7 @@ class Settings(object):
         conf.read_dict(dictionary)
         with open(self.file_name, "w") as fo:
             conf.write(fo)
+        self.read_settings()
 
     def read_settings(self):
         if os.path.basename(self.file_name) not in os.listdir(self.directory):

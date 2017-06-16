@@ -20,7 +20,6 @@ import tkinter.filedialog as filedialog
 from shutil import copyfile
 import operator
 from parsing.guiparsing import GSFInterface
-from time import sleep
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This

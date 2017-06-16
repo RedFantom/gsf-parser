@@ -499,7 +499,7 @@ class SettingsFrame(ttk.Frame):
         else:
             reboot = True
         print(self.color.get())
-        if self.color.get() is "custom":
+        if "custom" in self.color.get().lower():
             hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
             print(hex_color)
             if not hex_color:
