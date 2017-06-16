@@ -3,18 +3,22 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-"""
+
 from os.path import dirname, join, basename
 
 try:
+    import sys
+    import shutil
     tcl_lib = join(sys._MEIPASS, "lib")
     tcl_new_lib = join(dirname(dirname(tcl_lib)), basename(tcl_lib))
-    import shutil
-
     shutil.copytree(src=tcl_lib, dst=tcl_new_lib)
 except AttributeError:
     pass
-"""
+except FileNotFoundError:
+    pass
+except FileExistsError:
+    pass
+
 import gui
 
 
