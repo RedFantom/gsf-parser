@@ -154,6 +154,9 @@ class Settings(object):
             self.write_defaults()
         with open(self.file_name, "r") as fi:
             self.conf.read_file(fi)
+        for section, dictionary in self.conf.items():
+            for item, value in dictionary.items():
+                self.conf[section][item] = eval(value)
 
     def __getitem__(self, section):
         return self.conf[section]
