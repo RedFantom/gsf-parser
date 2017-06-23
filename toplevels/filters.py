@@ -14,6 +14,7 @@ import variables
 import parsing.parse as parse
 from datetime import datetime
 from widgets.verticalscrollframe import VerticalScrollFrame
+from widgets import ScaleEntry
 from . import splashscreens
 from parsing import abilities as abls
 import platform
@@ -149,35 +150,20 @@ class Filters(tk.Toplevel):
             "enemies": (0, 100)
         }
 
-        self.statistics_variables_max = {}
         self.statistics_scales_max = {}
         self.statistics_labels = {}
-        self.statistics_entries_max = {}
-        self.statistics_variables_min = {}
-        self.statistics_entries_min = {}
         self.statistics_scales_min = {}
 
         for stat in self.statistics:
-            self.statistics_variables_min[stat] = IntVar()
             self.statistics_labels[stat] = ttk.Label(self.statistics_frame.sub_frame, text=self.statistics_dict[stat])
-
-            self.statistics_scales_min[stat] = ttk.Scale(self.statistics_frame.sub_frame,
-                                                         from_=self.statistics_limits[stat][0],
-                                                         to=self.statistics_limits[stat][1],
-                                                         variable=self.statistics_variables_min[stat],
-                                                         length=150)
-            self.statistics_entries_min[stat] = ttk.Entry(self.statistics_frame.sub_frame,
-                                                          width=10,
-                                                          textvariable=self.statistics_variables_min[stat])
-            self.statistics_variables_max[stat] = IntVar()
-            self.statistics_scales_max[stat] = ttk.Scale(self.statistics_frame.sub_frame,
-                                                         from_=self.statistics_limits[stat][0],
-                                                         to=self.statistics_limits[stat][1],
-                                                         variable=self.statistics_variables_max[stat],
-                                                         length=150)
-            self.statistics_entries_max[stat] = ttk.Entry(self.statistics_frame.sub_frame,
-                                                    width=10,
-                                                    textvariable=self.statistics_variables_max[stat])
+            self.statistics_scales_max[stat] = ScaleEntry(self.statistics_frame.sub_frame,
+                                                          from_=self.statistics_limits[stat][0],
+                                                          to=self.statistics_limits[stat][1], scalewidth=100,
+                                                          entrywidth=6)
+            self.statistics_scales_min[stat] = ScaleEntry(self.statistics_frame.sub_frame,
+                                                          from_=self.statistics_limits[stat][0],
+                                                          to=self.statistics_limits[stat][1], scalewidth=100,
+                                                          entrywidth=6)
 
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
@@ -314,9 +300,7 @@ class Filters(tk.Toplevel):
         for stat in self.statistics:
             self.statistics_labels[stat].grid(row=set_row, column=1, sticky="nw", padx=5, pady=(0, 5))
             self.statistics_scales_min[stat].grid(row=set_row, column=2, sticky="nw", padx=5, pady=(0, 5))
-            self.statistics_entries_min[stat].grid(row=set_row, column=3, sticky="nw", padx=5, pady=(0, 5))
             self.statistics_scales_max[stat].grid(row=set_row, column=4, sticky="nw", padx=5, pady=(0, 5))
-            self.statistics_entries_max[stat].grid(row=set_row, column=5, sticky="nw", padx=5, pady=(0, 5))
             set_row += 1
         return
 
@@ -366,11 +350,28 @@ class Filters(tk.Toplevel):
         return True
 
 
-class IntVar(tk.IntVar):
-    def __init__(self):
-        tk.IntVar.__init__(self)
+class LimitedIntVar(tk.IntVar):
+    """
+    Subclass of tk.IntVar that allows limits in the value of the variable stored
+    """
+
+    def __init__(self, low, high):
+        self._low = low
+        self._high = high
+        tk.IntVar.__init__(self, value=low)
 
     def set(self, value):
-        print("IntVar set called!")
-        value = int(round(float(value), 0))
-        tk.IntVar.set(self, value)
+        """
+        Set a new value, but check whether it is in limits first. If not, return False and set the new value to
+        either be the minimum (if value is smaller than the minimum) or the maximum (if the value is larger than
+        the maximum). Both str and int are supported as value types, as long as the str contains an int.
+        """
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except ValueError:
+                raise ValueError("value argument passed is not int and cannot be converted to int")
+        limited_value = max(min(self._high, value), self._low)
+        tk.IntVar.set(self, limited_value)
+        # Return False if the value had to be limited
+        return limited_value is value
