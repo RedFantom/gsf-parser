@@ -132,7 +132,7 @@ class Filters(tk.Toplevel):
         self.statistics_max_label = ttk.Label(self.statistics_frame.sub_frame, text="Maximum")
         self.statistics_min_label = ttk.Label(self.statistics_frame.sub_frame, text="Minimum")
 
-        self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "killassists"]
+        self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "enemies"]
         self.statistics_dict = {
             "damagedealt": "Damage dealt: ",
             "damagetaken": "Damage taken: ",
@@ -158,12 +158,12 @@ class Filters(tk.Toplevel):
             self.statistics_labels[stat] = ttk.Label(self.statistics_frame.sub_frame, text=self.statistics_dict[stat])
             self.statistics_scales_max[stat] = ScaleEntry(self.statistics_frame.sub_frame,
                                                           from_=self.statistics_limits[stat][0],
-                                                          to=self.statistics_limits[stat][1], scalewidth=100,
-                                                          entrywidth=6)
+                                                          to=self.statistics_limits[stat][1], scalewidth=150,
+                                                          entrywidth=7)
             self.statistics_scales_min[stat] = ScaleEntry(self.statistics_frame.sub_frame,
                                                           from_=self.statistics_limits[stat][0],
-                                                          to=self.statistics_limits[stat][1], scalewidth=100,
-                                                          entrywidth=6)
+                                                          to=self.statistics_limits[stat][1], scalewidth=150,
+                                                          entrywidth=7)
 
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
@@ -223,8 +223,31 @@ class Filters(tk.Toplevel):
             if self.filter_type_vars["Date"].get() is True:
                 pass
             if self.filter_type_vars["Statistics"].get() is True:
-                pass
-            # Duration filters are not implemented yet, as they cannot be implemented for CombatLogs
+                if self.statistics_scales_max["damagedealt"].value is not 0:
+                    if not self.statistics_scales_max["damagedealt"].value >= damagedealt:
+                        continue
+                    if not self.statistics_scales_min["damagedealt"].value <= damagedealt:
+                        continue
+                if self.statistics_scales_max["damagetaken"].value is not 0:
+                    if not self.statistics_scales_max["damagetaken"].value >= damagetaken:
+                        continue
+                    if not self.statistics_scales_min["damagetaken"].value <= damagetaken:
+                        continue
+                if self.statistics_scales_max["selfdamage"].value is not 0:
+                    if not self.statistics_scales_max["selfdamage"].value >= selfdamage:
+                        continue
+                    if not self.statistics_scales_min["selfdamage"].value <= selfdamage:
+                        continue
+                if self.statistics_scales_max["healing"].value is not 0:
+                    if not self.statistics_scales_max["healing"].value >= healingreceived:
+                        continue
+                    if not self.statistics_scales_min["healing"].value <= healingreceived:
+                        continue
+                if self.statistics_scales_max["enemies"].value is not 0:
+                    if not self.statistics_scales_max["enemies"].value >= len(enemies):
+                        continue
+                    if not self.statistics_scales_min["enemies"].value <= len(enemies):
+                        continue
             # if self.filter_type_vars["Duration"].get() is True:
             #     pass
             try:
@@ -317,7 +340,10 @@ class Filters(tk.Toplevel):
         return_value = 0
         for list in matrix:
             return_value += sum(list)
-        return return_value
+        try:
+            return return_value / len(matrix)
+        except ZeroDivisionError:
+            return 0
 
     @staticmethod
     def check_components(dictionary, abilities):
