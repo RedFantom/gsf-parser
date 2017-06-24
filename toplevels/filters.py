@@ -131,7 +131,7 @@ class Filters(tk.Toplevel):
         self.statistics_max_label = ttk.Label(self.statistics_frame.sub_frame, text="Maximum")
         self.statistics_min_label = ttk.Label(self.statistics_frame.sub_frame, text="Minimum")
 
-        self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "enemies"]
+        self.statistics = ["damagedealt", "damagetaken", "selfdamage", "healing", "killassists", "enemies"]
         self.statistics_dict = {
             "damagedealt": "Damage dealt: ",
             "damagetaken": "Damage taken: ",
@@ -292,17 +292,24 @@ class Filters(tk.Toplevel):
                         print("Continuing in file {0} because of healing min".format(file_name))
                         continue
                 if self.statistics_scales_max["enemies"].value is not 0:
-                    if not self.statistics_scales_max["enemies"].value >= len(enemies):
+                    if not self.statistics_scales_max["enemies"].value >= len(enemydamaget):
                         print("Continuing in file {0} because of enemies max".format(file_name))
                         continue
-                    if not self.statistics_scales_min["enemies"].value <= len(enemies):
+                    if not self.statistics_scales_min["enemies"].value <= len(enemydamaget):
                         print("Continuing in file {0} because of enemies min".format(file_name))
                         continue
+                if self.statistics_scales_max["killassists"].value is not 0:
+                    if not self.statistics_scales_max["killassists"].value >= len(enemydamaged):
+                        continue
+                    if not self.statistics_scales_min["killassists"].value <= len(enemydamaged):
+                        continue
+
             results.append(file_name)
         print("Amount of results: {0}".format(len(results)))
         print("Results: {0}".format(results))
         splash.destroy()
         if search and len(results) is not 0:
+            print("Search is enabled")
             if not tkinter.messagebox.askyesno("Search results",
                                                "With the filters you specified, %s results were found. Would you like "
                                                "to view them?" % len(results)):
