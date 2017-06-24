@@ -23,7 +23,6 @@ from datetime import datetime
 from sys import exit
 from github import Github, GithubException
 from semantic_version import Version
-from ast import literal_eval as eval
 from toplevels.update import UpdateWindow
 
 
@@ -61,7 +60,7 @@ class MainWindow(ThemedTk):
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
         # TODO Enable connecting to the server in a later phase
-        if eval(variables.settings_obj["sharing"]["auto_upl"]) or eval(variables.settings_obj["parsing"]["auto_ident"]):
+        if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
         # self.splash.update_progress()
