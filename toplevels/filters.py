@@ -12,12 +12,11 @@ import os
 import widgets
 import variables
 import parsing.parse as parse
-from datetime import datetime
 from widgets.verticalscrollframe import VerticalScrollFrame
 from widgets import ScaleEntry
 from . import splashscreens
 from parsing import abilities as abls
-import platform
+from parsing.parse import parse_file_name
 
 
 class Filters(tk.Toplevel):
@@ -40,7 +39,7 @@ class Filters(tk.Toplevel):
         self.description_label = ttk.Label(self.scroll_frame.interior,
                                            text="Please enter the filters you want to apply",
                                            font=("Calibri", 12))
-        self.filter_types = ["Date", "Components", "Ships", "Statistics"]  # , "Duration"]
+        self.filter_types = ["Date", "Components", "Ships", "Statistics"]
         self.filter_type_checkbuttons = []
         self.filter_type_vars = {}
         for type in self.filter_types:
@@ -127,7 +126,7 @@ class Filters(tk.Toplevel):
 
         self.statistics_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Statistics", labelwidth=90)
         self.statistics_header_label = ttk.Label(self.statistics_frame.sub_frame,
-                                                 text="All statistics are averages per match, if the maximum is set to"
+                                                 text="All statistics are averages per match, if the maximum is set to "
                                                       "zero the setting is ignored.")
         self.statistics_max_label = ttk.Label(self.statistics_frame.sub_frame, text="Maximum")
         self.statistics_min_label = ttk.Label(self.statistics_frame.sub_frame, text="Minimum")
@@ -184,20 +183,38 @@ class Filters(tk.Toplevel):
         self.filter(search=True)
 
     def filter(self, search=False):
-        self.window.file_select_frame.clear_data_widgets()
+        """
+        Go through all file filters and apply them to the list of files in the CombatLogs folder. Insert them into the
+        file_frame file_tree widget when the file passed the filters.
+        :param search: if search is True, the function will calculate the amount of files found and ask the user whether
+                       the results should be displayed first
+        :return: None
+        """
         # logs, matches or spawns
         results = []
         files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
         files_done = 0
         splash = splashscreens.SplashScreen(self, len(files))
+        # Clear the widgets in the file frame
+        self.window.file_select_frame.file_string_dict.clear()
+        self.window.file_select_frame.clear_data_widgets()
+        self.window.file_select_frame.file_tree.delete(*self.window.file_select_frame.file_tree.get_children())
+        # Start looping over the files in the CombatLogs folder
         for file_name in files:
+            # Set passed to True. Will be set to False in some filter code
             passed = True
+            # Update the SplashScreen progress bar
             files_done += 1
             splash.update_progress(files_done)
+            # If the file does not end with .txt, it's not a CombatLog
             if not file_name.endswith(".txt"):
                 continue
+            if not parse.check_gsf(file_name):
+                continue
+            # Open the CombatLog
             with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
                 lines = f.readlines()
+            # Parse the CombatLog to get the data to filter against
             player_list = parse.determinePlayer(lines)
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
             (abilities, damagetaken, damagedealt,
@@ -205,65 +222,110 @@ class Filters(tk.Toplevel):
              criticalcount, criticalluck, hitcount,
              enemydamaged, enemydamaget, match_timings,
              spawn_timings) = parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
+            # Calculate the averages
             damagetaken = self.file_number(damagetaken)
             damagedealt = self.file_number(damagedealt)
             selfdamage = self.file_number(selfdamage)
             healingreceived = self.file_number(healingreceived)
+
+            # If Ship filters are enabled, check file against ship filters
             if self.filter_type_vars["Ships"].get() is True:
+                print("Ships filters are enabled")
                 if not self.check_ships_file(self.ships_intvars, abilities):
+                    print("Continuing in file {0} because of Ships".format(file_name))
                     continue
+            # If the file got this far, then get the abilities dictionary
             abilities = self.file_dictionary(abilities)
+
+            # If the Components filters are enabled, check against Components filters
             if self.filter_type_vars["Components"].get() is True:
+                print("Components filters are enabled")
                 for dictionary in self.comps_dicts:
                     if not self.check_components(dictionary, abilities):
+                        # Passed is applied here as "continue" will not work inside this for loop
                         passed = False
                         break
                 if not passed:
+                    print("Continuing in file {0} because of Components".format(file_name))
                     continue
+
             if self.filter_type_vars["Date"].get() is True:
-                pass
+                print("Date filters are enabled")
+                date = parse_file_name(file_name)
+                if not date:
+                    print("Continuing in file {0} because the filename could not be parsed".format(file_name))
+                    continue
+                if self.start_date_widget.selection > date:
+                    print("Continuing in file {0} because of the start date".format(file_name))
+                    continue
+                if self.end_date_widget.selection < date:
+                    print("Continuing in file {0} because of the end date".format(file_name))
+                    continue
+
             if self.filter_type_vars["Statistics"].get() is True:
                 if self.statistics_scales_max["damagedealt"].value is not 0:
                     if not self.statistics_scales_max["damagedealt"].value >= damagedealt:
+                        print("Continuing in file {0} because of damagedealt max".format(file_name))
                         continue
                     if not self.statistics_scales_min["damagedealt"].value <= damagedealt:
+                        print("Continuing in file {0} because of damagedealt min".format(file_name))
                         continue
                 if self.statistics_scales_max["damagetaken"].value is not 0:
                     if not self.statistics_scales_max["damagetaken"].value >= damagetaken:
+                        print("Continuing in file {0} because of damagetaken max".format(file_name))
                         continue
                     if not self.statistics_scales_min["damagetaken"].value <= damagetaken:
+                        print("Continuing in file {0} because of damagetaken min".format(file_name))
                         continue
                 if self.statistics_scales_max["selfdamage"].value is not 0:
                     if not self.statistics_scales_max["selfdamage"].value >= selfdamage:
+                        print("Continuing in file {0} because of selfdamage max".format(file_name))
                         continue
                     if not self.statistics_scales_min["selfdamage"].value <= selfdamage:
+                        print("Continuing in file {0} because of selfdamage min".format(file_name))
                         continue
                 if self.statistics_scales_max["healing"].value is not 0:
                     if not self.statistics_scales_max["healing"].value >= healingreceived:
+                        print("Continuing in file {0} because of healing max".format(file_name))
                         continue
                     if not self.statistics_scales_min["healing"].value <= healingreceived:
+                        print("Continuing in file {0} because of healing min".format(file_name))
                         continue
                 if self.statistics_scales_max["enemies"].value is not 0:
                     if not self.statistics_scales_max["enemies"].value >= len(enemies):
+                        print("Continuing in file {0} because of enemies max".format(file_name))
                         continue
                     if not self.statistics_scales_min["enemies"].value <= len(enemies):
+                        print("Continuing in file {0} because of enemies min".format(file_name))
                         continue
-            # if self.filter_type_vars["Duration"].get() is True:
-            #     pass
-            try:
-                self.window.file_select_frame.insert_file(file_name)
-            except tk.TclError as e:
-                print(e)
+            results.append(file_name)
+        print("Amount of results: {0}".format(len(results)))
+        print("Results: {0}".format(results))
         splash.destroy()
-        if search:
-            tkinter.messagebox.showinfo("Search results", "With the filters you specified, %s results were found." %
-                                        len(results))
-        else:
-            if len(results) == 0:
-                tkinter.messagebox.showinfo("Search results",
-                                            "With the filters you specified, no results were found.")
+        if search and len(results) is not 0:
+            if not tkinter.messagebox.askyesno("Search results",
+                                               "With the filters you specified, %s results were found. Would you like "
+                                               "to view them?" % len(results)):
                 return
-            self.destroy()
+        if len(results) == 0:
+            tkinter.messagebox.showinfo("Search results",
+                                        "With the filters you specified, no results were found.")
+            return
+        else:
+            for file_name in results:
+                datetime_obj = parse.parse_file_name(file_name)
+                if datetime_obj:
+                    string = datetime_obj.strftime("%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"]
+                                                                         is "ymd" else "%Y-%d-%m   %H:%M")
+                else:
+                    string = file_name
+                print("Setting file string {0} to match file_name {1}".format(string, file_name))
+                self.window.file_select_frame.file_string_dict[string] = file_name
+                try:
+                    self.window.file_select_frame.insert_file(string)
+                except tk.TclError as e:
+                    print(e)
+        self.destroy()
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=1, columnspan=len(self.filter_types),
