@@ -103,9 +103,9 @@ class CharactersFrame(ttk.Frame):
 
         # Character option widgets
         self.character_name_label = ttk.Label(self.options_frame, text="Character name")
-        self.character_name_entry = ttk.Entry(self.options_frame, width=35)
+        self.character_name_entry = ttk.Entry(self.options_frame, width=35, state="readonly")
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
-        self.legacy_name_entry = ttk.Entry(self.options_frame, width=35)
+        self.legacy_name_entry = ttk.Entry(self.options_frame, width=35, state="readonly")
         self.faction = tk.StringVar()
         self.faction.set("Imperial")
         self.faction_label = ttk.Label(self.options_frame, text="Faction")
