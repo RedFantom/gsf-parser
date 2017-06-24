@@ -9,10 +9,20 @@ from datetime import datetime
 from decimal import Decimal
 from .abilities import *
 from . import realtime
+import os
+from variables import settings_obj
+
+
+def parse_file_name(string):
+    try:
+        return datetime.strptime(string[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
+    except ValueError:
+        return None
 
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
+    file_name = os.path.join(settings_obj["parsing"]["cl_path"], os.path.basename(file_name))
     with open(file_name, "r") as file_obj:
         for line in file_obj:
             if "@" not in line:
