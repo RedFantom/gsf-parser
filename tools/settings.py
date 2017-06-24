@@ -17,7 +17,12 @@ from ast import literal_eval
 
 
 def eval(value):
-    literal = literal_eval(value)
+    try:
+        literal = literal_eval(value)
+    except ValueError:
+        return value
+    except SyntaxError:
+        return value
     if literal == 1:
         return True
     elif literal == 0:
@@ -150,16 +155,27 @@ class Settings(object):
         self.read_settings()
 
     def read_settings(self):
+        self.settings.clear()
         if os.path.basename(self.file_name) not in os.listdir(self.directory):
             self.write_defaults()
         with open(self.file_name, "r") as fi:
             self.conf.read_file(fi)
         for section, dictionary in self.conf.items():
+            self.settings[section] = {}
             for item, value in dictionary.items():
-                self.conf[section][item] = eval(value)
+                try:
+                    self.settings[section][item] = eval(value)
+                except ValueError as e:
+                    print(e)
+                    print("Section: {0}, Item {1}".format(section, item))
 
     def __getitem__(self, section):
-        return self.conf[section]
+        try:
+            return self.settings[section]
+        except KeyError:
+            self.write_defaults()
+            self.read_settings()
+            return self.settings[section]
 
 
 class ColorSchemes(object):
