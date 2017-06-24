@@ -17,7 +17,6 @@ from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
 from toplevels.privacy import Privacy
 from collections import OrderedDict
-from ast import literal_eval as eval
 
 
 class SettingsFrame(ttk.Frame):
@@ -477,9 +476,9 @@ class SettingsFrame(ttk.Frame):
         self.screenparsing_var.set(variables.settings_obj["realtime"]["screenparsing"])
         self.screenparsing_overlay_var.set(variables.settings_obj["realtime"]["screenparsing_overlay"])
         self.screenparsing_overlay_geometry.set(
-            eval(variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]))
+            variables.settings_obj["realtime"]["screenparsing_overlay_geometry"])
         for key, value in self.screenparsing_variables.items():
-            if key in eval(variables.settings_obj["realtime"]["screenparsing_features"]):
+            if key in variables.settings_obj["realtime"]["screenparsing_features"]:
                 value.set(True)
             else:
                 value.set(False)

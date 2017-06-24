@@ -6,7 +6,6 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import tkinter as tk
-from ast import literal_eval as eval
 import tkinter.ttk as ttk
 from tools.utilities import get_pointer_position_win32, get_screen_resolution
 import variables
@@ -23,7 +22,7 @@ class HitChanceOverlay(tk.Toplevel):
         self.attributes("-topmost", True)
         self.attributes("-alpha", variables.settings_obj["realtime"]["opacity"])
         self.grid_widgets()
-        if eval(variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]):
+        if variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]:
             self.after(50, self.set_geometry)
         else:
             resolution = get_screen_resolution()
