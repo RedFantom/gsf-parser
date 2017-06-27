@@ -185,6 +185,8 @@ class Settings(object):
         def __init__(self, section):
             self._section = section
             self._data = {}
+            self.items = self._data.items
+            self.update = self._data.update
 
         def __getitem__(self, item):
             if item not in self._data:
