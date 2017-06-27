@@ -427,7 +427,6 @@ class Filters(tk.Toplevel):
             for dict in list:
                 ships_list = parse.determineShip(dict)
                 print(ships_list)
-                passed = True
                 for ship, intvar in dictionary.items():
                     if intvar.get() == 1:
                         print("Required: ", ship)
@@ -437,12 +436,9 @@ class Filters(tk.Toplevel):
                             ships_list = [abls.rep_ships[name] for name in ships_list]
                         else:
                             raise ValueError("faction found not valid")
-                        if ship not in ships_list:
-                            passed = False
-                if not passed:
-                    return False
-        print("Ships file filter returning True")
-        return True
+                        if ship in ships_list:
+                            return True
+        return False
 
 
 class LimitedIntVar(tk.IntVar):
