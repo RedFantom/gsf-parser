@@ -90,6 +90,10 @@ class FileFrame(ttk.Frame):
         self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky="nswe", pady=5, padx=5)
 
     def flip_sorting(self):
+        """
+        Flip the sorting of the files in the Treeview (callback for the Treeview header button)
+        :return: None
+        """
         self.ascending = not self.ascending
         self.add_files()
 
@@ -138,7 +142,8 @@ class FileFrame(ttk.Frame):
             if parse.check_gsf(os.path.join(combatlogs_folder, file)):
                 try:
                     file_time = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
-                    file_string = file_time.strftime("%Y-%m-%d   %H:%M")
+                    file_string = file_time.strftime("%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"]
+                                                                           is "ymd" else "%Y-%d-%m   %H:%M")
                 except ValueError:
                     file_time = None
                     file_string = file
@@ -152,7 +157,17 @@ class FileFrame(ttk.Frame):
         return
 
     def insert_file(self, file_string):
-        file_name = self.file_string_dict[file_string]
+        """
+        Insert a file into the Treeview list of files and links it to an entrey in self.file_string_dict
+        :param file_string: string representing the file in the list
+        :return:
+        """
+        if file_string in self.file_string_dict:
+            file_name = self.file_string_dict[file_string]
+        elif file_string.endswith(".txt"):
+            file_name = file_string
+        else:
+            raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
         with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
             lines = f.readlines()
@@ -171,6 +186,18 @@ class FileFrame(ttk.Frame):
 
     def update_widgets(self, abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                        enemydamaget, uncounted):
+        """
+        This function can update the dta widgets for files, matches and folders by updating the widgets of statsframe
+        and shipsframe according to the data received from parsing
+        :param abilities_dict: abilities dictionary with abilities as keys and amounts as values
+        :param statistics_string: string to set in the statistics tab
+        :param shipsdict: dictionary with ships as keys and amounts as values
+        :param enemies: list of enemy ID numbers
+        :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
+        :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
+        :param uncounted: amount of uncounted ship occurrences
+        :return: None
+        """
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         for key, value in abilities_dict.items():
             self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
@@ -197,6 +224,17 @@ class FileFrame(ttk.Frame):
 
     def update_widgets_spawn(self, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                              enemydamaget):
+        """
+        This function sets the data widgets for the spawn parsing results
+        :param abilitiesdict: abilities dictionary with abilities as keys and amounts as values
+        :param statistics_string: string to set in the statistics tab
+        :param ships_list: list of possible ships
+        :param comps: list of ship components
+        :param enemies: list of enemy ID numbers
+        :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
+        :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
+        :return: None
+        """
         for key, value in abilitiesdict.items():
             self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
@@ -218,6 +256,12 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.update_ship(ships_list)
 
     def update_parse(self, *args):
+        """
+        Callback for the Treeview widget that calls the correct function to load a file, match or spawn depending on
+        which is selected.
+        :param args: Tkinter event
+        :return: None
+        """
         try:
             selection = self.file_tree.selection()[0]
         except IndexError:
@@ -263,6 +307,11 @@ class FileFrame(ttk.Frame):
                             enemydamaget, uncounted)
 
     def parse_folder(self):
+        """
+        Function that initiates the parsing of a whole folder by calling the folder_statistics() function and updates
+        the widgets by calling the self.update_widgets function accordingly.
+        :return: None
+        """
         self.clear_data_widgets()
         (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
          enemydamaget, uncounted) = folderstats.folder_statistics()
@@ -275,7 +324,7 @@ class FileFrame(ttk.Frame):
         or starts the parsing of all files found in the specified file and displays the results
         in the other frames.
         :param elements: specifies file and match
-        :return:
+        :return: None
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -318,6 +367,10 @@ class FileFrame(ttk.Frame):
                                         spawn_timings[match_index][spawn_index]))
 
     def clear_data_widgets(self):
+        """
+        Clear the data widgets for parsing results
+        :return: None
+        """
         self.main_window.middle_frame.abilities_treeview.delete(
             *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
@@ -327,6 +380,13 @@ class FileFrame(ttk.Frame):
             "Please select an available spawn for screen parsing information")
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
+        """
+        Insert an enemy into the Treeview with the appropriate string
+        :param enemy: ID number/name
+        :param enemydamaged: dictionary
+        :param enemydamaget: dictionary
+        :return: None
+        """
         if enemy == "":
             self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text="enemy",
                                                                   values=(str(enemydamaged[enemy]),
@@ -341,6 +401,10 @@ class FileFrame(ttk.Frame):
                                                                           str(enemydamaget[enemy])))
 
     def get_spawn(self):
+        """
+        Get the spawn from the selection in the file_tree
+        :return: list of event strings, player_list, spawn timing and match timing
+        """
         selection = self.file_tree.selection()[0]
         elements = selection.split(" ")
         if len(elements) is not 3:

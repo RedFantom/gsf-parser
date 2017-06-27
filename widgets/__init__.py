@@ -7,3 +7,4 @@ from .crewlistframe import *
 from .shipselectframe import *
 from .componentslistframe import *
 from .componentwidgets import *
+from .scaleentry import ScaleEntry

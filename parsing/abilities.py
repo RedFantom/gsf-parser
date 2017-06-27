@@ -191,7 +191,7 @@ excluded_abilities = [
     "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",
     "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
-    "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable"
+    "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct"
 ]
 
 # All ships with their Imperial Faction names available in GSF
