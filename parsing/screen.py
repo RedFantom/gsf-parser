@@ -12,7 +12,8 @@ import time
 import pynput
 from . import vision
 from .keys import keys
-from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_pillow_screen
+from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
+import mss
 from toplevels.screenoverlay import HitChanceOverlay
 import variables
 import tkinter.messagebox as messagebox
@@ -20,6 +21,7 @@ import tkinter.filedialog as filedialog
 from shutil import copyfile
 import operator
 from parsing.guiparsing import GSFInterface
+from PIL import Image
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -244,6 +246,8 @@ class ScreenParser(threading.Thread):
         # self._kb_listener.start()
         # self._ms_listener.start()
         # Start the loop to parse the screen data
+        sct = mss.mss()
+        sct.enum_display_monitors()
 
         power_mgmt_cds = self.interface.get_ship_powermgmt_coordinates()
         health_cds = self.interface.get_ship_health_coordinates()
@@ -256,12 +260,6 @@ class ScreenParser(threading.Thread):
         match_timer_cds = self.interface.get_match_timer_coordinates()
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
-
-        # TODO: Ship health
-        # TODO: TTK
-        # TODO: TTD
-        # TODO: Fix template matching
-        # TODO: Implement settings
 
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
@@ -315,7 +313,8 @@ class ScreenParser(threading.Thread):
                 time.sleep(1)
                 continue
             write_debug_log("Start pulling vision functions data")
-            pil_screen = get_pillow_screen()
+            sct.get_pixels(sct.monitors[0])
+            pil_screen = Image.frombytes("RGB", (sct.width, sct.height), sct.image)
             screen = vision.pillow_to_numpy(pil_screen)
             pointer_cds = get_cursor_position(screen)
             current_time = datetime.now()
@@ -428,8 +427,6 @@ class ScreenParser(threading.Thread):
         self.save_data_dictionary()
         print("ScreenParser exit")
 
-    # TODO: Add RGB capabilities
-    # TODO: Add security measures (key filters)
     def on_press_kb(self, key):
         if key in keys:
             key = keys[key]
