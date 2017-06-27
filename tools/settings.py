@@ -141,6 +141,8 @@ class Settings(object):
         self.conf = configparser.ConfigParser()
         self.settings = {key: self.SettingsDictionary(key) for key in self.defaults.keys()}
         self.read_settings()
+        if self["misc"]["version"] is not self.defaults["misc"]["version"]:
+            self.write_settings({"misc": {"version": self.defaults["misc"]["version"]}})
 
     def write_defaults(self):
         conf = configparser.ConfigParser()
@@ -150,7 +152,9 @@ class Settings(object):
 
     def write_settings(self, dictionary):
         conf = configparser.ConfigParser()
-        conf.read_dict(dictionary)
+        for section in dictionary.keys():
+            self.settings[section].update(dictionary[section])
+        conf.read_dict(self.settings)
         with open(self.file_name, "w") as fo:
             conf.write(fo)
         self.read_settings()
