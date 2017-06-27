@@ -139,7 +139,7 @@ class Settings(object):
         self.directory = directory
         self.file_name = os.path.join(directory, file_name)
         self.conf = configparser.ConfigParser()
-        self.settings = {}
+        self.settings = {key: self.SettingsDictionary(key) for key in self.defaults.keys()}
         self.read_settings()
 
     def write_defaults(self):
@@ -162,21 +162,33 @@ class Settings(object):
         with open(self.file_name, "r") as fi:
             self.conf.read_file(fi)
         for section, dictionary in self.conf.items():
-            self.settings[section] = {}
+            self.settings[section] = self.SettingsDictionary(section)
             for item, value in dictionary.items():
                 try:
                     self.settings[section][item] = eval(value)
                 except ValueError as e:
                     print(e)
                     print("Section: {0}, Item {1}".format(section, item))
+        return
 
     def __getitem__(self, section):
-        try:
-            return self.settings[section]
-        except KeyError:
+        if section not in self.settings:
             self.write_defaults()
             self.read_settings()
-            return self.settings[section]
+        return self.settings[section]
+
+    class SettingsDictionary(object):
+        def __init__(self, section):
+            self._section = section
+            self._data = {}
+
+        def __getitem__(self, item):
+            if item not in self._data:
+                self._data[item] = Settings.defaults[self._section][item]
+            return self._data[item]
+
+        def __setitem__(self, key, value):
+            self._data[key] = value
 
 
 class ColorSchemes(object):
