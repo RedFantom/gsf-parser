@@ -99,7 +99,8 @@ class Settings(object):
             "event_colors": "basic",
             "event_scheme": "default",
             "date_format": "ymd",
-            "faction": "imperial"
+            "faction": "imperial",
+            "debug": False
         },
         "parsing": {
             "cl_path": os.path.realpath(

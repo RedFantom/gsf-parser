@@ -66,7 +66,6 @@ class SettingsFrame(ttk.Frame):
         self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
         self.logo_color_dropdown = ttk.OptionMenu(self.gui_frame, self.logo_color, *("Default", "Green", "Blue", "Red"))
 
-        # MARK HERE
         self.event_colors_label = ttk.Label(self.gui_frame, text="\tEvent colors: ")
         self.event_colors = tk.StringVar()
         self.event_colors_none = ttk.Radiobutton(self.gui_frame, text="None", variable=self.event_colors,
@@ -104,6 +103,10 @@ class SettingsFrame(ttk.Frame):
         self.auto_update_checkbox = ttk.Checkbutton(self.gui_frame, variable=self.auto_update,
                                                     text="Automatically check for updates on startup")
 
+        self.debug_window = tk.BooleanVar()
+        self.debug_window_checkbox = ttk.Checkbutton(self.gui_frame, text="Show window with debug output",
+                                                     variable=self.debug_window)
+
         # PARSING SETTINGS
         self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
@@ -132,8 +135,6 @@ class SettingsFrame(ttk.Frame):
         self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True,
                                                 text="Yes")
         # REAL-TIME SETTINGS
-        # TODO Add more colors for the overlay
-        # TODO Add events view possibility to the overlay
         self.realtime_settings_label = ttk.Label(self.realtime_frame, text="Real-time parsing settings",
                                                  font=("Calibri", 12))
         self.overlay_enable_label = ttk.Label(self.realtime_frame,
@@ -331,6 +332,7 @@ class SettingsFrame(ttk.Frame):
             set_column += 1
             radio.grid(column=set_column, row=5, sticky="nswe")
         self.auto_update_checkbox.grid(column=0, row=6, columnspan=2, padx=(55, 0))
+        self.debug_window_checkbox.grid(column=0, row=7, columnspan=2, padx=(55, 0), sticky="w")
         # PARSING SETTINGS
         self.parsing_label.grid(column=0, row=2, sticky="w", pady=5)
         self.path_entry_label.grid(column=0, row=0, sticky="nswe", padx=5)
@@ -482,6 +484,7 @@ class SettingsFrame(ttk.Frame):
                 value.set(True)
             else:
                 value.set(False)
+        self.debug_window.set(variables.settings_obj["gui"]["debug"])
         return
 
     def save_settings(self):
@@ -524,7 +527,8 @@ class SettingsFrame(ttk.Frame):
                 "event_colors": self.event_colors.get(),
                 "event_scheme": self.event_scheme.get(),
                 "date_format": self.date_format.get(),
-                "faction": self.faction.get()
+                "faction": self.faction.get(),
+                "debug": self.debug_window.get()
             },
             "parsing": {
                 "cl_path": self.path_var.get(),
