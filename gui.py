@@ -24,6 +24,7 @@ from sys import exit
 from github import Github, GithubException
 from semantic_version import Version
 from toplevels.update import UpdateWindow
+from widgets.debugwindow import DebugWindow
 
 
 # Class that contains all code to start the parser
@@ -38,6 +39,8 @@ class MainWindow(ThemedTk):
     def __init__(self):
         # Initialize window
         ThemedTk.__init__(self)
+        if variables.settings_obj["gui"]["debug"] is True:
+            DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.protocol("WM_DELETE_WINDOW", self.exit)
