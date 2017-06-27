@@ -90,7 +90,7 @@ class Defaults(object):
 class Settings(object):
     defaults = {
         "misc": {
-            "version": "v3.0.0",
+            "version": "v3.1.0",
             "autoupdate": True
         },
         "gui": {
