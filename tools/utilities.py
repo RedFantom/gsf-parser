@@ -72,7 +72,8 @@ def get_pillow_screen():
     :return: Image object
     """
     sct = mss.mss()
-    sct.get_pixels()
+    sct.enum_display_monitors()
+    sct.get_pixels(sct.monitors[0])
     return Image.frombytes("RGB", (sct.width, sct.height), sct.image)
 
 

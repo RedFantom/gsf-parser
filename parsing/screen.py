@@ -247,6 +247,7 @@ class ScreenParser(threading.Thread):
         # self._ms_listener.start()
         # Start the loop to parse the screen data
         sct = mss.mss()
+        sct.enum_display_monitors()
 
         power_mgmt_cds = self.interface.get_ship_powermgmt_coordinates()
         health_cds = self.interface.get_ship_health_coordinates()
@@ -312,7 +313,7 @@ class ScreenParser(threading.Thread):
                 time.sleep(1)
                 continue
             write_debug_log("Start pulling vision functions data")
-            sct.get_pixels()
+            sct.get_pixels(sct.monitors[0])
             pil_screen = Image.frombytes("RGB", (sct.width, sct.height), sct.image)
             screen = vision.pillow_to_numpy(pil_screen)
             pointer_cds = get_cursor_position(screen)
