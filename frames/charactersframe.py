@@ -224,6 +224,8 @@ class CharactersFrame(ttk.Frame):
         for character, data in self.characters.items():
             self.characters_list.insert(data["Server"], tk.END, iid=(data["Server"], data["Name"]), text=data["Name"])
 
+        self.window.realtime_frame.update_characters()
+
     def widgets_grid_forget(self):
         """
         Clear the ship Checkbutton widgets
