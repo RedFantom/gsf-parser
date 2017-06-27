@@ -107,6 +107,8 @@ class Filters(tk.Toplevel):
             self.systems_tickboxes_vars[system] = system_var
         self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
                             self.shields_tickboxes, self.systems_tickboxes]
+        self.comps_vars = [self.primaries_tickboxes_vars, self.secondaries_tickboxes_vars, self.engines_tickboxes_vars,
+                           self.shields_tickboxes_vars, self.systems_tickboxes_vars]
 
         self.ships_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
         self.ships_checkboxes = {}
@@ -240,7 +242,7 @@ class Filters(tk.Toplevel):
             # If the Components filters are enabled, check against Components filters
             if self.filter_type_vars["Components"].get() is True:
                 print("Components filters are enabled")
-                for dictionary in self.comps_dicts:
+                for dictionary in self.comps_vars:
                     if not self.check_components(dictionary, abilities):
                         # Passed is applied here as "continue" will not work inside this for loop
                         passed = False
@@ -417,6 +419,8 @@ class Filters(tk.Toplevel):
     @staticmethod
     def check_components(dictionary, abilities):
         for component, intvar in dictionary.items():
+            if intvar.get() is 0:
+                continue
             if component not in abilities:
                 return False
         return True
