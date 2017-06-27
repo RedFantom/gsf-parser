@@ -35,6 +35,7 @@ This project uses multiple dependencies, all of which are needed to run the GSF 
 - pillow, `pip install pillow`
 - numpy, `pip install numpy`
 - OpenCV-Python (version 3 or greater), `pip install opencv-python` on Windows and `sudo apt-get install python-opencv` on Debian based-systems
+- [Python-MSS](https://github.com/BoboTiG/python-mss), `pip install mss`
 
 The creators of this sotware do not own Star Wars or any related trademarks. All
 trademarks are property of their respective owners.
