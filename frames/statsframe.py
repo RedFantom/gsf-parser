@@ -90,10 +90,10 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.heading("#0", text="Enemy name/ID",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Enemy name/ID", False, "str"))
-        self.enemies_treeview.heading("Damage dealt", text="Damage dealt",
+        self.enemies_treeview.heading("Damage dealt", text="Damage dealt\nto you",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Damage dealt", False, "int"))
-        self.enemies_treeview.heading("Damage taken", text="Damage taken",
+        self.enemies_treeview.heading("Damage taken", text="Damage taken\nfrom you",
                                       command=lambda: self.treeview_sort_column(self.enemies_treeview,
                                                                                 "Damage taken", False, "int"))
         self.enemies_treeview.config(height=13)
