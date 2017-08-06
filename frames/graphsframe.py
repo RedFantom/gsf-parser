@@ -385,7 +385,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = {}
             for key, value in matches_played_date.items():
                 try:
-                    avg_crit_luck[key] = float(critcount_per_date[key]) / float(hitcount_per_date[key])
+                    avg_crit_luck[key] = float(critcount_per_date[key]) / float(hitcount_per_date[key]) * 100
                 except ZeroDivisionError:
                     print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
                     pass
