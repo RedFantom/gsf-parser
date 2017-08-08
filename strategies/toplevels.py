@@ -7,8 +7,11 @@ import tkinter as tk
 from tkinter import ttk
 from strategies.strategies import StrategyDatabase, Strategy
 from tkinter import messagebox
+from ttkwidgets.frames import ScrolledFrame
 from ttkwidgets.font import FontSelectFrame
 from ttkwidgets.color import askcolor
+from tkinter import filedialog
+import _pickle as pickle
 
 
 class AddStrategy(tk.Toplevel):
@@ -122,7 +125,7 @@ class AddItem(tk.Toplevel):
         red, green, blue = color_tuple
         self.background_color_entry.config(background=self.background_color.get(),
                                            foreground='#000000' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186
-                                                                else "#ffffff")
+                                           else "#ffffff")
 
 
 class AddPhase(tk.Toplevel):
@@ -150,9 +153,107 @@ class AddPhase(tk.Toplevel):
 class SettingsToplevel(tk.Toplevel):
     def __init__(self, *args, **kwargs):
         self._callback = kwargs.pop("callback", None)
+        self.master = kwargs.pop("master")
+        self.list = self.master.list
+        self.new_strategy = self.master.new_strategy
         tk.Toplevel.__init__(self, *args, **kwargs)
         self.title("GSF Strategy Planner: Settings")
+        self.menu = tk.Menu(self)
+        # File menu
+        self.filemenu = tk.Menu(self, tearoff=False)
+        self.filemenu.add_command(label="New", command=self.new_strategy)
+        self.filemenu.add_command(label="Open", command=self.open_strategy)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Save", command=self.save_strategy)
+        self.filemenu.add_command(label="Save as", command=self.save_strategy_as)
+        self.menu.add_cascade(label="File", menu=self.filemenu)
+        # Edit menu
+        self.editmenu = tk.Menu(self, tearoff=False)
+        self.editmenu.add_command(label="Export database", command=self._export)
+        self.editmenu.add_command(label="Import database", command=self._import)
+        self.menu.add_cascade(label="Edit", menu=self.editmenu)
+        self.config(menu=self.menu)
 
+        self.scrolled_frame = ScrolledFrame(self)
+        self.interior = self.scrolled_frame.interior
+        # Server settings section
+        self.server_section = ttk.Frame(self.interior)
+        self.server_header = ttk.Label(self.server_section, text="Server settings", justify=tk.LEFT,
+                                       font=("default", 11))
+        self.server_address_entry = ttk.Entry(self.server_section, width=15)
+        self.server_port_entry = ttk.Entry(self.server_section, width=6)
+        self.server_button = ttk.Button(self.server_section, text="Start server", command=self.start_server, width=15)
 
+        # Client settings section
+        self.client_section = ttk.Frame(self.interior)
+        self.client_header = ttk.Label(self.client_section, text="Client settings", justify=tk.LEFT,
+                                       font=("default", 11))
+        self.client_address_entry = ttk.Entry(self.client_section, width=15)
+        self.client_port_entry = ttk.Entry(self.client_section, width=6)
+        self.client_button = ttk.Button(self.client_section, text="Connect to server", width=15,
+                                        command=self.connect_client)
 
+        self.grid_widgets()
 
+    def grid_widgets(self):
+        self.scrolled_frame.grid()
+        self.server_section.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_header.grid(row=1, column=1, sticky="nw", columnspan=3, padx=5, pady=(0, 5))
+        self.server_address_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_port_entry.grid(row=2, column=2, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_address_entry.insert(tk.END, "address")
+        self.server_port_entry.insert(tk.END, "port")
+        self.server_button.grid(row=2, column=3, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.client_section.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.client_header.grid(row=1, column=1, sticky="nw", padx=(5, 0), pady=(0, 5), columnspan=3)
+        self.client_address_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.client_port_entry.grid(row=2, column=2, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.client_button.grid(row=2, column=3, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.client_address_entry.insert(tk.END, "address")
+        self.client_port_entry.insert(tk.END, "port")
+
+    def start_server(self):
+        pass
+
+    def connect_client(self):
+        pass
+
+    def open_strategy(self):
+        file_name = filedialog.askopenfilename(filetypes=[".str", ".bin"], defaultextension=".str",
+                                               title="GSF Strategy Manager: Open a strategy")
+        if file_name == "" or file_name is None:
+            return
+        with open(file_name, "rb") as fi:
+            strategy = pickle.load(fi)
+        self.list.db[strategy["name"]] = strategy
+        self.list.update_tree()
+
+    def save_strategy(self):
+        self.save_strategy_as()
+
+    def save_strategy_as(self):
+        file_name = filedialog.asksaveasfilename(filetypes=[".str", ".bin"], defaultextension=".str",
+                                                 title="GSF Strategy Manager: Save a strategy")
+        if file_name == "" or file_name is None:
+            return
+        strategy = self.list.db[self.list.selected_strategy]
+        with open(file_name, "wb") as fo:
+            pickle.dump(strategy, fo)
+
+    def save_strategy_database(self):
+        self.list.db.save_database()
+
+    def _import(self):
+        file_name = filedialog.askopenfilename(filetypes=[".db"], defaultextension=".db",
+                                               title="GSF Strategy Manger: Import a database")
+        if file_name == "" or file_name is None:
+            return
+        self.list.db.merge_database(StrategyDatabase(file_name=file_name))
+        self.list.update_tree()
+
+    def _export(self):
+        file_name = filedialog.asksaveasfilename(filetypes=[".db"], defaultextension=".db",
+                                                 title="GSF Strategy Manager: Export the database")
+        if file_name == "" or file_name is None:
+            return
+        self.list.db.save_database_as(file_name)

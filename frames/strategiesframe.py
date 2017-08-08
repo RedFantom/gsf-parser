@@ -16,27 +16,8 @@ import _pickle as pickle
 class StrategyFrame(ttk.Frame):
     def __init__(self, *args, **kwargs):
         ttk.Frame.__init__(self, *args, **kwargs)
-        # Add menu bar and items
-        self.menu = tk.Menu(self)
-        # self.config(menu=self.menu)
-        # File menu
-        self.filemenu = tk.Menu(self, tearoff=False)
-        self.filemenu.add_command(label="New", command=self.new_strategy)
-        self.filemenu.add_command(label="Open", command=self.open_strategy)
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Save", command=self.save_strategy)
-        self.filemenu.add_command(label="Save as", command=self.save_strategy_as)
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Exit", command=self.exit)
-        self.menu.add_cascade(label="File", menu=self.filemenu)
-        # Edit menu
-        self.editmenu = tk.Menu(self, tearoff=False)
-        self.editmenu.add_command(label="Settings", command=self.open_settings)
-        self.editmenu.add_command(label="Export database", command=self._export)
-        self.editmenu.add_command(label="Import database", command=self._import)
-        self.menu.add_cascade(label="Edit", menu=self.editmenu)
         # Create widgets
-        self.list = StrategyList(self, callback=self._set_phase)
+        self.list = StrategyList(self, callback=self._set_phase, settings_callback=self.open_settings)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase)
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
@@ -46,8 +27,9 @@ class StrategyFrame(ttk.Frame):
         # Set up widgets
         self.grid_widgets()
 
-    def show_menu(self, event):
-        self.menu.post(event.x, event.y)
+    def open_settings(self, *args):
+        settings = SettingsToplevel(master=self)
+        settings.wait_window()
 
     def grid_widgets(self):
         # self.menu.grid(column=0, row=0, columnspan=2, sticky="nswe")
@@ -60,43 +42,8 @@ class StrategyFrame(ttk.Frame):
     def new_strategy(self):
         self.list.new_strategy()
 
-    def open_strategy(self):
-        file_name = filedialog.askopenfilename()
-        with open(file_name, "rb") as fi:
-            strategy = pickle.load(fi)
-        self.list.db[strategy["name"]] = strategy
-        self.list.update_tree()
-
-    def save_strategy(self):
-        self.save_strategy_as()
-
-    def save_strategy_as(self):
-        file_name = filedialog.asksaveasfilename()
-        strategy = self.list.db[self.list.selected_strategy]
-        with open(file_name, "wb") as fo:
-            pickle.dump(strategy, fo)
-
-    def save_strategy_database(self):
-        self.list.db.save_database()
-
-    def _import(self):
-        file_name = filedialog.askopenfilename()
-        self.list.db.merge_database(StrategyDatabase(file_name=file_name))
-        self.list.update_tree()
-
-    def _export(self):
-        file_name = filedialog.asksaveasfilename()
-        self.list.db.save_database_as(file_name)
-
-    def open_settings(self):
-        SettingsToplevel().wait_window()
-
     def _set_phase(self, phase):
         self.map.update_map(self.list.db[self.list.selected_strategy][phase])
-
-    def exit(self):
-        self.save_strategy_database()
-        self.destroy()
 
     def set_description(self, *args):
         if self.list.selected_phase is not None:

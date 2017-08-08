@@ -7,6 +7,8 @@ from datetime import datetime
 import asyncore
 import socket
 from queue import Queue
+from strategies.tools import get_temp_directory
+import os
 
 
 class Server(asyncore.dispatcher):
@@ -40,10 +42,12 @@ class Server(asyncore.dispatcher):
             role = elements[1]
             if role == "master":
                 self._master_handler = client_handler
+            print("Logging in {0} as {1}".format(elements[2], role))
             for handler in self._handlers:
                 handler.send(data)
+            print("Done logging in {0}".format(elements[2]))
         elif command == "logout":
-            if (not client_handler == self._master_handler) and isinstance(self._master_handler, ClientHandler):
+            if (not client_handler is self._master_handler) and isinstance(self._master_handler, ClientHandler):
                 self._master_handler.send(data)
             while client_handler in self._handlers:
                 self._handlers.remove(client_handler)
@@ -72,8 +76,8 @@ class Server(asyncore.dispatcher):
 
     @staticmethod
     def write_log(line):
-        with open("log_server.txt", "a") as fo:
-            fo.write("[{0}]".format(datetime.now().strftime("%H:%M:%S")) + line.replace("\n", "") + "\n")
+        with open(os.path.join(get_temp_directory(), "log_server.txt"), "a") as fo:
+            fo.write("[{0}] ".format(datetime.now().strftime("%H:%M:%S")) + line.replace("\n", "") + "\n")
         return
 
 

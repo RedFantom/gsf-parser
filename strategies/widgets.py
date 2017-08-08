@@ -122,7 +122,7 @@ class Map(ttk.Frame):
 
     def new_item(self):
         window = AddItem(callback=self.add_item_callback)
-        self.master.list.update_tree()
+        self.master.list.tree.column("#0", width=150)
         window.wait_window()
 
     def del_item(self):
@@ -149,6 +149,7 @@ class Map(ttk.Frame):
 class StrategyList(ttk.Frame):
     def __init__(self, *args, **kwargs):
         self._callback = kwargs.pop("callback", None)
+        self._settings_callback = kwargs.pop("settings_callback", None)
         ttk.Frame.__init__(self, *args, **kwargs)
         self.db = StrategyDatabase()
         self.phase = None
@@ -158,15 +159,17 @@ class StrategyList(ttk.Frame):
         self._phase_menu.add_command(label="Delete", command=self.del_phase)
         self._strategy_menu = tk.Menu(self, tearoff=0)
         self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
-        self.tree = ttk.Treeview(self, height=11)
+        self.tree = ttk.Treeview(self, height=9)
         self.scrollbar = ttk.Scrollbar(self, command=self.tree.yview, orient=tk.VERTICAL)
         self.tree.config(yscrollcommand=self.scrollbar.set)
         self.tree.bind("<Button-3>", self._right_click)
         self.tree.bind("<Double-1>", self._select)
         self.tree.heading("#0", text="Strategies")
+        self.tree.column("#0", width=150)
         self.new_button = ttk.Button(self, text="New strategy", command=self.new_strategy)
         self.del_button = ttk.Button(self, text="Delete strategy", command=self.del_strategy)
         self.edit_button = ttk.Button(self, text="Edit strategy", command=self.edit_strategy, state=tk.DISABLED)
+        self.settings_button = ttk.Button(self, text="Settings", command=self._settings_callback)
         self.grid_widgets()
 
     def grid_widgets(self):
@@ -175,6 +178,7 @@ class StrategyList(ttk.Frame):
         self.new_button.grid(row=1, column=0, columnspan=2, sticky="nswe", pady=5, padx=5)
         self.del_button.grid(row=3, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.edit_button.grid(row=4, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
+        self.settings_button.grid(row=5, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.update_tree()
 
     def add_item_to_phase(self, item, box, text, font, color):
@@ -198,7 +202,6 @@ class StrategyList(ttk.Frame):
             self.tree.insert("", tk.END, iid=strategy, text=strategy)
             for phase in content:
                 self.tree.insert(strategy, tk.END, iid=(content.name, "..", phase[0]), text=phase[0])
-        self.tree.column("#0", width=150)
 
     def _right_click(self, event):
         selection = self.tree.selection()
