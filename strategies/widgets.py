@@ -20,8 +20,9 @@ class Map(ttk.Frame):
         # Setup Frame
         self.current = None
         self.items = {}
-        width = kwargs.pop("canvaswidth", 385)
-        height = kwargs.pop("canvasheight", 385)
+        width = kwargs.pop("canvaswidth", 768)
+        height = kwargs.pop("canvasheight", 768)
+        self.readonly = kwargs.pop("readonly", False)
         self._additem_callback = kwargs.pop("additem_callback", None)
         self._moveitem_callback = kwargs.pop("moveitem_callback", None)
         self._map = kwargs.pop("map", None)
@@ -35,11 +36,12 @@ class Map(ttk.Frame):
         self._image = None
         self._background = None
         # Setup event bindings
-        self.canvas.tag_bind("item", "<ButtonPress-1>", self.left_press)
-        self.canvas.tag_bind("item", "<ButtonRelease-1>", self.left_release)
-        self.canvas.tag_bind("item", "<B1-Motion>", self.left_motion)
-        self.canvas.tag_bind("item", "<ButtonPress-3>", self.right_press)
-        self.canvas.bind("<ButtonPress-3>", self.frame_right_press)
+        if not self.readonly:
+            self.canvas.tag_bind("item", "<ButtonPress-1>", self.left_press)
+            self.canvas.tag_bind("item", "<ButtonRelease-1>", self.left_release)
+            self.canvas.tag_bind("item", "<B1-Motion>", self.left_motion)
+            self.canvas.tag_bind("item", "<ButtonPress-3>", self.right_press)
+            self.canvas.bind("<ButtonPress-3>", self.frame_right_press)
         # Setup item menu
         self.item_menu = tk.Menu(self, tearoff=0)
         self.item_menu.add_command(label="Edit", command=self.edit_item)
@@ -83,8 +85,8 @@ class Map(ttk.Frame):
         y = 0 if y < 0 else y
         self.canvas.coords(item, x, y)
         self.canvas.coords(rectangle, self.canvas.bbox(item))
-        self._moveitem_callback(self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 385),
-                                int(y / self._canvasheight * 385))
+        self._moveitem_callback(self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768),
+                                int(y / self._canvasheight * 768))
 
     def right_press(self, event):
         if not self.current:
@@ -123,7 +125,9 @@ class Map(ttk.Frame):
 
     def new_item(self):
         window = AddItem(callback=self.add_item_callback)
-        self.master.list.tree.column("#0", width=150)
+        if hasattr(self.master, "list"):
+            # Else master is MapToplevel and this is done elsewhere
+            self.master.list.tree.column("#0", width=150)
         window.wait_window()
 
     def del_item(self):
@@ -139,13 +143,28 @@ class Map(ttk.Frame):
         self.set_background(type, map)
         for item, value in phase:
             item, rectangle, _, _, _ = self.add_item(text=value["name"], color=value["color"], font=value["font"])
-            self.canvas.coords(item, int(value["x"] / 385 * self._canvaswidth),
-                               int(value["y"] / 385 * self._canvasheight))
+            self.canvas.coords(item, int(value["x"] / 768 * self._canvaswidth),
+                               int(value["y"] / 768 * self._canvasheight))
             self.canvas.coords(rectangle, self.canvas.bbox(item))
         return
 
     def edit_item(self):
         pass
+
+    def set_readonly(self, readonly=False):
+        self.readonly = readonly
+        if not self.readonly:
+            self.canvas.tag_bind("item", "<ButtonPress-1>", self.left_press)
+            self.canvas.tag_bind("item", "<ButtonRelease-1>", self.left_release)
+            self.canvas.tag_bind("item", "<B1-Motion>", self.left_motion)
+            self.canvas.tag_bind("item", "<ButtonPress-3>", self.right_press)
+            self.canvas.bind("<ButtonPress-3>", self.frame_right_press)
+        else:
+            self.canvas.tag_unbind("item", "<ButtonPress-1>")
+            self.canvas.tag_unbind("item", "<ButtonRelease-1>")
+            self.canvas.tag_unbind("item", "<B1-Motion>")
+            self.canvas.tag_unbind("item", "<ButtonPress-3>")
+            self.canvas.unbind("<ButtonPress-3>")
 
 
 class StrategyList(ttk.Frame):
@@ -171,7 +190,7 @@ class StrategyList(ttk.Frame):
         self.new_button = ttk.Button(self, text="New strategy", command=self.new_strategy)
         self.del_button = ttk.Button(self, text="Delete strategy", command=self.del_strategy)
         self.edit_button = ttk.Button(self, text="Edit strategy", command=self.edit_strategy, state=tk.DISABLED)
-        self.show_large_button = ttk.Button(self, text="Show large", command=self.master.show_large)
+        self.show_large_button = ttk.Button(self, text="Edit (large map)", command=self.master.show_large)
         self.grid_widgets()
 
     def grid_widgets(self):

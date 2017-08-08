@@ -13,8 +13,9 @@ class StrategyFrame(ttk.Frame):
         ttk.Frame.__init__(self, *args, **kwargs)
         # Create widgets
         self.list = StrategyList(self, callback=self._set_phase)
-        self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase)
-        self.in_map = self.map
+        self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
+                       canvaswidth=385, canvasheight=385)
+        self.in_map = None
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
         self.description.bind("<KeyPress>", self.set_description)
@@ -36,6 +37,8 @@ class StrategyFrame(ttk.Frame):
 
     def _set_phase(self, phase):
         self.map.update_map(self.list.db[self.list.selected_strategy][phase])
+        if self.in_map:
+            self.in_map.update_map(self.list.db[self.list.selected_strategy][phase])
 
     def set_description(self, *args):
         if self.list.selected_phase is not None:
@@ -53,6 +56,8 @@ class StrategyFrame(ttk.Frame):
                 selfm.map = Map(selfm, moveitem_callback=selfm.move_item_phase,
                                 additem_callback=selfm.add_item_to_phase, canvaswidth=768, canvasheight=768)
                 selfm.map.grid()
+                self.map.set_readonly(True)
+                self.in_map = self.map
                 self.map = selfm.map
                 selfm.protocol("WM_DELETE_WINDOW", selfm.close)
                 selfm.resizable(False, False)
@@ -72,6 +77,8 @@ class StrategyFrame(ttk.Frame):
 
             def close(selfm):
                 self.map = self.in_map
+                self.map.set_readonly(False)
+                self.in_map = None
                 selfm.destroy()
 
         window = MapToplevel()
