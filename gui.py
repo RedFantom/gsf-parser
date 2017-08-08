@@ -16,6 +16,7 @@ import main
 from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
+from frames.strategiesframe import StrategyFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
@@ -40,7 +41,8 @@ class MainWindow(ThemedTk):
         # Initialize window
         ThemedTk.__init__(self)
         if variables.settings_obj["gui"]["debug"] is True:
-            DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
+            # DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
+            pass
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.protocol("WM_DELETE_WINDOW", self.exit)
@@ -86,6 +88,7 @@ class MainWindow(ThemedTk):
         self.builds_wrapper_frame = ttk.Frame(self.notebook)
         self.builds_frame = buildframe.BuildsFrame(self.builds_wrapper_frame)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
+        self.strategies_frame = StrategyFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.file_select_frame.grid_widgets()
@@ -106,12 +109,15 @@ class MainWindow(ThemedTk):
         self.characters_frame.grid_widgets()
         self.toolsframe.grid_widgets()
         self.file_select_frame.clear_data_widgets()
+        self.strategies_frame.grid_widgets()
+        self.strategies_frame.grid()
         # Add the frames to the Notebook
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_wrapper_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
+        self.notebook.add(self.strategies_frame, text="Strategies")
         self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
