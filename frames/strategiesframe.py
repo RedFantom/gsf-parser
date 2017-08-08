@@ -3,21 +3,16 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog
 from strategies.widgets import StrategyList, Map
-from strategies.strategies import StrategyDatabase
-from strategies.toplevels import SettingsToplevel
-import _pickle as pickle
 
 
 class StrategyFrame(ttk.Frame):
     def __init__(self, *args, **kwargs):
         ttk.Frame.__init__(self, *args, **kwargs)
         # Create widgets
-        self.list = StrategyList(self, callback=self._set_phase, settings_callback=self.open_settings)
+        self.list = StrategyList(self, callback=self._set_phase)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase)
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
@@ -26,10 +21,6 @@ class StrategyFrame(ttk.Frame):
         self.description.config(yscrollcommand=self.description_scroll.set)
         # Set up widgets
         self.grid_widgets()
-
-    def open_settings(self, *args):
-        settings = SettingsToplevel(master=self)
-        settings.wait_window()
 
     def grid_widgets(self):
         # self.menu.grid(column=0, row=0, columnspan=2, sticky="nswe")

@@ -159,7 +159,7 @@ class StrategyList(ttk.Frame):
         self._phase_menu.add_command(label="Delete", command=self.del_phase)
         self._strategy_menu = tk.Menu(self, tearoff=0)
         self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
-        self.tree = ttk.Treeview(self, height=9)
+        self.tree = ttk.Treeview(self, height=11)
         self.scrollbar = ttk.Scrollbar(self, command=self.tree.yview, orient=tk.VERTICAL)
         self.tree.config(yscrollcommand=self.scrollbar.set)
         self.tree.bind("<Button-3>", self._right_click)
@@ -169,7 +169,6 @@ class StrategyList(ttk.Frame):
         self.new_button = ttk.Button(self, text="New strategy", command=self.new_strategy)
         self.del_button = ttk.Button(self, text="Delete strategy", command=self.del_strategy)
         self.edit_button = ttk.Button(self, text="Edit strategy", command=self.edit_strategy, state=tk.DISABLED)
-        self.settings_button = ttk.Button(self, text="Settings", command=self._settings_callback)
         self.grid_widgets()
 
     def grid_widgets(self):
@@ -178,7 +177,6 @@ class StrategyList(ttk.Frame):
         self.new_button.grid(row=1, column=0, columnspan=2, sticky="nswe", pady=5, padx=5)
         self.del_button.grid(row=3, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.edit_button.grid(row=4, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
-        self.settings_button.grid(row=5, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.update_tree()
 
     def add_item_to_phase(self, item, box, text, font, color):
