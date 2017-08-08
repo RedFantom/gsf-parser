@@ -55,6 +55,8 @@ class StrategyFrame(ttk.Frame):
                 selfm.map.grid()
                 self.map = selfm.map
                 selfm.protocol("WM_DELETE_WINDOW", selfm.close)
+                selfm.resizable(False, False)
+                selfm.title("GSF Strategy Manager: Enlarged map")
 
             def move_item_phase(selfm, *args, **kwargs):
                 self.list.move_item_phase(*args, **kwargs)
