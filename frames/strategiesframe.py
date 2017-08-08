@@ -72,6 +72,7 @@ class StrategyFrame(ttk.Frame):
 
             def close(selfm):
                 self.map = self.in_map
+                selfm.destroy()
 
         window = MapToplevel()
         if self.list.selected_phase is None:
