@@ -83,7 +83,8 @@ class Map(ttk.Frame):
         y = 0 if y < 0 else y
         self.canvas.coords(item, x, y)
         self.canvas.coords(rectangle, self.canvas.bbox(item))
-        self._moveitem_callback(self.canvas.itemcget(item, "text"), x, y)
+        self._moveitem_callback(self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 385),
+                                int(y / self._canvasheight * 385))
 
     def right_press(self, event):
         if not self.current:
@@ -138,7 +139,8 @@ class Map(ttk.Frame):
         self.set_background(type, map)
         for item, value in phase:
             item, rectangle, _, _, _ = self.add_item(text=value["name"], color=value["color"], font=value["font"])
-            self.canvas.coords(item, value["x"], value["y"])
+            self.canvas.coords(item, int(value["x"] / 385 * self._canvaswidth),
+                               int(value["y"] / 385 * self._canvasheight))
             self.canvas.coords(rectangle, self.canvas.bbox(item))
         return
 
@@ -159,7 +161,7 @@ class StrategyList(ttk.Frame):
         self._phase_menu.add_command(label="Delete", command=self.del_phase)
         self._strategy_menu = tk.Menu(self, tearoff=0)
         self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
-        self.tree = ttk.Treeview(self, height=11)
+        self.tree = ttk.Treeview(self, height=9)
         self.scrollbar = ttk.Scrollbar(self, command=self.tree.yview, orient=tk.VERTICAL)
         self.tree.config(yscrollcommand=self.scrollbar.set)
         self.tree.bind("<Button-3>", self._right_click)
@@ -169,6 +171,7 @@ class StrategyList(ttk.Frame):
         self.new_button = ttk.Button(self, text="New strategy", command=self.new_strategy)
         self.del_button = ttk.Button(self, text="Delete strategy", command=self.del_strategy)
         self.edit_button = ttk.Button(self, text="Edit strategy", command=self.edit_strategy, state=tk.DISABLED)
+        self.show_large_button = ttk.Button(self, text="Show large", command=self.master.show_large)
         self.grid_widgets()
 
     def grid_widgets(self):
@@ -177,6 +180,7 @@ class StrategyList(ttk.Frame):
         self.new_button.grid(row=1, column=0, columnspan=2, sticky="nswe", pady=5, padx=5)
         self.del_button.grid(row=3, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.edit_button.grid(row=4, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
+        self.show_large_button.grid(row=5, column=0, columnspan=2, sticky="nswe", pady=(0, 5), padx=5)
         self.update_tree()
 
     def add_item_to_phase(self, item, box, text, font, color):

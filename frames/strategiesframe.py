@@ -14,6 +14,7 @@ class StrategyFrame(ttk.Frame):
         # Create widgets
         self.list = StrategyList(self, callback=self._set_phase)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase)
+        self.in_map = self.map
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
         self.description.bind("<KeyPress>", self.set_description)
@@ -38,9 +39,39 @@ class StrategyFrame(ttk.Frame):
 
     def set_description(self, *args):
         if self.list.selected_phase is not None:
-            self.list.db[self.list.selected_strategy][self.list.selected_phase].\
+            self.list.db[self.list.selected_strategy][self.list.selected_phase]. \
                 description = self.description.get("1.0", tk.END)
             self.list.db.save_database()
         else:
             self.list.db[self.list.selected_strategy].description = self.description.get("1.0", tk.END)
             self.list.db.save_database()
+
+    def show_large(self):
+        class MapToplevel(tk.Toplevel):
+            def __init__(selfm, *args, **kwargs):
+                tk.Toplevel.__init__(selfm, *args, **kwargs)
+                selfm.map = Map(selfm, moveitem_callback=selfm.move_item_phase,
+                                additem_callback=selfm.add_item_to_phase, canvaswidth=768, canvasheight=768)
+                selfm.map.grid()
+                self.map = selfm.map
+                selfm.protocol("WM_DELETE_WINDOW", selfm.close)
+
+            def move_item_phase(selfm, *args, **kwargs):
+                self.list.move_item_phase(*args, **kwargs)
+                if self.list.selected_phase is not None:
+                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
+                self.list.tree.column("#0", width=150)
+
+            def add_item_to_phase(selfm, *args, **kwargs):
+                self.list.add_item_to_phase(*args, **kwargs)
+                if self.list.selected_phase is not None:
+                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
+                self.list.tree.column("#0", width=150)
+
+            def close(selfm):
+                self.map = self.in_map
+
+        window = MapToplevel()
+        if self.list.selected_phase is None:
+            return
+        window.map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
