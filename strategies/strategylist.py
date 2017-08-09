@@ -23,7 +23,7 @@ class StrategyList(ttk.Frame):
         self._phase_menu.add_command(label="Delete", command=self.del_phase)
         self._strategy_menu = tk.Menu(self, tearoff=0)
         self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
-        self.tree = ttk.Treeview(self, height=9)
+        self.tree = ttk.Treeview(self, height=7)
         self.scrollbar = ttk.Scrollbar(self, command=self.tree.yview, orient=tk.VERTICAL)
         self.tree.config(yscrollcommand=self.scrollbar.set)
         self.tree.bind("<Button-3>", self._right_click)
