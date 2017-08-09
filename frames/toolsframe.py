@@ -24,7 +24,7 @@ class ToolsFrame(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.grid_propagate(False)
-        self.interior_frame = verticalscrollframe.VerticalScrollFrame(self, canvasheight=380)
+        self.interior_frame = verticalscrollframe.VerticalScrollFrame(self, canvasheight=370)
         self.description_label = ttk.Label(self, text="In this frame you can find various tools to improve your GSF "
                                                       "and GSF Parser experience. These tools are not actively "
                                                       "supported.", font=("Calibri", 11))
@@ -192,7 +192,7 @@ class ToolsFrame(ttk.Frame):
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=10, sticky="w")
-        self.interior_frame.grid(row=1, column=0, columnspan=10, sticky="nswe")
+        self.interior_frame.grid(row=1, column=0, columnspan=10, sticky="nswe", pady=5, padx=5)
         self.separator_one.grid(row=1, column=0, columnspan=10, pady=5, sticky="we")
         self.cartelfix_heading_label.grid(row=3, column=0, columnspan=10, sticky="we")
         self.cartelfix_description_label.grid(row=4, column=0, columnspan=10, sticky="we")
