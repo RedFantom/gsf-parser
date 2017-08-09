@@ -41,8 +41,7 @@ class MainWindow(ThemedTk):
         # Initialize window
         ThemedTk.__init__(self)
         if variables.settings_obj["gui"]["debug"] is True:
-            # DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
-            pass
+            DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         dpi_value = self.winfo_fpixels('1i')
         self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
         self.protocol("WM_DELETE_WINDOW", self.exit)
