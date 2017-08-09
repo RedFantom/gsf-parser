@@ -20,6 +20,7 @@ from frames.strategiesframe import StrategyFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
+from tools.admin import is_user_admin, run_as_admin
 from datetime import datetime
 from sys import exit
 from github import Github, GithubException
@@ -39,6 +40,9 @@ class MainWindow(ThemedTk):
 
     def __init__(self):
         # Initialize window
+        if not is_user_admin():
+            run_as_admin()
+            exit()
         ThemedTk.__init__(self)
         if variables.settings_obj["gui"]["debug"] is True:
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)

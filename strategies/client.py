@@ -1,50 +1,105 @@
-import asyncore
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
+# For license see LICENSE
 import socket
-from queue import Queue
+import os
+import _pickle as pickle
+from tkinter import messagebox
+from tools.utilities import get_temp_directory
+from strategies.strategies import Strategy
 
 
-class Client(asyncore.dispatcher_with_send):
-    def __init__(self, sock, host, port):
-        asyncore.dispatcher_with_send.__init__(self, sock=sock)
-        self.connect((host, port))
-        self._backlog = Queue()
+class Client(object):
+    def __init__(self, address, port, name, role, list, logincallback, insertcallback):
+        socket.setdefaulttimeout(8)
+        self.logged_in = False
+        self.name = name
+        self.role = role
+        self.list = list
+        self.exit = False
+        self.login_callback = logincallback
+        self.insert_callback = insertcallback
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.socket.connect((address, port))
+        except socket.timeout:
+            messagebox.showerror("Error", "The connection to the target server timed out.")
+            self.login_failed()
+            return
+        except ConnectionRefusedError:
+            messagebox.showerror("Error", "The server refused the connection. Perhaps the server does not have "
+                                          "correct firewall or port forwarding settings.")
+            self.login_failed()
+            return
+        self.login()
 
-    def handle_accepted(self, socket, address):
-        print("Client was accepted by the Server")
+    def send(self, string):
+        self.socket.send(string.encode())
 
-    def handle_read(self):
-        data = self.recv(8192)
-        print("Client received the following data: ", data)
+    def login(self):
+        self.send("login_{0}_{1}".format(self.role.lower(), self.name))
+        try:
+            message = self.socket.recv(16)
+        except socket.timeout:
+            messagebox.showerror("Error", "The connection to the target server timed out.")
+            self.login_failed()
+            return
+        try:
+            message = message.decode()
+        except AttributeError as e:
+            print(e)
+            self.login_failed()
+        if message == "login":
+            self.logged_in = True
+            self.login_callback(True)
+        else:
+            self.login_failed()
 
-    def login(self, role, name):
-        assert isinstance(role, str) and isinstance(name, str)
-        assert role is "master" or role is "client"
-        assert len(name) >= 1
-        self.send("role={0}".format(role).encode())
-        self.send("name={0}".format(name).encode())
+    def send_strategy(self, strategy):
+        if self.role != "master":
+            raise RuntimeError("Attempted to send a strategy to the server while role is not master")
+        if not isinstance(strategy, Strategy):
+            raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
+        file_name = Client.get_temp_file()
+        with open(file_name, "wb") as fo:
+            pickle.dump(strategy, fo)
+        with open(file_name, "rb") as fi:
+            string = fi.readall()
+        self.send("strategy_{0}".format(string))
+        try:
+            message = self.socket.recv(16)
+        except socket.timeout:
+            return False
+        if str(message) == "saved":
+            return True
+        return False
 
-    def send(self, data):
-        if not isinstance(data, str):
-            data = data.decode()
-        data = (data + ".").encode()
-        asyncore.dispatcher_with_send.send(self, data)
+    def update(self, repeat=True):
+        try:
+            message = self.socket.recv(8192)
+        except socket.timeout:
+            self.list.after(100, self.update)
+            return
+        print("Received message from server: ", message)
+        self.insert_callback(message)
+        if not repeat or self.exit:
+            print("Client.update not repeating.")
+            return
+        self.list.after(100, self.update)
 
-    def recv(self, buffer):
-        data = asyncore.dispatcher_with_send.recv(self, buffer)
-        if not data:
-            if not self._backlog.empty():
-                return self._backlog.get()
-            else:
-                return None
-        elements = data.split(".")
-        for item in elements:
-            self._backlog.put(item)
-        return self._backlog.get()
+    def login_failed(self):
+        self.login_callback(False)
+        self.socket.close()
 
-if __name__ == '__main__':
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client = Client(sock, "127.0.0.1", 64739)
-    client.login("master", "RedFantom")
-    asyncore.loop()
+    def close(self):
+        self.socket.send("logout")
+        self.socket.close()
+        self.logged_in = False
+
+    @staticmethod
+    def get_temp_file():
+        return os.path.join(get_temp_directory(), "client_strategy.tmp")
 
 

@@ -51,6 +51,7 @@ class Map(ttk.Frame):
         self.frame_menu.add_command(label="New", command=self.new_item)
         # Call grid_widgets last
         self.grid_widgets()
+        self.client = None
 
     def frame_right_press(self, event):
         self.frame_menu.post(event.x_root, event.y_root)
@@ -85,8 +86,10 @@ class Map(ttk.Frame):
         y = 0 if y < 0 else y
         self.canvas.coords(item, x, y)
         self.canvas.coords(rectangle, self.canvas.bbox(item))
-        self._moveitem_callback(self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768),
-                                int(y / self._canvasheight * 768))
+        args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768), int(y / self._canvasheight * 768))
+        self._moveitem_callback(*args)
+        if self.client and self.client.logged_in:
+            self.client.move_item(self.master.selected_strategy, self.master.selected_phase, *args)
 
     def right_press(self, event):
         if not self.current:
@@ -116,6 +119,10 @@ class Map(ttk.Frame):
         rectangle = self.canvas.create_rectangle(self.canvas.bbox(item), fill=color)
         self.canvas.tag_lower(rectangle, item)
         self.items[item] = rectangle
+        if self.client and self.client.logged_in:
+            self.client.add_item(
+                *(self.master.list.selected_strategy, self.master.list.selected_phase, text, font, color)
+            )
         return item, rectangle, text, font, color
 
     def add_item_callback(self, *args, **kwargs):
@@ -133,8 +140,11 @@ class Map(ttk.Frame):
     def del_item(self):
         item = self.current
         rectangle = self.items[item]
+        text = self.canvas.itemcget(item, "text")
         if callable(self._delitem_callback):
-            self._delitem_callback(item, rectangle, self.canvas.itemcget(item, "text"))
+            self._delitem_callback(item, rectangle, text)
+        if self.client and self.client.logged_in:
+            self.client.del_item(self.master.selected_strategy, self.master.selected_phase, text)
         self.canvas.delete(item, rectangle)
 
     def update_map(self, phase):

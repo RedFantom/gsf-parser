@@ -14,6 +14,8 @@ class StrategyList(ttk.Frame):
     def __init__(self, *args, **kwargs):
         self._callback = kwargs.pop("callback", None)
         self._settings_callback = kwargs.pop("settings_callback", None)
+        self.client = None
+        self.role = None
         ttk.Frame.__init__(self, *args, **kwargs)
         self.db = StrategyDatabase()
         self.phase = None
@@ -36,6 +38,18 @@ class StrategyList(ttk.Frame):
         self.settings_button = ttk.Button(self, text="Settings", command=self._settings_callback)
         self.show_large_button = ttk.Button(self, text="Show large", command=self.master.show_large)
         self.grid_widgets()
+
+    def client_connected(self, client):
+        print("Connected!")
+        self.client = client
+        self.role = client.role
+        if self.role == "client":
+            self.master.map.set_readonly(True)
+            if self.master.in_map:
+                self.master.in_map.set_readonly(True)
+        else:
+            self.master.map.set_readonly(False)
+        self.client.update()
 
     def grid_widgets(self):
         self.tree.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)

@@ -3,169 +3,100 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from datetime import datetime
-import asyncore
 import socket
-from queue import Queue
-from strategies.tools import get_temp_directory
 import os
+import threading
+from queue import Queue
+from datetime import datetime
+from select import select
+# Own modules
+from strategies.clienthandler import ClientHandler
+from tools.admin import is_user_admin
+from tools.utilities import get_temp_directory
 
 
-class Server(asyncore.dispatcher):
+class Server(threading.Thread):
     def __init__(self, host, port):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.set_reuse_addr()
-        self.bind((host, port))
-        self.listen(8)
-        self._handlers = []
-        self._master_handler = None
+        if not is_user_admin():
+            raise RuntimeError("Attempted to open a server while user is not admin.")
+        threading.Thread.__init__(self)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socket.setdefaulttimeout(4)
+        if not Server.check_host_validity(host, port):
+            raise ValueError("The host or port value is not valid: {0}:{1}".format(host, port))
+        try:
+            self.socket.bind((host, port))
+        except socket.error:
+            raise RuntimeError("Binding to the address and port failed.")
+        self.client_handlers = []
+        self.exit_queue = Queue()
+        self.server_queue = Queue()
+        self.master_handler = None
 
-    def handle_accept(self):
-        pair = self.accept()
-        if not pair:
-            return
-        sock, _ = pair
-        handler = ClientHandler(sock, callback=self._callback)
-        self._handlers.append(handler)
-
-    def _callback(self, client_handler, data):
-        self.write_log(
-            "Received command \"{0}\" from client_handler with name \"{1}\"".format(data, client_handler.name)
-        )
-        assert isinstance(data, str)
-        elements = data.split("_")
-        assert len(elements) >= 1
-        command = elements[0]
-        if command == "login":
-            assert len(elements) is 3
-            role = elements[1]
-            if role == "master":
-                self._master_handler = client_handler
-            print("Logging in {0} as {1}".format(elements[2], role))
-            for handler in self._handlers:
-                handler.send(data)
-            print("Done logging in {0}".format(elements[2]))
-        elif command == "logout":
-            if (not client_handler is self._master_handler) and isinstance(self._master_handler, ClientHandler):
-                self._master_handler.send(data)
-            while client_handler in self._handlers:
-                self._handlers.remove(client_handler)
-            self.send_to_client_handlers(data)
-        elif command == "setstrategy":
-            if not client_handler == self._master_handler:
-                client_handler.send("requires_master")
-                return
-            self.send_to_client_handlers(data)
-        elif command == "update":
-            if client_handler is not self._master_handler:
-                client_handler.send("requires_master")
-            self.send_to_client_handlers(data)
-        elif command == "sharestrategy":
-            pass
-        else:
-            print("The following command was not recognized: {0}".format(command))
-            self.write_log("The following command was not recognized: {0}".format(command))
-
-    def send_to_client_handlers(self, data):
-        for handler in self._handlers:
-            if handler is self._master_handler:
+    def run(self):
+        if not socket.getdefaulttimeout() == 4:
+            raise ValueError()
+        self.socket.listen(8)
+        while True:
+            if not self.exit_queue.empty():
+                if self.exit_queue.get():
+                    print("Strategy server is exiting loop")
+                    break
+            if self.socket in select([self.socket], [], [], 0)[0]:
+                connection, address = self.socket.accept()
+                self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
+            else:
                 continue
-            handler.send(data)
+            for client_handler in self.client_handlers:
+                client_handler.update()
+            if not self.server_queue.empty():
+                message = self.server_queue.get()
+                if isinstance(message, tuple) and len(message) == 2 and isinstance(message[1], ClientHandler):
+                    if message[0] == "master_login":
+                        if self.master_handler:
+                            raise RuntimeError("master_login but master_handler already set to: {0}".
+                                               format(self.master_handler.name))
+                        self.master_handler = message[1]
+                    elif message[0] == "client_login":
+                        self.master_handler.client_queue.put("client_login_{0}".format(message[1].name))
+                    else:
+                        raise ValueError("Unknown command format found: {0}".format(message))
+                else:
+                    for client_handler in self.client_handlers:
+                        if client_handler is self.master_handler:
+                            continue
+                        client_handler.client_queue.put(message)
+            continue
+        for client_handler in self.client_handlers:
+            client_handler.close()
+        print("Strategy server is returning from run()")
         return
+
+    def do_action_for_client_handler(self, client_handler, command):
+        if not self.is_alive():
+            raise RuntimeError("Attempted to perform action {0} for client_handler {1} while server is not running.".
+                               format(command, client_handler))
+
+    @staticmethod
+    def check_host_validity(host, port):
+        if not isinstance(host, str) or not isinstance(port, int):
+            return False
+        elements = host.split(".")
+        if not len(elements) == 4:
+            return False
+        for item in elements:
+            try:
+                int(item)
+            except TypeError:
+                return False
+        if not port < 9999:
+            return False
+        return True
 
     @staticmethod
     def write_log(line):
-        with open(os.path.join(get_temp_directory(), "log_server.txt"), "a") as fo:
-            fo.write("[{0}] ".format(datetime.now().strftime("%H:%M:%S")) + line.replace("\n", "") + "\n")
-        return
-
-
-class ClientHandler(asyncore.dispatcher_with_send):
-    def __init__(self, sock, callback=None):
-        asyncore.dispatcher_with_send.__init__(self, sock)
-        self.role = None
-        self.name = None
-        self._callback = callback
-        self._backlog = Queue()
-
-    def handle_read(self):
-        data = self.recv(8192)
-        if not data:
-            return
-        command, value = self.check_data(data)
-        self.interpret_data(command, value)
-
-    # def handle_close(self):
-    #     self.callback("logout_{0}_{1}".format(self.role, self.name))
-
-    def interpret_data(self, command, value):
-        if command == "role":
-            if self.role:
-                print("Attempted to set role, but already set")
-                return
-            self.role = value
-            if self.role and self.name:
-                self.callback("login_{0]_{1}".format(self.role, self.name))
-        elif command == "name":
-            if self.name:
-                print("Attempted to set name, but already set")
-                return
-            self.name = value
-            if self.role and self.name:
-                self.callback("login_{0}_{1}".format(self.role, self.name))
-        elif command == "setstrategy":
-            self.callback("strategy_{0}".format(value))
-        elif command == "update":
-            self.callback("update_{0}".format(value))
-        elif command == "sharestrategy":
-            self.callback("sharestrategy_{0}".format(value))
-        elif command == "logout":
-            self.close()
-        else:
-            print("The client handler did not recognize the command: \"{0}\"".format(command))
-        return
-
-    def callback(self, command):
-        if callable(self._callback):
-            self._callback(self, command)
-        return
-
-    @staticmethod
-    def check_data(data):
-        if not isinstance(data, str):
-            data = data.decode()
-        assert "=" in data
-        elements = data.split("=")
-        if len(elements) is not 2:
-            print("len(elements) is not 2 with these elements: ", elements)
-        command, value = elements
-        return command, value
-
-    def send(self, data):
-        if not isinstance(data, str):
-            data = data.decode()
-        data = (data + ".").encode()
-        try:
-            asyncore.dispatcher_with_send.send(self, data)
-        except OSError:
-            self.close()
-
-    def recv(self, buffer):
-        data = asyncore.dispatcher_with_send.recv(self, buffer)
-        if not data:
-            if not self._backlog.empty():
-                return self._backlog.get()
-            else:
-                return None
-        if not isinstance(data, str):
-            data = data.decode()
-        elements = data.split(".")
-        for item in elements:
-            self._backlog.put(item)
-        return self._backlog.get()
-
+        with open(os.path.join(get_temp_directory(), "strategy_server.log"), "a") as fo:
+            fo.write("[{0}] {1}".format(datetime.now().strftime("%H:%M:%S"), line))
 
 if __name__ == '__main__':
-    server = Server("0.0.0.0", 64739)
-    asyncore.loop()
+    Server("", 6500).start()
