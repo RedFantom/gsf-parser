@@ -6,11 +6,17 @@
 
 import tkinter as tk
 from tkinter import ttk
+<<<<<<< HEAD
 from tkinter import filedialog
 from strategies.widgets import StrategyList, Map
 from strategies.strategies import StrategyDatabase
 from strategies.toplevels import SettingsToplevel
 import _pickle as pickle
+=======
+from strategies.strategylist import StrategyList
+from strategies.map import Map
+from strategies.toplevels import MapToplevel
+>>>>>>> 58c902b... Fix weird class construction of MapToplevel
 
 
 class StrategyFrame(ttk.Frame):
@@ -56,6 +62,7 @@ class StrategyFrame(ttk.Frame):
             self.list.db.save_database()
 
     def show_large(self):
+<<<<<<< HEAD
         class MapToplevel(tk.Toplevel):
             def __init__(selfm, *args, **kwargs):
                 tk.Toplevel.__init__(selfm, *args, **kwargs)
@@ -81,6 +88,9 @@ class StrategyFrame(ttk.Frame):
                 self.map = self.in_map
 
         window = MapToplevel()
+=======
+        window = MapToplevel(frame=self)
+>>>>>>> 58c902b... Fix weird class construction of MapToplevel
         if self.list.selected_phase is None:
             return
         window.map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
