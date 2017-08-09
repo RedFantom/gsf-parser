@@ -262,7 +262,8 @@ class SettingsFrame(ttk.Frame):
                                          text="Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania",
                                          justify=tk.LEFT)
         self.thanks_label = ttk.Label(self.license_frame,
-                                      text="Special thanks to Nightmaregale for bèta testing",
+                                      text="Special thanks to Nightmaregale for bèta testing and to Jedipedia for "
+                                           "providing clean map textures of the TDM maps",
                                       justify=tk.LEFT)
         self.update_settings()
 
@@ -419,7 +420,7 @@ class SettingsFrame(ttk.Frame):
         # self.privacy_button.grid(column=2, row=2, sticky="w", padx=5)
         self.copyright_label.grid(column=0, row=2, sticky="w")
         self.update_label.grid(column=0, row=2, sticky="w")
-        self.thanks_label.grid(column=0, row=3, sticky="w")
+        self.thanks_label.grid(column=0, row=3, sticky="w", columnspan=2)
         self.separator.grid(column=0, row=0, sticky="nswe", pady=10)
         self.license_frame.grid(column=0, row=2, sticky="nswe", pady=5)
         self.save_frame.grid(column=0, row=0)
