@@ -235,7 +235,7 @@ class SettingsFrame(ttk.Frame):
                                                               variable=self.screenparsing_overlay_var)
         self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
                                                       text="Features enabled for screen parsing:")
-        self.screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+        self.screenparsing_features = ["Tracking penalty", "Ship health",
                                        "Power management"]
         self.screenparsing_checkboxes = OrderedDict()
         self.screenparsing_variables = {}
