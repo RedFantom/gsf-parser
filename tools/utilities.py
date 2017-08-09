@@ -12,6 +12,7 @@ import cv2
 import numpy
 from sys import platform
 import tkinter as tk
+from tkinter import messagebox
 import mss
 
 debug = False
@@ -130,9 +131,13 @@ def get_swtor_directory():
         import tempfile
         path = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "SWTOR"))
         if not os.path.exists(path):
+            messagebox.showerror("Error",
+                                 "Could not determine the SWTOR temporary files directory. Is SWTOR installed?")
             raise ValueError("SWTOR directory not found. Is SWTOR installed?")
         return path
     else:
+        messagebox.showerror("Error", "The GSF Parser has not implemented the function for finding the SWTOR temporary "
+                                      "files directory path for operating systems other than Windows.")
         raise NotImplementedError
 
 
