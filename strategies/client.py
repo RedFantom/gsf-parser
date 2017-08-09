@@ -9,11 +9,14 @@ import _pickle as pickle
 from tkinter import messagebox
 from tools.utilities import get_temp_directory
 from strategies.strategies import Strategy
+from threading import Thread
+from queue import Queue
 
 
-class Client(object):
+class Client(Thread):
     def __init__(self, address, port, name, role, list, logincallback, insertcallback):
-        socket.setdefaulttimeout(8)
+        Thread.__init__(self)
+        self.exit_queue = Queue()
         self.logged_in = False
         self.name = name
         self.role = role
@@ -22,6 +25,7 @@ class Client(object):
         self.login_callback = logincallback
         self.insert_callback = insertcallback
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(4)
         try:
             self.socket.connect((address, port))
         except socket.timeout:
@@ -80,23 +84,38 @@ class Client(object):
         try:
             message = self.socket.recv(8192)
         except socket.timeout:
-            self.list.after(100, self.update)
             return
         print("Received message from server: ", message)
         self.insert_callback(message)
         if not repeat or self.exit:
             print("Client.update not repeating.")
             return
-        self.list.after(100, self.update)
+
+    def run(self):
+        while True:
+            if not self.exit_queue.empty():
+                if self.exit_queue.get():
+                    break
+            self.update()
 
     def login_failed(self):
         self.login_callback(False)
         self.socket.close()
 
     def close(self):
-        self.socket.send("logout")
+        self.exit_queue.put(True)
+        self.socket.send(b"logout")
         self.socket.close()
         self.logged_in = False
+
+    def add_item(self, *args):
+        print("Add item called with: ", args)
+
+    def move_item(self, *args):
+        print("Move item called with: ", args)
+
+    def del_item(self, *args):
+        print("Del item called with: ", args)
 
     @staticmethod
     def get_temp_file():

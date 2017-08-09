@@ -24,6 +24,8 @@ class ClientHandler(object):
             message = self.socket.recv(8192)
         except socket.timeout:
             return
+        except ConnectionAbortedError:
+            self.close()
         try:
             message = message.decode()
         except AttributeError as e:
@@ -37,6 +39,7 @@ class ClientHandler(object):
                                  format(elements[1]))
             self.role = elements[1]
             self.name = elements[2]
+            print("Client handler sent b'login'")
             self.socket.send(b"login")
             if self.role == "master":
                 self.server_queue.put(("master_login", self))
@@ -73,6 +76,7 @@ class ClientHandler(object):
 
     def close(self):
         self.socket.close()
+        self.server_queue.put(("logout", self))
 
     def write_log(self, line):
         with open(path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address)), "a") as fo:

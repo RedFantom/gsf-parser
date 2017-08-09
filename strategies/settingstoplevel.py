@@ -140,6 +140,7 @@ class SettingsToplevel(tk.Toplevel):
         self.client = Client(self.client_address_entry.get(), int(self.client_port_entry.get()),
                              self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
                              self.insert_callback)
+        self.client.start()
 
     def insert_callback(self, line):
         """
@@ -178,8 +179,6 @@ class SettingsToplevel(tk.Toplevel):
         """
         Callback to close the active Strategy Client and reset the widgets to their normal state
         """
-        self.client.exit = True
-        sleep(0.2)
         self.client.close()
         if not self.server:
             self.protocol("WM_DESTROY_WINDOW", self.destroy)
