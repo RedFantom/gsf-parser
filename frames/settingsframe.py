@@ -519,7 +519,7 @@ class SettingsFrame(ttk.Frame):
             tkinter.messagebox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
         dictionary = {
             "misc": {
-                "version": "v3.0.0",
+                "version": variables.settings_obj["misc"]["version"],
                 "autoupdate": self.auto_update.get()
             },
             "gui": {
