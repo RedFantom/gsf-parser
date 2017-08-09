@@ -25,6 +25,7 @@ class Map(ttk.Frame):
         self.readonly = kwargs.pop("readonly", False)
         self._additem_callback = kwargs.pop("additem_callback", None)
         self._moveitem_callback = kwargs.pop("moveitem_callback", None)
+        self._delitem_callback = kwargs.pop("delitem_callback", None)
         self._map = kwargs.pop("map", None)
         ttk.Frame.__init__(self, *args, **kwargs)
         self._canvaswidth = width
@@ -133,6 +134,8 @@ class Map(ttk.Frame):
     def del_item(self):
         item = self.current
         rectangle = self.items[item]
+        if callable(self._delitem_callback):
+            self._delitem_callback(item, rectangle, self.canvas.itemcget(item, "text"))
         self.canvas.delete(item, rectangle)
 
     def update_map(self, phase):
@@ -213,6 +216,13 @@ class StrategyList(ttk.Frame):
     def move_item_phase(self, text, x, y):
         self.db[self.selected_strategy][self.selected_phase][text]["x"] = x
         self.db[self.selected_strategy][self.selected_phase][text]["y"] = y
+        self.db.save_database()
+
+    def del_item_phase(self, item, rectangle, text):
+        if self.selected_phase is not None:
+            del self.db[self.selected_strategy][self.selected_phase][text]
+        else:
+            del self.db[self.selected_strategy][self.phase][text]
         self.db.save_database()
 
     def update_tree(self):

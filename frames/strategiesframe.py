@@ -14,7 +14,7 @@ class StrategyFrame(ttk.Frame):
         # Create widgets
         self.list = StrategyList(self, callback=self._set_phase)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
-                       canvaswidth=385, canvasheight=385)
+                       delitem_callback=self.list.del_item_phase, canvaswidth=385, canvasheight=385)
         self.in_map = None
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
@@ -54,7 +54,8 @@ class StrategyFrame(ttk.Frame):
             def __init__(selfm, *args, **kwargs):
                 tk.Toplevel.__init__(selfm, *args, **kwargs)
                 selfm.map = Map(selfm, moveitem_callback=selfm.move_item_phase,
-                                additem_callback=selfm.add_item_to_phase, canvaswidth=768, canvasheight=768)
+                                additem_callback=selfm.add_item_to_phase, delitem_callback=selfm.del_item_phase,
+                                canvaswidth=768, canvasheight=768)
                 selfm.map.grid()
                 self.map.set_readonly(True)
                 self.in_map = self.map
@@ -68,12 +69,20 @@ class StrategyFrame(ttk.Frame):
                 if self.list.selected_phase is not None:
                     self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
                 self.list.tree.column("#0", width=150)
+                self.grid_widgets()
 
             def add_item_to_phase(selfm, *args, **kwargs):
                 self.list.add_item_to_phase(*args, **kwargs)
                 if self.list.selected_phase is not None:
                     self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
                 self.list.tree.column("#0", width=150)
+
+            def del_item_phase(selfm, item, rectangle, text):
+                print("Deleting item {0}".format(text))
+                del self.list.db[self.list.selected_strategy][self.list.selected_phase][text]
+                self.list.db.save_database()
+                if self.list.selected_phase is not None:
+                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
 
             def close(selfm):
                 self.map = self.in_map

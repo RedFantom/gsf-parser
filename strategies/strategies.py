@@ -117,6 +117,9 @@ class Phase(object):
     def __len__(self):
         return len(self.items)
 
+    def __delitem__(self, key):
+        del self.items[key]
+
 
 class Item(object):
     def __init__(self, name, x, y, color, font):
