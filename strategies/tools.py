@@ -20,7 +20,8 @@ map_dictionary = {
 
 
 def get_assets_directory():
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), "assets")
+    from tools.utilities import get_assets_directory
+    return os.path.join(get_assets_directory(), "strategies")
 
 
 def get_temp_directory():
