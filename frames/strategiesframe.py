@@ -5,7 +5,9 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from strategies.widgets import StrategyList, Map
+from strategies.strategylist import StrategyList
+from strategies.map import Map
+from strategies.toplevels import MapToplevel
 
 
 class StrategyFrame(ttk.Frame):
@@ -50,47 +52,7 @@ class StrategyFrame(ttk.Frame):
             self.list.db.save_database()
 
     def show_large(self):
-        class MapToplevel(tk.Toplevel):
-            def __init__(selfm, *args, **kwargs):
-                tk.Toplevel.__init__(selfm, *args, **kwargs)
-                selfm.map = Map(selfm, moveitem_callback=selfm.move_item_phase,
-                                additem_callback=selfm.add_item_to_phase, delitem_callback=selfm.del_item_phase,
-                                canvaswidth=768, canvasheight=768)
-                selfm.map.grid()
-                self.map.set_readonly(True)
-                self.in_map = self.map
-                self.map = selfm.map
-                selfm.protocol("WM_DELETE_WINDOW", selfm.close)
-                selfm.resizable(False, False)
-                selfm.title("GSF Strategy Manager: Enlarged map")
-
-            def move_item_phase(selfm, *args, **kwargs):
-                self.list.move_item_phase(*args, **kwargs)
-                if self.list.selected_phase is not None:
-                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
-                self.list.tree.column("#0", width=150)
-                self.grid_widgets()
-
-            def add_item_to_phase(selfm, *args, **kwargs):
-                self.list.add_item_to_phase(*args, **kwargs)
-                if self.list.selected_phase is not None:
-                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
-                self.list.tree.column("#0", width=150)
-
-            def del_item_phase(selfm, item, rectangle, text):
-                print("Deleting item {0}".format(text))
-                del self.list.db[self.list.selected_strategy][self.list.selected_phase][text]
-                self.list.db.save_database()
-                if self.list.selected_phase is not None:
-                    self.in_map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
-
-            def close(selfm):
-                self.map = self.in_map
-                self.map.set_readonly(False)
-                self.in_map = None
-                selfm.destroy()
-
-        window = MapToplevel()
+        window = MapToplevel(frame=self)
         if self.list.selected_phase is None:
             return
         window.map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])

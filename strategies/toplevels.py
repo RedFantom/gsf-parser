@@ -7,11 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from strategies.strategies import StrategyDatabase, Strategy
 from tkinter import messagebox
-from ttkwidgets.frames import ScrolledFrame
-from ttkwidgets.font import FontSelectFrame
-from ttkwidgets.color import askcolor
-from tkinter import filedialog
-import _pickle as pickle
+from strategies.map import Map
 
 
 class AddStrategy(tk.Toplevel):
@@ -71,63 +67,6 @@ class AddStrategy(tk.Toplevel):
         self.destroy()
 
 
-class AddItem(tk.Toplevel):
-    def __init__(self, *args, **kwargs):
-        self.callback = kwargs.pop("callback", None)
-        tk.Toplevel.__init__(self, *args, **kwargs)
-        self.title("GSF Strategy Planner: Add Item")
-        self.attributes("-topmost", True)
-        self.header_label = ttk.Label(self, text="Add a new item", font=("default", 12), justify=tk.LEFT)
-        self.text_header = ttk.Label(self, text="Item text", font=("default", 11), justify=tk.LEFT)
-        self.text = tk.StringVar()
-        self.text_entry = ttk.Entry(self, textvariable=self.text)
-        self.background_color = tk.StringVar()
-        self.background_color.set("#ffffff")
-        self.background_color_header = ttk.Label(self, text="Item background", font=("default", 11), justify=tk.LEFT)
-        self.background_color_entry = tk.Entry(self, textvariable=self.background_color)
-        self.background_color_button = ttk.Button(self, text="Choose color", command=self.update_color)
-        self.font_header = ttk.Label(self, text="Item font", font=("default", 11), justify=tk.LEFT)
-        self.font_select_frame = FontSelectFrame(self)
-        self.add_button = ttk.Button(self, text="Add item", command=self.add_item)
-        self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
-        self.grid_widgets()
-
-    def grid_widgets(self):
-        # self.header_label.grid(row=0, column=0, columnspan=2, sticky="w", padx=5, pady=5)
-        self.text_header.grid(row=1, column=0, columnspan=2, sticky="w", padx=5, pady=5)
-        self.text_entry.grid(row=2, column=0, columnspan=2, sticky="nswe", padx=5, pady=5)
-        self.background_color_header.grid(row=5, column=0, columnspan=2, sticky="w", padx=5, pady=5)
-        self.background_color_entry.grid(row=6, column=0, sticky="nswe", padx=5, pady=5)
-        self.background_color_button.grid(row=6, column=1, padx=5, pady=5)
-        self.font_header.grid(row=7, column=0, sticky="w", padx=5, pady=5)
-        self.font_select_frame.grid(row=8, column=0, columnspan=3, sticky="nswe", padx=5, pady=5)
-        self.add_button.grid(row=9, column=1, sticky="nswe", padx=5, pady=5)
-        self.cancel_button.grid(row=9, column=0, sticky="nswe", padx=5, pady=5)
-
-    def add_item(self):
-        if callable(self.callback):
-            if not self.font_select_frame._family:
-                print("No font family selected.")
-            font = self.font_select_frame.font if self.font_select_frame.font is not None else ("default", 12)
-            if font == ("default", 12):
-                print("Default font selected")
-            self.callback(self.text.get(), font, color=self.background_color.get())
-        self.destroy()
-
-    def update_color(self):
-        tuple, hex = askcolor()
-        if not tuple or not hex:
-            return
-        self.background_color.set(hex)
-        self.update_entry(tuple)
-
-    def update_entry(self, color_tuple):
-        red, green, blue = color_tuple
-        self.background_color_entry.config(background=self.background_color.get(),
-                                           foreground='#000000' if (red * 0.299 + green * 0.587 + blue * 0.114) > 186
-                                           else "#ffffff")
-
-
 class AddPhase(tk.Toplevel):
     def __init__(self, *args, **kwargs):
         self._callback = kwargs.pop("callback", None)
@@ -147,4 +86,51 @@ class AddPhase(tk.Toplevel):
     def add_phase(self, *args):
         if callable(self._callback):
             self._callback(self._entry.get())
+        self.destroy()
+
+
+class MapToplevel(tk.Toplevel):
+    def __init__(self, *args, **kwargs):
+        self.frame = kwargs.pop("frame")
+        if not self.frame:
+            raise ValueError("No parent frame passed as argument")
+        tk.Toplevel.__init__(self, *args, **kwargs)
+        self.map = Map(self, moveitem_callback=self.move_item_phase,
+                       additem_callback=self.add_item_to_phase, delitem_callback=self.del_item_phase,
+                       canvaswidth=768, canvasheight=768)
+        self.map.grid()
+        self.frame.in_map = self.frame.map
+        self.frame.in_map.set_readonly(True)
+        self.frame.map = self.map
+        self.protocol("WM_DELETE_WINDOW", self.close)
+        self.resizable(False, False)
+        self.title("GSF Strategy Manager: Enlarged map")
+
+    def move_item_phase(self, *args, **kwargs):
+        self.frame.list.move_item_phase(*args, **kwargs)
+        if self.frame.list.selected_phase is not None:
+            self.frame.in_map.update_map(
+                self.frame.list.db[self.frame.list.selected_strategy][self.frame.list.selected_phase])
+        self.frame.list.tree.column("#0", width=150)
+        self.frame.grid_widgets()
+
+    def add_item_to_phase(self, *args, **kwargs):
+        self.frame.list.add_item_to_phase(*args, **kwargs)
+        if self.frame.list.selected_phase is not None:
+            self.frame.in_map.update_map(
+                self.frame.list.db[self.frame.list.selected_strategy][self.frame.list.selected_phase])
+        self.frame.list.tree.column("#0", width=150)
+
+    def del_item_phase(self, item, rectangle, text):
+        print("Deleting item {0}".format(text))
+        del self.frame.list.db[self.frame.list.selected_strategy][self.frame.list.selected_phase][text]
+        self.frame.list.db.save_database()
+        if self.frame.list.selected_phase is not None:
+            self.frame.in_map.update_map(
+                self.frame.list.db[self.frame.list.selected_strategy][self.frame.list.selected_phase])
+
+    def close(self):
+        self.frame.map = self.frame.in_map
+        self.frame.map.set_readonly(False)
+        self.frame.in_map = None
         self.destroy()
