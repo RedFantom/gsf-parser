@@ -8,9 +8,10 @@ import os
 import _pickle as pickle
 from tkinter import messagebox
 from tools.utilities import get_temp_directory
-from strategies.strategies import Strategy, Item
+from strategies.strategies import Strategy, Item, Phase
 from threading import Thread
 from queue import Queue
+from ast import literal_eval
 
 
 class Client(Thread):
@@ -19,7 +20,7 @@ class Client(Thread):
         self.exit_queue = Queue()
         self.logged_in = False
         self.name = name
-        self.role = role
+        self.role = role.lower()
         self.list = list
         self.exit = False
         self.login_callback = logincallback
@@ -68,15 +69,48 @@ class Client(Thread):
             raise RuntimeError("Attempted to send a strategy to the server while role is not master")
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
-        string = pickle.dumps(strategy)
-        self.socket.send(b"strategy_" + string + b"+")
-        try:
-            message = self.socket.recv(16)
-        except socket.timeout:
-            return False
-        if str(message) == "saved":
-            return True
-        return False
+        self.send(self.build_strategy_string(strategy))
+
+    @staticmethod
+    def build_strategy_string(strategy):
+        string = "strategy_" + strategy.name + "~" + strategy.description + "~" + str(strategy.map) + "~"
+        for phase_name, phase in strategy:
+            string += phase.name + "¤" + phase.description + "¤" + str(phase.map) + "¤"
+            for item_name, item in phase:
+                string += "³" + str(item.data)
+            string += "¤"
+        return string
+
+    def read_strategy_string(self, string):
+        strategy_elements = string.split("~")
+        strategy_name = strategy_elements[0]
+        strategy_description = strategy_elements[1]
+        strategy_map = literal_eval(strategy_elements[2])
+        phase_elements = strategy_elements[3:]
+        strategy = Strategy(strategy_name, strategy_map)
+        strategy.description = strategy_description
+        for phase_string in phase_elements:
+            phase_string_elements = phase_string.split("¤")
+            phase_name = phase_string_elements[0]
+            phase_description = phase_string_elements[1]
+            phase_map = literal_eval(phase_string_elements[2])
+            phase = Phase(phase_name, phase_map)
+            phase.description = phase_description
+            item_string = phase_string_elements[3]
+            item_elements = item_string.split("³")
+            for item_string_elements in item_elements:
+                if item_string_elements == "":
+                    continue
+                item_dictionary = literal_eval(item_string_elements)
+                phase[item_dictionary["name"]] = Item(
+                    item_dictionary["name"],
+                    item_dictionary["x"],
+                    item_dictionary["y"],
+                    item_dictionary["color"],
+                    item_dictionary["font"]
+                )
+            strategy[phase_name] = phase
+        return strategy
 
     def update(self):
         if not self.logged_in:
@@ -90,7 +124,7 @@ class Client(Thread):
             dmessage = message.decode()
             elements = dmessage.split("_")
         except UnicodeDecodeError:
-            elements = ["strategy", message[10:]]
+            elements = ["strategy", message[9:]]
         self.process_command(elements)
 
     def process_command(self, elements):
@@ -109,10 +143,8 @@ class Client(Thread):
             self.del_item_server(strategy, phase, text)
         elif command == "strategy":
             assert len(elements) >= 2
-            string = elements[1]
-            strategy = pickle.loads(string.encode())
-            if not isinstance(strategy, Strategy):
-                raise ValueError("Invalid! {0}".format(type(strategy)))
+            print("Plain elements item: ", elements[1])
+            strategy = self.read_strategy_string(elements[1])
             self.list.db[strategy.name] = strategy
             self.list.update_tree()
         elif command == "client":

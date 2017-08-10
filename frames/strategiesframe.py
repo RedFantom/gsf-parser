@@ -75,8 +75,11 @@ class StrategyFrame(ttk.Frame):
             pass
         self.list.client_connected(client)
         self.map.client = self.client
+        self.client.start()
 
     def insert_callback(self, command, args):
+        if not self.client:
+            raise ValueError()
         print("Insert callback received: ", command, args)
         if command == "client_login":
             for strategy in self.list.db.data.keys():

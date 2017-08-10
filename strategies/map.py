@@ -149,6 +149,8 @@ class Map(ttk.Frame):
             self._delitem_callback(item, rectangle, text)
         if self.client and self.client.logged_in and self.master.list.selected_phase:
             self.client.del_item(self.master.list.selected_strategy, self.master.list.selected_phase, text)
+        del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+        self.master.list.db.save_database()
         self.canvas.delete(item, rectangle)
 
     def update_map(self, phase):

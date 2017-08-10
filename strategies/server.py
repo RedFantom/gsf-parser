@@ -57,6 +57,9 @@ class Server(threading.Thread):
                         raise RuntimeError("master_login but master_handler already set to: {0}".
                                            format(self.master_handler.name))
                     self.master_handler = message[1]
+                    self.client_handlers.append(self.master_handler)
+                    for client_handler in self.client_handlers:
+                        self.master_handler.client_queue.put("client_login_{0}".format(client_handler.name))
                 elif message[0] == "client_login":
                     print("Server received client_login")
                     if self.master_handler:

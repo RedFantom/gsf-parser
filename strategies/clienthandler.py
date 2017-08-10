@@ -8,7 +8,6 @@ from tools.utilities import get_temp_directory
 from datetime import datetime
 from os import path
 import queue
-from time import sleep
 
 
 class ClientHandler(object):
@@ -26,17 +25,15 @@ class ClientHandler(object):
             print("ClientHandler {0} client_queue is not empty".format(self.name))
             server_command = self.client_queue.get()
             print("ClientHandler received server_command ", server_command)
-            self.send(server_command)
+            if not self.send(server_command):
+                return
         self.receive()
         if not self.message_queue.empty():
             message = self.message_queue.get()
         else:
             return
-        try:
-            messaged = message.decode()
-            elements = messaged.split("_")
-        except UnicodeDecodeError:
-            elements = [message[:10].decode(), message[10:]]
+        messaged = message.decode()
+        elements = messaged.split("_")
         print("ClientHandler for {0} received data: ".format(self.name), message)
         command = elements[0]
         if command == "login":
@@ -52,6 +49,7 @@ class ClientHandler(object):
             else:
                 self.server_queue.put(("client_login", self))
         elif command == "strategy":
+            print("ClientHandler received a strategy")
             assert len(elements) >= 2
             # command, pickle
             if self.role != "master":
@@ -73,21 +71,24 @@ class ClientHandler(object):
             assert len(elements) == 1
             self.server_queue.put(("logout", self))
         else:
-            print("ClientHandler received unkown command: ", message)
+            print("ClientHandler received unknown command: ", message)
         return
 
     def send(self, command):
         print("ClientHandler sending ", command)
         if isinstance(command, bytes):
-            string = command.decode()
-            string += "+"
-        elif isinstance(command, tuple):
-            raise ValueError("Received tuple as command: {0}", command)
+            command += b"+"
+            self.socket.send(command)
         elif isinstance(command, str):
             string = command + "+"
+            try:
+                self.socket.send(string.encode())
+            except ConnectionResetError:
+                self.close()
+                return False
         else:
             raise ValueError("Received invalid type as command: {0}, {1}".format(type(command), command))
-        self.socket.send(string.encode())
+        return True
 
     def close(self):
         print("ClientHandler closing")
@@ -104,10 +105,10 @@ class ClientHandler(object):
         while True:
             try:
                 message = self.socket.recv(16)
-                print("ClientHandler received message: ", message)
                 if message == b"":
                     self.close()
-                    return
+                    break
+                print("ClientHandler received message: ", message)
             except socket.error:
                 break
             elements = message.split(b"+")
@@ -118,7 +119,6 @@ class ClientHandler(object):
                     self.message_queue.put(item)
                 total = elements[-1]
         return
-
 
 
 

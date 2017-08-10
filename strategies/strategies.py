@@ -96,7 +96,7 @@ class Strategy(object):
         for key, value in self.phases.items():
             yield key, value
 
-    def __del__(self, key):
+    def __delitem__(self, key):
         del self.phases[key]
 
     def __contains__(self, item):

@@ -141,7 +141,6 @@ class SettingsToplevel(tk.Toplevel):
         self.client = Client(self.client_address_entry.get(), int(self.client_port_entry.get()),
                              self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
                              self.frame.insert_callback, self.disconnect_client)
-        self.client.start()
         if self.client.role.lower() == "client":
             print("Setting map to be readonly")
             self.frame.map.set_readonly(True)
@@ -187,7 +186,7 @@ class SettingsToplevel(tk.Toplevel):
             self.client.close()
         if not self.server:
             self.protocol("WM_DESTROY_WINDOW", self.destroy)
-        self.client_button.config(text="Connect")
+        self.client_button.config(text="Connect", command=self.connect_client)
         self.client_name_entry.config(state=tk.NORMAL)
         self.client_role_dropdown.config(state=tk.NORMAL)
         self.client_address_entry.config(state=tk.NORMAL)
