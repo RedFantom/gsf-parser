@@ -29,14 +29,11 @@ class Server(threading.Thread):
         except socket.error:
             raise RuntimeError("Binding to the address and port failed.")
         self.client_handlers = []
+        self.master_handler = None
         self.exit_queue = Queue()
         self.server_queue = Queue()
-        self.master_handler = MasterHandler(self.server_queue)
-        self.master_handler.start()
 
     def run(self):
-        if not socket.getdefaulttimeout() == 4:
-            raise ValueError()
         self.socket.listen(8)
         while True:
             if not self.exit_queue.empty() and self.exit_queue.get():
@@ -45,9 +42,47 @@ class Server(threading.Thread):
             if self.socket in select([self.socket], [], [], 0)[0]:
                 print("server ready to accept")
                 connection, address = self.socket.accept()
-                self.master_handler.client_handler_queue.put(ClientHandler(connection, address, self.server_queue))
-        self.master_handler.exit_queue.put(True)
+                self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
+            if not self.exit_queue.empty() and self.exit_queue.get():
+                break
+            for client_handler in self.client_handlers:
+                client_handler.update()
+            while not self.server_queue.empty():
+                print("Server received something in the server_queue")
+                message = self.server_queue.get()
+                print("Server received {0} in server queue".format(message))
+                if message[0] == "master_login":
+                    print("Server received master_login")
+                    if self.master_handler:
+                        raise RuntimeError("master_login but master_handler already set to: {0}".
+                                           format(self.master_handler.name))
+                    self.master_handler = message[1]
+                elif message[0] == "client_login":
+                    print("Server received client_login")
+                    if self.master_handler:
+                        self.master_handler.client_queue.put("client_login_{0}".format(message[1].name))
+                elif message[0] == "logout":
+                    print("Server received logout")
+                    if message[1] is self.master_handler:
+                        print("Logout is a master logout")
+                        self.master_handler = None
+                    else:
+                        if self.master_handler:
+                            self.master_handler.client_queue.put(("logout", message[1].name))
+                    self.client_handlers.remove(message[1])
+                else:
+                    print("Sending data to other client handlers")
+                    for client_handler in self.client_handlers:
+                        if client_handler is message[1]:
+                            continue
+                        print("Sending data to ClientHandler {0}".format(client_handler.name))
+                        client_handler.client_queue.put(message[0])
+        print("Server closing ClientHandlers")
+        for client_handler in self.client_handlers:
+            client_handler.close()
+            print("Server closed ClientHandler {0}".format(client_handler.name))
         print("Strategy server is returning from run()")
+        self.socket.close()
         return
 
     def do_action_for_client_handler(self, client_handler, command):
@@ -75,52 +110,6 @@ class Server(threading.Thread):
     def write_log(line):
         with open(os.path.join(get_temp_directory(), "strategy_server.log"), "a") as fo:
             fo.write("[{0}] {1}".format(datetime.now().strftime("%H:%M:%S"), line))
-
-
-class MasterHandler(threading.Thread):
-    def __init__(self, server_queue):
-        threading.Thread.__init__(self)
-        self.client_handler_queue = Queue()
-        self.server_queue = server_queue
-        self.exit_queue = Queue()
-        self.client_handlers = []
-        self.master_handler = None
-
-    def run(self):
-        while True:
-            if not self.client_handler_queue.empty():
-                self.client_handlers.append(self.client_handler_queue.get())
-            if not self.exit_queue.empty() and self.exit_queue.get():
-                break
-            print("server updating client handlers")
-            for client_handler in self.client_handlers:
-                client_handler.update()
-            print("server handling message in the server_queue")
-            while not self.server_queue.empty():
-                message = self.server_queue.get()
-                if isinstance(message, tuple) and len(message) == 2 and isinstance(message[1], ClientHandler):
-                    if message[0] == "master_login":
-                        if self.master_handler:
-                            raise RuntimeError("master_login but master_handler already set to: {0}".
-                                               format(self.master_handler.name))
-                        self.master_handler = message[1]
-                    elif message[0] == "client_login":
-                        if self.master_handler:
-                            self.master_handler.client_queue.put("client_login_{0}".format(message[1].name))
-                    elif message[0] == "logout":
-                        if message[1] is self.master_handler:
-                            self.master_handler = None
-                        self.client_handlers.remove(message[1])
-                    else:
-                        raise ValueError("Unknown command format found: {0}".format(message))
-                else:
-                    for client_handler in self.client_handlers:
-                        if client_handler is self.master_handler:
-                            continue
-                        client_handler.client_queue.put(message)
-            continue
-        for client_handler in self.client_handlers:
-            client_handler.close()
 
 
 if __name__ == '__main__':

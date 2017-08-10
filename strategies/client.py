@@ -8,13 +8,13 @@ import os
 import _pickle as pickle
 from tkinter import messagebox
 from tools.utilities import get_temp_directory
-from strategies.strategies import Strategy
+from strategies.strategies import Strategy, Item
 from threading import Thread
 from queue import Queue
 
 
 class Client(Thread):
-    def __init__(self, address, port, name, role, list, logincallback, insertcallback):
+    def __init__(self, address, port, name, role, list, logincallback, insertcallback, disconnectcallback):
         Thread.__init__(self)
         self.exit_queue = Queue()
         self.logged_in = False
@@ -24,8 +24,10 @@ class Client(Thread):
         self.exit = False
         self.login_callback = logincallback
         self.insert_callback = insertcallback
+        self.disconnect_callback = disconnectcallback
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(4)
+        self.message_queue = Queue()
         try:
             self.socket.connect((address, port))
         except socket.timeout:
@@ -40,7 +42,7 @@ class Client(Thread):
         self.login()
 
     def send(self, string):
-        self.socket.send(string.encode())
+        self.socket.send((string + "+").encode())
 
     def login(self):
         self.send("login_{0}_{1}".format(self.role.lower(), self.name))
@@ -66,12 +68,8 @@ class Client(Thread):
             raise RuntimeError("Attempted to send a strategy to the server while role is not master")
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
-        file_name = Client.get_temp_file()
-        with open(file_name, "wb") as fo:
-            pickle.dump(strategy, fo)
-        with open(file_name, "rb") as fi:
-            string = fi.readall()
-        self.send("strategy_{0}".format(string))
+        string = pickle.dumps(strategy)
+        self.socket.send(b"strategy_" + string + b"+")
         try:
             message = self.socket.recv(16)
         except socket.timeout:
@@ -80,22 +78,51 @@ class Client(Thread):
             return True
         return False
 
-    def update(self, repeat=True):
+    def update(self):
+        if not self.logged_in:
+            return
+        self.receive()
+        if self.message_queue.empty():
+            return
+        message = self.message_queue.get()
+        print("Client received data: ", message)
         try:
-            message = self.socket.recv(8192)
-        except socket.timeout:
-            return
-        print("Received message from server: ", message)
-        self.insert_callback(message)
-        if not repeat or self.exit:
-            print("Client.update not repeating.")
-            return
+            dmessage = message.decode()
+            elements = dmessage.split("_")
+        except UnicodeDecodeError:
+            elements = ["strategy", message[10:]]
+        self.process_command(elements)
+
+    def process_command(self, elements):
+        command = elements[0]
+        if command == "add":
+            assert len(elements) == 6
+            _, strategy, phase, text, font, color = elements
+            self.add_item_server(strategy, phase, text, font, color)
+        elif command == "move":
+            assert len(elements) == 6
+            _, strategy, phase, text, x, y = elements
+            self.move_item_server(strategy, phase, text, x, y)
+        elif command == "del":
+            assert len(elements) == 4
+            _, strategy, phase, text = elements
+            self.del_item_server(strategy, phase, text)
+        elif command == "strategy":
+            assert len(elements) >= 2
+            string = elements[1]
+            strategy = pickle.loads(string.encode())
+            if not isinstance(strategy, Strategy):
+                raise ValueError("Invalid! {0}".format(type(strategy)))
+            self.list.db[strategy.name] = strategy
+            self.list.update_tree()
 
     def run(self):
         while True:
             if not self.exit_queue.empty():
                 if self.exit_queue.get():
                     break
+            if not self.logged_in:
+                break
             self.update()
 
     def login_failed(self):
@@ -104,21 +131,80 @@ class Client(Thread):
 
     def close(self):
         self.exit_queue.put(True)
-        self.socket.send(b"logout")
+        try:
+            self.socket.send(b"logout")
+        except OSError:
+            pass
         self.socket.close()
         self.logged_in = False
+        self.disconnect_callback()
 
-    def add_item(self, *args):
-        print("Add item called with: ", args)
+    def add_item_server(self, strategy, phase, text, font, color):
+        print("Add item called with: ", strategy, phase, text, font, color)
+        if not self.check_strategy_phase(strategy, phase):
+            return
+        self.list.db[strategy][phase][text] = Item(text, 0, 0, color, font)
+        self.insert_callback("add_item", (strategy, phase, text, font, color))
 
-    def move_item(self, *args):
-        print("Move item called with: ", args)
+    def move_item_server(self, strategy, phase, text, x, y):
+        print("Move item called with: ", strategy, phase, text, x, y)
+        if not self.check_strategy_phase(strategy, phase):
+            return
+        self.insert_callback("move_item", (strategy, phase, text, x, y))
 
-    def del_item(self, *args):
-        print("Del item called with: ", args)
+    def del_item_server(self, strategy, phase, text):
+        print("Del item called with: ", strategy, phase, text)
+        if not self.check_strategy_phase(strategy, phase):
+            return
+        del self.list.db[strategy][phase][text]
+        self.insert_callback("del_item", (strategy, phase, text))
+
+    def add_item(self, strategy, phase, text, font, color):
+        print("Sending add item command")
+        self.send("add_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, font, color))
+
+    def move_item(self, strategy, phase, text, x, y):
+        print("Sending move item command")
+        self.send("move_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, x, y))
+
+    def del_item(self, strategy, phase, text):
+        print("Sending del command")
+        self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
     @staticmethod
     def get_temp_file():
         return os.path.join(get_temp_directory(), "client_strategy.tmp")
 
+    def check_strategy_phase(self, strategy, phase):
+        if strategy not in self.list.db:
+            messagebox.showinfo("Info", "Operation on a Strategy received that was not in the database. Please wait "
+                                        "for the database update.")
+            return False
+        if phase not in self.list.db[strategy]:
+            messagebox.showerror("Info", "Operation on a Phase received that was not in the database. Please wait for "
+                                         "the database update.")
+            return False
+        return True
 
+    def receive(self):
+        if not self.logged_in:
+            return
+        self.socket.setblocking(0)
+        total = b""
+        while True:
+            try:
+                message = self.socket.recv(16)
+                if message == b"":
+                    self.close()
+                    break
+                print("ClientHandler received message: ", message)
+            except socket.error:
+                break
+            elements = message.split(b"+")
+            total += elements[0]
+            if len(elements) >= 2:
+                self.message_queue.put(total)
+                for item in elements[1:-1]:
+                    self.message_queue.put(item)
+                total = elements[-1]
+        return

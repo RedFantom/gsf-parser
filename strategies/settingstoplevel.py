@@ -25,6 +25,7 @@ class SettingsToplevel(tk.Toplevel):
         Initialize the toplevel with all its widgets and menus
         """
         self._callback = kwargs.pop("callback", None)
+        self._disconnectcallback = kwargs.pop("disconnect_callback", None)
         self.frame = kwargs.pop("master")
         self.list = self.frame.list
         self.new_strategy = self.frame.new_strategy
@@ -139,15 +140,16 @@ class SettingsToplevel(tk.Toplevel):
         """
         self.client = Client(self.client_address_entry.get(), int(self.client_port_entry.get()),
                              self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
-                             self.insert_callback)
+                             self.frame.insert_callback, self.disconnect_client)
         self.client.start()
-
-    def insert_callback(self, line):
-        """
-        Callback for the Client object to insert a log line into the master text log. Does not get called if the role
-        is client, only when the role is master.
-        """
-        self.frame.client_master_log_text.insert(tk.END, line.strip() + "\n")
+        if self.client.role.lower() == "client":
+            print("Setting map to be readonly")
+            self.frame.map.set_readonly(True)
+            if self.frame.in_map:
+                self.frame.in_map.set_readonly(True)
+        else:
+            print("Role is not 'client', but {0}, so not setting readonly".format(self.client.role.lower()))
+        return
 
     def login_callback(self, success):
         """
@@ -179,6 +181,8 @@ class SettingsToplevel(tk.Toplevel):
         """
         Callback to close the active Strategy Client and reset the widgets to their normal state
         """
+        if not self.client:
+            return
         self.client.close()
         if not self.server:
             self.protocol("WM_DESTROY_WINDOW", self.destroy)
@@ -188,6 +192,8 @@ class SettingsToplevel(tk.Toplevel):
         self.client_address_entry.config(state=tk.NORMAL)
         self.client_port_entry.config(state=tk.NORMAL)
         self.client = None
+        if callable(self._disconnectcallback):
+            self._disconnectcallback()
 
     def destroy_redirect(self):
         """
@@ -257,6 +263,10 @@ class SettingsToplevel(tk.Toplevel):
         if file_name == "" or file_name is None:
             return
         self.list.db.save_database_as(file_name)
+
+    def destroy(self):
+        self.frame.settings = None
+        tk.Toplevel.destroy(self)
 
 
 class ClosingToplevel(tk.Toplevel):

@@ -35,26 +35,24 @@ class StrategyDatabase(object):
     def __len__(self):
         return len(self.data)
 
+    def __contains__(self, item):
+        return item in self.data
+
     def load_database(self):
-        print("Loading database")
         try:
             with open(self._file_name, "rb") as fi:
                 self.data = pickle.load(fi)
         except EOFError:
             print("Creating new database because of EOFError")
-            self.save_database()
-            self.load_database()
+            self.new_database()
         except ImportError as e:
             print("Creating new database because of ImportError: ", e)
-            self.save_database()
-            self.load_database()
+            self.new_database()
         except AttributeError as e:
             print("Creating new database because of AttributeError: ", e)
-            self.save_database()
-            self.load_database()
+            self.new_database()
 
     def save_database(self):
-        print("Saving database")
         with open(self._file_name, "wb") as fo:
             pickle.dump(self.data, fo)
 
@@ -74,6 +72,11 @@ class StrategyDatabase(object):
 
     def items(self):
         return self.data.items()
+
+    def new_database(self):
+        self.data = {}
+        self.save_database()
+        self.load_database()
 
 
 class Strategy(object):
@@ -96,6 +99,9 @@ class Strategy(object):
     def __del__(self, key):
         del self.phases[key]
 
+    def __contains__(self, item):
+        return item in self.phases
+
 
 class Phase(object):
     def __init__(self, name, map):
@@ -116,6 +122,12 @@ class Phase(object):
 
     def __len__(self):
         return len(self.items)
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def __delitem__(self, item):
+        del self.items[item]
 
 
 class Item(object):

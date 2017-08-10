@@ -43,13 +43,6 @@ class StrategyList(ttk.Frame):
         print("Connected!")
         self.client = client
         self.role = client.role
-        if self.role == "client":
-            self.master.map.set_readonly(True)
-            if self.master.in_map:
-                self.master.in_map.set_readonly(True)
-        else:
-            self.master.map.set_readonly(False)
-        self.client.update()
 
     def grid_widgets(self):
         self.tree.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
@@ -170,7 +163,6 @@ class StrategyList(ttk.Frame):
         selection = self.tree.selection()
         if len(selection) is 0:
             return None
-        print("Returning selection: ", selection[0])
         return selection[0]
 
     @property
@@ -179,7 +171,6 @@ class StrategyList(ttk.Frame):
         if not selection:
             return None
         elements = selection.split("..")
-        print("Got elements: ", elements)
         strategy = elements[0]
         strategy = strategy.strip()
         return strategy.replace("{", "").replace("}", "")
@@ -197,5 +188,4 @@ class StrategyList(ttk.Frame):
             phase = phase[1:]
         if phase.endswith(" "):
             phase = phase[:1]
-        print("Returning phase: ", phase)
         return phase.replace("{", "").replace("}", "")
