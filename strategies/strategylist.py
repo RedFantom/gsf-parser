@@ -144,6 +144,8 @@ class StrategyList(ttk.Frame):
             self.master.description.delete("1.0", tk.END)
             self.master.description.insert("1.0", self.db[self.selected_strategy][self.selected_phase].description)
         else:
+            if not self.selected_strategy:
+                return
             self.master.description.delete("1.0", tk.END)
             self.master.description.insert("1.0", self.db[self.selected_strategy].description)
             self._strategy_selected()

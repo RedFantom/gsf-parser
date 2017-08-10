@@ -183,7 +183,8 @@ class SettingsToplevel(tk.Toplevel):
         """
         if not self.client:
             return
-        self.client.close()
+        if self.client.logged_in:
+            self.client.close()
         if not self.server:
             self.protocol("WM_DESTROY_WINDOW", self.destroy)
         self.client_button.config(text="Connect")

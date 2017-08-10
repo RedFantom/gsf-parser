@@ -13,6 +13,7 @@ from PIL import Image, ImageTk
 from ttkwidgets.color import askcolor
 from ttkwidgets.font import FontSelectFrame
 from ast import literal_eval
+from tkinter import messagebox
 
 
 class Map(ttk.Frame):
@@ -216,6 +217,8 @@ class AddItem(tk.Toplevel):
         self.cancel_button.grid(row=9, column=0, sticky="nswe", padx=5, pady=5)
 
     def add_item(self):
+        if "_" in self.text.get() or "+" in self.text.get():
+            messagebox.showerror("Error", "The characters _ and + are not allowed in item texts.")
         if callable(self.callback):
             if not self.font_select_frame._family:
                 print("No font family selected.")

@@ -115,6 +115,10 @@ class Client(Thread):
                 raise ValueError("Invalid! {0}".format(type(strategy)))
             self.list.db[strategy.name] = strategy
             self.list.update_tree()
+        elif command == "client":
+            self.insert_callback("client_login", elements[2])
+        else:
+            self.insert_callback(elements)
 
     def run(self):
         while True:

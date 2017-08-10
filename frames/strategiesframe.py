@@ -109,6 +109,8 @@ class StrategyFrame(ttk.Frame):
             self.in_map.client = None
         self.client = None
         self.list.client = None
+        for map in self.maps:
+            map.set_readonly(False)
 
     @property
     def maps(self):

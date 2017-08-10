@@ -68,7 +68,7 @@ class Server(threading.Thread):
                         self.master_handler = None
                     else:
                         if self.master_handler:
-                            self.master_handler.client_queue.put(("logout", message[1].name))
+                            self.master_handler.client_queue.put("logout_{0}".format(message[1].name))
                     self.client_handlers.remove(message[1])
                 else:
                     print("Sending data to other client handlers")

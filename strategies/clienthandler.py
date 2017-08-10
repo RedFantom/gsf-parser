@@ -24,7 +24,7 @@ class ClientHandler(object):
     def update(self):
         if not self.client_queue.empty():
             print("ClientHandler {0} client_queue is not empty".format(self.name))
-            server_command = self.client_queue.get(block=False)
+            server_command = self.client_queue.get()
             print("ClientHandler received server_command ", server_command)
             self.send(server_command)
         self.receive()
@@ -45,7 +45,7 @@ class ClientHandler(object):
                                  format(elements[1]))
             self.role = elements[1]
             self.name = elements[2]
-            print("Client handler sent b'login'")
+            print("ClientHandler for {0} sent b'login'".format(self.name))
             self.socket.send(b"login")
             if self.role == "master":
                 self.server_queue.put(("master_login", self))
