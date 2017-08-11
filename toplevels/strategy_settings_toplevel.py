@@ -64,6 +64,7 @@ class SettingsToplevel(tk.Toplevel):
         self.client_role = tk.StringVar()
         self.client_role_dropdown = ttk.OptionMenu(self.client_section, self.client_role,
                                                    *("Choose role", "Master", "Client"))
+        self.client_role.set("Client")
         self.client_header = ttk.Label(self.client_section, text="Client settings", justify=tk.LEFT,
                                        font=("default", 11))
         self.client_address_entry = ttk.Entry(self.client_section, width=15)
@@ -111,7 +112,17 @@ class SettingsToplevel(tk.Toplevel):
         try:
             self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
         except RuntimeError:
-            messagebox.showerror("Starting the server")
+            messagebox.showerror("Error", "Starting the server failed due to a RuntimeError, which probably means that "
+                                          "binding to the port and host name failed. If you did not expect this, "
+                                          "please file a bug report in the GitHub repository and include any debug "
+                                          "output.")
+            return
+        except ValueError:
+            messagebox.showerror("Error", "The host and/or port values you have entered are not valid. Currently, only "
+                                          "IP addresses or a blank value (binds to all available) are allowed as "
+                                          "host value, and only ports lower than 9999 are allowed.")
+            return
+
         self.protocol("WM_DELETE_WINDOW", self.destroy_redirect)
         self.server.start()
         self.server_button.config(text="Stop server", command=self.stop_server)
