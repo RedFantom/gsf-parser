@@ -224,13 +224,13 @@ class SettingsToplevel(tk.Toplevel):
         """
         Callback of the filemenu to import a Strategy into the database from a pickle file
         """
-        file_name = filedialog.askopenfilename(filetypes=[".str", ".bin"], defaultextension=".str",
+        file_name = filedialog.askopenfilename(filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
                                                title="GSF Strategy Manager: Open a strategy")
         if file_name == "" or file_name is None:
             return
         with open(file_name, "rb") as fi:
             strategy = pickle.load(fi)
-        self.list.db[strategy["name"]] = strategy
+        self.list.db[strategy.name] = strategy
         self.list.update_tree()
 
     def save_strategy(self):
