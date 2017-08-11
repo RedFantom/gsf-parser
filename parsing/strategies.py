@@ -5,7 +5,7 @@
 # For license see LICENSE
 
 import _pickle as pickle
-from strategies.tools import get_temp_directory
+from tools.utilities import get_temp_directory
 import os
 
 

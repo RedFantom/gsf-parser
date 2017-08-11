@@ -5,10 +5,11 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from strategies.strategylist import StrategyList
-from strategies.map import Map
-from strategies.settingstoplevel import SettingsToplevel
-from strategies.toplevels import MapToplevel
+
+from widgets.strategy_list import StrategyList
+from widgets.strategy_map import Map
+from toplevels.strategy_settings_toplevel import SettingsToplevel
+from toplevels.strategy_toplevels import MapToplevel
 
 
 class StrategyFrame(ttk.Frame):

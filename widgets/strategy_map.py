@@ -6,14 +6,13 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkfont
-from strategies.tools import *
-from strategies.strategies import *
-import os
+from ast import literal_eval
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from ttkwidgets.color import askcolor
 from ttkwidgets.font import FontSelectFrame
-from ast import literal_eval
-from tkinter import messagebox
+from parsing.strategies import *
+from tools.utilities import get_assets_directory, map_dictionary
 
 
 class Map(ttk.Frame):

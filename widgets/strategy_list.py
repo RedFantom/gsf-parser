@@ -6,8 +6,9 @@
 
 import tkinter as tk
 from tkinter import ttk
-from strategies.strategies import *
-from strategies.toplevels import AddStrategy, AddPhase
+
+from parsing.strategies import *
+from toplevels.strategy_toplevels import AddStrategy, AddPhase
 
 
 class StrategyList(ttk.Frame):

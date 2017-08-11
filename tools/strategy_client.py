@@ -5,13 +5,13 @@
 # For license see LICENSE
 import socket
 import os
-import _pickle as pickle
 from tkinter import messagebox
-from tools.utilities import get_temp_directory
-from strategies.strategies import Strategy, Item, Phase
 from threading import Thread
 from queue import Queue
 from ast import literal_eval
+
+from tools.utilities import get_temp_directory
+from parsing.strategies import Strategy, Item, Phase
 
 
 class Client(Thread):

@@ -5,9 +5,10 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from strategies.strategies import StrategyDatabase, Strategy
 from tkinter import messagebox
-from strategies.map import Map
+
+from parsing.strategies import StrategyDatabase, Strategy
+from widgets.strategy_map import Map
 
 
 class AddStrategy(tk.Toplevel):

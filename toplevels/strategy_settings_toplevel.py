@@ -5,14 +5,13 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from strategies.strategies import StrategyDatabase
 from tkinter import messagebox, filedialog
-from ttkwidgets.frames import ScrolledFrame
 import _pickle as pickle
-from time import sleep
-from strategies.server import Server
+from ttkwidgets.frames import ScrolledFrame
+from parsing.strategies import StrategyDatabase
+from server.strategies_server import Server
 from tools.admin import run_as_admin, is_user_admin
-from strategies.client import Client
+from tools.strategy_client import Client
 
 
 class SettingsToplevel(tk.Toplevel):

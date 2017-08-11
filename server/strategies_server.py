@@ -9,8 +9,8 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
-# Own modules
-from strategies.clienthandler import ClientHandler
+
+from server.strategy_clienthandler import ClientHandler
 from tools.admin import is_user_admin
 from tools.utilities import get_temp_directory
 
