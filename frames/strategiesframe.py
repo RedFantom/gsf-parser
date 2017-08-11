@@ -69,6 +69,8 @@ class StrategiesFrame(ttk.Frame):
         :return: None
         """
         self.map.update_map(self.list.db[self.list.selected_strategy][phase])
+        if self.in_map:
+            self.in_map.update_map(self.list.db[self.list.selected_strategy][phase])
 
     def set_description(self, *args):
         """
@@ -186,5 +188,4 @@ class StrategiesFrame(ttk.Frame):
             return [self.map, self.in_map]
         else:
             return [self.map]
-
 

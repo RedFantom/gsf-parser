@@ -106,7 +106,7 @@ class Map(ttk.Frame):
         if map != "de" and map != "km" and map != "ls":
             raise ValueError("Not a valid map value: {0}".format(map))
         map = map_dictionary[type][map]
-        self._image = Image.open(os.path.join(get_assets_directory(), "{0}_{1}.jpg".format(type, map)))
+        self._image = Image.open(os.path.join(get_assets_directory(), "strategies", "{0}_{1}.jpg".format(type, map)))
         self._image = self._image.resize((self._canvaswidth, self._canvasheight), Image.ANTIALIAS)
         self._image = ImageTk.PhotoImage(self._image)
         self._background = self.canvas.create_image(0, 0, image=self._image, anchor=tk.NW, tag="background")

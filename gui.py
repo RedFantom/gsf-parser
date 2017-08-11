@@ -40,9 +40,6 @@ class MainWindow(ThemedTk):
 
     def __init__(self):
         # Initialize window
-        if not is_user_admin():
-            run_as_admin()
-            exit()
         ThemedTk.__init__(self)
         if variables.settings_obj["gui"]["debug"] is True:
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)

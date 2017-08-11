@@ -116,8 +116,8 @@ class FileFrame(ttk.Frame):
                                          "The CombatLogs folder found in the settings file is not valid. Please "
                                          "choose another folder.")
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings_obj.write_settings_dict({('parsing', 'cl_path'): folder})
-            variables.settings_obj.read_set()
+            variables.settings_obj.write_settings({'parsing': {'cl_path': folder}})
+            variables.settings_obj.read_settings()
         combatlogs_folder = variables.settings_obj["parsing"]["cl_path"]
         file_list = os.listdir(combatlogs_folder)
         if not self.ascending:
