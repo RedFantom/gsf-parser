@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter import messagebox, filedialog
 import _pickle as pickle
 from ttkwidgets.frames import ScrolledFrame
+# Own modules
 from parsing.strategies import StrategyDatabase
 from server.strategies_server import Server
 from tools.admin import run_as_admin, is_user_admin

@@ -6,7 +6,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-
+# Own modules
 from parsing.strategies import StrategyDatabase, Strategy
 from widgets.strategy_map import Map
 

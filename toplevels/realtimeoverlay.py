@@ -6,12 +6,11 @@
 
 # UI imports
 import tkinter as tk
-
 import tkinter.ttk as ttk
 import tkinter.messagebox
 import os
 import sys
-
+# Own modules
 from tools import utilities
 import variables
 

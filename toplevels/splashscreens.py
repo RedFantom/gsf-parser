@@ -11,6 +11,7 @@ import tkinter.messagebox
 import tkinter.filedialog
 import os
 from PIL import Image, ImageTk
+# Own modules
 import variables
 from tools import utilities
 

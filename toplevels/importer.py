@@ -4,12 +4,12 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import configparser
-from tools import settings
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+# Own modules
 import variables
-import os
+from tools import settings
 
 
 class SettingsImporter(tk.Toplevel):

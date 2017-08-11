@@ -7,6 +7,7 @@
 # For license see LICENSE
 import tkinter as tk
 import tkinter.ttk as ttk
+# Own modules
 from tools.utilities import get_pointer_position_win32, get_screen_resolution
 import variables
 

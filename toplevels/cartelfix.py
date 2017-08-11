@@ -3,13 +3,17 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
+
+# UI imports
 import tkinter as tk
+from tkinter.messagebox import showinfo
+# General imports
 from pynput import keyboard
 from PIL import Image, ImageTk
+import sys
+# Own modules
 import variables
 from tools import admin
-import sys
-from tkinter.messagebox import showinfo
 
 
 class CartelFix(tk.Toplevel):
