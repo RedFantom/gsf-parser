@@ -8,6 +8,9 @@ from tkinter import ttk
 
 
 class ServerToplevel(tk.Toplevel):
+    """
+    Toplevel to show log output for the master user of a server.
+    """
     def __init__(self, *args, **kwargs):
         tk.Toplevel.__init__(self, *args, **kwargs)
 

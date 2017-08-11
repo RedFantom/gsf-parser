@@ -16,7 +16,7 @@ import main
 from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
-from frames.strategiesframe import StrategyFrame
+from frames.strategiesframe import StrategiesFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
@@ -91,7 +91,7 @@ class MainWindow(ThemedTk):
         self.builds_wrapper_frame = ttk.Frame(self.notebook)
         self.builds_frame = buildframe.BuildsFrame(self.builds_wrapper_frame)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
-        self.strategies_frame = StrategyFrame(self.notebook)
+        self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.file_select_frame.grid_widgets()
