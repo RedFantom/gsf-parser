@@ -11,7 +11,7 @@ from parsing.strategies import *
 from toplevels.strategy_toplevels import AddStrategy, AddPhase
 
 
-class StrategyList(ttk.Frame):
+class StrategiesList(ttk.Frame):
     def __init__(self, *args, **kwargs):
         self._callback = kwargs.pop("callback", None)
         self._settings_callback = kwargs.pop("settings_callback", None)

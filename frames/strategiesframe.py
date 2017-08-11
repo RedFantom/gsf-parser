@@ -6,7 +6,7 @@
 import tkinter as tk
 from tkinter import ttk
 # Own modules
-from widgets.strategy_list import StrategyList
+from widgets.strategy_list import StrategiesList
 from widgets.strategy_map import Map
 from toplevels.strategy_settings_toplevel import SettingsToplevel
 from toplevels.strategy_toplevels import MapToplevel
@@ -22,7 +22,7 @@ class StrategiesFrame(ttk.Frame):
         # The two core widgets of this frame, with lots of callbacks to support the different functionality
         # Not all functionality is provided through callbacks, and providing any other widget than the StrategiesFrame
         # as a master widget is inadvisable. This is the result of bad coding practices.
-        self.list = StrategyList(self, callback=self._set_phase, settings_callback=self.open_settings)
+        self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
                        canvasheight=385, canvaswidth=385)
         self.large = None
