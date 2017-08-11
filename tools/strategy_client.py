@@ -4,31 +4,48 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import socket
-import os
 from tkinter import messagebox
 from threading import Thread
 from queue import Queue
 from ast import literal_eval
-
-from tools.utilities import get_temp_directory
+# Own modules
 from parsing.strategies import Strategy, Item, Phase
 
 
 class Client(Thread):
+    """
+    Client to connect to a server.strategy_server.Server to get a ClientHandler and support real-time editing and
+    sharing of Strategies in the StrategiesFrame.
+    """
     def __init__(self, address, port, name, role, list, logincallback, insertcallback, disconnectcallback):
+        """
+        :param address: address of the server
+        :param port: port of the server
+        :param name: username for the login
+        :param role: role for the login ("master" or "client")
+        :param list: StrategiesList object from the StrategiesFrame (for updating its database)
+        :param logincallback: Callback to call when login succeeds
+        :param insertcallback: Callback to call when a command is received
+        :param disconnectcallback: Callback to call when disconnect occurs
+        """
         Thread.__init__(self)
+        # Queue to send True to if exit is requested
         self.exit_queue = Queue()
         self.logged_in = False
         self.name = name
+        # Role may be Master or Client instead of master or client
         self.role = role.lower()
         self.list = list
         self.exit = False
         self.login_callback = logincallback
         self.insert_callback = insertcallback
         self.disconnect_callback = disconnectcallback
+        # Create a TCP socket with timeout 4 seconds and IPv4
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(4)
+        # message_queue for the receive system similar to server.strategy_clienthandler.ClientHandler.receive
         self.message_queue = Queue()
+        # Attempt to connect
         try:
             self.socket.connect((address, port))
         except socket.timeout:
@@ -40,12 +57,20 @@ class Client(Thread):
                                           "correct firewall or port forwarding settings.")
             self.login_failed()
             return
+        # If connected, then login
         self.login()
 
     def send(self, string):
+        """
+        Send a command to the ClientHandler and end with a b"+"
+        """
         self.socket.send((string + "+").encode())
 
     def login(self):
+        """
+        Send a login request to the ClientHandler and wait for acknowledgement, unless a timeout occurs, then call
+        disconnect procedures.
+        """
         self.send("login_{0}_{1}".format(self.role.lower(), self.name))
         try:
             message = self.socket.recv(16)
@@ -53,11 +78,7 @@ class Client(Thread):
             messagebox.showerror("Error", "The connection to the target server timed out.")
             self.login_failed()
             return
-        try:
-            message = message.decode()
-        except AttributeError as e:
-            print(e)
-            self.login_failed()
+        message = message.decode()
         if message == "login":
             self.logged_in = True
             self.login_callback(True)
@@ -65,14 +86,21 @@ class Client(Thread):
             self.login_failed()
 
     def send_strategy(self, strategy):
+        """
+        Send a Strategy object to the ClientHandler for sharing
+        """
         if self.role != "master":
             raise RuntimeError("Attempted to send a strategy to the server while role is not master")
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
+        # Serialize the Strategy object and then send
         self.send(self.build_strategy_string(strategy))
 
     @staticmethod
     def build_strategy_string(strategy):
+        """
+        Function to serialize a Strategy object into a string
+        """
         string = "strategy_" + strategy.name + "~" + strategy.description + "~" + str(strategy.map) + "~"
         for phase_name, phase in strategy:
             string += phase.name + "¤" + phase.description + "¤" + str(phase.map) + "¤"
@@ -81,7 +109,11 @@ class Client(Thread):
             string += "¤"
         return string
 
-    def read_strategy_string(self, string):
+    @staticmethod
+    def read_strategy_string(string):
+        """
+        Function to rebuild Strategy object from string
+        """
         strategy_elements = string.split("~")
         strategy_name = strategy_elements[0]
         strategy_description = strategy_elements[1]
@@ -113,21 +145,30 @@ class Client(Thread):
         return strategy
 
     def update(self):
+        """
+        Function called by the Thread loop to perform basic functionality
+        """
+        # If called when not logged_in, do not do anything
         if not self.logged_in:
             return
+        # Check for new messages
         self.receive()
         if self.message_queue.empty():
             return
+        # Get a message
         message = self.message_queue.get()
         print("Client received data: ", message)
-        try:
-            dmessage = message.decode()
-            elements = dmessage.split("_")
-        except UnicodeDecodeError:
-            elements = ["strategy", message[9:]]
+        # Decode the message
+        dmessage = message.decode()
+        elements = dmessage.split("_")
+        # Call function to process the message
         self.process_command(elements)
 
     def process_command(self, elements):
+        """
+        Process a command received from the ClientHandler. Only performs updates to the database, visual updates to the
+        Map are performed elsewhere.
+        """
         command = elements[0]
         if command == "add":
             assert len(elements) == 6
@@ -149,10 +190,12 @@ class Client(Thread):
             self.list.update_tree()
         elif command == "client":
             self.insert_callback("client_login", elements[2])
-        else:
-            self.insert_callback(elements)
+        return
 
     def run(self):
+        """
+        Loop of the Thread to call self.update() and self.process_command() by extent.
+        """
         while True:
             if not self.exit_queue.empty():
                 if self.exit_queue.get():
@@ -162,18 +205,34 @@ class Client(Thread):
             self.update()
 
     def login_failed(self):
+        """
+        Callback for when logging into the server fails, for whatever reason.
+        """
         self.login_callback(False)
         self.socket.close()
 
     def close(self):
+        """
+        Function to close the Client and all its functionality to restore the situation before the Client was opened.
+        """
+        # The Thread may have already been stopped, but its good to make sure
         self.exit_queue.put(True)
         try:
+            # Attempt to send a logout
             self.socket.send(b"logout")
         except OSError:
+            # The error occurs when there's something wrong with the socket, in which case the socket was closed
+            # on the server-side, in which case the event should be properly handled elsewhere (self.send designated for
+            # just that).
             pass
         self.socket.close()
         self.logged_in = False
         self.disconnect_callback()
+
+    """
+    Functions to process the commands received from the server and update the database accordingly, if possible.
+    Also, these functions call insert_callback for visual processing of the commands.
+    """
 
     def add_item_server(self, strategy, phase, text, font, color):
         print("Add item called with: ", strategy, phase, text, font, color)
@@ -195,6 +254,10 @@ class Client(Thread):
         del self.list.db[strategy][phase][text]
         self.insert_callback("del_item", (strategy, phase, text))
 
+    """
+    Functions to send commands to the server upon events happening on the Map.
+    """
+
     def add_item(self, strategy, phase, text, font, color):
         print("Sending add item command")
         self.send("add_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, font, color))
@@ -207,11 +270,11 @@ class Client(Thread):
         print("Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
-    @staticmethod
-    def get_temp_file():
-        return os.path.join(get_temp_directory(), "client_strategy.tmp")
-
     def check_strategy_phase(self, strategy, phase):
+        """
+        Function to check if a particular strategy and phase are available in the database and give the user feedback
+        if not. Returns True if the code which called the function is clear to move ahead with a database update.
+        """
         if strategy not in self.list.db:
             messagebox.showinfo("Info", "Operation on a Strategy received that was not in the database. Please wait "
                                         "for the database update.")
@@ -223,6 +286,9 @@ class Client(Thread):
         return True
 
     def receive(self):
+        """
+        Function to receive and separate messages received from the ClientHandler
+        """
         if not self.logged_in:
             return
         self.socket.setblocking(0)
