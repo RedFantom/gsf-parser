@@ -157,8 +157,6 @@ class ClientHandler(object):
             to_send = string.encode()
         else:
             raise ValueError("Received invalid type as command: {0}, {1}".format(type(command), command))
-        if to_send.count(b"_") != 1:
-            raise ValueError("Invalid number of b'_' found in data to send: {0}".format(command))
         try:
             self.socket.send(to_send)
         except ConnectionError:
@@ -180,7 +178,10 @@ class ClientHandler(object):
 
         Copied from server.strategy_server.write_log(line) but with different file_name
         """
-        file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address)), "a"
+        file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address))
+        if not path.exists(file_name):
+            with open(file_name, "w") as fo:
+                fo.write("")
         # First read the current contents of the file
         with open(file_name, "r") as fi:
             lines = fi.readlines()

@@ -179,14 +179,15 @@ class Server(threading.Thread):
         # The host should be an IP-address, thus four numbers separated by a .
         # IPv6 is not supported!
         elements = host.split(".")
-        if not len(elements) == 4:
+        if not len(elements) == 4 and host != "":
             return False
         # All of the four elements should be translatable to an int number
-        for item in elements:
-            try:
-                int(item)
-            except TypeError:
-                return False
+        if host != "":
+            for item in elements:
+                try:
+                    int(item)
+                except (TypeError, ValueError):
+                    return False
         # The maximum port number allowed is 9998
         if not port < 9999:
             return False
@@ -198,6 +199,9 @@ class Server(threading.Thread):
         Write a line to the log file, but also check if the log file is not too bit and truncate if required
         """
         file_name = os.path.join(get_temp_directory(), "strategy_server.log")
+        if not os.path.exists(file_name):
+            with open(file_name, "w") as fo:
+                fo.write("")
         # First read the current contents of the file
         with open(file_name, "r") as fi:
             lines = fi.readlines()

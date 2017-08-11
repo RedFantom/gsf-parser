@@ -165,6 +165,7 @@ class MapToplevel(tk.Toplevel):
         :param frame: StrategiesFrame instance
         """
         self.frame = kwargs.pop("frame", None)
+        self.list = self.frame.list
         if not self.frame:
             raise ValueError("No parent frame passed as argument")
         tk.Toplevel.__init__(self, *args, **kwargs)
@@ -229,6 +230,8 @@ class MapToplevel(tk.Toplevel):
         readonly.
         """
         self.frame.map = self.frame.in_map
+        if not self.frame.map:
+            return
         if not self.frame.map.client or self.frame.map.client.role != "client":
             self.frame.map.set_readonly(False)
         self.frame.in_map = None

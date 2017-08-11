@@ -148,7 +148,9 @@ class Map(ttk.Frame):
             self._delitem_callback(item, rectangle, text)
         if self.client and self.client.logged_in and self.master.list.selected_phase:
             self.client.del_item(self.master.list.selected_strategy, self.master.list.selected_phase, text)
-        del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+        if text in self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase]:
+            del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+            self.master.list.db.save_database()
         self.master.list.db.save_database()
         self.canvas.delete(item, rectangle)
 
@@ -220,6 +222,7 @@ class AddItem(tk.Toplevel):
     def add_item(self):
         if "_" in self.text.get() or "+" in self.text.get():
             messagebox.showerror("Error", "The characters _ and + are not allowed in item texts.")
+            return
         if callable(self.callback):
             if not self.font_select_frame._family:
                 print("No font family selected.")

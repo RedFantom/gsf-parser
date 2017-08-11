@@ -13,6 +13,7 @@ from parsing.strategies import StrategyDatabase
 from server.strategy_server import Server
 from tools.admin import run_as_admin, is_user_admin
 from tools.strategy_client import Client
+import variables
 
 
 class SettingsToplevel(tk.Toplevel):
@@ -28,7 +29,7 @@ class SettingsToplevel(tk.Toplevel):
         self._disconnectcallback = kwargs.pop("disconnect_callback", None)
         self.frame = kwargs.pop("master")
         self.list = self.frame.list
-        self.new_strategy = self.frame.new_strategy
+        self.new_strategy = self.frame.list.new_strategy
         tk.Toplevel.__init__(self, *args, **kwargs)
         self.title("GSF Strategy Planner: Settings")
         self.menu = tk.Menu(self)
@@ -103,10 +104,15 @@ class SettingsToplevel(tk.Toplevel):
         requires privileges to create a port in the Windows Firewall).
         """
         if not is_user_admin():
+            self.destroy()
+            variables.main_window.destroy()
             run_as_admin()
             exit()
+        try:
+            self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
+        except RuntimeError:
+            messagebox.showerror("Starting the server")
         self.protocol("WM_DELETE_WINDOW", self.destroy_redirect)
-        self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
         self.server.start()
         self.server_button.config(text="Stop server", command=self.stop_server)
         self.client_address_entry.delete(0, tk.END)
@@ -226,7 +232,7 @@ class SettingsToplevel(tk.Toplevel):
         """
         Save the strategy to a pickle file so it can be imported in another copy of the GSF Parser
         """
-        file_name = filedialog.asksaveasfilename(filetypes=[".str", ".bin"], defaultextension=".str",
+        file_name = filedialog.asksaveasfilename(filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
                                                  title="GSF Strategy Manager: Save a strategy")
         if file_name == "" or file_name is None:
             return

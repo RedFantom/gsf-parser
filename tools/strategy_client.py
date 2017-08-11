@@ -263,7 +263,6 @@ class Client(Thread):
         self.send("add_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, font, color))
 
     def move_item(self, strategy, phase, text, x, y):
-        print("Sending move item command")
         self.send("move_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, x, y))
 
     def del_item(self, strategy, phase, text):
