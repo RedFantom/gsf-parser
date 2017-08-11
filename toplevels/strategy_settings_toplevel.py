@@ -71,6 +71,13 @@ class SettingsToplevel(tk.Toplevel):
         self.client_port_entry = ttk.Entry(self.client_section, width=6)
         self.client_button = ttk.Button(self.client_section, text="Connect to server", width=15,
                                         command=self.connect_client)
+
+        # Server master widgets
+        self.server_master_frame = ttk.Frame(self.interior)
+        self.server_master_header = ttk.Label(self.server_master_frame, text="Server Master settings",
+                                              font=("default", 11))
+        self.server_master_client_listbox = tk.Listbox(self.server_master_frame, height=5, font=("default", 10))
+
         self.client = None
         self.server = None
         self.resizable(False, False)
@@ -127,7 +134,10 @@ class SettingsToplevel(tk.Toplevel):
         self.server.start()
         self.server_button.config(text="Stop server", command=self.stop_server)
         self.client_address_entry.delete(0, tk.END)
-        self.client_address_entry.insert(tk.END, self.server_address_entry.get())
+        if not self.server_address_entry.get() == "":
+            self.client_address_entry.insert(tk.END, self.server_address_entry.get())
+        else:
+            self.client_address_entry.insert(tk.END, "127.0.0.1")
         self.client_port_entry.delete(0, tk.END)
         self.client_port_entry.insert(tk.END, self.server_port_entry.get())
         self.client_role.set("Master")

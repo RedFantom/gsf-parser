@@ -130,6 +130,14 @@ class ClientHandler(object):
             # Put the request into the server_queue for distribution to other Clients
             self.server_queue.put((message, self))
 
+        elif command == "readonly":
+            # The master Client wants to allow or disallow a client to use the Map
+
+            # Elements == ["readonly", name, allowed_bool]
+            assert len(elements) == 3
+            # Put the request into the server_queue for distribution to other Clients
+            self.server_queue.put((message, self))
+
         elif command == "logout":
             # The Client wants to logout
 

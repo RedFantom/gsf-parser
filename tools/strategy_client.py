@@ -190,6 +190,8 @@ class Client(Thread):
             self.list.update_tree()
         elif command == "client":
             self.insert_callback("client_login", elements[2])
+        elif command == "readonly":
+            self.insert_callback("readonly", elements)
         return
 
     def run(self):

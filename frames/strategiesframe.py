@@ -5,6 +5,7 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
+from ast import literal_eval
 # Own modules
 from widgets.strategy_list import StrategiesList
 from widgets.strategy_map import Map
@@ -138,6 +139,12 @@ class StrategiesFrame(ttk.Frame):
         if command == "client_login":
             for strategy in self.list.db.data.keys():
                 self.client.send_strategy(self.list.db.data[strategy])
+        elif command == "readonly":
+            target, allowed = args
+            if target != self.client.name:
+                return
+            for map in self.maps:
+                map.set_readonly(literal_eval(allowed))
 
         # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
         # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
