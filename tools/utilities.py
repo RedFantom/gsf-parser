@@ -17,6 +17,18 @@ import mss
 
 debug = False
 
+map_dictionary = {
+    "tdm": {
+        "km": "kuatmesas",
+        "ls": "lostshipyards"
+    },
+    "dom": {
+        "km": "kuatmesas",
+        "ls": "lostshipyards",
+        "de": "denonexosphere"
+    }
+}
+
 
 def get_pointer_position_cv2(screen):
     """

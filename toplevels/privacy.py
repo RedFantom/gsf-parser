@@ -6,9 +6,9 @@
 
 # UI imports
 import tkinter as tk
-
 import tkinter.ttk as ttk
 import tkinter.messagebox
+# Own modules
 import variables
 
 

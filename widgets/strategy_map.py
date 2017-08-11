@@ -6,12 +6,13 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkfont
-from strategies.tools import *
-from strategies.strategies import *
-import os
+from ast import literal_eval
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from ttkwidgets.color import askcolor
 from ttkwidgets.font import FontSelectFrame
+from parsing.strategies import *
+from tools.utilities import get_assets_directory, map_dictionary
 
 
 class Map(ttk.Frame):
@@ -51,6 +52,7 @@ class Map(ttk.Frame):
         self.frame_menu.add_command(label="New", command=self.new_item)
         # Call grid_widgets last
         self.grid_widgets()
+        self.client = None
 
     def frame_right_press(self, event):
         self.frame_menu.post(event.x_root, event.y_root)
@@ -75,7 +77,7 @@ class Map(ttk.Frame):
     def left_motion(self, event):
         self.current = None
         item = self.canvas.find_withtag(tk.CURRENT)[0]
-        rectangle = self.items[item]
+        rectangle = self.items[item][0]
         self.config(cursor="exchange")
         self.canvas.itemconfigure(item, fill="blue")
         x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
@@ -85,8 +87,10 @@ class Map(ttk.Frame):
         y = 0 if y < 0 else y
         self.canvas.coords(item, x, y)
         self.canvas.coords(rectangle, self.canvas.bbox(item))
-        self._moveitem_callback(self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768),
-                                int(y / self._canvasheight * 768))
+        args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768), int(y / self._canvasheight * 768))
+        self._moveitem_callback(*args)
+        if self.client and self.client.logged_in:
+            self.client.move_item(self.master.list.selected_strategy, self.master.list.selected_phase, *args)
 
     def right_press(self, event):
         if not self.current:
@@ -102,26 +106,32 @@ class Map(ttk.Frame):
         if map != "de" and map != "km" and map != "ls":
             raise ValueError("Not a valid map value: {0}".format(map))
         map = map_dictionary[type][map]
-        self._image = Image.open(os.path.join(get_assets_directory(), "{0}_{1}.jpg".format(type, map)))
+        self._image = Image.open(os.path.join(get_assets_directory(), "strategies", "{0}_{1}.jpg".format(type, map)))
         self._image = self._image.resize((self._canvaswidth, self._canvasheight), Image.ANTIALIAS)
         self._image = ImageTk.PhotoImage(self._image)
         self._background = self.canvas.create_image(0, 0, image=self._image, anchor=tk.NW, tag="background")
         self.canvas.tag_lower("background")
 
     def add_item(self, text, font=("default", 12, "bold"), color="yellow"):
-        print("Arguments received:\nText: {0}\nFont: {1}\nColor: {2}".format(text, font, color))
         if len(font) == 2 and type(font) == tuple and type(font[1]) == tkfont.Font:
             font = font[0]
+        if isinstance(font, str):
+            font = literal_eval(font)
         item = self.canvas.create_text(0, 0, anchor=tk.NW, text=text, font=font, fill="black", tag="item")
         rectangle = self.canvas.create_rectangle(self.canvas.bbox(item), fill=color)
         self.canvas.tag_lower(rectangle, item)
-        self.items[item] = rectangle
+        self.items[item] = (rectangle, item)
+        self.items[text] = (rectangle, item)
         return item, rectangle, text, font, color
 
     def add_item_callback(self, *args, **kwargs):
         item, rectangle, text, font, color = self.add_item(*args, **kwargs)
         if callable(self._additem_callback):
             self._additem_callback(item, self.canvas.coords(rectangle), text, font, color)
+        if self.client and self.client.logged_in:
+            self.client.add_item(
+                *(self.master.list.selected_strategy, self.master.list.selected_phase, text, font, color)
+            )
 
     def new_item(self):
         window = AddItem(callback=self.add_item_callback)
@@ -132,9 +142,14 @@ class Map(ttk.Frame):
 
     def del_item(self):
         item = self.current
-        rectangle = self.items[item]
+        rectangle = self.items[item][0]
+        text = self.canvas.itemcget(item, "text")
         if callable(self._delitem_callback):
-            self._delitem_callback(item, rectangle, self.canvas.itemcget(item, "text"))
+            self._delitem_callback(item, rectangle, text)
+        if self.client and self.client.logged_in and self.master.list.selected_phase:
+            self.client.del_item(self.master.list.selected_strategy, self.master.list.selected_phase, text)
+        del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+        self.master.list.db.save_database()
         self.canvas.delete(item, rectangle)
 
     def update_map(self, phase):
@@ -203,6 +218,8 @@ class AddItem(tk.Toplevel):
         self.cancel_button.grid(row=9, column=0, sticky="nswe", padx=5, pady=5)
 
     def add_item(self):
+        if "_" in self.text.get() or "+" in self.text.get():
+            messagebox.showerror("Error", "The characters _ and + are not allowed in item texts.")
         if callable(self.callback):
             if not self.font_select_frame._family:
                 print("No font family selected.")

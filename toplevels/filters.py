@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import os
+# Own modules
 import widgets
 import variables
 import parsing.parse as parse

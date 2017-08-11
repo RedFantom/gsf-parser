@@ -5,14 +5,18 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
+
+# UI Imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import variables
-import tkinter.colorchooser
-import collections
 import tkinter.filedialog
-from tools import utilities
+import tkinter.colorchooser
+# General imports
+import collections
 import os
+# Own modules
+from tools import utilities
+import variables
 
 
 class EventColors(tk.Toplevel):

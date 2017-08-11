@@ -7,8 +7,9 @@
 # UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-from parsing.lineops import print_event
 from datetime import datetime
+# Own modules
+from parsing.lineops import print_event
 
 
 class EventsView(tk.Toplevel):
