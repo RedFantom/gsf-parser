@@ -43,6 +43,20 @@ class ClientHandler(object):
             self.write_log("ClientHandler {0} client_queue is not empty".format(self.name))
             server_command = self.client_queue.get()
             self.write_log("ClientHandler received server_command {0}".format(server_command))
+
+            # Code to kick and ban is executed before sending any other commands to execute ASAP
+            # The code to prevent reconnect is built into the Server
+            if server_command == "kick" or server_command == "ban":
+                if not self.send(server_command):
+                    return
+                self.close()
+                return
+
+            # Code to change the master role is handled in the ClientHandler too to change the master role
+            if server_command == "master":
+                self.role = "master"
+                # The message is sent as normal in the next if-statement
+
             # If the sending of the command fails, end this update()
             # It may have been a one-time error where the pipe was broke, in which case there is no damage by not
             # continuing this cycle. However, the socket may be closed, in which case the close() function is already
@@ -138,12 +152,46 @@ class ClientHandler(object):
             # Put the request into the server_queue for distribution to other Clients
             self.server_queue.put((message, self))
 
+        elif command == "kick":
+            # The master client wants to kick a Client
+
+            # Elements == ["kick", name]
+            assert len(elements) == 2
+            self.server_queue.put((message, self))
+
+        elif command == "allowshare":
+            # The master client allows or disallows a Client from sharing Strategies
+
+            # Elements == ["allowshare", name, allow_bool]
+            assert len(elements) == 3
+            self.server_queue.put((message, self))
+
+        elif command == "ban":
+            # The master client wants to ban a Client from reconnecting
+
+            # Elements == ["ban", name]
+            assert len(elements) == 2
+            self.server_queue.put((message, self))
+
         elif command == "logout":
             # The Client wants to logout
 
             # Elements == ["logout"]
             assert len(elements) == 1
             self.close()
+
+        elif command == "master":
+            # The master client wants to pass his master privileges to someone else
+
+            # Elements == ["master", name]
+            assert len(elements) == 2
+            # Only the master is allowed to assign a new master
+            if not self.role == "master":
+                self.close()
+                return
+            command, name = command.split("_")
+            self.server_queue.put((command, name, self))
+
         else:
             self.write_log("ClientHandler received unknown command: {0}".format(message))
         return

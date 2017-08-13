@@ -51,6 +51,8 @@ class Server(threading.Thread):
         self.exit_queue = Queue()
         # The server_queue is where the commands from the ClientHandlers are put in.
         self.server_queue = Queue()
+        # The banned list contains IP addresses that will not be accepted
+        self.banned = []
 
     def run(self):
         """
@@ -72,8 +74,14 @@ class Server(threading.Thread):
             if self.socket in select([self.socket], [], [], 0)[0]:
                 Server.write_log("server ready to accept")
                 connection, address = self.socket.accept()
-                # The ClientHandler is created and then added to the list of active ClientHandlers
-                self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
+                # Check if the IP is banned
+                if address not in self.banned:
+                    # The ClientHandler is created and then added to the list of active ClientHandlers
+                    self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
+                else:
+                    # If the IP is banned, then a message is sent
+                    connection.send(b"banned")
+                    connection.close()
             # Check if the Server should exit its loop for the second time in this loop
             if not self.exit_queue.empty() and self.exit_queue.get():
                 break
@@ -113,11 +121,10 @@ class Server(threading.Thread):
         if message[0] == "master_login":
             # A master_login event is created by a ClientHandler whose Client role is master
             Server.write_log("Server received master_login")
-            # If a master was already set, then a RuntimeError is raised
-            # TODO: Improve this code to prevent the Server from crashing if a second user attempts logging in as master
+            # If a master was already set, then the user is kicked for trying this
             if self.master_handler:
-                raise RuntimeError("master_login but master_handler already set to: {0}".
-                                   format(self.master_handler.name))
+                message[1].client_queue.put("kick")
+                return
             # The master_handler is set, and the ClientHandler who logged in is added to the client_handlers list
             self.master_handler = message[1]
             self.client_handlers.append(self.master_handler)
@@ -152,6 +159,60 @@ class Server(threading.Thread):
             # The logged-out ClientHandler is removed from the list of active ClientHandlers.
             self.client_handlers.remove(message[1])
 
+        elif message[0].split("_") == "kick":
+            command, player = message[0].split("_")
+            Server.write_log("Server received a command to kick a player {0}".format(player))
+            if message[1] is not self.master_handler:
+                # If anyone else but the master_handler tries to kick, then the player requesting the kick is kicked
+                # as that behaviour should not be possible without modified code.
+                Server.write_log("Only the master_handler is allowed to kick a player, but received the kick command "
+                                 "from the ClientHandler for {0}. Kicking this person instead.".format(message[1].name))
+                player = message[1].name
+            sent = False
+            for handler in self.client_handlers:
+                if player == handler.name:
+                    handler.client_queue.put("kick")
+                    sent = True
+            if not sent:
+                Server.write_log("Server could not find the player name. Kicking failed.")
+
+        elif message[0].split("_") == "ban":
+            command, player = message[0].split("_")
+            Server.write_log("Server received a command to ban a player {0}".format(player))
+            if message[1] is not self.master_handler:
+                # If anyone but the master_handler tries to ban, then ban the requesting client instead
+                player = message[1].name
+            sent = False
+            # The loop means that anyone with this name is banned.
+            for handler in self.client_handlers:
+                if player == handler.name:
+                    # Even if banning fails, the IP should be added to the list of banned IPs
+                    self.banned.append(handler.address)
+                    handler.client_queue.put("ban")
+                    sent = True
+            if not sent:
+                Server.write_log("Server could not find player name. Banning failed.")
+
+        elif message[0] == "master":
+            Server.write_log("Master handler change requested.")
+            if not message[2] is self.master_handler:
+                Server.write_log("Someone other than the master_handler attempted to set a new master: {0}. "
+                                 "Kicking this person instead.".format(message[2].name))
+                self.server_queue.put(("kick_{0}".format(message[2].name), self.master_handler))
+            else:
+                command, name, handler_object = message
+                # Only the first match gets the master rights
+                handler = None
+                for client_handler in self.client_handlers:
+                    if client_handler.name == name:
+                        handler = client_handler
+                        break
+                if not handler:
+                    Server.write_log("Server failed to find a Client with name {0}".format(name))
+                    handler = self.master_handler
+                self.master_handler = handler
+                self.master_handler.client_queue.put("master")
+
         else:
             # The command is not a login or a logout, and thus a Map operation
             # The command is distributed to all active ClientHandlers, except to the master_handler, as the
@@ -159,7 +220,6 @@ class Server(threading.Thread):
             Server.write_log("Sending data to other client handlers")
             for client_handler in self.client_handlers:
                 # The client_handler is checked against the source of the operation
-                # TODO: Allow the master_handler to set what client_handlers are allowed to edit the map
                 if client_handler is message[1]:
                     continue
                 Server.write_log("Sending data to ClientHandler {0}".format(client_handler.name))

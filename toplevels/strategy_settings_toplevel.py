@@ -170,12 +170,17 @@ class SettingsToplevel(tk.Toplevel):
                              self.frame.insert_callback, self.disconnect_client)
         if self.client.role.lower() == "client":
             print("Setting map to be readonly")
-            self.frame.map.set_readonly(True)
-            if self.frame.in_map:
-                self.frame.in_map.set_readonly(True)
+            for map in self.frame.maps:
+                map.set_readonly(True)
         else:
             print("Role is not 'client', but {0}, so not setting readonly".format(self.client.role.lower()))
         return
+
+    def update_share(self, allowed):
+        pass
+
+    def update_master(self):
+        pass
 
     def login_callback(self, success):
         """

@@ -192,6 +192,16 @@ class Client(Thread):
             self.insert_callback("client_login", elements[2])
         elif command == "readonly":
             self.insert_callback("readonly", elements)
+        elif command == "ban":
+            self.close()
+            self.insert_callback("banned", None)
+        elif command == "kick":
+            self.close()
+            self.insert_callback("kicked", None)
+        elif command == "master":
+            self.insert_callback("master", None)
+        elif command == "allowshare":
+            self.insert_callback("allowshare", elements)
         return
 
     def run(self):
@@ -271,20 +281,14 @@ class Client(Thread):
         print("Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
+    # TODO: Implement description updating
+
     def check_strategy_phase(self, strategy, phase):
         """
         Function to check if a particular strategy and phase are available in the database and give the user feedback
         if not. Returns True if the code which called the function is clear to move ahead with a database update.
         """
-        if strategy not in self.list.db:
-            messagebox.showinfo("Info", "Operation on a Strategy received that was not in the database. Please wait "
-                                        "for the database update.")
-            return False
-        if phase not in self.list.db[strategy]:
-            messagebox.showerror("Info", "Operation on a Phase received that was not in the database. Please wait for "
-                                         "the database update.")
-            return False
-        return True
+        return strategy in self.list.db and phase in self.list.db[strategy]
 
     def receive(self):
         """

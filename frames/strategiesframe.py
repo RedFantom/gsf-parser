@@ -5,6 +5,7 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from ast import literal_eval
 # Own modules
 from widgets.strategy_list import StrategiesList
@@ -139,18 +140,46 @@ class StrategiesFrame(ttk.Frame):
         if command == "client_login":
             for strategy in self.list.db.data.keys():
                 self.client.send_strategy(self.list.db.data[strategy])
+        # These are the commands with which the master can control the Server and its Clients
         elif command == "readonly":
             target, allowed = args
             if target != self.client.name:
                 return
+            allowed = literal_eval(allowed)
             for map in self.maps:
-                map.set_readonly(literal_eval(allowed))
+                map.set_readonly(allowed)
+            if allowed:
+                messagebox.showinfo("Info", "You are now allowed to edit the maps.")
+            else:
+                messagebox.showinfo("Info", "You are no longer allowed to edit the maps.")
+        elif command == "kicked":
+            messagebox.showerror("Info", "You were kicked from the Server.")
+            self.settings.disconnect_client()
+            return
+        elif command == "banned":
+            messagebox.showerror("Info", "You were banned from the Server.")
+            self.settings.disconnect_client()
+            return
+        elif command == "allowshare":
+            allowed = literal_eval(args)
+            if allowed:
+                messagebox.showinfo("Info", "You are now allowed by the Master of the Server to share your Strategies.")
+                self.settings.update_share(allowed)
+            else:
+                messagebox.showinfo("Info", "You are now no longer allowed by the Master of the Server to share your "
+                                            "Strategies.")
+                self.settings.update_share(allowed)
+            return
+        elif command == "master":
+            messagebox.showinfo("Info", "You are now the Master of the Server.")
+            self.settings.update_master()
+            return
 
         # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
         # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
         # However, the saving of the changes happen before this code is reached, and thus if the user moves to the other
         # Strategy and Phase that the operations were performed on, the user will still see the changed elements
-        if self.list.selected_strategy != args[0] or self.list.selected_phase != args[1]:
+        elif self.list.selected_strategy != args[0] or self.list.selected_phase != args[1]:
             return
         # Perform the operations on the Map instances to make the visual changes
         elif command == "add_item":
