@@ -281,6 +281,34 @@ class Client(Thread):
         print("Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
+    def new_master(self, new_master_name):
+        self.send("master_{0}".format(new_master_name))
+        self.insert_callback(("readonly", ["readonly", "True"]))
+        self.insert_callback(("allowshare", ["allowshare", "False"]))
+        self.role = "client"
+
+    def kick_player(self, player_name):
+        if not self.role == "master":
+            raise ValueError("Attempted to kick a player while not master!")
+        self.send("kick_{0}".format(player_name))
+        self.insert_callback("logout", ["logout", player_name])
+
+    def ban_player(self, player_name):
+        if not self.role == "master":
+            raise ValueError("Attempted to ban a player while not master!")
+        self.send("ban_{0}".format(player_name))
+        self.insert_callback("logout", ["logout", player_name])
+
+    def allow_share_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change allow_share state while not master.")
+        self.send("allowshare_{}_{}".format(player_name, new_state))
+
+    def readonly_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change readonly state while not master.")
+        self.send("readonly_{}_{}".format(player_name, new_state))
+
     # TODO: Implement description updating
 
     def check_strategy_phase(self, strategy, phase):
