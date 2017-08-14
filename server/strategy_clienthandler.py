@@ -192,6 +192,13 @@ class ClientHandler(object):
             command, name = command.split("_")
             self.server_queue.put((command, name, self))
 
+        elif command == "description":
+            # One of the Clients with sharing rights wants to update a description
+
+            # Elements == ["description", strategy_name, phase_name, new_description] OR
+            # Elements == ["description", strategy_name, new_description]
+            self.server_queue.put((message, self))
+
         else:
             self.write_log("ClientHandler received unknown command: {0}".format(message))
         return
