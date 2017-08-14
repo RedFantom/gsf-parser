@@ -13,10 +13,11 @@ from parsing.strategies import StrategyDatabase
 from server.strategy_server import Server
 from tools.admin import run_as_admin, is_user_admin
 from tools.strategy_client import Client
+from ttkwidgets import SnapToplevel
 import variables
 
 
-class SettingsToplevel(tk.Toplevel):
+class SettingsToplevel(SnapToplevel):
     """
     Toplevel that contains options to export Strategies, whole StrategyDatabases, or start up a server/connect to one
     for real-time Strategy sharing.
@@ -30,7 +31,14 @@ class SettingsToplevel(tk.Toplevel):
         self.frame = kwargs.pop("master")
         self.list = self.frame.list
         self.new_strategy = self.frame.list.new_strategy
-        tk.Toplevel.__init__(self, *args, **kwargs)
+        self._good_geometry = None
+
+        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=False, wait=0, height=405,
+                              width=315)
+        self._good_geometry = self.wm_geometry()
+
+        self.update()
+        self.wm_geometry("{}x{}".format(315, 425))
         self.title("GSF Strategy Planner: Settings")
         self.menu = tk.Menu(self)
         # File menu
@@ -48,10 +56,9 @@ class SettingsToplevel(tk.Toplevel):
         self.menu.add_cascade(label="Edit", menu=self.editmenu)
         self.config(menu=self.menu)
 
-        self.scrolled_frame = ScrolledFrame(self)
-        self.interior = self.scrolled_frame.interior
+        self.server_client_frame = ttk.Frame(self)
         # Server settings section
-        self.server_section = ttk.Frame(self.interior)
+        self.server_section = ttk.Frame(self.server_client_frame)
         self.server_header = ttk.Label(self.server_section, text="Server settings", justify=tk.LEFT,
                                        font=("default", 11))
         self.server_address_entry = ttk.Entry(self.server_section, width=15)
@@ -59,7 +66,7 @@ class SettingsToplevel(tk.Toplevel):
         self.server_button = ttk.Button(self.server_section, text="Start server", command=self.start_server, width=15)
 
         # Client settings section
-        self.client_section = ttk.Frame(self.interior)
+        self.client_section = ttk.Frame(self.server_client_frame)
         self.client_name_entry = ttk.Entry(self.client_section, width=15)
         self.client_role = tk.StringVar()
         self.client_role_dropdown = ttk.OptionMenu(self.client_section, self.client_role,
@@ -73,21 +80,21 @@ class SettingsToplevel(tk.Toplevel):
                                         command=self.connect_client)
 
         # Server master widgets
-        self.server_master_frame = ttk.Frame(self.interior)
+        self.server_master_frame = ttk.Frame(self.server_client_frame)
         self.server_master_header = ttk.Label(self.server_master_frame, text="Server Master settings",
                                               font=("default", 11))
         self.server_master_client_listbox = tk.Listbox(self.server_master_frame, height=5, font=("default", 10))
 
         self.client = None
         self.server = None
-        self.resizable(False, False)
+        # self.resizable(False, False)
         self.grid_widgets()
 
     def grid_widgets(self):
         """
         The usual function to put all the widgets in the correct place
         """
-        self.scrolled_frame.grid()
+        self.server_client_frame.grid(row=1, column=1, sticky="nswe")
         self.server_section.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.server_header.grid(row=1, column=1, sticky="nw", columnspan=3, padx=5, pady=(0, 5))
         self.server_address_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
@@ -114,7 +121,10 @@ class SettingsToplevel(tk.Toplevel):
         if not is_user_admin():
             self.destroy()
             variables.main_window.destroy()
-            run_as_admin()
+            try:
+                run_as_admin()
+            except:
+                pass
             exit()
         try:
             self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
@@ -143,6 +153,13 @@ class SettingsToplevel(tk.Toplevel):
         self.client_role.set("Master")
         self.server_port_entry.config(state=tk.DISABLED)
         self.server_address_entry.config(state=tk.DISABLED)
+
+    def deminimize(self, event):
+        notebook_selected = variables.main_window.notebook.index(tk.CURRENT)
+        if notebook_selected != 5:
+            self.minimize(event)
+            return
+        SnapToplevel.deminimize(self, event)
 
     def stop_server(self):
         """
