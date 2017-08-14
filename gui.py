@@ -20,7 +20,6 @@ from frames.strategiesframe import StrategiesFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
-from tools.admin import is_user_admin, run_as_admin
 from datetime import datetime
 from sys import exit
 from github import Github, GithubException
