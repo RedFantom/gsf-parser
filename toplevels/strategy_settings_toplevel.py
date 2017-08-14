@@ -38,7 +38,6 @@ class SettingsToplevel(SnapToplevel):
         self._good_geometry = self.wm_geometry()
 
         self.update()
-        self.wm_geometry("{}x{}".format(315, 425))
         self.title("GSF Strategy Planner: Settings")
         self.menu = tk.Menu(self)
         # File menu
@@ -56,7 +55,8 @@ class SettingsToplevel(SnapToplevel):
         self.menu.add_cascade(label="Edit", menu=self.editmenu)
         self.config(menu=self.menu)
 
-        self.server_client_frame = ttk.Frame(self)
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=280, canvasheight=405)
+        self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
         self.server_header = ttk.Label(self.server_section, text="Server settings", justify=tk.LEFT,
@@ -80,10 +80,19 @@ class SettingsToplevel(SnapToplevel):
                                         command=self.connect_client)
 
         # Server master widgets
-        self.server_master_frame = ttk.Frame(self.server_client_frame)
+        self.server_master_frame = ScrolledFrame(self.server_client_frame)
         self.server_master_header = ttk.Label(self.server_master_frame, text="Server Master settings",
                                               font=("default", 11))
-        self.server_master_client_listbox = tk.Listbox(self.server_master_frame, height=5, font=("default", 10))
+        self.server_master_clients_treeview = ttk.Treeview(self.server_master_frame, columns=("#0", "allowshare",
+                                                                                              "readonly"),
+                                                           height=4)
+        self.server_master_clients_treeview["show"] = ("tree", "headings")
+        self.server_master_clients_treeview.column("#0", width=150, anchor=tk.W)
+        self.server_master_clients_treeview.column("allowshare", width=40, anchor=tk.CENTER)
+        self.server_master_clients_treeview.column("readonly", width=40, anchor=tk.CENTER)
+        self.server_master_clients_treeview.heading("#0", text="Client name")
+        self.server_master_clients_treeview.heading("allowshare", text="Allow sharing")
+        self.server_master_clients_treeview.heading("readonly", text="Allow editing")
 
         self.client = None
         self.server = None
@@ -94,7 +103,7 @@ class SettingsToplevel(SnapToplevel):
         """
         The usual function to put all the widgets in the correct place
         """
-        self.server_client_frame.grid(row=1, column=1, sticky="nswe")
+        self.scrolled_frame.grid(row=1, column=1, sticky="nswe")
         self.server_section.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.server_header.grid(row=1, column=1, sticky="nw", columnspan=3, padx=5, pady=(0, 5))
         self.server_address_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
@@ -112,6 +121,9 @@ class SettingsToplevel(SnapToplevel):
         self.client_address_entry.insert(tk.END, "address")
         self.client_port_entry.insert(tk.END, "port")
         self.client_name_entry.insert(tk.END, "username")
+
+        self.server_master_frame.grid(row=3, column=1, sticky="nswe")
+        self.server_master_clients_treeview.grid(row=1, column=1, sticky="nswe", padx=5, pady=5)
 
     def start_server(self):
         """
