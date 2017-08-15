@@ -14,6 +14,9 @@ from server.strategy_clienthandler import ClientHandler
 from tools.admin import is_user_admin
 from tools.utilities import get_temp_directory
 
+# TODO: Send all Clients new logins
+# TODO: Send all Clients the logins of all Clients already connected upon login
+
 
 class Server(threading.Thread):
     """
