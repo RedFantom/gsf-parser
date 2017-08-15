@@ -33,8 +33,8 @@ class SettingsToplevel(SnapToplevel):
         self.new_strategy = self.frame.list.new_strategy
         self._good_geometry = None
 
-        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=False, wait=0, height=405,
-                              width=315)
+        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=True, wait=0, height=405,
+                              width=355)
         self._good_geometry = self.wm_geometry()
 
         self.update()
@@ -42,58 +42,63 @@ class SettingsToplevel(SnapToplevel):
         self.menu = tk.Menu(self)
         # File menu
         self.filemenu = tk.Menu(self, tearoff=False)
-        self.filemenu.add_command(label="New", command=self.new_strategy)
-        self.filemenu.add_command(label="Open", command=self.open_strategy)
-        self.filemenu.add_separator()
-        self.filemenu.add_command(label="Save", command=self.save_strategy)
-        self.filemenu.add_command(label="Save as", command=self.save_strategy_as)
-        self.menu.add_cascade(label="File", menu=self.filemenu)
+        self.filemenu.add_command(label="New Strategy", command=self.new_strategy)
+        self.filemenu.add_command(label="Import Strategy", command=self.open_strategy)
+        self.filemenu.add_command(label="Export Strategy", command=self.save_strategy_as)
+        self.menu.add_cascade(label="Strategy", menu=self.filemenu)
         # Edit menu
         self.editmenu = tk.Menu(self, tearoff=False)
-        self.editmenu.add_command(label="Export database", command=self._export)
         self.editmenu.add_command(label="Import database", command=self._import)
-        self.menu.add_cascade(label="Edit", menu=self.editmenu)
+        self.editmenu.add_command(label="Export database", command=self._export)
+        self.menu.add_cascade(label="Database", menu=self.editmenu)
         self.config(menu=self.menu)
 
-        self.scrolled_frame = ScrolledFrame(self, canvaswidth=280, canvasheight=405)
+        # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
+        # TODO: valid, as determined by a static function in the Client class.
+
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=315, canvasheight=405)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
         self.server_header = ttk.Label(self.server_section, text="Server settings", justify=tk.LEFT,
                                        font=("default", 11))
-        self.server_address_entry = ttk.Entry(self.server_section, width=15)
-        self.server_port_entry = ttk.Entry(self.server_section, width=6)
+        self.server_address_entry = ttk.Entry(self.server_section, width=17)
+        self.server_port_entry = ttk.Entry(self.server_section, width=8)
         self.server_button = ttk.Button(self.server_section, text="Start server", command=self.start_server, width=15)
 
         # Client settings section
         self.client_section = ttk.Frame(self.server_client_frame)
-        self.client_name_entry = ttk.Entry(self.client_section, width=15)
+        self.client_name_entry = ttk.Entry(self.client_section, width=17)
         self.client_role = tk.StringVar()
         self.client_role_dropdown = ttk.OptionMenu(self.client_section, self.client_role,
                                                    *("Choose role", "Master", "Client"))
         self.client_role.set("Client")
         self.client_header = ttk.Label(self.client_section, text="Client settings", justify=tk.LEFT,
                                        font=("default", 11))
-        self.client_address_entry = ttk.Entry(self.client_section, width=15)
-        self.client_port_entry = ttk.Entry(self.client_section, width=6)
+        self.client_address_entry = ttk.Entry(self.client_section, width=17)
+        self.client_port_entry = ttk.Entry(self.client_section, width=8)
         self.client_button = ttk.Button(self.client_section, text="Connect to server", width=15,
                                         command=self.connect_client)
 
         # Server master widgets
-        self.server_master_frame = ScrolledFrame(self.server_client_frame)
+        # TODO: Set these widgets to disabled if not the master client
+        # TODO: Unlock these widgets when logged in as master, or upon getting the master role
+        self.server_master_frame = ttk.Frame(self.server_client_frame, width=280)
         self.server_master_header = ttk.Label(self.server_master_frame, text="Server Master settings",
                                               font=("default", 11))
-        self.server_master_clients_treeview = ttk.Treeview(self.server_master_frame, columns=("#0", "allowshare",
-                                                                                              "readonly"),
-                                                           height=4)
+        self.server_master_clients_treeview = ttk.Treeview(self.server_master_frame)
+        self.server_master_client_scrollbar = ttk.Scrollbar(self.server_master_frame,
+                                                            command=self.server_master_clients_treeview.yview)
+        self.server_master_clients_treeview.config(yscrollcommand=self.server_master_client_scrollbar.set)
+        self.server_master_clients_treeview.config(columns=("allowshare", "allowedit"))
         self.server_master_clients_treeview["show"] = ("tree", "headings")
-        self.server_master_clients_treeview.column("#0", width=150, anchor=tk.W)
-        self.server_master_clients_treeview.column("allowshare", width=40, anchor=tk.CENTER)
-        self.server_master_clients_treeview.column("readonly", width=40, anchor=tk.CENTER)
+        self.server_master_clients_treeview.column("#0", width=115)
+        self.server_master_clients_treeview.config(height=4)
+        self.server_master_clients_treeview.column("allowshare", width=85)
+        self.server_master_clients_treeview.column("allowedit", width=85)
+        self.server_master_clients_treeview.heading("allowshare", text="Allow share")
         self.server_master_clients_treeview.heading("#0", text="Client name")
-        self.server_master_clients_treeview.heading("allowshare", text="Allow sharing")
-        self.server_master_clients_treeview.heading("readonly", text="Allow editing")
-
+        self.server_master_clients_treeview.heading("allowedit", text="Allow edit")
         self.client = None
         self.server = None
         # self.resizable(False, False)
@@ -104,6 +109,7 @@ class SettingsToplevel(SnapToplevel):
         The usual function to put all the widgets in the correct place
         """
         self.scrolled_frame.grid(row=1, column=1, sticky="nswe")
+
         self.server_section.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.server_header.grid(row=1, column=1, sticky="nw", columnspan=3, padx=5, pady=(0, 5))
         self.server_address_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
@@ -111,6 +117,7 @@ class SettingsToplevel(SnapToplevel):
         self.server_address_entry.insert(tk.END, "address")
         self.server_port_entry.insert(tk.END, "port")
         self.server_button.grid(row=2, column=3, sticky="nswe", padx=(5, 0), pady=(0, 5))
+
         self.client_section.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.client_header.grid(row=1, column=1, sticky="nw", padx=(5, 0), pady=(0, 5), columnspan=3)
         self.client_name_entry.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5), columnspan=2)
@@ -123,7 +130,9 @@ class SettingsToplevel(SnapToplevel):
         self.client_name_entry.insert(tk.END, "username")
 
         self.server_master_frame.grid(row=3, column=1, sticky="nswe")
-        self.server_master_clients_treeview.grid(row=1, column=1, sticky="nswe", padx=5, pady=5)
+        self.server_master_header.grid(row=0, column=1, sticky="nw", padx=10, pady=(0, 5))
+        self.server_master_clients_treeview.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_master_client_scrollbar.grid(row=1, column=2, sticky="ns", padx=0, pady=(0, 5))
 
     def start_server(self):
         """
