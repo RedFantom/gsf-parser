@@ -22,6 +22,7 @@ class SettingsToplevel(SnapToplevel):
     Toplevel that contains options to export Strategies, whole StrategyDatabases, or start up a server/connect to one
     for real-time Strategy sharing.
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the toplevel with all its widgets and menus
@@ -40,7 +41,7 @@ class SettingsToplevel(SnapToplevel):
         self.update()
         self.title("GSF Strategy Planner: Settings")
         self.menu = tk.Menu(self)
-        # File menu
+        # File menuw
         self.filemenu = tk.Menu(self, tearoff=False)
         self.filemenu.add_command(label="New Strategy", command=self.new_strategy)
         self.filemenu.add_command(label="Import Strategy", command=self.open_strategy)
@@ -56,7 +57,7 @@ class SettingsToplevel(SnapToplevel):
         # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
         # TODO: valid, as determined by a static function in the Client class.
 
-        self.scrolled_frame = ScrolledFrame(self, canvaswidth=315, canvasheight=405)
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=315, canvasheight=395)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
@@ -99,6 +100,20 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_clients_treeview.heading("allowshare", text="Allow share")
         self.server_master_clients_treeview.heading("#0", text="Client name")
         self.server_master_clients_treeview.heading("allowedit", text="Allow edit")
+
+        self.server_master_allow_share_button = ttk.Button(self.server_master_frame,
+                                                           text="Allow sharing of Strategies",
+                                                           command=self._allow_share, state=tk.DISABLED)
+        self.server_master_allow_edit_button = ttk.Button(self.server_master_frame,
+                                                          text="Allow editing of Strategies",
+                                                          command=self._allow_edit, state=tk.DISABLED)
+        self.server_master_make_master_button = ttk.Button(self.server_master_frame,
+                                                           text="Make new master Client",
+                                                           command=self._make_master, state=tk.DISABLED)
+        self.server_master_kick_button = ttk.Button(self.server_master_frame, text="Kick from server",
+                                                    command=self._kick, state=tk.DISABLED)
+        self.server_master_ban_button = ttk.Button(self.server_master_frame, text="Ban from server",
+                                                   command=self._ban, state=tk.DISABLED)
         self.client = None
         self.server = None
         # self.resizable(False, False)
@@ -133,6 +148,26 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_header.grid(row=0, column=1, sticky="nw", padx=10, pady=(0, 5))
         self.server_master_clients_treeview.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.server_master_client_scrollbar.grid(row=1, column=2, sticky="ns", padx=0, pady=(0, 5))
+        self.server_master_allow_share_button.grid(row=2, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_master_allow_edit_button.grid(row=3, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_master_make_master_button.grid(row=4, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_master_kick_button.grid(row=5, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+        self.server_master_ban_button.grid(row=6, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
+
+    def _allow_share(self):
+        pass
+
+    def _allow_edit(self):
+        pass
+
+    def _make_master(self):
+        pass
+
+    def _kick(self):
+        pass
+
+    def _ban(self):
+        pass
 
     def start_server(self):
         """
@@ -343,6 +378,7 @@ class ClosingToplevel(tk.Toplevel):
     """
     Simple Toplevel to indicate that the user has to wait while the Server is stopping its activities.
     """
+
     def __init__(self, *args, **kwargs):
         tk.Toplevel.__init__(self, *args, **kwargs)
         self.bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate", length=300)
