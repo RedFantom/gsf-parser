@@ -7,13 +7,13 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, filedialog
 import _pickle as pickle
-from ttkwidgets.frames import ScrolledFrame
+from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
+from ttkwidgets import SnapToplevel
 # Own modules
 from parsing.strategies import StrategyDatabase
 from server.strategy_server import Server
 from tools.admin import run_as_admin, is_user_admin
 from tools.strategy_client import Client
-from ttkwidgets import SnapToplevel
 import variables
 
 
@@ -57,7 +57,7 @@ class SettingsToplevel(SnapToplevel):
         # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
         # TODO: valid, as determined by a static function in the Client class.
 
-        self.scrolled_frame = ScrolledFrame(self, canvaswidth=315, canvasheight=395)
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=335, canvasheight=395)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
@@ -100,6 +100,8 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_clients_treeview.heading("allowshare", text="Allow share")
         self.server_master_clients_treeview.heading("#0", text="Client name")
         self.server_master_clients_treeview.heading("allowedit", text="Allow edit")
+        self.server_master_clients_treeview.bind("<Button-1>", self._select)
+        self.server_master_clients_treeview.bind("<Double-1>", self._select)
 
         self.server_master_allow_share_button = ttk.Button(self.server_master_frame,
                                                            text="Allow sharing of Strategies",
@@ -116,6 +118,12 @@ class SettingsToplevel(SnapToplevel):
                                                    command=self._ban, state=tk.DISABLED)
         self.client = None
         self.server = None
+        # Dictionary to store the Treeview keys and player names
+        self.client_names = {}
+        # Dictionary to store  the client names as keys and permissions (allowshare, allowedit)
+        self.client_permissions = {}
+        # The name of the master client
+        self.master_client = None
         # self.resizable(False, False)
         self.grid_widgets()
 
@@ -154,6 +162,29 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_kick_button.grid(row=5, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
         self.server_master_ban_button.grid(row=6, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
 
+    @property
+    def selected_client(self):
+        selection = self.server_master_clients_treeview.selection()
+        if selection == () or selection is None:
+            return
+        name = selection[0]
+        if name not in self.client_names:
+            raise ValueError("Name {} not in client names dictionary".format(name))
+        return self.client_names[name]
+
+    def _select(self, event):
+        name = self.selected_client
+        allowshare, allowedit = permissions = self.client_permissions[name]
+        if allowshare is True:
+            self.server_master_allow_share_button.config(text="Disallow sharing of Strategies")
+        else:
+            self.server_master_allow_share_button.config(text="Allow sharing of Strategies")
+        if allowedit is True:
+            self.server_master_allow_edit_button.config(text="Disallow editing of Strategies")
+        else:
+            self.server_master_allow_edit_button.config(text="Allow editing of Strategies")
+
+
     def _allow_share(self):
         pass
 
@@ -167,6 +198,9 @@ class SettingsToplevel(SnapToplevel):
         pass
 
     def _ban(self):
+        pass
+
+    def _login_callback(self, player_name, role):
         pass
 
     def start_server(self):
