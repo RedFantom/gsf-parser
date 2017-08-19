@@ -33,25 +33,24 @@ class SettingsToplevel(SnapToplevel):
         self.list = self.frame.list
         self.new_strategy = self.frame.list.new_strategy
         self._good_geometry = None
-
+        self.destroyed = False
         SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=True, wait=0, height=405,
                               width=355)
-        self._good_geometry = self.wm_geometry()
 
         self.update()
         self.title("GSF Strategy Planner: Settings")
         self.menu = tk.Menu(self)
-        # File menuw
-        self.filemenu = tk.Menu(self, tearoff=False)
-        self.filemenu.add_command(label="New Strategy", command=self.new_strategy)
-        self.filemenu.add_command(label="Import Strategy", command=self.open_strategy)
-        self.filemenu.add_command(label="Export Strategy", command=self.save_strategy_as)
-        self.menu.add_cascade(label="Strategy", menu=self.filemenu)
-        # Edit menu
-        self.editmenu = tk.Menu(self, tearoff=False)
-        self.editmenu.add_command(label="Import database", command=self._import)
-        self.editmenu.add_command(label="Export database", command=self._export)
-        self.menu.add_cascade(label="Database", menu=self.editmenu)
+        # Strategy menu
+        self.strategy_menu = tk.Menu(self, tearoff=False)
+        self.strategy_menu.add_command(label="New Strategy", command=self.new_strategy)
+        self.strategy_menu.add_command(label="Import Strategy", command=self.open_strategy)
+        self.strategy_menu.add_command(label="Export Strategy", command=self.save_strategy_as)
+        self.menu.add_cascade(label="Strategy", menu=self.strategy_menu)
+        # Database menu
+        self.database_menu = tk.Menu(self, tearoff=False)
+        self.database_menu.add_command(label="Import database", command=self._import)
+        self.database_menu.add_command(label="Export database", command=self._export)
+        self.menu.add_cascade(label="Database", menu=self.database_menu)
         self.config(menu=self.menu)
 
         # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
@@ -65,11 +64,13 @@ class SettingsToplevel(SnapToplevel):
                                        font=("default", 11))
         self.server_address_entry = ttk.Entry(self.server_section, width=17)
         self.server_port_entry = ttk.Entry(self.server_section, width=8)
+        self.server_port_entry.bind("<Return>", self.start_server)
         self.server_button = ttk.Button(self.server_section, text="Start server", command=self.start_server, width=15)
 
         # Client settings section
         self.client_section = ttk.Frame(self.server_client_frame)
         self.client_name_entry = ttk.Entry(self.client_section, width=17)
+        self.client_name_entry.bind("<Return>", self.connect_client)
         self.client_role = tk.StringVar()
         self.client_role_dropdown = ttk.OptionMenu(self.client_section, self.client_role,
                                                    *("Choose role", "Master", "Client"))
@@ -78,6 +79,7 @@ class SettingsToplevel(SnapToplevel):
                                        font=("default", 11))
         self.client_address_entry = ttk.Entry(self.client_section, width=17)
         self.client_port_entry = ttk.Entry(self.client_section, width=8)
+        self.client_port_entry.bind("<Return>", self.connect_client)
         self.client_button = ttk.Button(self.client_section, text="Connect to server", width=15,
                                         command=self.connect_client)
 
@@ -102,6 +104,7 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_clients_treeview.heading("allowedit", text="Allow edit")
         self.server_master_clients_treeview.bind("<Button-1>", self._select)
         self.server_master_clients_treeview.bind("<Double-1>", self._select)
+        self.server_master_clients_treeview.tag_configure("master", background="#2bff83")
 
         self.server_master_allow_share_button = ttk.Button(self.server_master_frame,
                                                            text="Allow sharing of Strategies",
@@ -116,6 +119,15 @@ class SettingsToplevel(SnapToplevel):
                                                     command=self._kick, state=tk.DISABLED)
         self.server_master_ban_button = ttk.Button(self.server_master_frame, text="Ban from server",
                                                    command=self._ban, state=tk.DISABLED)
+        # List with references to all master control widgets
+        self.master_control_widgets = [
+            self.server_master_kick_button,
+            self.server_master_ban_button,
+            self.server_master_allow_edit_button,
+            self.server_master_allow_share_button,
+            self.server_master_make_master_button
+        ]
+
         self.client = None
         self.server = None
         # Dictionary to store the Treeview keys and player names
@@ -174,6 +186,8 @@ class SettingsToplevel(SnapToplevel):
 
     def _select(self, event):
         name = self.selected_client
+        if name is None:
+            return
         allowshare, allowedit = permissions = self.client_permissions[name]
         if allowshare is True:
             self.server_master_allow_share_button.config(text="Disallow sharing of Strategies")
@@ -183,27 +197,67 @@ class SettingsToplevel(SnapToplevel):
             self.server_master_allow_edit_button.config(text="Disallow editing of Strategies")
         else:
             self.server_master_allow_edit_button.config(text="Allow editing of Strategies")
-
+        if name == self.client.name and self.client.role == "master":
+            self.server_master_make_master_button.config(state=tk.DISABLED)
+        else:
+            self.server_master_make_master_button.config(state=tk.NORMAL)
 
     def _allow_share(self):
-        pass
+        print("Change allow share")
 
     def _allow_edit(self):
-        pass
+        print("Change allow edit")
+        player_name = self.selected_client
+        allow = not self.client_permissions[player_name][1]
+        self.client.allow_edit_player(player_name, allow)
 
     def _make_master(self):
-        pass
+        print("Change make master")
+        player_name = self.selected_client
+        if player_name is None:
+            return
+        self.client.new_master(player_name)
+        reverse = {value: key for key, value in self.client_names.items()}
+        self.server_master_clients_treeview.item(reverse[self.client_name_entry.get()], tags=())
+        self.server_master_clients_treeview.item(reverse[player_name], tags=("master",))
 
     def _kick(self):
-        pass
+        print("Kick client")
+        player_name = self.selected_client
+        if player_name is None:
+            return
+        self.client.kick_player(player_name)
 
     def _ban(self):
-        pass
+        print("Ban client")
+        player_name = self.selected_client
+        if player_name is None:
+            return
+        self.client.ban_player(player_name)
 
     def _login_callback(self, player_name, role):
-        pass
+        if player_name in self.client_permissions:
+            return
+        if role == "master":
+            permissions = ("Master", "Master")
+            tags = "master"
+        else:
+            permissions = (False, False)
+            tags = ()
+        self.client_names[self.server_master_clients_treeview.insert("", tk.END, text=player_name,
+                                                                     values=permissions, tags=tags)] \
+            = player_name
+        self.client_permissions[player_name] = permissions
 
-    def start_server(self):
+    def _logout_callback(self, player_name):
+        reverse = {value: key for key, value in self.client_names.items()}
+        self.server_master_clients_treeview.delete(reverse[player_name])
+
+    def new_master(self, name):
+        return
+        self.server_master_clients_treeview.item()
+
+    def start_server(self, *args):
         """
         Start a new Strategy Server. User must be an admin user to start a server (as the binding to an address
         requires privileges to create a port in the Windows Firewall).
@@ -243,13 +297,22 @@ class SettingsToplevel(SnapToplevel):
         self.client_role.set("Master")
         self.server_port_entry.config(state=tk.DISABLED)
         self.server_address_entry.config(state=tk.DISABLED)
+        self.client_name_entry.focus_set()
 
     def deminimize(self, event):
+        """
+        Callback for the <Map> event generated by Tkinter. Deminimizes the window if the Strategies tab is selected
+        and the <Map> event is generated.
+        """
+        # Check if the window is destroyed first to prevent a TclError (bad window path name, you can't call
+        # deiconify on a window that has been destroyed)
+        if self.destroyed:
+            return
         notebook_selected = variables.main_window.notebook.index(tk.CURRENT)
         if notebook_selected != 5:
             self.minimize(event)
             return
-        SnapToplevel.deminimize(self, event)
+        tk.Toplevel.deiconify(self)
 
     def stop_server(self):
         """
@@ -268,7 +331,7 @@ class SettingsToplevel(SnapToplevel):
         if not self.client:
             self.protocol("WM_DELETE_WINDOW", self.destroy)
 
-    def connect_client(self):
+    def connect_client(self, *args):
         """
         Create a new connection to a client
         """
@@ -287,7 +350,8 @@ class SettingsToplevel(SnapToplevel):
         pass
 
     def update_master(self):
-        pass
+        # Client is now the new master
+        self.unlock_master_control_widgets()
 
     def login_callback(self, success):
         """
@@ -404,8 +468,22 @@ class SettingsToplevel(SnapToplevel):
         self.list.db.save_database_as(file_name)
 
     def destroy(self):
+        """
+        Custom destroy function to intentionally execute additional code to reset previous state
+        """
         self.frame.settings = None
         tk.Toplevel.destroy(self)
+        self.destroyed = True
+
+    def lock_master_control_widgets(self):
+        for widget in self.master_control_widgets:
+            widget.config(state=tk.DISABLED)
+        return
+
+    def unlock_master_control_widgets(self):
+        for widget in self.master_control_widgets:
+            widget.config(state=tk.NORMAL)
+        return
 
 
 class ClosingToplevel(tk.Toplevel):

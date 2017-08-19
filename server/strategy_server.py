@@ -47,6 +47,7 @@ class Server(threading.Thread):
             # This will actually provide two errors with two stack traces
             raise RuntimeError("Binding to the address and port failed.")
         self.client_handlers = []
+        self.client_names = []
         # The master_handler is a ClientHandler object with a Client with the "master" role
         self.master_handler = None
         # The exit_queue is normally empty. However, if an object with a truth value of True is found, then the
@@ -118,12 +119,21 @@ class Server(threading.Thread):
         for more details.
         """
         message = self.server_queue.get()
+        if isinstance(message[0], bytes):
+            message = (message[0].decode(), message[1])
         Server.write_log("Server received {0} in server queue".format(message))
 
         # Start the handling of the message received in the server_queue
         if message[0] == "master_login":
             # A master_login event is created by a ClientHandler whose Client role is master
             Server.write_log("Server received master_login")
+
+            if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
+                Server.write_log("Name for newly logged in Client is not valid")
+                message[1].client_queue.put("invalidname")
+                return
+            message[1].client_queue.put("login")
+
             # If a master was already set, then the user is kicked for trying this
             if self.master_handler:
                 message[1].client_queue.put("kick")
@@ -135,15 +145,27 @@ class Server(threading.Thread):
             # TODO: Upon sending this, the master Client sends all Strategies it has, for each client_login
             # TODO: The Strategies should only be sent once to improve performance
             for client_handler in self.client_handlers:
-                self.master_handler.client_queue.put("client_login_{0}".format(client_handler.name))
+                self.master_handler.client_queue.put("master_login_{0}".format(client_handler.name))
 
         elif message[0] == "client_login":
             # A client_login is created by a ClientHandler whose Client role is client
             Server.write_log("Server received client_login from {0}".format(message[1].address))
-            if self.master_handler:
+            if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
+                Server.write_log("Name for newly logged in Client is not valid")
+                message[1].client_queue.put("invalidname")
+                return
+
+            elif self.master_handler:
                 # The master_handler, if it is available, is notified of this login
                 # The other ClientHandlers are not notified
                 self.master_handler.client_queue.put("client_login_{0}".format(message[1].name))
+
+            # Send all previous logins to this new client
+            for client_handler in self.client_handlers:
+                if client_handler is self.master_handler:
+                    message[1].client_queue.put("master_login_{}".format(client_handler.name))
+                    continue
+                message[1].client_queue.put("client_login_{}".format(client_handler.name))
 
         elif message[0] == "logout":
             # A logout is created by a ClientHandler whose Client has disconnected, for whatever reason
@@ -162,7 +184,7 @@ class Server(threading.Thread):
             # The logged-out ClientHandler is removed from the list of active ClientHandlers.
             self.client_handlers.remove(message[1])
 
-        elif message[0].split("_") == "kick":
+        elif message[0] == "kick":
             command, player = message[0].split("_")
             Server.write_log("Server received a command to kick a player {0}".format(player))
             if message[1] is not self.master_handler:
@@ -176,6 +198,7 @@ class Server(threading.Thread):
                 if player == handler.name:
                     handler.client_queue.put("kick")
                     sent = True
+                    self.server_queue.put(("logout_{}".format(player), None))
             if not sent:
                 Server.write_log("Server could not find the player name. Kicking failed.")
 
@@ -193,6 +216,7 @@ class Server(threading.Thread):
                     self.banned.append(handler.address)
                     handler.client_queue.put("ban")
                     sent = True
+                    self.server_queue.put(("logout_{}".format(player), None))
             if not sent:
                 Server.write_log("Server could not find player name. Banning failed.")
 
@@ -214,7 +238,8 @@ class Server(threading.Thread):
                     Server.write_log("Server failed to find a Client with name {0}".format(name))
                     handler = self.master_handler
                 self.master_handler = handler
-                self.master_handler.client_queue.put("master")
+                for client_handler in self.client_handlers:
+                    client_handler.client_queue.put("master_{}".format(self.master_handler.name))
 
         else:
             # The command is not a login or a logout, and thus a Map operation
@@ -229,6 +254,11 @@ class Server(threading.Thread):
                 # The data is put into the client_queue of the ClientHandler, so the ClientHandler will send the data to
                 # its Client
                 client_handler.client_queue.put(message[0])
+
+        # Update the list of client names
+        self.client_names.clear()
+        for client_handler in self.client_handlers:
+            self.client_names.append(client_handler.name)
         return
 
     @staticmethod

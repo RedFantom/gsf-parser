@@ -79,18 +79,22 @@ class Client(Thread):
             self.login_failed()
             return
         message = message.decode()
-        if message == "login":
+        if "login" in message:
             self.logged_in = True
             self.login_callback(True)
+        elif "invalidname" in message:
+            messagebox.showerror("Error", "You chose an invalid username. Perhaps it is already in use?")
+            self.login_failed()
         else:
+            print("Login failed because message is {}".format(message))
             self.login_failed()
 
     def send_strategy(self, strategy):
         """
         Send a Strategy object to the ClientHandler for sharing
         """
-        if self.role != "master":
-            raise RuntimeError("Attempted to send a strategy to the server while role is not master")
+        if not self.role == "master":
+            return
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
         # Serialize the Strategy object and then send
@@ -184,11 +188,11 @@ class Client(Thread):
             self.del_item_server(strategy, phase, text)
         elif command == "strategy":
             assert len(elements) >= 2
-            print("Plain elements item: ", elements[1])
             strategy = self.read_strategy_string(elements[1])
             self.list.db[strategy.name] = strategy
             self.list.update_tree()
         elif command == "client":
+            print(elements)
             self.insert_callback("client_login", elements[2])
         elif command == "readonly":
             self.insert_callback("readonly", elements)
@@ -198,10 +202,18 @@ class Client(Thread):
         elif command == "kick":
             self.close()
             self.insert_callback("kicked", None)
-        elif command == "master":
+        elif command == "master" and elements[1] != "login":
             self.insert_callback("master", None)
+        elif command == "master" and elements[1] == "login":
+            self.insert_callback("master_login", elements[2])
         elif command == "allowshare":
             self.insert_callback("allowshare", elements)
+        elif command == "invalidname":
+            messagebox.showerror("Error", "You chose an invalid username.")
+            self.disconnect_callback()
+            self.close()
+        else:
+            print("Unimplemented command '{}' with arguments '{}'".format(command, elements))
         return
 
     def run(self):
@@ -266,6 +278,13 @@ class Client(Thread):
         del self.list.db[strategy][phase][text]
         self.insert_callback("del_item", (strategy, phase, text))
 
+    def description_server(self, strategy, phase, text):
+        # TODO: Implement client side description updating
+        pass
+
+    def new_master_server(self, new_master_name):
+        self.insert_callback("master", [new_master_name])
+
     """
     Functions to send commands to the server upon events happening on the Map.
     """
@@ -280,6 +299,10 @@ class Client(Thread):
     def del_item(self, strategy, phase, text):
         print("Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
+
+    """
+    Functions to handle master control events
+    """
 
     def new_master(self, new_master_name):
         self.send("master_{0}".format(new_master_name))
@@ -304,12 +327,15 @@ class Client(Thread):
             raise ValueError("Attempted to change allow_share state while not master.")
         self.send("allowshare_{}_{}".format(player_name, new_state))
 
+    def allow_edit_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change the allow_edit state while not master.")
+        self.send("allowedit_{}_{}".format(player_name, new_state))
+
     def readonly_player(self, player_name, new_state):
         if not self.role == "master":
             raise ValueError("Attempted to change readonly state while not master.")
         self.send("readonly_{}_{}".format(player_name, new_state))
-
-    # TODO: Implement description updating
 
     def check_strategy_phase(self, strategy, phase):
         """

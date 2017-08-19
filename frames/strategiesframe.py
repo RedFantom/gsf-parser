@@ -137,11 +137,8 @@ class StrategiesFrame(ttk.Frame):
         # If the command is a login, then only a log should be created, and *all* Strategies in the database
         # are sent to the new client to ensure smooth editing of the Strategies
         # TODO: Allow the master Client to select only specific Strategies for replication
-        if command == "client_login":
-            for strategy in self.list.db.data.keys():
-                self.client.send_strategy(self.list.db.data[strategy])
         # These are the commands with which the master can control the Server and its Clients
-        elif command == "readonly":
+        if command == "readonly":
             target, allowed = args
             if target != self.client.name:
                 return
@@ -171,9 +168,23 @@ class StrategiesFrame(ttk.Frame):
                 self.settings.update_share(allowed)
             return
         elif command == "master":
-            messagebox.showinfo("Info", "You are now the Master of the Server.")
-            self.settings.update_master()
+            name = args
+            if name == self.client.name:
+                messagebox.showinfo("Info", "You are now the Master of the Server.")
+                self.settings.update_master()
+            else:
+                self.settings.new_master(name)
             return
+
+        elif command == "master_login":
+            name = args
+            self.settings._login_callback(name, "master")
+
+        elif command == "client_login":
+            for strategy in self.list.db.data.keys():
+                self.client.send_strategy(self.list.db.data[strategy])
+            name = args
+            self.settings._login_callback(name, "client")
 
         # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
         # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
