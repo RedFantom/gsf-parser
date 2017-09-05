@@ -97,6 +97,8 @@ class FileHandler:
     @staticmethod
     def get_spawn_stats(file_name, match_dt, spawn_dt):
         data = FileHandler.get_data_dictionary()
+        if not isinstance(match_dt, datetime):
+            raise ValueError()
         if file_name not in data:
             return "Not available for this file\n\nScreen parsing results are only available for spawns in files " \
                    "which were spawned while screen parsing was enabled and real-time parsing was running."
@@ -184,10 +186,10 @@ class ScreenParser(threading.Thread):
         self.character = character_data
         self.features_list = [key for key, value in self.features.items() if value]
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
-        self.screenoverlay = HitChanceOverlay(variables.main_window) if eval(
-            variables.settings_obj["realtime"]["screenparsing_overlay"]) else None
-        self.moving_overlay = True if eval(
-            variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]) else False
+        self.screenoverlay = HitChanceOverlay(variables.main_window) if \
+            variables.settings_obj["realtime"]["screenparsing_overlay"] else None
+        self.moving_overlay = True if \
+            variables.settings_obj["realtime"]["screenparsing_overlay_geometry"] else False
 
         try:
             with open(self.pickle_name, "rb") as fi:

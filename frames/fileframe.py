@@ -393,7 +393,7 @@ class FileFrame(ttk.Frame):
                                                                           str(enemydamaget[enemy])))
         elif re.search('[a-zA-Z]', enemy):
             self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text=enemy,
-                                                                  values=(str(enemydamaged[enemy]),
+                                                                 values=(str(enemydamaged[enemy]),
                                                                           str(enemydamaget[enemy])))
         else:
             self.main_window.middle_frame.enemies_treeview.insert('', tk.END, text=enemy,

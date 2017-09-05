@@ -9,6 +9,7 @@
 # UI imports
 from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 import os
 import variables
 from tools import client
@@ -212,11 +213,12 @@ class MainWindow(ThemedTk):
 
     def exit(self):
         """
-        Function to cancel any running tasks and call any funtions to save the data in use before actually closing the
+        Function to cancel any running tasks and call any functions to save the data in use before actually closing the
         GSF Parser
         :return: SystemExit(0)
         """
-        exit()
+        if self.destroy():
+            exit()
 
     def screenshot(self, *args):
         """
@@ -258,3 +260,15 @@ class MainWindow(ThemedTk):
                     continue
         except GithubException:
             pass
+
+    def destroy(self):
+        if self.strategies_frame.settings:
+            if self.strategies_frame.settings.server:
+                messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
+                return False
+            if self.strategies_frame.settings.client:
+                messagebox.showerror("Error", "You cannot exit the GSF Parser while connected to a Strategy Server.")
+                return False
+            self.strategies_frame.settings.destroy()
+        ThemedTk.destroy(self)
+        return True

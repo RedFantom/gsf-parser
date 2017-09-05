@@ -100,8 +100,6 @@ class ClientHandler(object):
             self.role = elements[1]
             self.name = elements[2]
             self.write_log("ClientHandler for {0} sent b'login'".format(self.name))
-            # Send the response back to the Client to acknowledge the login
-            self.socket.send(b"login")
             # Notify the Server of the login
             if self.role == "master":
                 self.server_queue.put(("master_login", self))
@@ -166,6 +164,13 @@ class ClientHandler(object):
             assert len(elements) == 3
             self.server_queue.put((message, self))
 
+        elif command == "allowedit":
+            # The master client allows or disallows a Client from editing Strategies
+
+            # Elements == ["allowshare", name, allow_bool]
+            assert len(elements) == 3
+            self.server_queue.put((message, self))
+
         elif command == "ban":
             # The master client wants to ban a Client from reconnecting
 
@@ -189,7 +194,11 @@ class ClientHandler(object):
             if not self.role == "master":
                 self.close()
                 return
-            command, name = command.split("_")
+            try:
+                command, name = command.split("_")
+            except ValueError:
+                print(command)
+                raise
             self.server_queue.put((command, name, self))
 
         elif command == "description":
