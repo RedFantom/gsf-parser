@@ -238,6 +238,7 @@ class Server(threading.Thread):
                     Server.write_log("Server failed to find a Client with name {0}".format(name))
                     handler = self.master_handler
                 self.master_handler = handler
+                self.master_handler.role = "master"
                 for client_handler in self.client_handlers:
                     client_handler.client_queue.put("master_{}".format(self.master_handler.name))
                 self.write_log("Successfully changed the master to {}".format(self.master_handler.name))

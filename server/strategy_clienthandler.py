@@ -192,6 +192,7 @@ class ClientHandler(object):
             assert len(elements) == 2
             # Only the master is allowed to assign a new master
             if not self.role == "master":
+                self.write_log("Attempted to change master while not the master ClientHandler!")
                 self.close()
                 return
             _, name = elements
