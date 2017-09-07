@@ -194,11 +194,7 @@ class ClientHandler(object):
             if not self.role == "master":
                 self.close()
                 return
-            try:
-                command, name = command.split("_")
-            except ValueError:
-                print(command)
-                raise
+            _, name = elements
             self.server_queue.put((command, name, self))
 
         elif command == "description":
