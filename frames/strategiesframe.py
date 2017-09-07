@@ -170,6 +170,16 @@ class StrategiesFrame(ttk.Frame):
                                             "Strategies.")
                 self.settings.update_share(allowed)
             return
+        elif command == "allowedit":
+            _, name, allowed = args
+            if not isinstance(allowed, bool):
+                allowed = literal_eval(allowed)
+            if name == self.client.name:
+                if allowed:
+                    messagebox.showinfo("Info", "You are now allowed by the Master of the Server to edit the Strategies "
+                                                "you have available. These edits will be shared with the other users.")
+
+            return
         elif command == "master":
             name = args
             if name == self.client.name:

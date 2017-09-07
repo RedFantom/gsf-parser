@@ -14,9 +14,6 @@ from server.strategy_clienthandler import ClientHandler
 from tools.admin import is_user_admin
 from tools.utilities import get_temp_directory
 
-# TODO: Send all Clients new logins
-# TODO: Send all Clients the logins of all Clients already connected upon login
-
 
 class Server(threading.Thread):
     """
@@ -144,6 +141,7 @@ class Server(threading.Thread):
             # The master_handler is notified of all the current logged in Clients with role client
             # TODO: Upon sending this, the master Client sends all Strategies it has, for each client_login
             # TODO: The Strategies should only be sent once to improve performance
+            # Perhaps some sort of Strategy cache should be implemented?
             for client_handler in self.client_handlers:
                 self.master_handler.client_queue.put("master_login_{0}".format(client_handler.name))
 

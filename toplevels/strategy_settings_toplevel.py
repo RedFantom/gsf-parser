@@ -206,10 +206,12 @@ class SettingsToplevel(SnapToplevel):
         print("Change allow share")
 
     def _allow_edit(self):
-        print("Change allow edit")
         player_name = self.selected_client
         allow = not self.client_permissions[player_name][1]
+        self.client_permissions[player_name] = (self.client_permissions[player_name][0], allow)
         self.client.allow_edit_player(player_name, allow)
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[player_name],
+                                                 self.client_permissions[player_name])
 
     def _make_master(self):
         player_name = self.selected_client
@@ -217,6 +219,8 @@ class SettingsToplevel(SnapToplevel):
             return
         self.client.new_master(player_name)
         reverse = self.reverse_name_dictionary
+        if reverse[player_name] not in self.server_master_clients_treeview.get_children(""):
+            return
         self.server_master_clients_treeview.item(reverse[self.client_name_entry.get()], tags=(),
                                                  values=("False", "False"))
         self.server_master_clients_treeview.item(reverse[player_name], tags=("master",), values=("Master", "Master"))
@@ -378,7 +382,7 @@ class SettingsToplevel(SnapToplevel):
         return
 
     def update_share(self, allowed):
-        pass
+        print("Update share: ", allowed)
 
     def update_master(self):
         """

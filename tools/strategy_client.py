@@ -196,6 +196,8 @@ class Client(Thread):
             self.insert_callback("client_login", elements[2])
         elif command == "readonly":
             self.insert_callback("readonly", elements)
+        elif command == "allowedit":
+            self.insert_callback("allowedit", elements)
         elif command == "ban":
             self.close()
             self.insert_callback("banned", None)
