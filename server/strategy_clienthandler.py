@@ -56,7 +56,7 @@ class ClientHandler(object):
             if server_command == "master":
                 self.role = "master"
                 # The message is sent as normal in the next if-statement
-
+                self.write_log("The ClientHandler was made a master ClientHandler")
             # If the sending of the command fails, end this update()
             # It may have been a one-time error where the pipe was broke, in which case there is no damage by not
             # continuing this cycle. However, the socket may be closed, in which case the close() function is already
@@ -246,6 +246,7 @@ class ClientHandler(object):
 
         Copied from server.strategy_server.write_log(line) but with different file_name
         """
+        line = line.strip() + "\n"
         file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address))
         if not path.exists(file_name):
             with open(file_name, "w") as fo:

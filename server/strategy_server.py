@@ -240,7 +240,7 @@ class Server(threading.Thread):
                 self.master_handler = handler
                 for client_handler in self.client_handlers:
                     client_handler.client_queue.put("master_{}".format(self.master_handler.name))
-
+                self.write_log("Successfully changed the master to {}".format(self.master_handler.name))
         else:
             # The command is not a login or a logout, and thus a Map operation
             # The command is distributed to all active ClientHandlers, except to the master_handler, as the
@@ -291,6 +291,7 @@ class Server(threading.Thread):
         """
         Write a line to the log file, but also check if the log file is not too bit and truncate if required
         """
+        line = line.strip() + "\n"
         file_name = os.path.join(get_temp_directory(), "strategy_server.log")
         if not os.path.exists(file_name):
             with open(file_name, "w") as fo:
