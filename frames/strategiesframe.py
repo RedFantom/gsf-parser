@@ -158,7 +158,10 @@ class StrategiesFrame(ttk.Frame):
             self.settings.disconnect_client()
             return
         elif command == "allowshare":
-            allowed = literal_eval(args)
+            if not isinstance(args, list):
+                allowed = literal_eval(args)
+            else:
+                allowed = args[1]
             if allowed:
                 messagebox.showinfo("Info", "You are now allowed by the Master of the Server to share your Strategies.")
                 self.settings.update_share(allowed)

@@ -5,7 +5,7 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, simpledialog
 import _pickle as pickle
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 from ttkwidgets import SnapToplevel
@@ -212,14 +212,16 @@ class SettingsToplevel(SnapToplevel):
         self.client.allow_edit_player(player_name, allow)
 
     def _make_master(self):
-        print("Change make master")
         player_name = self.selected_client
         if player_name is None:
             return
         self.client.new_master(player_name)
-        reverse = {value: key for key, value in self.client_names.items()}
-        self.server_master_clients_treeview.item(reverse[self.client_name_entry.get()], tags=())
-        self.server_master_clients_treeview.item(reverse[player_name], tags=("master",))
+        reverse = self.reverse_name_dictionary
+        self.server_master_clients_treeview.item(reverse[self.client_name_entry.get()], tags=(),
+                                                 values=("False", "False"))
+        self.server_master_clients_treeview.item(reverse[player_name], tags=("master",), values=("Master", "Master"))
+        self.lock_master_control_widgets()
+        self.master_client = player_name
 
     def _kick(self):
         print("Kick client")
@@ -241,6 +243,7 @@ class SettingsToplevel(SnapToplevel):
         if role == "master":
             permissions = ("Master", "Master")
             tags = "master"
+            self.master_client = player_name
         else:
             permissions = (False, False)
             tags = ()
@@ -250,12 +253,22 @@ class SettingsToplevel(SnapToplevel):
         self.client_permissions[player_name] = permissions
 
     def _logout_callback(self, player_name):
-        reverse = {value: key for key, value in self.client_names.items()}
+        reverse = self.reverse_name_dictionary
         self.server_master_clients_treeview.delete(reverse[player_name])
 
     def new_master(self, name):
-        return
-        self.server_master_clients_treeview.item()
+        """
+        Callback for when a new master is selected for the Server
+        """
+        reverse = self.reverse_name_dictionary
+        if name not in reverse:
+            print("Name not found in client names/Treeview dictionary: {}".format(name))
+            print("names/Treeview dictionary: {}".format(reverse))
+            return
+        self.server_master_clients_treeview.item(reverse[name], tags=("master",))
+        if self.master_client is not None:
+            self.server_master_clients_treeview.item(reverse[self.master_client], tags=(), values=("False", "False"))
+        self.master_client = name
 
     def start_server(self, *args):
         """
@@ -263,15 +276,26 @@ class SettingsToplevel(SnapToplevel):
         requires privileges to create a port in the Windows Firewall).
         """
         if not is_user_admin():
+            # If the user is not an admin, making a hole in the firewall to receive connections is not possible
+            # The program should re-run as admin, possibly with UAC elevation
+            confirmation = messagebox.askyesno("Question", "Starting a server requires administrative privileges, "
+                                                           "would you like to restart the GSF Parser as an "
+                                                           "administrator.")
+            if not confirmation:
+                return
             self.destroy()
             variables.main_window.destroy()
             try:
+                # Re-run as an administrator
                 run_as_admin()
             except:
+                # If an error occurs, it is highly likely that the user has denied UAC elevation
                 pass
             exit()
+        # Try to start the server
         try:
             self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
+        # Handle any errors the Server initialization may throw by showing a messagebox to the user
         except RuntimeError:
             messagebox.showerror("Error", "Starting the server failed due to a RuntimeError, which probably means that "
                                           "binding to the port and host name failed. If you did not expect this, "
@@ -283,10 +307,14 @@ class SettingsToplevel(SnapToplevel):
                                           "IP addresses or a blank value (binds to all available) are allowed as "
                                           "host value, and only ports lower than 9999 are allowed.")
             return
-
+        # Make sure that if the user attempts to close the window, this command is redirected
         self.protocol("WM_DELETE_WINDOW", self.destroy_redirect)
+        # Start the Server thread
         self.server.start()
+        # Change the UI to match behaviour
         self.server_button.config(text="Stop server", command=self.stop_server)
+        # Allow the starter of the server to easily connect to his own server by entering the server details into
+        # The client connection data boxes after the server has started
         self.client_address_entry.delete(0, tk.END)
         if not self.server_address_entry.get() == "":
             self.client_address_entry.insert(tk.END, self.server_address_entry.get())
@@ -344,13 +372,23 @@ class SettingsToplevel(SnapToplevel):
                 map.set_readonly(True)
         else:
             print("Role is not 'client', but {0}, so not setting readonly".format(self.client.role.lower()))
+        if self.client.role == "master":
+            self.master_client = self.client.name
+            self.unlock_master_control_widgets()
         return
 
     def update_share(self, allowed):
         pass
 
     def update_master(self):
-        # Client is now the new master
+        """
+        Function for the Client to call when the user is granted Master control over the Server
+        """
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[self.master_client], tags=(),
+                                                 values=("False", "False"))
+        self.master_client = self.client.name
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[self.master_client], tags=("master",),
+                                                 values=("Master", "Master"))
         self.unlock_master_control_widgets()
 
     def login_callback(self, success):
@@ -394,6 +432,8 @@ class SettingsToplevel(SnapToplevel):
         self.client_role_dropdown.config(state=tk.NORMAL)
         self.client_address_entry.config(state=tk.NORMAL)
         self.client_port_entry.config(state=tk.NORMAL)
+        self.server_master_clients_treeview.delete(*self.server_master_clients_treeview.get_children(""))
+        self.lock_master_control_widgets()
         self.client = None
         if callable(self._disconnectcallback):
             self._disconnectcallback()
@@ -476,14 +516,24 @@ class SettingsToplevel(SnapToplevel):
         self.destroyed = True
 
     def lock_master_control_widgets(self):
+        """
+        Function to lock all master control widgets by setting them to a DISABLED state
+        """
         for widget in self.master_control_widgets:
             widget.config(state=tk.DISABLED)
         return
 
     def unlock_master_control_widgets(self):
+        """
+        Function to unlock all master control widgets by setting them to a NORMAL state
+        """
         for widget in self.master_control_widgets:
             widget.config(state=tk.NORMAL)
         return
+
+    @property
+    def reverse_name_dictionary(self):
+        return {value: key for key, value in self.client_names.items()}
 
 
 class ClosingToplevel(tk.Toplevel):

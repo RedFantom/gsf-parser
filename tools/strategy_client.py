@@ -203,7 +203,8 @@ class Client(Thread):
             self.close()
             self.insert_callback("kicked", None)
         elif command == "master" and elements[1] != "login":
-            self.insert_callback("master", None)
+            name = elements[1]
+            self.insert_callback("master", name)
         elif command == "master" and elements[1] == "login":
             self.insert_callback("master_login", elements[2])
         elif command == "allowshare":
@@ -306,8 +307,8 @@ class Client(Thread):
 
     def new_master(self, new_master_name):
         self.send("master_{0}".format(new_master_name))
-        self.insert_callback(("readonly", ["readonly", "True"]))
-        self.insert_callback(("allowshare", ["allowshare", "False"]))
+        self.insert_callback("readonly", ["readonly", "True"])
+        self.insert_callback("allowshare", ["allowshare", "False"])
         self.role = "client"
 
     def kick_player(self, player_name):
