@@ -11,9 +11,8 @@ import win32api as api
 import win32con as con
 import win32gui as gui
 import win32ui as ui
-from tkinter import StringVar, Tk
+from tkinter import StringVar
 from variables import main_window
-from time import sleep
 
 
 class Overlay(object):
@@ -118,12 +117,12 @@ class Overlay(object):
         # Make sure the window is actually shown
         gui.ShowWindow(self._window, con.SW_SHOW)
         # gui.PumpMessages()
+        self.update()
 
     def draw(self, window, message, w_parameter, l_parameter):
         """
         Callback for the drawing in the window
         """
-        print("draw called")
         if message == con.WM_PAINT:
             hdc, paint_struct = gui.BeginPaint(window)
             dpi_scale = ui.GetDeviceCaps(hdc, con.LOGPIXELSX) / 60.0
@@ -140,7 +139,7 @@ class Overlay(object):
                 self._text_var.get(),
                 -1,
                 rectangle,
-                con.DT_CENTER | con.DT_NOCLIP | con.DT_SINGLELINE | con.DT_VCENTER
+                con.DT_NOCLIP | con.DT_CENTER | con.DT_WORDBREAK | con.DT_VCENTER
             )
             gui.EndPaint(window, paint_struct)
             return 0
@@ -154,18 +153,71 @@ class Overlay(object):
 
     def update(self):
         gui.UpdateWindow(self._window)
+        if self._master:
+            self._master.after(self._wait_time, self.update)
+        gui.RedrawWindow(self._window, None, None, con.RDW_INVALIDATE | con.RDW_ERASE)
+        gui.PumpWaitingMessages()
+
+    def destroy(self):
+        """
+        Function to send a WM_DESTROY to the window
+        """
+        gui.SendMessage(self._window, con.WM_DESTROY, None, None)
+
+    def cget(self, key):
+        """
+        Returns the option for a key
+        """
+        if key == "position":
+            return self._position
+        elif key == "wait_time":
+            return self._wait_time
+        elif key == "text_var":
+            return self._text_var
+        elif key == "font_family":
+            return self._font_family
+        elif key == "font_size":
+            return self._font_size
+        elif key == "master":
+            return self._master
+        else:
+            return None
+
+    def config(self, **kwargs):
+        """
+        Change the options of the window. Some options cannot be changed.
+        """
+        self._position = kwargs.pop("position", self._position)
+        self._wait_time = kwargs.pop("wait_time", self._wait_time)
+        self._font_family = kwargs.pop("font_family", self._font_family)
+        self._font_size = kwargs.pop("font_size", self._font_size)
+        if "master" in kwargs:
+            raise RuntimeError("Master widget cannot be changed after window is initialized")
+        if "text_var" in kwargs:
+            raise RuntimeError("Text variable cannot be changed after window is initialized")
+        return True
+
+    def configure(self, **kwargs):
+        return self.config(**kwargs)
+
+    def __getitem__(self, item):
+        return self.cget(item)
+
+    def __setitem__(self, key, value):
+        return self.config(**{key: value})
+
 
 if __name__ == '__main__':
-    string = StringVar(master=Tk())
+    import tkinter as tk
+    root = tk.Tk()
+    string = StringVar(master=root)
     string.set("Something great")
-    overlay = Overlay((0, 0), string)
-    overlay.initialize_window()
-    print("Done initializing")
-    sleep(1)
-    string.set("Something else greater")
-    overlay.update()
-    print("Set another value")
-    overlay.update()
-    sleep(2)
-    string.set("Yay!")
 
+    def change_text():
+        string.set("Something else\nEntirely")
+        print("Changed text")
+
+    overlay = Overlay((0, 0), string, master=root)
+    overlay.initialize_window()
+    root.after(5000, change_text)
+    root.mainloop()
