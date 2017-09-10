@@ -220,7 +220,7 @@ class FileHandler(object):
             total += value
         try:
             average_health = tuple(key / len(spawn_dicts["health"]) for key in total)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, TypeError):
             average_health = "Not available for this spawn"
         return FileHandler.get_formatted_stats_string(*(power_mgmt_max, tracking, average_health))
 
