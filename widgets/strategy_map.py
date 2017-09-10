@@ -70,9 +70,14 @@ class Map(ttk.Frame):
 
     def left_release(self, event):
         self.config(cursor="")
-        print("Left release")
         if not self.current:
             self.canvas.itemconfigure(tk.CURRENT, fill="black")
+        if self.client and self.client.logged_in:
+            item = self.canvas.find_withtag(tk.CURRENT)[0]
+            x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+            args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768),
+                    int(y / self._canvasheight * 768))
+            self.client.move_item(self.master.list.selected_strategy, self.master.list.selected_phase, *args)
 
     def left_motion(self, event):
         self.current = None
@@ -89,8 +94,6 @@ class Map(ttk.Frame):
         self.canvas.coords(rectangle, self.canvas.bbox(item))
         args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768), int(y / self._canvasheight * 768))
         self._moveitem_callback(*args)
-        if self.client and self.client.logged_in:
-            self.client.move_item(self.master.list.selected_strategy, self.master.list.selected_phase, *args)
 
     def right_press(self, event):
         if not self.current:
@@ -113,6 +116,10 @@ class Map(ttk.Frame):
         self.canvas.tag_lower("background")
 
     def add_item(self, text, font=("default", 12, "bold"), color="yellow"):
+        if text in self.items:
+            # Prevent adding of duplicate items
+            rectangle, item = self.items[text]
+            return item, rectangle, text, font, color
         if len(font) == 2 and type(font) == tuple and type(font[1]) == tkfont.Font:
             font = font[0]
         if isinstance(font, str):
@@ -148,7 +155,9 @@ class Map(ttk.Frame):
             self._delitem_callback(item, rectangle, text)
         if self.client and self.client.logged_in and self.master.list.selected_phase:
             self.client.del_item(self.master.list.selected_strategy, self.master.list.selected_phase, text)
-        del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+        if text in self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase]:
+            del self.master.list.db[self.master.list.selected_strategy][self.master.list.selected_phase][text]
+            self.master.list.db.save_database()
         self.master.list.db.save_database()
         self.canvas.delete(item, rectangle)
 
@@ -220,6 +229,7 @@ class AddItem(tk.Toplevel):
     def add_item(self):
         if "_" in self.text.get() or "+" in self.text.get():
             messagebox.showerror("Error", "The characters _ and + are not allowed in item texts.")
+            return
         if callable(self.callback):
             if not self.font_select_frame._family:
                 print("No font family selected.")

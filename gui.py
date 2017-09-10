@@ -9,6 +9,7 @@
 # UI imports
 from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 import os
 import variables
 from tools import client
@@ -20,7 +21,6 @@ from frames.strategiesframe import StrategiesFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
 from tools.utilities import get_temp_directory
-from tools.admin import is_user_admin, run_as_admin
 from datetime import datetime
 from sys import exit
 from github import Github, GithubException
@@ -41,26 +41,17 @@ class MainWindow(ThemedTk):
     def __init__(self):
         # Initialize window
         ThemedTk.__init__(self)
-        if variables.settings_obj["gui"]["debug"] is True:
-            DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
-        dpi_value = self.winfo_fpixels('1i')
-        self.tk.call('tk', 'scaling', '-displayof', '.', dpi_value / 72.0)
-        self.protocol("WM_DELETE_WINDOW", self.exit)
+        self.update_scaling()
+        self.open_debug_window()
         self.finished = False
         variables.main_window = self
         self.style = ttk.Style()
         self.set_icon()
-        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
-        # Get the screen properties
-        variables.screen_w = self.winfo_screenwidth()
-        variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj["parsing"]["cl_path"]
+        self.set_variables()
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings_obj["parsing"]["cl_path"]
         # Set window properties and create a splash screen from the splash_screen class
-        self.resizable(width=False, height=False)
-        self.wm_title("GSF Parser")
         self.withdraw()
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
@@ -68,9 +59,7 @@ class MainWindow(ThemedTk):
         if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
-        # self.splash.update_progress()
-        self.geometry("800x425")
-        self.bind("<F10>", self.screenshot)
+        self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=800)
         self.file_tab_frame = ttk.Frame(self.notebook)
@@ -85,43 +74,14 @@ class MainWindow(ThemedTk):
         self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
         self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
         self.characters_frame = charactersframe.CharactersFrame(self.notebook)
-        self.builds_wrapper_frame = ttk.Frame(self.notebook)
-        self.builds_frame = buildframe.BuildsFrame(self.builds_wrapper_frame)
+        self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place
-        self.file_select_frame.grid(column=1, row=1, sticky="nswe")
-        self.file_select_frame.grid_widgets()
-        self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
-        self.middle_frame.grid_widgets()
-        self.realtime_frame.pack()
-        self.realtime_frame.grid_widgets()
-        self.ship_frame.grid(column=3, row=1, sticky="nswe")
-        self.ship_frame.grid_widgets()
-        self.settings_frame.grid_widgets()
-        self.graphs_frame.grid(column=0, row=0)
-        self.graphs_frame.grid_widgets()
-        self.resources_frame.grid()
-        self.builds_frame.grid_widgets()
-        self.builds_frame.grid()
-        self.builds_wrapper_frame.grid()
-        self.characters_frame.grid()
-        self.characters_frame.grid_widgets()
-        self.toolsframe.grid_widgets()
-        self.file_select_frame.clear_data_widgets()
-        self.strategies_frame.grid_widgets()
-        self.strategies_frame.grid()
+        self.grid_widgets()
+        self.child_grid_widgets()
         # Add the frames to the Notebook
-        self.notebook.add(self.file_tab_frame, text="File parsing")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
-        self.notebook.add(self.characters_frame, text="Characters")
-        self.notebook.add(self.builds_wrapper_frame, text="Builds")
-        self.notebook.add(self.graphs_frame, text="Graphs")
-        self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.share_tab_frame, text="Sharing")
-        self.notebook.add(self.resources_frame, text="Resources")
-        self.notebook.add(self.toolsframe, text="Tools")
-        self.notebook.add(self.settings_tab_frame, text="Settings")
+        self.setup_notebook()
         # Update the files in the file_select frame
         self.notebook.grid(column=0, row=0)
         self.file_select_frame.add_files(silent=True)
@@ -136,9 +96,104 @@ class MainWindow(ThemedTk):
         self.splash.destroy()
         # Start the main loop
 
+    def grid_widgets(self):
+        """
+        Grid all widgets in the frames
+        """
+        self.file_select_frame.grid(column=1, row=1, sticky="nswe")
+        self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
+        self.realtime_frame.grid()
+        self.ship_frame.grid(column=3, row=1, sticky="nswe")
+        self.settings_frame.grid()
+        self.graphs_frame.grid(column=0, row=0)
+
+    def child_grid_widgets(self):
+        """
+        Call grid_widgets on all child widgets that must contain widgets
+        """
+        self.file_select_frame.grid_widgets()
+        self.middle_frame.grid_widgets()
+        self.realtime_frame.grid_widgets()
+        self.ship_frame.grid_widgets()
+        self.settings_frame.grid_widgets()
+        self.graphs_frame.grid_widgets()
+        self.builds_frame.grid_widgets()
+        self.characters_frame.grid_widgets()
+        self.toolsframe.grid_widgets()
+        self.file_select_frame.clear_data_widgets()
+        self.strategies_frame.grid_widgets()
+
+    def setup_notebook(self):
+        """
+        Add all created frames to the notebook widget
+        """
+        self.notebook.add(self.file_tab_frame, text="File parsing")
+        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
+        self.notebook.add(self.characters_frame, text="Characters")
+        self.notebook.add(self.builds_frame, text="Builds")
+        self.notebook.add(self.graphs_frame, text="Graphs")
+        self.notebook.add(self.strategies_frame, text="Strategies")
+        self.notebook.add(self.share_tab_frame, text="Sharing")
+        self.notebook.add(self.resources_frame, text="Resources")
+        self.notebook.add(self.toolsframe, text="Tools")
+        self.notebook.add(self.settings_tab_frame, text="Settings")
+
+    def set_attributes(self):
+        """
+        Setup various window attributes:
+        - Resizability
+        - Window title
+        - WM_DELETE_WINDOW redirect
+        - DPI scaling
+        - Screenshot functionality
+        """
+        self.resizable(width=False, height=False)
+        self.wm_title("GSF Parser")
+        self.protocol("WM_DELETE_WINDOW", self.exit)
+        factor = self.get_scaling_factor()
+        size_x = int(800 * factor)
+        size_y = int(425 * factor)
+        self.geometry("{}x{}".format(size_x, size_y))
+        self.bind("<F10>", self.screenshot)
+
+    def set_variables(self):
+        """
+        Set program global variables in the shared variables module
+        """
+        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
+        # Get the screen properties
+        variables.screen_w = self.winfo_screenwidth()
+        variables.screen_h = self.winfo_screenheight()
+        variables.path = variables.settings_obj["parsing"]["cl_path"]
+
+    def get_scaling_factor(self):
+        """
+        Return the DPI scaling factor (float)
+        """
+        return self.winfo_pixels("1i") / 72.0
+
+    def update_scaling(self):
+        """
+        Update the DPI scaling of the child widgets of the window
+        """
+        self.tk.call('tk', 'scaling', '-displayof', '.', self.get_scaling_factor())
+
+    def open_debug_window(self):
+        """
+        Open a DebugWindow instance if that setting is set to True
+        """
+        if variables.settings_obj["gui"]["debug"] is True:
+            DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
+        return
+
     def update_style(self, start=False):
+        """
+        Update the style of the window. This includes theme and text colour, but also font.
+        :param start: If True, no new window is created. if set to True and the window is already running, then
+                      TclErrors will be generated by external functions.
+        :return: None
+        """
         self.set_theme("arc")
-        print((list(self.tk.call("ttk::themes"))))
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
@@ -151,19 +206,20 @@ class MainWindow(ThemedTk):
             main.new_window()
 
     def set_icon(self):
-        try:
-            self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
-                                    variables.settings_obj["gui"]["logo_color"] + ".ico")
-        except:
-            print("[DEBUG] No icon found, is this from the GitHub repo?")
+        """
+        Changes the window's icon
+        """
+        self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
+                                variables.settings_obj["gui"]["logo_color"] + ".ico")
 
     def exit(self):
         """
-        Function to cancel any running tasks and call any funtions to save the data in use before actually closing the
+        Function to cancel any running tasks and call any functions to save the data in use before actually closing the
         GSF Parser
         :return: SystemExit(0)
         """
-        exit()
+        if self.destroy():
+            exit()
 
     def screenshot(self, *args):
         """
@@ -205,3 +261,15 @@ class MainWindow(ThemedTk):
                     continue
         except GithubException:
             pass
+
+    def destroy(self):
+        if self.strategies_frame.settings:
+            if self.strategies_frame.settings.server:
+                messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
+                return False
+            if self.strategies_frame.settings.client:
+                messagebox.showerror("Error", "You cannot exit the GSF Parser while connected to a Strategy Server.")
+                return False
+            self.strategies_frame.settings.destroy()
+        ThemedTk.destroy(self)
+        return True

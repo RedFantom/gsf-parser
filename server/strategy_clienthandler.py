@@ -15,7 +15,7 @@ class ClientHandler(object):
     Object that handles the communication with a Client through an *unencrypted* socket
     """
     # TODO: Support encryption for Servers that have certificates
-    def __init__(self, sock, address, server_queue):
+    def __init__(self, sock, address, server_queue, log_enabled=False):
         """
         :param sock: socket object from server_socket.accept
         :param address: IP-address of the Client (only used for logging purposes)
@@ -30,6 +30,7 @@ class ClientHandler(object):
         self.client_queue = queue.Queue()
         # The message_queue is used for communication with the Client
         self.message_queue = queue.Queue()
+        self._log_enabled = log_enabled
 
     def update(self):
         """
@@ -43,6 +44,20 @@ class ClientHandler(object):
             self.write_log("ClientHandler {0} client_queue is not empty".format(self.name))
             server_command = self.client_queue.get()
             self.write_log("ClientHandler received server_command {0}".format(server_command))
+
+            # Code to kick and ban is executed before sending any other commands to execute ASAP
+            # The code to prevent reconnect is built into the Server
+            if server_command == "kick" or server_command == "ban":
+                if not self.send(server_command):
+                    return
+                self.close()
+                return
+
+            # Code to change the master role is handled in the ClientHandler too to change the master role
+            if server_command == "master":
+                self.role = "master"
+                # The message is sent as normal in the next if-statement
+                self.write_log("The ClientHandler was made a master ClientHandler")
             # If the sending of the command fails, end this update()
             # It may have been a one-time error where the pipe was broke, in which case there is no damage by not
             # continuing this cycle. However, the socket may be closed, in which case the close() function is already
@@ -86,8 +101,6 @@ class ClientHandler(object):
             self.role = elements[1]
             self.name = elements[2]
             self.write_log("ClientHandler for {0} sent b'login'".format(self.name))
-            # Send the response back to the Client to acknowledge the login
-            self.socket.send(b"login")
             # Notify the Server of the login
             if self.role == "master":
                 self.server_queue.put(("master_login", self))
@@ -130,12 +143,69 @@ class ClientHandler(object):
             # Put the request into the server_queue for distribution to other Clients
             self.server_queue.put((message, self))
 
+        elif command == "readonly":
+            # The master Client wants to allow or disallow a client to use the Map
+
+            # Elements == ["readonly", name, allowed_bool]
+            assert len(elements) == 3
+            # Put the request into the server_queue for distribution to other Clients
+            self.server_queue.put((message, self))
+
+        elif command == "kick":
+            # The master client wants to kick a Client
+
+            # Elements == ["kick", name]
+            assert len(elements) == 2
+            self.server_queue.put((message, self))
+
+        elif command == "allowshare":
+            # The master client allows or disallows a Client from sharing Strategies
+
+            # Elements == ["allowshare", name, allow_bool]
+            assert len(elements) == 3
+            self.server_queue.put((message, self))
+
+        elif command == "allowedit":
+            # The master client allows or disallows a Client from editing Strategies
+
+            # Elements == ["allowshare", name, allow_bool]
+            assert len(elements) == 3
+            self.server_queue.put((message, self))
+
+        elif command == "ban":
+            # The master client wants to ban a Client from reconnecting
+
+            # Elements == ["ban", name]
+            assert len(elements) == 2
+            self.server_queue.put((message, self))
+
         elif command == "logout":
             # The Client wants to logout
 
             # Elements == ["logout"]
             assert len(elements) == 1
             self.close()
+
+        elif command == "master":
+            # The master client wants to pass his master privileges to someone else
+
+            # Elements == ["master", name]
+            assert len(elements) == 2
+            # Only the master is allowed to assign a new master
+            if not self.role == "master":
+                self.write_log("Attempted to change master while not the master ClientHandler!")
+                self.close()
+                return
+            _, name = elements
+            self.server_queue.put((command, name, self))
+
+        elif command == "description":
+            # One of the Clients with sharing rights wants to update a description
+
+            # Elements == ["description", strategy_name, phase_name, new_description] OR
+            # Elements == ["description", strategy_name, new_description]
+            self.server_queue.put((message, self))
+
         else:
             self.write_log("ClientHandler received unknown command: {0}".format(message))
         return
@@ -157,8 +227,6 @@ class ClientHandler(object):
             to_send = string.encode()
         else:
             raise ValueError("Received invalid type as command: {0}, {1}".format(type(command), command))
-        if to_send.count(b"_") != 1:
-            raise ValueError("Invalid number of b'_' found in data to send: {0}".format(command))
         try:
             self.socket.send(to_send)
         except ConnectionError:
@@ -180,7 +248,13 @@ class ClientHandler(object):
 
         Copied from server.strategy_server.write_log(line) but with different file_name
         """
-        file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address)), "a"
+        if not self._log_enabled:
+            return
+        line = line.strip() + "\n"
+        file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address))
+        if not path.exists(file_name):
+            with open(file_name, "w") as fo:
+                fo.write("")
         # First read the current contents of the file
         with open(file_name, "r") as fi:
             lines = fi.readlines()

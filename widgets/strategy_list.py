@@ -15,6 +15,7 @@ class StrategiesList(ttk.Frame):
     Frame that shows the Strategies found in the StrategyDatabase in the default location in a Treeview list. Also
     provides buttons with various functions.
     """
+
     def __init__(self, *args, **kwargs):
         """
         :param callback: Callback to call when a Phase is selected (to allow StrategiesFrame to update the Map
@@ -22,6 +23,7 @@ class StrategiesList(ttk.Frame):
         """
         self._callback = kwargs.pop("callback", None)
         self._settings_callback = kwargs.pop("settings_callback", None)
+        self._frame = kwargs.pop("frame", None)
         self.client = None
         self.role = None
         ttk.Frame.__init__(self, *args, **kwargs)
@@ -128,6 +130,9 @@ class StrategiesList(ttk.Frame):
             self.tree.insert("", tk.END, iid=strategy, text=strategy)
             for phase in content:
                 self.tree.insert(strategy, tk.END, iid=(content.name, "..", phase[0]), text=phase[0])
+        if (self._frame is not None and hasattr(self._frame, "settings") and self._frame.settings is not None and
+                self._frame.settings.share_toplevel is not None):
+            self._frame.settings.share_toplevel.update_strategy_tree()
 
     def _right_click(self, event):
         """

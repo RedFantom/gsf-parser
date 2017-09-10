@@ -128,6 +128,8 @@ class Strategy(object):
     """
 
     def __getitem__(self, item):
+        if item is None:
+            return self
         return self.phases[item]
 
     def __setitem__(self, key, value):

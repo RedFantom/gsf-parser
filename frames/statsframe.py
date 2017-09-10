@@ -150,6 +150,8 @@ class StatsFrame(ttk.Frame):
         self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe", pady=5)
     
     def treeview_sort_column(self, treeview, column, reverse, type):
+        if column == "Ability":
+            column = "#0"
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
         if type == "int":
             l.sort(key=lambda t: int(t[0]), reverse=reverse)

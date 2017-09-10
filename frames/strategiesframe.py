@@ -5,6 +5,8 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
+from ast import literal_eval
 # Own modules
 from widgets.strategy_list import StrategiesList
 from widgets.strategy_map import Map
@@ -17,17 +19,18 @@ class StrategiesFrame(ttk.Frame):
     Frame to display a StrategiesList and Map widget to allow the user to create and edit Strategies with custom items
     in them to visualize their tactics. An interface to allow real-time Strategy editing is also provided.
     """
+
     def __init__(self, *args, **kwargs):
         ttk.Frame.__init__(self, *args, **kwargs)
         # The two core widgets of this frame, with lots of callbacks to support the different functionality
         # Not all functionality is provided through callbacks, and providing any other widget than the StrategiesFrame
         # as a master widget is inadvisable. This is the result of bad coding practices.
-        self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings)
+        self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings, frame=self)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
                        canvasheight=385, canvaswidth=385)
         self.large = None
         self.settings = None
-        self.in_map = None
+        self.in_map = self.map
         # Create the widgets to support the description section on the right of the frame.
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
@@ -36,6 +39,7 @@ class StrategiesFrame(ttk.Frame):
         self.description_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.description.yview)
         self.description.config(yscrollcommand=self.description_scroll.set)
         self.client = None
+        self.description_update_task = None
         # This frame calls grid_widgets in its __init__ function
         self.grid_widgets()
 
@@ -77,6 +81,10 @@ class StrategiesFrame(ttk.Frame):
         Update the description of a certain item in the database. Also immediately saves the database, so the
         description is automatically saved when updated.
         """
+        if self.client and self.settings.client_permissions[self.client.name][1] is False:
+            self.description.delete("1.0", tk.END)
+            self.description.insert("1.0",
+                                    self.list.db[self.list.selected_strategy][self.list.selected_phase].description)
         if self.list.selected_phase is not None:
             self.list.db[self.list.selected_strategy][self.list.selected_phase]. \
                 description = self.description.get("1.0", tk.END)
@@ -84,6 +92,22 @@ class StrategiesFrame(ttk.Frame):
         else:
             self.list.db[self.list.selected_strategy].description = self.description.get("1.0", tk.END)
             self.list.db.save_database()
+        allowed = self.settings.client_permissions[self.client.name][1]
+        if self.client and (allowed is True or allowed == "True" or allowed == "Master"):
+            self.send_description()
+
+    def send_description(self):
+        """
+        Function to make sure that the description only gets sent two seconds after stopping typing when editing it,
+        to lower bandwidth requirements.
+        """
+        if self.description_update_task:
+            self.after_cancel(self.description_update_task)
+        self.description_update_task = self.after(2000,
+                                                  lambda: self.client.update_description(self.list.selected_strategy,
+                                                                                         self.list.selected_phase,
+                                                                                         self.description.get("1.0",
+                                                                                                              tk.END)))
 
     def show_large(self):
         """
@@ -128,22 +152,98 @@ class StrategiesFrame(ttk.Frame):
         :raises: ValueError when the Client is not set or not logged in
         :raises: ValueError when the command received is unknown
         """
-        if not self.client or not self.client.logged_in:
-            raise ValueError("insert_callback called when the client attribute is not set or not logged_in")
         print("Insert callback received: ", command, args)
 
         # If the command is a login, then only a log should be created, and *all* Strategies in the database
         # are sent to the new client to ensure smooth editing of the Strategies
-        # TODO: Allow the master Client to select only specific Strategies for replication
-        if command == "client_login":
-            for strategy in self.list.db.data.keys():
-                self.client.send_strategy(self.list.db.data[strategy])
+        # These are the commands with which the master can control the Server and its Clients
+        if command == "readonly":
+            target, allowed = args
+            if target != self.client.name:
+                return
+            allowed = literal_eval(allowed)
+            for map in self.maps:
+                map.set_readonly(allowed)
+            if allowed:
+                messagebox.showinfo("Info", "You are now allowed to edit the maps.")
+            else:
+                messagebox.showinfo("Info", "You are no longer allowed to edit the maps.")
+        elif command == "kicked":
+            messagebox.showerror("Info", "You were kicked from the Server.")
+            self.settings.disconnect_client()
+            return
+        elif command == "banned":
+            messagebox.showerror("Info", "You were banned from the Server.")
+            self.settings.disconnect_client()
+            return
+        elif command == "allowshare":
+            if not isinstance(args, list):
+                args = literal_eval(args)
+            _, name, allowed = args
+            if not isinstance(allowed, bool):
+                allowed = literal_eval(allowed)
+            self.settings.update_share(name, allowed)
+            if name != self.client.name:
+                return
+            if allowed:
+                messagebox.showinfo("Info", "You are now allowed by the Master of the Server to share your Strategies.")
+            else:
+                messagebox.showinfo("Info", "You are now no longer allowed by the Master of the Server to share your "
+                                            "Strategies.")
+            return
+        elif command == "allowedit":
+            _, name, allowed = args
+            if not isinstance(allowed, bool):
+                allowed = literal_eval(allowed)
+            if name == self.client.name:
+                if allowed:
+                    messagebox.showinfo("Info", "You are now allowed by the Master of the Server to edit the "
+                                                "Strategies you have available. These edits will be shared with the "
+                                                "other users.")
+                    for map in self.maps:
+                        map.set_readonly(False)
+                else:
+                    messagebox.showinfo("Info", "You are now no longer allowed by the Master of the Server to edit the "
+                                                "Strategies you have available.")
+                    for map in self.maps:
+                        map.set_readonly(True)
+            self.settings.update_edit(name, allowed)
+            return
+        elif command == "master":
+            name = args
+            if name == self.client.name:
+                messagebox.showinfo("Info", "You are now the Master of the Server.")
+                self.settings.update_master()
+            else:
+                self.settings.new_master(name)
+            return
+
+        elif command == "master_login":
+            name = args
+            self.settings._login_callback(name, "master")
+
+        elif command == "client_login":
+            name = args
+            self.settings._login_callback(name, "client")
+
+        elif command == "logout":
+            name = args
+            self.settings._logout_callback(name)
+
+        elif command == "description":
+            _, strategy, phase, description = args
+            if phase == "None":
+                phase = None
+            self.list.db[strategy][phase].description = description
+            if strategy == self.list.selected_strategy:
+                self.description.delete("1.0", tk.END)
+                self.description.insert("1.0", description)
 
         # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
         # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
         # However, the saving of the changes happen before this code is reached, and thus if the user moves to the other
         # Strategy and Phase that the operations were performed on, the user will still see the changed elements
-        if self.list.selected_strategy != args[0] or self.list.selected_phase != args[1]:
+        elif self.list.selected_strategy != args[0] or self.list.selected_phase != args[1]:
             return
         # Perform the operations on the Map instances to make the visual changes
         elif command == "add_item":
@@ -159,7 +259,8 @@ class StrategiesFrame(ttk.Frame):
             for map in self.maps:
                 rectangle, item = map.items[text]
                 if map is self.in_map:
-                    map.canvas.coords(item, int(int(x) / 768 * 385), int(int(y) / 768 * 385))
+                    coords = (int(int(x) / 768 * 385), int(int(y) / 768 * 385))
+                    map.canvas.coords(item, *coords)
                 else:
                     map.canvas.coords(item, int(x), int(y))
                 map.canvas.coords(rectangle, map.canvas.bbox(item))
@@ -188,4 +289,3 @@ class StrategiesFrame(ttk.Frame):
             return [self.map, self.in_map]
         else:
             return [self.map]
-

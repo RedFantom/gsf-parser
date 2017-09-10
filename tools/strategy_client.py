@@ -79,18 +79,22 @@ class Client(Thread):
             self.login_failed()
             return
         message = message.decode()
-        if message == "login":
+        if "login" in message:
             self.logged_in = True
             self.login_callback(True)
+        elif "invalidname" in message:
+            messagebox.showerror("Error", "You chose an invalid username. Perhaps it is already in use?")
+            self.login_failed()
         else:
+            print("Login failed because message is {}".format(message))
             self.login_failed()
 
     def send_strategy(self, strategy):
         """
         Send a Strategy object to the ClientHandler for sharing
         """
-        if self.role != "master":
-            raise RuntimeError("Attempted to send a strategy to the server while role is not master")
+        if not self.role == "master":
+            return
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
         # Serialize the Strategy object and then send
@@ -184,12 +188,40 @@ class Client(Thread):
             self.del_item_server(strategy, phase, text)
         elif command == "strategy":
             assert len(elements) >= 2
-            print("Plain elements item: ", elements[1])
             strategy = self.read_strategy_string(elements[1])
             self.list.db[strategy.name] = strategy
             self.list.update_tree()
         elif command == "client":
+            print(elements)
             self.insert_callback("client_login", elements[2])
+        elif command == "readonly":
+            self.insert_callback("readonly", elements)
+        elif command == "allowedit":
+            self.insert_callback("allowedit", elements)
+        elif command == "ban":
+            self.close()
+            self.insert_callback("banned", None)
+        elif command == "kick":
+            self.close()
+            self.insert_callback("kicked", None)
+        elif command == "master" and elements[1] != "login":
+            name = elements[1]
+            self.insert_callback("master", name)
+        elif command == "master" and elements[1] == "login":
+            self.insert_callback("master_login", elements[2])
+        elif command == "allowshare":
+            self.insert_callback("allowshare", elements)
+        elif command == "invalidname":
+            messagebox.showerror("Error", "You chose an invalid username.")
+            self.disconnect_callback()
+            self.close()
+        elif command == "logout":
+            name = elements[1]
+            self.insert_callback("logout", name)
+        elif command == "description":
+            self.insert_callback("description", elements)
+        else:
+            print("Unimplemented command '{}' with arguments '{}'".format(command, elements))
         return
 
     def run(self):
@@ -254,6 +286,9 @@ class Client(Thread):
         del self.list.db[strategy][phase][text]
         self.insert_callback("del_item", (strategy, phase, text))
 
+    def new_master_server(self, new_master_name):
+        self.insert_callback("master", [new_master_name])
+
     """
     Functions to send commands to the server upon events happening on the Map.
     """
@@ -263,27 +298,58 @@ class Client(Thread):
         self.send("add_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, font, color))
 
     def move_item(self, strategy, phase, text, x, y):
-        print("Sending move item command")
         self.send("move_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, x, y))
 
     def del_item(self, strategy, phase, text):
         print("Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
+    """
+    Functions to handle master control events
+    """
+
+    def new_master(self, new_master_name):
+        self.send("master_{0}".format(new_master_name))
+        self.insert_callback("readonly", ["readonly", "True"])
+        self.insert_callback("allowshare", ["allowshare", "False"])
+        self.role = "client"
+
+    def kick_player(self, player_name):
+        if not self.role == "master":
+            raise ValueError("Attempted to kick a player while not master!")
+        self.send("kick_{0}".format(player_name))
+        self.insert_callback("logout", ["logout", player_name])
+
+    def ban_player(self, player_name):
+        if not self.role == "master":
+            raise ValueError("Attempted to ban a player while not master!")
+        self.send("ban_{0}".format(player_name))
+        self.insert_callback("logout", ["logout", player_name])
+
+    def allow_share_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change allow_share state while not master.")
+        self.send("allowshare_{}_{}".format(player_name, new_state))
+
+    def allow_edit_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change the allow_edit state while not master.")
+        self.send("allowedit_{}_{}".format(player_name, new_state))
+
+    def readonly_player(self, player_name, new_state):
+        if not self.role == "master":
+            raise ValueError("Attempted to change readonly state while not master.")
+        self.send("readonly_{}_{}".format(player_name, new_state))
+
+    def update_description(self, strategy, phase, description):
+        self.send("description_{}_{}_{}".format(strategy, phase, description))
+
     def check_strategy_phase(self, strategy, phase):
         """
         Function to check if a particular strategy and phase are available in the database and give the user feedback
         if not. Returns True if the code which called the function is clear to move ahead with a database update.
         """
-        if strategy not in self.list.db:
-            messagebox.showinfo("Info", "Operation on a Strategy received that was not in the database. Please wait "
-                                        "for the database update.")
-            return False
-        if phase not in self.list.db[strategy]:
-            messagebox.showerror("Info", "Operation on a Phase received that was not in the database. Please wait for "
-                                         "the database update.")
-            return False
-        return True
+        return strategy in self.list.db and phase in self.list.db[strategy]
 
     def receive(self):
         """
