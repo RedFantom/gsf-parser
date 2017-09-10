@@ -130,8 +130,6 @@ class StrategiesFrame(ttk.Frame):
         :raises: ValueError when the Client is not set or not logged in
         :raises: ValueError when the command received is unknown
         """
-        if not self.client or not self.client.logged_in:
-            raise ValueError("insert_callback called when the client attribute is not set or not logged_in")
         print("Insert callback received: ", command, args)
 
         # If the command is a login, then only a log should be created, and *all* Strategies in the database

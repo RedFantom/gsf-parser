@@ -172,6 +172,9 @@ class Server(threading.Thread):
                 # If the logout is a master logout, then the master_handler must be reset to None
                 Server.write_log("Logout is a master logout")
                 self.client_handlers.remove(self.master_handler)
+                name = self.master_handler.name
+                if name in self.client_names:
+                    self.client_names.remove(name)
                 self.master_handler = None
             elif self.master_handler:
                 # The logout is a client logout, and the master_handler should be notified if its available
@@ -181,6 +184,9 @@ class Server(threading.Thread):
                 pass
             # The logged-out ClientHandler is removed from the list of active ClientHandlers.
             self.client_handlers.remove(message[1])
+            name = message[1].name
+            if name in self.client_names:
+                self.client_names.remove(name)
 
         elif message[0] == "kick":
             command, player = message[0].split("_")

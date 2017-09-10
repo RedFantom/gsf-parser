@@ -58,7 +58,7 @@ class SettingsToplevel(SnapToplevel):
         # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
         # TODO: valid, as determined by a static function in the Client class.
 
-        self.scrolled_frame = ScrolledFrame(self, canvaswidth=335, canvasheight=395)
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=345, canvasheight=415)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
@@ -264,14 +264,22 @@ class SettingsToplevel(SnapToplevel):
             permissions = (False, False)
             tags = ()
         self.client_names[self.server_master_clients_treeview.insert("", tk.END, text=player_name,
-                                                                     values=permissions, tags=tags)] \
+                                                                     values=permissions, tags=tags,
+                                                                     iid=player_name)] \
             = player_name
         self.client_permissions[player_name] = permissions
 
     def _logout_callback(self, player_name):
         reverse = self.reverse_name_dictionary
-        print(player_name)
-        self.server_master_clients_treeview.delete(reverse[player_name])
+        if isinstance(player_name, list):
+            _, player_name = player_name
+        try:
+            self.server_master_clients_treeview.delete(reverse[player_name])
+        except tk.TclError:
+            return
+        if player_name == self.client.name:
+            self.client = None
+        self.client_permissions.pop(player_name)
 
     def new_master(self, name):
         """
@@ -484,6 +492,7 @@ class SettingsToplevel(SnapToplevel):
         self.client = None
         if callable(self._disconnectcallback):
             self._disconnectcallback()
+        self.client_permissions.clear()
 
     def destroy_redirect(self):
         """
@@ -562,7 +571,6 @@ class SettingsToplevel(SnapToplevel):
             return
         self.list.db.save_database_as(file_name)
 
-
     def lock_master_control_widgets(self):
         """
         Function to lock all master control widgets by setting them to a DISABLED state
@@ -583,6 +591,15 @@ class SettingsToplevel(SnapToplevel):
         self.share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=270,
                                                     height=425)
         return
+
+    def restart_parser(self):
+        answer = messagebox.askyesno("Question",
+                                     "In order to reconnect or connect to a new Strategy Server, the GSF Parser has "
+                                     "to be restarted. Would you like to restart now?")
+        if answer is True:
+            import main
+            if variables.main_window.destroy():
+                main.new_window()
 
     @property
     def reverse_name_dictionary(self):
