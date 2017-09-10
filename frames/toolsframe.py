@@ -18,6 +18,7 @@ from widgets import verticalscrollframe
 from parsing.guiparsing import GSFInterface, get_gui_profiles
 from tools.utilities import get_assets_directory
 from toplevels.importer import SettingsImporter
+from tools.database_explorer import DatabaseExplorer
 
 
 class ToolsFrame(ttk.Frame):
@@ -105,13 +106,25 @@ class ToolsFrame(ttk.Frame):
         self.importer_button = ttk.Button(self.interior_frame.interior, text="Start importer",
                                           command=self.start_importer)
         self.separator_six = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
+        self.database_explorer_heading_label = ttk.Label(self.interior_frame.interior, text="Database Explorer",
+                                                         font=("Calibri", 12))
+        self.database_explorer_description_label = ttk.Label(self.interior_frame.interior,
+                                                             text="A small utility useful in debugging the GSF Parser. "
+                                                                  "Provides all the data of Screen Parsing in a nice "
+                                                                  "Treeview to make browsing through the data "
+                                                                  "convenient and fast.",
+                                                             justify=tk.LEFT, wraplength=780)
+        self.database_explorer_button = ttk.Button(self.interior_frame.interior, text="Open Database Explorer",
+                                                   command=self.open_database_explorer)
+        self.separator_seven = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
 
     def start_simulator(self):
         self.simulator_thread = threading.Thread(target=lambda file_name=self.simulator_file,
-                                                               dir=variables.settings_obj["parsing"]["cl_path"]: simulator.simulate(
-                                                                                                    file_name,
-                                                                                                    output_directory=dir
-                                                                                                   ))
+                                                               dir=variables.settings_obj["parsing"][
+                                                                   "cl_path"]: simulator.simulate(
+            file_name,
+            output_directory=dir
+        ))
         self.simulator_thread.start()
 
     @staticmethod
@@ -185,6 +198,9 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_button.config(text="Close CartelFix")
         self.cartelfix.start_listener()
 
+    def open_database_explorer(self):
+        DatabaseExplorer(variables.main_window)
+
     @staticmethod
     def open_old_parser():
         variables.main_window.destroy()
@@ -220,3 +236,7 @@ class ToolsFrame(ttk.Frame):
         self.importer_description_label.grid(row=20, column=0, columnspan=10, sticky="w")
         self.importer_button.grid(row=21, column=0, sticky="we", columnspan=2)
         self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
+        self.database_explorer_heading_label.grid(row=23, column=0, columnspan=10, sticky="w")
+        self.database_explorer_description_label.grid(row=24, column=0, columnspan=10, sticky="w")
+        self.database_explorer_button.grid(row=25, column=0, columnspan=2, sticky="nswe")
+        self.separator_seven.grid(row=26, column=0, columnspan=10, sticky="we", pady=5)
