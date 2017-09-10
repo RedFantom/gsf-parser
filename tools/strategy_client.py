@@ -215,6 +215,9 @@ class Client(Thread):
             messagebox.showerror("Error", "You chose an invalid username.")
             self.disconnect_callback()
             self.close()
+        elif command == "logout":
+            name = elements[1]
+            self.insert_callback("logout", name)
         else:
             print("Unimplemented command '{}' with arguments '{}'".format(command, elements))
         return

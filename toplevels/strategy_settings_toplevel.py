@@ -211,7 +211,7 @@ class SettingsToplevel(SnapToplevel):
         self.client_permissions[player_name] = (self.client_permissions[player_name][0], allow)
         self.client.allow_edit_player(player_name, allow)
         self.server_master_clients_treeview.item(self.reverse_name_dictionary[player_name],
-                                                 self.client_permissions[player_name])
+                                                 values=self.client_permissions[player_name])
 
     def _make_master(self):
         player_name = self.selected_client
@@ -380,6 +380,15 @@ class SettingsToplevel(SnapToplevel):
             self.master_client = self.client.name
             self.unlock_master_control_widgets()
         return
+
+    def update_edit(self, name, allowed):
+        """
+        Function called by the insert_callback of StrategiesFrame in order to update the editing right of a user
+        in the Treeview
+        """
+        self.client_permissions[name] = (self.client_permissions[name][0], allowed)
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[name],
+                                                 values=self.client_permissions[name])
 
     def update_share(self, allowed):
         print("Update share: ", allowed)

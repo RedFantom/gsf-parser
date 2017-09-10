@@ -178,7 +178,14 @@ class StrategiesFrame(ttk.Frame):
                 if allowed:
                     messagebox.showinfo("Info", "You are now allowed by the Master of the Server to edit the Strategies "
                                                 "you have available. These edits will be shared with the other users.")
-
+                    for map in self.maps:
+                        map.set_readonly(False)
+                else:
+                    messagebox.showinfo("Info", "You are now no longer allowed by the Master of the Server to edit the "
+                                                "Strategies you have available.")
+                    for map in self.maps:
+                        map.set_readonly(True)
+            self.settings.update_edit(name, allowed)
             return
         elif command == "master":
             name = args
@@ -198,6 +205,10 @@ class StrategiesFrame(ttk.Frame):
                 self.client.send_strategy(self.list.db.data[strategy])
             name = args
             self.settings._login_callback(name, "client")
+
+        elif command == "logout":
+            name = args
+            self.settings._logout_callback(name)
 
         # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
         # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
