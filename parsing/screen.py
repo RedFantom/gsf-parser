@@ -370,7 +370,6 @@ class ScreenParser(threading.Thread):
                 elif data[0] == "match" and not data[1] and self.is_match:
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
-                    self._file_dict[self._match] = self._match_dict
                     self._match_dict.clear()
                     self.is_match = False
                     self.match = None
@@ -568,7 +567,9 @@ class ScreenParser(threading.Thread):
     def set_new_match(self):
         write_debug_log("ScreenParser getting ready for a new match")
         self._match_dict[self._spawn] = self._spawn_dict
-        self.data_dictionary[self._file][self._match] = self._match_dict
+        self._file_dict[self._match] = self._match_dict
+        self.data_dictionary[self._file] = self._file_dict
+        self.save_data_dictionary()
         self._match_dict.clear()
         self._spawn_dict.clear()
         self.clear_feature_dicts()
