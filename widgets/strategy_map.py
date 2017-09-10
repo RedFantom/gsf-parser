@@ -118,7 +118,8 @@ class Map(ttk.Frame):
     def add_item(self, text, font=("default", 12, "bold"), color="yellow"):
         if text in self.items:
             # Prevent adding of duplicate items
-            return
+            rectangle, item = self.items[text]
+            return item, rectangle, text, font, color
         if len(font) == 2 and type(font) == tuple and type(font[1]) == tkfont.Font:
             font = font[0]
         if isinstance(font, str):
