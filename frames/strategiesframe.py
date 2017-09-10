@@ -24,7 +24,7 @@ class StrategiesFrame(ttk.Frame):
         # The two core widgets of this frame, with lots of callbacks to support the different functionality
         # Not all functionality is provided through callbacks, and providing any other widget than the StrategiesFrame
         # as a master widget is inadvisable. This is the result of bad coding practices.
-        self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings)
+        self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings, frame=self)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
                        canvasheight=385, canvaswidth=385)
         self.large = None
@@ -159,16 +159,17 @@ class StrategiesFrame(ttk.Frame):
             return
         elif command == "allowshare":
             if not isinstance(args, list):
-                allowed = literal_eval(args)
-            else:
-                allowed = args[1]
+                args = literal_eval(args)
+            _, name, allowed = args
+            print("Allowshare received arguments: ", args)
+            self.settings.update_share(name, allowed)
+            if name != self.client.name:
+                return
             if allowed:
                 messagebox.showinfo("Info", "You are now allowed by the Master of the Server to share your Strategies.")
-                self.settings.update_share(allowed)
             else:
                 messagebox.showinfo("Info", "You are now no longer allowed by the Master of the Server to share your "
                                             "Strategies.")
-                self.settings.update_share(allowed)
             return
         elif command == "allowedit":
             _, name, allowed = args

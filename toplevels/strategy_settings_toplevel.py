@@ -5,10 +5,11 @@
 # For license see LICENSE
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox, filedialog, simpledialog
+from tkinter import messagebox, filedialog
 import _pickle as pickle
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 from ttkwidgets import SnapToplevel
+from ast import literal_eval
 # Own modules
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from parsing.strategies import StrategyDatabase
@@ -35,7 +36,7 @@ class SettingsToplevel(SnapToplevel):
         self.new_strategy = self.frame.list.new_strategy
         self._good_geometry = None
         self.destroyed = False
-        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=True, wait=0, height=405,
+        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=True, wait=0, height=425,
                               width=355)
 
         self.update()
@@ -129,7 +130,7 @@ class SettingsToplevel(SnapToplevel):
 
         self.client = None
         self.server = None
-        self._share_toplevel = None
+        self.share_toplevel = None
         # Dictionary to store the Treeview keys and player names
         self.client_names = {}
         # Dictionary to store  the client names as keys and permissions (allowshare, allowedit)
@@ -203,10 +204,21 @@ class SettingsToplevel(SnapToplevel):
             self.server_master_make_master_button.config(state=tk.NORMAL)
 
     def _allow_share(self):
-        print("Change allow share")
+        player_name = self.selected_client
+        if player_name == self.client.name and self.client.role == "master":
+            # The master cannot disallow himself from sharing
+            return
+        allow = not self.client_permissions[player_name][0]
+        self.client_permissions[player_name] = (allow, self.client_permissions[player_name][1])
+        self.client.allow_share_player(player_name, allow)
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[player_name],
+                                                 values=self.client_permissions[player_name])
 
     def _allow_edit(self):
         player_name = self.selected_client
+        if player_name == self.client.name and self.client.role == "master":
+            # The master cannot disallow himself from editing
+            return
         allow = not self.client_permissions[player_name][1]
         self.client_permissions[player_name] = (self.client_permissions[player_name][0], allow)
         self.client.allow_edit_player(player_name, allow)
@@ -391,8 +403,29 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_clients_treeview.item(self.reverse_name_dictionary[name],
                                                  values=self.client_permissions[name])
 
-    def update_share(self, allowed):
-        print("Update share: ", allowed)
+    def update_share(self, name, allowed):
+        """
+        Function called by the insert_callback of StrategiesFrame to update the sharing right of a user in the Treeview
+        """
+        if not isinstance(allowed, bool):
+            allowed = literal_eval(allowed)
+        self.client_permissions[name] = (allowed, self.client_permissions[name][1])
+        self.server_master_clients_treeview.item(self.reverse_name_dictionary[name],
+                                                 values=self.client_permissions[name])
+        print("Updating allow_share for {} to {}".format(name, allowed))
+        if name != self.client.name:
+            return
+        if allowed:
+            print("Now opening share_toplevel")
+            if self.share_toplevel:
+                return
+            self.share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=270,
+                                                        height=425, resizable=False)
+        elif not allowed and self.share_toplevel is not None:
+            self.share_toplevel.destroy()
+            self.share_toplevel = None
+        else:
+            return
 
     def update_master(self):
         """
@@ -461,9 +494,12 @@ class SettingsToplevel(SnapToplevel):
         self.lift()
 
     def destroy(self):
-        if self._share_toplevel:
-            self._share_toplevel.destroy()
+        if self.share_toplevel:
+            self.share_toplevel.destroy()
+            self.share_toplevel = None
         SnapToplevel.destroy(self)
+        self.frame.settings = None
+        self.destroyed = True
 
     def open_strategy(self):
         """
@@ -526,13 +562,6 @@ class SettingsToplevel(SnapToplevel):
             return
         self.list.db.save_database_as(file_name)
 
-    def destroy(self):
-        """
-        Custom destroy function to intentionally execute additional code to reset previous state
-        """
-        self.frame.settings = None
-        tk.Toplevel.destroy(self)
-        self.destroyed = True
 
     def lock_master_control_widgets(self):
         """
@@ -540,8 +569,9 @@ class SettingsToplevel(SnapToplevel):
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.DISABLED)
-        if self._share_toplevel:
-            self._share_toplevel.destroy()
+        if self.share_toplevel:
+            self.share_toplevel.destroy()
+            self.share_toplevel = None
         return
 
     def unlock_master_control_widgets(self):
@@ -550,7 +580,8 @@ class SettingsToplevel(SnapToplevel):
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.NORMAL)
-        self._share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=200)
+        self.share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=270,
+                                                    height=425)
         return
 
     @property
