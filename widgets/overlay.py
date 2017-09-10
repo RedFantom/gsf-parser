@@ -11,7 +11,7 @@ import win32api as api
 import win32con as con
 import win32gui as gui
 import win32ui as ui
-from tkinter import StringVar
+from tkinter import StringVar, Tk
 from variables import main_window
 
 
@@ -22,12 +22,12 @@ class Overlay(object):
     """
 
     def __init__(self, position, text_variable, wait_time=20, font_family="Calibri",
-                 font_size=14, master=None):
+                 font_size=14, master=None, color=(0, 255, 255)):
         """
         :param position: Position of the window (x, y)
         :param text_variable: tk.StringVar
         :param wait_time: time in ms for after call
-        :
+        :param color: color tuple for the text
         """
         # Argument attributes
         self._position = position
@@ -38,6 +38,11 @@ class Overlay(object):
         self._font_family = font_family
         self._font_size = font_size
         self._master = main_window if not master else master
+        self._color = color
+        if not isinstance(self._color, tuple) or not len(self._color) == 3:
+            raise ValueError("Invalid color tuple passed to Overlay.__init__")
+        if not isinstance(self._master, Tk):
+            raise ValueError("The Overlay class only accepts Tk objects as master")
         # pywin32 interface attributes
         self._h_instance = None
         self._class_name = "GSF Parser Overlay"
@@ -133,6 +138,7 @@ class Overlay(object):
             log_font.lfQuality = con.NONANTIALIASED_QUALITY
             hard_font = gui.CreateFontIndirect(log_font)
             gui.SelectObject(hdc, hard_font)
+            gui.SetTextColor(hdc, eval("0x00{02}{02}{02}".format(self._color[0], self._color[1], self._color[2])))
             rectangle = gui.GetClientRect(window)
             gui.DrawText(
                 hdc,
@@ -206,6 +212,22 @@ class Overlay(object):
     def __setitem__(self, key, value):
         return self.config(**{key: value})
 
+    @property
+    def rectangle(self):
+        return gui.GetClientRect(self._window)
+
+    @property
+    def position(self):
+        rectangle = self.rectangle
+        x = rectangle[0]
+        y = rectangle[1]
+        w = rectangle[2] - x
+        h = rectangle[3] - y
+        return x, y, w, h
+
+    def __exit__(self):
+        self.destroy()
+
 
 if __name__ == '__main__':
     import tkinter as tk
@@ -215,9 +237,8 @@ if __name__ == '__main__':
 
     def change_text():
         string.set("Something else\nEntirely")
-        print("Changed text")
 
-    overlay = Overlay((0, 0), string, master=root)
+    overlay = Overlay((-900, 100), string, master=root)
     overlay.initialize_window()
     root.after(5000, change_text)
     root.mainloop()
