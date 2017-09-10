@@ -70,9 +70,14 @@ class Map(ttk.Frame):
 
     def left_release(self, event):
         self.config(cursor="")
-        print("Left release")
         if not self.current:
             self.canvas.itemconfigure(tk.CURRENT, fill="black")
+        if self.client and self.client.logged_in:
+            item = self.canvas.find_withtag(tk.CURRENT)[0]
+            x, y = self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)
+            args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768),
+                    int(y / self._canvasheight * 768))
+            self.client.move_item(self.master.list.selected_strategy, self.master.list.selected_phase, *args)
 
     def left_motion(self, event):
         self.current = None
@@ -89,8 +94,6 @@ class Map(ttk.Frame):
         self.canvas.coords(rectangle, self.canvas.bbox(item))
         args = (self.canvas.itemcget(item, "text"), int(x / self._canvaswidth * 768), int(y / self._canvasheight * 768))
         self._moveitem_callback(*args)
-        if self.client and self.client.logged_in:
-            self.client.move_item(self.master.list.selected_strategy, self.master.list.selected_phase, *args)
 
     def right_press(self, event):
         if not self.current:
