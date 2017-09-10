@@ -10,6 +10,7 @@ import _pickle as pickle
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 from ttkwidgets import SnapToplevel
 # Own modules
+from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from parsing.strategies import StrategyDatabase
 from server.strategy_server import Server
 from tools.admin import run_as_admin, is_user_admin
@@ -84,8 +85,6 @@ class SettingsToplevel(SnapToplevel):
                                         command=self.connect_client)
 
         # Server master widgets
-        # TODO: Set these widgets to disabled if not the master client
-        # TODO: Unlock these widgets when logged in as master, or upon getting the master role
         self.server_master_frame = ttk.Frame(self.server_client_frame, width=280)
         self.server_master_header = ttk.Label(self.server_master_frame, text="Server Master settings",
                                               font=("default", 11))
@@ -130,6 +129,7 @@ class SettingsToplevel(SnapToplevel):
 
         self.client = None
         self.server = None
+        self._share_toplevel = None
         # Dictionary to store the Treeview keys and player names
         self.client_names = {}
         # Dictionary to store  the client names as keys and permissions (allowshare, allowedit)
@@ -258,6 +258,7 @@ class SettingsToplevel(SnapToplevel):
 
     def _logout_callback(self, player_name):
         reverse = self.reverse_name_dictionary
+        print(player_name)
         self.server_master_clients_treeview.delete(reverse[player_name])
 
     def new_master(self, name):
@@ -459,6 +460,11 @@ class SettingsToplevel(SnapToplevel):
                                     "running one.")
         self.lift()
 
+    def destroy(self):
+        if self._share_toplevel:
+            self._share_toplevel.destroy()
+        SnapToplevel.destroy(self)
+
     def open_strategy(self):
         """
         Callback of the filemenu to import a Strategy into the database from a pickle file
@@ -534,6 +540,8 @@ class SettingsToplevel(SnapToplevel):
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.DISABLED)
+        if self._share_toplevel:
+            self._share_toplevel.destroy()
         return
 
     def unlock_master_control_widgets(self):
@@ -542,6 +550,7 @@ class SettingsToplevel(SnapToplevel):
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.NORMAL)
+        self._share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=200)
         return
 
     @property

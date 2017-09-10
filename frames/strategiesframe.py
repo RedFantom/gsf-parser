@@ -201,8 +201,6 @@ class StrategiesFrame(ttk.Frame):
             self.settings._login_callback(name, "master")
 
         elif command == "client_login":
-            for strategy in self.list.db.data.keys():
-                self.client.send_strategy(self.list.db.data[strategy])
             name = args
             self.settings._login_callback(name, "client")
 
