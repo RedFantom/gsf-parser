@@ -148,14 +148,6 @@ class Server(threading.Thread):
         elif message[0] == "client_login":
             # A client_login is created by a ClientHandler whose Client role is client
             Server.write_log("Server received client_login from {0}".format(message[1].address))
-            if message[1].address in self.banned:
-                Server.write_log("Server received this login from a banned address.")
-                message[1].client_queue.put("ban")
-                if message[1] in self.client_handlers:
-                    self.client_handlers.remove(message[1])
-                if message[1].name in self.client_names:
-                    self.client_names.remove(message[1].name)
-                return
             if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
                 Server.write_log("Name for newly logged in Client is not valid")
                 message[1].client_queue.put("invalidname")

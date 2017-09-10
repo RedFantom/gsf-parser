@@ -593,15 +593,6 @@ class SettingsToplevel(SnapToplevel):
                                                     height=425)
         return
 
-    def restart_parser(self):
-        answer = messagebox.askyesno("Question",
-                                     "In order to reconnect or connect to a new Strategy Server, the GSF Parser has "
-                                     "to be restarted. Would you like to restart now?")
-        if answer is True:
-            import main
-            if variables.main_window.destroy():
-                main.new_window()
-
     @property
     def reverse_name_dictionary(self):
         return {value: key for key, value in self.client_names.items()}
