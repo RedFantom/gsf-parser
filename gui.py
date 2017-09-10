@@ -59,6 +59,7 @@ class MainWindow(ThemedTk):
         if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
+        self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=800)
         self.file_tab_frame = ttk.Frame(self.notebook)
