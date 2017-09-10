@@ -15,7 +15,7 @@ class ClientHandler(object):
     Object that handles the communication with a Client through an *unencrypted* socket
     """
     # TODO: Support encryption for Servers that have certificates
-    def __init__(self, sock, address, server_queue):
+    def __init__(self, sock, address, server_queue, log_enabled=False):
         """
         :param sock: socket object from server_socket.accept
         :param address: IP-address of the Client (only used for logging purposes)
@@ -30,6 +30,7 @@ class ClientHandler(object):
         self.client_queue = queue.Queue()
         # The message_queue is used for communication with the Client
         self.message_queue = queue.Queue()
+        self._log_enabled = log_enabled
 
     def update(self):
         """
@@ -247,6 +248,8 @@ class ClientHandler(object):
 
         Copied from server.strategy_server.write_log(line) but with different file_name
         """
+        if not self._log_enabled:
+            return
         line = line.strip() + "\n"
         file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address))
         if not path.exists(file_name):
