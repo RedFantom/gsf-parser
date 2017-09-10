@@ -96,8 +96,8 @@ class Settings(object):
         "gui": {
             "color": "#2f77d0",
             "logo_color": "Green",
-            "event_colors": "basic",
-            "event_scheme": "default",
+            "event_colors": "advanced",
+            "event_scheme": "pastel",
             "date_format": "ymd",
             "faction": "imperial",
             "debug": False
