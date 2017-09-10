@@ -396,7 +396,7 @@ class ScreenParser(threading.Thread):
                 continue
             write_debug_log("Start pulling vision functions data")
             image = sct.grab(sct.monitors[0])
-            pil_screen = Image.frombytes("RGB", image.size, image)
+            pil_screen = Image.frombytes("RGB", image.size, image.rgb)
             screen = vision.pillow_to_numpy(pil_screen)
             pointer_cds = get_cursor_position(screen)
             current_time = datetime.now()
