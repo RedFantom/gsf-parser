@@ -52,6 +52,7 @@ class Overlay(object):
         self._style = None
         self._h_window = None
         self._window = None
+        self._after_code = None
         # Start the initialization of the Win32API Text window
         self.initialize_pywin32()
         # Setup the window style
@@ -138,7 +139,7 @@ class Overlay(object):
             log_font.lfQuality = con.NONANTIALIASED_QUALITY
             hard_font = gui.CreateFontIndirect(log_font)
             gui.SelectObject(hdc, hard_font)
-            gui.SetTextColor(hdc, eval("0x00{02}{02}{02}".format(self._color[0], self._color[1], self._color[2])))
+            gui.SetTextColor(hdc, eval("0x00{0:02x}{1:02x}{2:02x}".format(self._color[0], self._color[1], self._color[2])))
             rectangle = gui.GetClientRect(window)
             gui.DrawText(
                 hdc,
@@ -160,7 +161,7 @@ class Overlay(object):
     def update(self):
         gui.UpdateWindow(self._window)
         if self._master:
-            self._master.after(self._wait_time, self.update)
+            self._after_code = self._master.after(self._wait_time, self.update)
         gui.RedrawWindow(self._window, None, None, con.RDW_INVALIDATE | con.RDW_ERASE)
         gui.PumpWaitingMessages()
 
@@ -168,7 +169,9 @@ class Overlay(object):
         """
         Function to send a WM_DESTROY to the window
         """
-        gui.SendMessage(self._window, con.WM_DESTROY, None, None)
+        if self._after_code is not None:
+            self._master.after_cancel(self._after_code)
+        gui.SendMessage(self._window, con.WM_CLOSE, None, None)
 
     def cget(self, key):
         """
@@ -241,4 +244,5 @@ if __name__ == '__main__':
     overlay = Overlay((-900, 100), string, master=root)
     overlay.initialize_window()
     root.after(5000, change_text)
+    root.after(10000, lambda: overlay.destroy())
     root.mainloop()
