@@ -55,9 +55,6 @@ class SettingsToplevel(SnapToplevel):
         self.menu.add_cascade(label="Database", menu=self.database_menu)
         self.config(menu=self.menu)
 
-        # TODO: Bind <KeyPress> to Entry widgets and only unlock connect and start server button when the values are
-        # TODO: valid, as determined by a static function in the Client class.
-
         self.scrolled_frame = ScrolledFrame(self, canvaswidth=345, canvasheight=415)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section

@@ -218,6 +218,8 @@ class Client(Thread):
         elif command == "logout":
             name = elements[1]
             self.insert_callback("logout", name)
+        elif command == "description":
+            self.insert_callback("description", elements)
         else:
             print("Unimplemented command '{}' with arguments '{}'".format(command, elements))
         return
@@ -284,10 +286,6 @@ class Client(Thread):
         del self.list.db[strategy][phase][text]
         self.insert_callback("del_item", (strategy, phase, text))
 
-    def description_server(self, strategy, phase, text):
-        # TODO: Implement client side description updating
-        pass
-
     def new_master_server(self, new_master_name):
         self.insert_callback("master", [new_master_name])
 
@@ -342,6 +340,9 @@ class Client(Thread):
         if not self.role == "master":
             raise ValueError("Attempted to change readonly state while not master.")
         self.send("readonly_{}_{}".format(player_name, new_state))
+
+    def update_description(self, strategy, phase, description):
+        self.send("description_{}_{}_{}".format(strategy, phase, description))
 
     def check_strategy_phase(self, strategy, phase):
         """
