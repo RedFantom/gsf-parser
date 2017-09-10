@@ -29,7 +29,7 @@ class StrategiesFrame(ttk.Frame):
                        canvasheight=385, canvaswidth=385)
         self.large = None
         self.settings = None
-        self.in_map = None
+        self.in_map = self.map
         # Create the widgets to support the description section on the right of the frame.
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
@@ -230,7 +230,8 @@ class StrategiesFrame(ttk.Frame):
             for map in self.maps:
                 rectangle, item = map.items[text]
                 if map is self.in_map:
-                    map.canvas.coords(item, int(int(x) / 768 * 385), int(int(y) / 768 * 385))
+                    coords = (int(int(x) / 768 * map.width), int(int(y) / 768 * map.height))
+                    map.canvas.coords(item, *coords)
                 else:
                     map.canvas.coords(item, int(x), int(y))
                 map.canvas.coords(rectangle, map.canvas.bbox(item))

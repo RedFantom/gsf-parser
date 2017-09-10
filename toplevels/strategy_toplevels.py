@@ -232,8 +232,7 @@ class MapToplevel(tk.Toplevel):
         self.frame.map = self.frame.in_map
         if not self.frame.map:
             return
-        if not self.frame.map.client or self.frame.client.permissions[self.frame.client.name][1] is True or \
-                self.frame.client.permissions[self.frame.client.name] == "True":
+        if not self.frame.map.client or self.frame.settings.client_permissions[self.frame.client.name][1] is True:
             self.frame.map.set_readonly(False)
         self.frame.in_map = None
         self.destroy()
