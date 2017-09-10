@@ -143,7 +143,7 @@ class FileFrame(ttk.Frame):
                 try:
                     file_time = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
                     file_string = file_time.strftime("%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"]
-                                                                           is "ymd" else "%Y-%d-%m   %H:%M")
+                                                     == "ymd" else "%Y-%d-%m   %H:%M")
                 except ValueError:
                     file_time = None
                     file_string = file
