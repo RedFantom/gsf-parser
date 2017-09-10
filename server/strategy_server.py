@@ -76,12 +76,12 @@ class Server(threading.Thread):
                 Server.write_log("server ready to accept")
                 connection, address = self.socket.accept()
                 # Check if the IP is banned
-                if address not in self.banned:
+                if address[0] not in self.banned:
                     # The ClientHandler is created and then added to the list of active ClientHandlers
                     self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
                 else:
                     # If the IP is banned, then a message is sent
-                    connection.send(b"banned")
+                    connection.send(b"ban")
                     connection.close()
             # Check if the Server should exit its loop for the second time in this loop
             if not self.exit_queue.empty() and self.exit_queue.get():
@@ -148,6 +148,14 @@ class Server(threading.Thread):
         elif message[0] == "client_login":
             # A client_login is created by a ClientHandler whose Client role is client
             Server.write_log("Server received client_login from {0}".format(message[1].address))
+            if message[1].address in self.banned:
+                Server.write_log("Server received this login from a banned address.")
+                message[1].client_queue.put("ban")
+                if message[1] in self.client_handlers:
+                    self.client_handlers.remove(message[1])
+                if message[1].name in self.client_names:
+                    self.client_names.remove(message[1].name)
+                return
             if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
                 Server.write_log("Name for newly logged in Client is not valid")
                 message[1].client_queue.put("invalidname")
@@ -206,7 +214,7 @@ class Server(threading.Thread):
             if not sent:
                 Server.write_log("Server could not find the player name. Kicking failed.")
 
-        elif message[0].split("_") == "ban":
+        elif message[0].split("_")[0] == "ban":
             command, player = message[0].split("_")
             Server.write_log("Server received a command to ban a player {0}".format(player))
             if message[1] is not self.master_handler:
@@ -217,7 +225,8 @@ class Server(threading.Thread):
             for handler in self.client_handlers:
                 if player == handler.name:
                     # Even if banning fails, the IP should be added to the list of banned IPs
-                    self.banned.append(handler.address)
+                    self.banned.append(handler.address[0])
+                    Server.write_log("Added {} to the list of banned addresses".format(handler.address))
                     handler.client_queue.put("ban")
                     sent = True
                     self.server_queue.put(("logout_{}".format(player), None))

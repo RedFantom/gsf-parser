@@ -456,6 +456,7 @@ class SettingsToplevel(SnapToplevel):
             self.client_button.config(text="Disconnect", command=self.disconnect_client)
         else:
             self.client_button.config(text="Retry connection")
+            self.client = None
             return
         self.protocol("WM_DELETE_WINDOW", self.destroy_redirect)
         self.after(200, self.call_master_login_callback)
