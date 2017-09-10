@@ -152,6 +152,7 @@ class FileFrame(ttk.Frame):
                 if splash_screen:
                     splash_screen.update_progress(number)
                 self.insert_file(file_string)
+                variables.main_window.update()
         if splash_screen:
             splash_screen.destroy()
         return
