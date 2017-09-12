@@ -41,6 +41,7 @@ class MainWindow(ThemedTk):
     def __init__(self):
         # Initialize window
         ThemedTk.__init__(self)
+        self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
         self.finished = False
@@ -150,10 +151,7 @@ class MainWindow(ThemedTk):
         self.resizable(width=False, height=False)
         self.wm_title("GSF Parser")
         self.protocol("WM_DELETE_WINDOW", self.exit)
-        factor = self.get_scaling_factor()
-        size_x = int(800 * factor)
-        size_y = int(425 * factor)
-        self.geometry("{}x{}".format(size_x, size_y))
+        self.geometry("{}x{}".format(*self.get_window_size()))
         self.bind("<F10>", self.screenshot)
 
     def set_variables(self):
@@ -171,6 +169,15 @@ class MainWindow(ThemedTk):
         Return the DPI scaling factor (float)
         """
         return self.winfo_pixels("1i") / 72.0
+
+    def get_window_size(self):
+        """
+        Return the window size, taking scaling into account
+        """
+        factor = self.winfo_pixels("1i") / 96.0
+        size_x = int(800 * factor)
+        size_y = int(425 * factor)
+        return size_x, size_y
 
     def update_scaling(self):
         """
