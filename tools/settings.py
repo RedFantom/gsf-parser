@@ -34,7 +34,7 @@ def eval(value):
 # Class with default settings for in the settings file
 class Defaults(object):
     # Version to display in settings tab
-    version = "v3.3.0"
+    version = "v3.3.1"
     # Path to get the CombatLogs from
     cl_path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
@@ -90,7 +90,7 @@ class Defaults(object):
 class Settings(object):
     defaults = {
         "misc": {
-            "version": "v3.3.0",
+            "version": "v3.3.1",
             "autoupdate": True
         },
         "gui": {
