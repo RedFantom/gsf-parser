@@ -5,10 +5,15 @@
 *.gsf
 *.ini
 *.spec
-Release
 .idea
 __pycache__
 realtime.db
 *.xcf
 debug.txt
 /.idea
+/release/dist
+/release/build
+/release/*.spec
+/release/*.iss
+/release/Setups
+
