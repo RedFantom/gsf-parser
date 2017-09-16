@@ -54,7 +54,7 @@ class TestUI(unittest.TestCase):
         self.window.update()
         self.window.notebook.select(self.window.realtime_tab_frame)
         self.window.update()
-        self.window.notebook.select(self.window.share_tab_frame)
+        self.window.notebook.select(self.window.sharing_frame)
         self.window.update()
         self.window.notebook.select(self.window.resources_frame)
         self.window.update()

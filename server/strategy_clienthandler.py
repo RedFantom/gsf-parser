@@ -3,34 +3,32 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import socket
-from tools.utilities import get_temp_directory
-from datetime import datetime
-from os import path
 import queue
+from os import path
+# Own modules
+from .clienthandler import ClientHandler
+from tools.utilities import get_temp_directory
 
 
-class ClientHandler(object):
+class StrategyClientHandler(ClientHandler):
     """
     Object that handles the communication with a Client through an *unencrypted* socket
     """
     # TODO: Support encryption for Servers that have certificates
-    def __init__(self, sock, address, server_queue, log_enabled=False):
+    def __init__(self, sock, address, server_queue):
         """
         :param sock: socket object from server_socket.accept
         :param address: IP-address of the Client (only used for logging purposes)
         :param server_queue: Queue object in which commands are placed
         """
-        self.socket = sock
-        self.address = address
+        log_file = path.join(get_temp_directory(), "strategy_clienthandler_{}.log".format(address[0]))
+        ClientHandler.__init__(self, sock, address, server_queue, log_file, debug=False)
         self.name = None
         self.role = None
-        self.server_queue = server_queue
         # The client_queue is for the server to put commands in
         self.client_queue = queue.Queue()
         # The message_queue is used for communication with the Client
         self.message_queue = queue.Queue()
-        self._log_enabled = log_enabled
 
     def update(self):
         """
@@ -210,30 +208,6 @@ class ClientHandler(object):
             self.write_log("ClientHandler received unknown command: {0}".format(message))
         return
 
-    def send(self, command):
-        """
-        Send data to the Client on the other side of the socket. This function processed the data first, as it must be
-        sent in a certain format. The data must be sent as a bytes object, ending with a '+' to indicate the end of
-        a message to the Client as the socket does *not* separate messages.
-        :param command: data to send
-        :return: True if successful, False if not
-        :raises: ValueError if not one (1) b'_' is found in the command to send (both more and less raise an error)
-        """
-        self.write_log("ClientHandler sending {0}".format(command))
-        if isinstance(command, bytes):
-            to_send = command + b"+"
-        elif isinstance(command, str):
-            string = command + "+"
-            to_send = string.encode()
-        else:
-            raise ValueError("Received invalid type as command: {0}, {1}".format(type(command), command))
-        try:
-            self.socket.send(to_send)
-        except ConnectionError:
-            self.close()
-            return False
-        return True
-
     def close(self):
         """
         For whatever reason close the socket and notify the server of the logout
@@ -241,56 +215,6 @@ class ClientHandler(object):
         self.write_log("ClientHandler closing")
         self.socket.close()
         self.server_queue.put(("logout", self))
-
-    def write_log(self, line):
-        """
-        Write a line to the log file, but also check if the log file is not too bit and truncate if required
-
-        Copied from server.strategy_server.write_log(line) but with different file_name
-        """
-        if not self._log_enabled:
-            return
-        line = line.strip() + "\n"
-        file_name = path.join(get_temp_directory(), "client_handler_{0}.log".format(self.address))
-        if not path.exists(file_name):
-            with open(file_name, "w") as fo:
-                fo.write("")
-        # First read the current contents of the file
-        with open(file_name, "r") as fi:
-            lines = fi.readlines()
-        # Add the line that should be written to the file
-        lines.append("[{0}] {1}".format(datetime.now().strftime("%H:%M:%S"), line))
-        # Limit the file size to a 1000 lines, and truncate to 800 lines if limit is reached
-        if len(lines) > 1000:
-            lines = lines[len(lines) - 200:]
-        # Write the new contents of the file
-        with open(file_name, "w") as fo:
-            fo.writelines(lines)
-        return
-
-    def receive(self):
-        """
-        Receives data from the Client in a particular format and then puts the separated messages into the message_queue
-        """
-        self.socket.setblocking(0)
-        total = b""
-        while True:
-            try:
-                message = self.socket.recv(16)
-                if message == b"":
-                    self.close()
-                    break
-                self.write_log("ClientHandler received message: {0}".format(message))
-            except socket.error:
-                break
-            elements = message.split(b"+")
-            total += elements[0]
-            if len(elements) >= 2:
-                self.message_queue.put(total)
-                for item in elements[1:-1]:
-                    self.message_queue.put(item)
-                total = elements[-1]
-        return
 
 
 

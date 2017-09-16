@@ -77,6 +77,7 @@ def match_statistics(file_name, match, match_timing):
                 total_enemydamaget[key] += value
             else:
                 total_enemydamaget[key] = value
+        print(ships_list)
         if len(ships_list) != 1:
             ships_uncounted += 1
             ships_list = []

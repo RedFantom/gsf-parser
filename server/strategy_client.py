@@ -5,14 +5,13 @@
 # For license see LICENSE
 import socket
 from tkinter import messagebox
-from threading import Thread
-from queue import Queue
 from ast import literal_eval
 # Own modules
 from parsing.strategies import Strategy, Item, Phase
+from .client import Client
 
 
-class Client(Thread):
+class StrategyClient(Client):
     """
     Client to connect to a server.strategy_server.Server to get a ClientHandler and support real-time editing and
     sharing of Strategies in the StrategiesFrame.
@@ -28,9 +27,7 @@ class Client(Thread):
         :param insertcallback: Callback to call when a command is received
         :param disconnectcallback: Callback to call when disconnect occurs
         """
-        Thread.__init__(self)
         # Queue to send True to if exit is requested
-        self.exit_queue = Queue()
         self.logged_in = False
         self.name = name
         # Role may be Master or Client instead of master or client
@@ -40,14 +37,14 @@ class Client(Thread):
         self.login_callback = logincallback
         self.insert_callback = insertcallback
         self.disconnect_callback = disconnectcallback
-        # Create a TCP socket with timeout 4 seconds and IPv4
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(4)
-        # message_queue for the receive system similar to server.strategy_clienthandler.ClientHandler.receive
-        self.message_queue = Queue()
-        # Attempt to connect
+        Client.__init__(self, address, port)
+
+    def connect(self):
+        """
+        Function to connect to the specified server or provide error handling when that fails
+        """
         try:
-            self.socket.connect((address, port))
+            self.socket.connect((self.address, self.port))
         except socket.timeout:
             messagebox.showerror("Error", "The connection to the target server timed out.")
             self.login_failed()
@@ -59,12 +56,6 @@ class Client(Thread):
             return
         # If connected, then login
         self.login()
-
-    def send(self, string):
-        """
-        Send a command to the ClientHandler and end with a b"+"
-        """
-        self.socket.send((string + "+").encode())
 
     def login(self):
         """
@@ -224,18 +215,6 @@ class Client(Thread):
             print("Unimplemented command '{}' with arguments '{}'".format(command, elements))
         return
 
-    def run(self):
-        """
-        Loop of the Thread to call self.update() and self.process_command() by extent.
-        """
-        while True:
-            if not self.exit_queue.empty():
-                if self.exit_queue.get():
-                    break
-            if not self.logged_in:
-                break
-            self.update()
-
     def login_failed(self):
         """
         Callback for when logging into the server fails, for whatever reason.
@@ -351,28 +330,3 @@ class Client(Thread):
         """
         return strategy in self.list.db and phase in self.list.db[strategy]
 
-    def receive(self):
-        """
-        Function to receive and separate messages received from the ClientHandler
-        """
-        if not self.logged_in:
-            return
-        self.socket.setblocking(0)
-        total = b""
-        while True:
-            try:
-                message = self.socket.recv(16)
-                if message == b"":
-                    self.close()
-                    break
-                print("ClientHandler received message: ", message)
-            except socket.error:
-                break
-            elements = message.split(b"+")
-            total += elements[0]
-            if len(elements) >= 2:
-                self.message_queue.put(total)
-                for item in elements[1:-1]:
-                    self.message_queue.put(item)
-                total = elements[-1]
-        return

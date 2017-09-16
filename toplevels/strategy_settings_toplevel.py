@@ -3,20 +3,19 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox, filedialog
 import _pickle as pickle
-from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
-from widgets.snaptoplevel import SnapToplevel
+import tkinter as tk
 from ast import literal_eval
-# Own modules
-from toplevels.strategy_share_toplevel import StrategyShareToplevel
+from tkinter import messagebox, filedialog
+from widgets.snaptoplevel import SnapToplevel
+from tkinter import ttk
+import variables
 from parsing.strategies import StrategyDatabase
+from server.strategy_client import StrategyClient
 from server.strategy_server import Server
 from tools.admin import run_as_admin, is_user_admin
-from tools.strategy_client import Client
-import variables
+from toplevels.strategy_share_toplevel import StrategyShareToplevel
+from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 
 
 class SettingsToplevel(SnapToplevel):
@@ -385,9 +384,9 @@ class SettingsToplevel(SnapToplevel):
         """
         Create a new connection to a client
         """
-        self.client = Client(self.client_address_entry.get(), int(self.client_port_entry.get()),
-                             self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
-                             self.frame.insert_callback, self.disconnect_client)
+        self.client = StrategyClient(self.client_address_entry.get(), int(self.client_port_entry.get()),
+                                     self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
+                                     self.frame.insert_callback, self.disconnect_client)
         if self.client.role.lower() == "client":
             print("Setting map to be readonly")
             for map in self.frame.maps:

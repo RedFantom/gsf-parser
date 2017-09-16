@@ -4,13 +4,13 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 import tkinter as tk
-from tkinter import ttk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
 from widgets.snaptoplevel import SnapToplevel
+from tkinter import ttk
 # Own modules
 from parsing.strategies import StrategyDatabase
-from tools.strategy_client import Client
+from server.strategy_client import StrategyClient
 
 
 class StrategyShareToplevel(SnapToplevel):
@@ -18,7 +18,7 @@ class StrategyShareToplevel(SnapToplevel):
     Toplevel to display a list of strategies with checkboxes to allow selecting which should be shared.
     """
     def __init__(self, master, client, database, strategy_frame, **kwargs):
-        if not isinstance(database, StrategyDatabase) or not isinstance(client, Client):
+        if not isinstance(database, StrategyDatabase) or not isinstance(client, StrategyClient):
             raise ValueError()
         self._client = client
         self._database = database

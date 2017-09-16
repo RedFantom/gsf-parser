@@ -10,7 +10,7 @@ from queue import Queue
 from datetime import datetime
 from select import select
 # Own modules
-from server.strategy_clienthandler import ClientHandler
+from server.strategy_clienthandler import StrategyClientHandler
 from tools.admin import is_user_admin
 from tools.utilities import get_temp_directory
 
@@ -78,7 +78,7 @@ class Server(threading.Thread):
                 # Check if the IP is banned
                 if address[0] not in self.banned:
                     # The ClientHandler is created and then added to the list of active ClientHandlers
-                    self.client_handlers.append(ClientHandler(connection, address, self.server_queue))
+                    self.client_handlers.append(StrategyClientHandler(connection, address, self.server_queue))
                 else:
                     # If the IP is banned, then a message is sent
                     connection.send(b"ban")

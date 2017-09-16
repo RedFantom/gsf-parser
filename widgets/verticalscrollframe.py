@@ -26,7 +26,7 @@ class VerticalScrollFrame(ttk.Frame):
     def __init__(self, parent, canvaswidth=780, canvasheight=395, **kw):
         ttk.Frame.__init__(self, parent, **kw)
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        vscrollbar.grid(column=1, row=0, sticky="nswe", padx=2)
+        vscrollbar.grid(column=1, row=0, sticky="nswe", padx=5)
         canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width=canvaswidth,
                            height=canvasheight)
         canvas.grid(column=0, row=0, sticky="nswe")
