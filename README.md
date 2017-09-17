@@ -1,5 +1,6 @@
 # GSF Parser
 [![Github All Releases](https://img.shields.io/github/downloads/RedFantom/GSF-Parser/total.svg)](https://www.github.com/RedFantom/GSF-Parser/Releases)
+[![Wiki](https://img.shields.io/badge/GitHub%20Wiki-Available-2f77d0.svg)](https://github.com/RedFantom/gsf-parser/wiki)
 
 ## Features
 - CombatLog parsing with various statistics
