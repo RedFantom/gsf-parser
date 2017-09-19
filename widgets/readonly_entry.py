@@ -12,4 +12,7 @@ from tkinter import ttk
 class ReadonlyEntry(ttk.Entry):
     def __init__(self, *args, **kwargs):
         ttk.Entry.__init__(self, *args, **kwargs)
-        self.bind("<Key>", lambda: self.delete(0, tk.END))
+        self.bind("<Key>", self.callback)
+
+    def callback(self, event):
+        self.after(5, lambda: self.delete(0, tk.END))
