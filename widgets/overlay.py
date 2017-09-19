@@ -21,9 +21,17 @@ class Overlay(object):
     than Tkinter Toplevels can. Also supports clicking through the Text.
     """
 
-    def __init__(self, position, text_variable, wait_time=20, font_family="Calibri",
-                 font_size=14, master=None, color=(0, 255, 255)):
+    default_font = {
+        "family": "Calibri",
+        "bold": True,
+        "italic": False,
+        "size": 12
+    }
+
+    def __init__(self, position, text_variable, wait_time=20, font=default_font,
+                 master=None, color=(0, 255, 255), opacity=255):
         """
+        :param font:
         :param position: Position of the window (x, y)
         :param text_variable: tk.StringVar
         :param wait_time: time in ms for after call
@@ -35,14 +43,17 @@ class Overlay(object):
         if not isinstance(self._text_var, StringVar):
             raise ValueError("The Overlay class only accepts StringVar objects")
         self._wait_time = wait_time
-        self._font_family = font_family
-        self._font_size = font_size
+        self._font_family = font["family"]
+        self._font_size = font["size"]
+        self._bold = font["bold"]
+        self._italic = font["italic"]
         self._master = main_window if not master else master
         self._color = color
         if not isinstance(self._color, tuple) or not len(self._color) == 3:
             raise ValueError("Invalid color tuple passed to Overlay.__init__")
         if not isinstance(self._master, Tk):
             raise ValueError("The Overlay class only accepts Tk objects as master")
+        self._opacity = opacity
         # pywin32 interface attributes
         self._h_instance = None
         self._class_name = "GSF Parser Overlay"
@@ -137,9 +148,13 @@ class Overlay(object):
             log_font.lfHeight = int(round(dpi_scale * self._font_size))
             # Remove the antialiasing of the font
             log_font.lfQuality = con.NONANTIALIASED_QUALITY
+            log_font.lfWeight = 700 if self._bold is True else 400
+            log_font.lfItalic = self._italic
             hard_font = gui.CreateFontIndirect(log_font)
             gui.SelectObject(hdc, hard_font)
-            gui.SetTextColor(hdc, eval("0x00{0:02x}{1:02x}{2:02x}".format(self._color[0], self._color[1], self._color[2])))
+            gui.SetTextColor(hdc, eval("0x00{0:02x}{1:02x}{2:02x}".format(
+                self._color[0], self._color[1], self._color[2])
+            ))
             rectangle = gui.GetClientRect(window)
             gui.DrawText(
                 hdc,
@@ -162,6 +177,7 @@ class Overlay(object):
         gui.UpdateWindow(self._window)
         if self._master:
             self._after_code = self._master.after(self._wait_time, self.update)
+        gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, self._opacity, con.LWA_COLORKEY | con.LWA_ALPHA)
         gui.RedrawWindow(self._window, None, None, con.RDW_INVALIDATE | con.RDW_ERASE)
         gui.PumpWaitingMessages()
 
@@ -200,6 +216,7 @@ class Overlay(object):
         self._wait_time = kwargs.pop("wait_time", self._wait_time)
         self._font_family = kwargs.pop("font_family", self._font_family)
         self._font_size = kwargs.pop("font_size", self._font_size)
+        self._opacity = kwargs.pop("opacity", self._opacity)
         if "master" in kwargs:
             raise RuntimeError("Master widget cannot be changed after window is initialized")
         if "text_var" in kwargs:
@@ -237,11 +254,12 @@ if __name__ == '__main__':
     root = tk.Tk()
     string = StringVar(master=root)
     string.set("Something great")
+    overlay = Overlay((-900, 100), string, master=root)
 
     def change_text():
         string.set("Something else\nEntirely")
+        overlay.config(opacity=100)
 
-    overlay = Overlay((-900, 100), string, master=root)
     overlay.initialize_window()
     root.after(5000, change_text)
     root.after(10000, lambda: overlay.destroy())
