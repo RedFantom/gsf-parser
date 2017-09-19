@@ -8,7 +8,9 @@ import shelve
 # UI imports
 import tkinter.ttk as ttk
 import tkinter as tk
+from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
+from ttkwidgets.autocomplete import AutocompleteCombobox
 # Own modules
 from server.sharing_client import SharingClient
 import variables
@@ -17,6 +19,7 @@ from tools.utilities import get_temp_directory
 from toplevels.splashscreens import SplashScreen
 from widgets.readonly_entry import ReadonlyEntry
 from widgets import VerticalScrollFrame
+from server.sharing_data import *
 
 
 class SharingFrame(ttk.Frame):
@@ -36,10 +39,7 @@ class SharingFrame(ttk.Frame):
         sharing_db_path = os.path.join(get_temp_directory(), "share.db")
         self.sharing_db = shelve.open(sharing_db_path)
         # Initialize SharingClient
-        address = variables.settings_obj["sharing"]["server_address"]
-        port = variables.settings_obj["sharing"]["server_port"]
-        server = (address, port)
-        self.client = SharingClient(*server)
+        self.client = SharingClient()
         # Initialize CheckboxTreeview
         self.file_tree_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL)
         self.file_tree = CheckboxTreeview(self, height=14, columns=("name", "count", "sync"), show=("headings", "tree"),
@@ -138,6 +138,8 @@ class ManualFrame(VerticalScrollFrame):
                  "Entry box on the right.",
             font=("Calibri", 10), justify=tk.LEFT, wraplength=285
         )
+        # Get name
+        self.get_name_frame = GetNameFrame(self.interior)
 
     def grid_widgets(self):
         """
@@ -145,12 +147,47 @@ class ManualFrame(VerticalScrollFrame):
         """
         self.header_label.grid(row=1, column=1, columnspan=3, sticky="nswe", padx=5, pady=(0, 5))
         self.description_label.grid(row=2, column=1, columnspan=3, sticky="nswe", padx=5, pady=(0, 5))
+        self.get_name_frame.grid(row=3, column=1, columnspan=3, sticky="nswe", padx=5, pady=(0, 5))
 
-    def get_mainname_for_altname(self):
+
+class GetNameFrame(ttk.Frame):
+    """
+    Frame that contains the widgets to manually retrieve a name
+    """
+
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master)
+        self.header_label = ttk.Label(self, text="Get name for ID number", font=("Calibri", 11), width=40)
+        self.server = tk.StringVar()
+        self.after_task = None
+        self.server_dropdown = AutocompleteCombobox(self, textvariable=self.server, completevalues=servers_list)
+        self.faction = tk.StringVar()
+        self.faction_dropdown = AutocompleteCombobox(self, textvariable=self.faction, completevalues=factions_list)
+        self.id = tk.StringVar()
+        self.id_entry = ttk.Entry(self, textvariable=self.id, width=20)
+        self.id_entry.bind("<Return>", self.get_name)
+        self.result_entry = ReadonlyEntry(self)
+        self.grid_widgets()
+
+    def get_name(self, *args):
+        client = SharingClient()
+        server = self.server.get()
+        faction = self.faction.get()
+        if server not in servers_list or faction not in factions_list:
+            messagebox.showinfo("Info", "Entered data is not valid. Please check your server and faction values.")
+            return
+        result = client.get_name_id(servers_dict[server], factions_dict[faction], self.id_entry.get())
+
+    def id_entry_callback(self, event):
         pass
 
-    def get_killer_mainname_for_id(self):
-        pass
-
-    def get_mainname_for_bomb_id(self):
-        pass
+    def grid_widgets(self):
+        self.header_label.grid(row=1, column=1, sticky="w", pady=5)
+        self.server_dropdown.grid(row=2, column=1, sticky="nswe", pady=(0, 5))
+        self.faction_dropdown.grid(row=3, column=1, sticky="nswe", pady=(0, 5))
+        self.id_entry.grid(row=4, column=1, sticky="nswe", pady=(0, 5))
+        self.id_entry.delete(0, tk.END)
+        self.id_entry.insert(tk.END, "ID Number...")
+        self.result_entry.grid(row=5, column=1, sticky="nswe", columnspan=4, pady=(0, 5))
+        self.result_entry.delete(0, tk.END)
+        self.result_entry.insert(tk.END, "Result")
