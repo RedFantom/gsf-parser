@@ -12,7 +12,7 @@ from tkinter import ttk
 import variables
 from parsing.strategies import StrategyDatabase
 from server.strategy_client import StrategyClient
-from server.strategy_server import Server
+from server.strategy_server import StrategyServer
 from tools.admin import run_as_admin, is_user_admin
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
@@ -315,7 +315,7 @@ class SettingsToplevel(SnapToplevel):
             exit()
         # Try to start the server
         try:
-            self.server = Server(self.server_address_entry.get(), int(self.server_port_entry.get()))
+            self.server = StrategyServer(self.server_address_entry.get(), int(self.server_port_entry.get()))
         # Handle any errors the Server initialization may throw by showing a messagebox to the user
         except RuntimeError:
             messagebox.showerror("Error", "Starting the server failed due to a RuntimeError, which probably means that "

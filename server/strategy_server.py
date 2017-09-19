@@ -15,7 +15,7 @@ from tools.admin import is_user_admin
 from tools.utilities import get_temp_directory
 
 
-class Server(threading.Thread):
+class StrategyServer(threading.Thread):
     """
     A Thread that runs a socket.socket server to listen for incoming tools.strategy_client.Client connections to allow
     the sharing and real-time editing of Strategy objects. Runs in a Thread to minimize performance penalty for the
@@ -36,7 +36,7 @@ class Server(threading.Thread):
         # The socket is a SOCK_STREAM (TCP) socket
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(0)
-        if not Server.check_host_validity(host, port):
+        if not StrategyServer.check_host_validity(host, port):
             raise ValueError("The host or port value is not valid: {0}:{1}".format(host, port))
         try:
             self.socket.bind((host, port))
@@ -67,13 +67,13 @@ class Server(threading.Thread):
         while True:
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
-                Server.write_log("Strategy server is exiting loop")
+                StrategyServer.write_log("Strategy server is exiting loop")
                 break
             # The select.select function is used so the Server can immediately continue with its operations if there are
             # no new clients. This could also be done with a try/except socket.error block, but this would introduce
             # a rather high performance penalty, so the select function is used.
             if self.socket in select([self.socket], [], [], 0)[0]:
-                Server.write_log("server ready to accept")
+                StrategyServer.write_log("server ready to accept")
                 connection, address = self.socket.accept()
                 # Check if the IP is banned
                 if address[0] not in self.banned:
@@ -99,11 +99,11 @@ class Server(threading.Thread):
 
         # The loop is broken because an exit was requested. All ClientHandlers are requested to close their
         # their functionality (and sockets)
-        Server.write_log("Server closing ClientHandlers")
+        StrategyServer.write_log("Server closing ClientHandlers")
         for client_handler in self.client_handlers:
             client_handler.close()
-            Server.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        Server.write_log("Strategy server is returning from run()")
+            StrategyServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
+        StrategyServer.write_log("Strategy server is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self.socket.close()
 
@@ -118,15 +118,15 @@ class Server(threading.Thread):
         message = self.server_queue.get()
         if isinstance(message[0], bytes):
             message = (message[0].decode(), message[1])
-        Server.write_log("Server received {0} in server queue".format(message))
+        StrategyServer.write_log("Server received {0} in server queue".format(message))
 
         # Start the handling of the message received in the server_queue
         if message[0] == "master_login":
             # A master_login event is created by a ClientHandler whose Client role is master
-            Server.write_log("Server received master_login")
+            StrategyServer.write_log("Server received master_login")
 
             if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
-                Server.write_log("Name for newly logged in Client is not valid")
+                StrategyServer.write_log("Name for newly logged in Client is not valid")
                 message[1].client_queue.put("invalidname")
                 return
             message[1].client_queue.put("login")
@@ -147,9 +147,9 @@ class Server(threading.Thread):
 
         elif message[0] == "client_login":
             # A client_login is created by a ClientHandler whose Client role is client
-            Server.write_log("Server received client_login from {0}".format(message[1].address))
+            StrategyServer.write_log("Server received client_login from {0}".format(message[1].address))
             if message[1].name in self.client_names or message[1].name == "" or message[1].name == "username":
-                Server.write_log("Name for newly logged in Client is not valid")
+                StrategyServer.write_log("Name for newly logged in Client is not valid")
                 message[1].client_queue.put("invalidname")
                 return
 
@@ -167,10 +167,10 @@ class Server(threading.Thread):
 
         elif message[0] == "logout":
             # A logout is created by a ClientHandler whose Client has disconnected, for whatever reason
-            Server.write_log("Server received logout")
+            StrategyServer.write_log("Server received logout")
             if message[1] is self.master_handler:
                 # If the logout is a master logout, then the master_handler must be reset to None
-                Server.write_log("Logout is a master logout")
+                StrategyServer.write_log("Logout is a master logout")
                 self.client_handlers.remove(self.master_handler)
                 name = self.master_handler.name
                 if name in self.client_names:
@@ -190,11 +190,11 @@ class Server(threading.Thread):
 
         elif message[0] == "kick":
             command, player = message[0].split("_")
-            Server.write_log("Server received a command to kick a player {0}".format(player))
+            StrategyServer.write_log("Server received a command to kick a player {0}".format(player))
             if message[1] is not self.master_handler:
                 # If anyone else but the master_handler tries to kick, then the player requesting the kick is kicked
                 # as that behaviour should not be possible without modified code.
-                Server.write_log("Only the master_handler is allowed to kick a player, but received the kick command "
+                StrategyServer.write_log("Only the master_handler is allowed to kick a player, but received the kick command "
                                  "from the ClientHandler for {0}. Kicking this person instead.".format(message[1].name))
                 player = message[1].name
             sent = False
@@ -204,11 +204,11 @@ class Server(threading.Thread):
                     sent = True
                     self.server_queue.put(("logout_{}".format(player), None))
             if not sent:
-                Server.write_log("Server could not find the player name. Kicking failed.")
+                StrategyServer.write_log("Server could not find the player name. Kicking failed.")
 
         elif message[0].split("_")[0] == "ban":
             command, player = message[0].split("_")
-            Server.write_log("Server received a command to ban a player {0}".format(player))
+            StrategyServer.write_log("Server received a command to ban a player {0}".format(player))
             if message[1] is not self.master_handler:
                 # If anyone but the master_handler tries to ban, then ban the requesting client instead
                 player = message[1].name
@@ -218,17 +218,17 @@ class Server(threading.Thread):
                 if player == handler.name:
                     # Even if banning fails, the IP should be added to the list of banned IPs
                     self.banned.append(handler.address[0])
-                    Server.write_log("Added {} to the list of banned addresses".format(handler.address))
+                    StrategyServer.write_log("Added {} to the list of banned addresses".format(handler.address))
                     handler.client_queue.put("ban")
                     sent = True
                     self.server_queue.put(("logout_{}".format(player), None))
             if not sent:
-                Server.write_log("Server could not find player name. Banning failed.")
+                StrategyServer.write_log("Server could not find player name. Banning failed.")
 
         elif message[0] == "master":
-            Server.write_log("Master handler change requested.")
+            StrategyServer.write_log("Master handler change requested.")
             if not message[2] is self.master_handler:
-                Server.write_log("Someone other than the master_handler attempted to set a new master: {0}. "
+                StrategyServer.write_log("Someone other than the master_handler attempted to set a new master: {0}. "
                                  "Kicking this person instead.".format(message[2].name))
                 self.server_queue.put(("kick_{0}".format(message[2].name), self.master_handler))
             else:
@@ -240,7 +240,7 @@ class Server(threading.Thread):
                         handler = client_handler
                         break
                 if not handler:
-                    Server.write_log("Server failed to find a Client with name {0}".format(name))
+                    StrategyServer.write_log("Server failed to find a Client with name {0}".format(name))
                     handler = self.master_handler
                 self.master_handler = handler
                 self.master_handler.role = "master"
@@ -251,12 +251,12 @@ class Server(threading.Thread):
             # The command is not a login or a logout, and thus a Map operation
             # The command is distributed to all active ClientHandlers, except to the master_handler, as the
             # master_handler is the source of the operation
-            Server.write_log("Sending data to other client handlers")
+            StrategyServer.write_log("Sending data to other client handlers")
             for client_handler in self.client_handlers:
                 # The client_handler is checked against the source of the operation
                 if client_handler is message[1]:
                     continue
-                Server.write_log("Sending data to ClientHandler {0}".format(client_handler.name))
+                StrategyServer.write_log("Sending data to ClientHandler {0}".format(client_handler.name))
                 # The data is put into the client_queue of the ClientHandler, so the ClientHandler will send the data to
                 # its Client
                 client_handler.client_queue.put(message[0])
@@ -317,4 +317,4 @@ class Server(threading.Thread):
 
 
 if __name__ == '__main__':
-    Server("", 6500).start()
+    StrategyServer("", 6500).start()
