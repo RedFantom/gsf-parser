@@ -5,17 +5,21 @@
 # For license see LICENSE
 from queue import Queue
 from os import path
-from tools.utilities import get_temp_directory
+import socket
 # Own modules
 from .clienthandler import ClientHandler
 from .database import DatabaseHandler
 from .queries import *
+from tools.utilities import get_temp_directory
 
 
 class SharingClientHandler(ClientHandler):
     """
     ClientHandler to handle exactly one Sharing Client and provide services to that single Client.
     """
+
+    excluded = ["select", "where", "insert", "create", "table"]
+
     def __init__(self, address, socket, database, server_queue):
         """
         :param socket: socket.socket object
@@ -190,6 +194,15 @@ class SharingClientHandler(ClientHandler):
         self.send("error")
         self.close()
 
+    def ban(self, line):
+        """
+        Function to ban a client for a certain reason
+        """
+        self.send("ban_{}".format(line))
+        self.server_queue.put(("ban", self))
+        self.write_log("Client with IP {} banned for: {}".format(self.address[0], line))
+        self.close()
+
     def close(self):
         """
         Function to close
@@ -206,3 +219,32 @@ class SharingClientHandler(ClientHandler):
             self.state += 1
         else:
             self.state = 1
+
+    def receive(self):
+        """
+        Receives data from the Client in a particular format and then puts the separated messages into the
+        message_queue, additionally checks if the data received is allowed.
+        """
+        self.socket.setblocking(0)
+        total = b""
+        while True:
+            try:
+                message = self.socket.recv(16)
+                if message == b"":
+                    self.close()
+                    break
+                self.write_log("ClientHandler received message: {0}".format(message))
+            except socket.error:
+                break
+            elements = message.split(b"+")
+            total += elements[0]
+            if len(elements) >= 2:
+                for item in self.excluded:
+                    if item in total.lower():
+                        self.ban("Disallowed SQL keyword: {}".format(item))
+                        return
+                self.message_queue.put(total)
+                for item in elements[1:-1]:
+                    self.message_queue.put(item)
+                total = elements[-1]
+        return
