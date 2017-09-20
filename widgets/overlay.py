@@ -177,6 +177,7 @@ class Overlay(object):
         gui.UpdateWindow(self._window)
         if self._master:
             self._after_code = self._master.after(self._wait_time, self.update)
+        gui.SetWindowPos(self._window, None, self._position[0], self._position[1], 0, 0, con.SWP_NOSIZE)
         gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, self._opacity, con.LWA_COLORKEY | con.LWA_ALPHA)
         gui.RedrawWindow(self._window, None, None, con.RDW_INVALIDATE | con.RDW_ERASE)
         gui.PumpWaitingMessages()
@@ -259,6 +260,7 @@ if __name__ == '__main__':
     def change_text():
         string.set("Something else\nEntirely")
         overlay.config(opacity=100)
+        overlay.config(position=(500, 100))
 
     overlay.initialize_window()
     root.after(5000, change_text)
