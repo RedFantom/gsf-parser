@@ -4,19 +4,69 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from pynput import mouse
+import win32gui
 import threading
+from queue import Queue
 import tkinter as tk
 # Own modules
 from widgets.overlay import Overlay
+from parsing.stalking_alt import LogStalker
 import variables
 
 
-class HitMissParser(threading.Thread):
+class MissEvadeParser(threading.Thread):
     """
     A Class capable of displaying overlays where the cursor is when shooting. Shows overlays for misses due to evasion
     and misses due to not being on target separately.
     """
-    pass
+    def __init__(self, master, stalker=None):
+        """
+        :param master: master Tk instance
+        :param stalker: optional LogStalker instance
+        """
+        threading.Thread.__init__(self)
+        if stalker is not None:
+            if not isinstance(stalker, LogStalker):
+                raise ValueError("stalker is not a LogStalker instance")
+            self.stalker = stalker
+            self._orig_callback = self.stalker.callback
+            self.stalker.callback = self.line_callback
+        else:
+            self.stalker = LogStalker(callback=self.line_callback)
+            self._orig_callback = None
+        self._mouse_listener = mouse.Listener(on_click=self.click_callback)
+        self.internal_queue = Queue()
+        self.exit_queue = Queue()
+
+    def run(self):
+        """
+        Runs the loop, receiving data from all the queues (managed from separate Threads) in order to perform
+        the functionality of this class
+        """
+        pass
+
+    def line_callback(self, lines):
+        """
+        Callback for Stalker with list of lines as argument
+        """
+        pass
+
+    def click_callback(self, x, y, button, pressed):
+        """
+        :param x: x coordinate
+        :param y: y coordinate
+        :param button: mouse.Button
+        :param pressed: Boolean
+        """
+        if button is not mouse.Button.left:
+            return
+        self.internal_queue.put((x, y, pressed))
+
+    def close(self):
+        self.exit_queue.put(True)
+
+    def __exit__(self):
+        self.close()
 
 
 class FlyText(Overlay):
