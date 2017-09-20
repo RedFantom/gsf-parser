@@ -8,6 +8,7 @@ import threading
 import tkinter as tk
 # Own modules
 from widgets.overlay import Overlay
+import variables
 
 
 class HitMissParser(threading.Thread):
@@ -22,9 +23,47 @@ class MissOverlay(Overlay):
     """
     Overlay that shows for a certain time and then fades out
     """
-    def __init__(self, master, position, fadeout=True, fadetime=1000, text="Miss", move_downward=20, text_size=12):
+
+    def __init__(self, master, position, fadeout=True, fadetime=1000, text="Miss", move_downward=20):
+        self.master = master
+        self.count = 0
+        if not isinstance(self.master, tk.Tk):
+            raise ValueError()
         self.text = tk.StringVar(value=text)
-        Overlay.__init__(self, position, text_variable=self.text, master=master, text_size=text_size, font_family="")
+        font_family = variables.settings_obj["realtime"]["overlay_tx_font"]
+        font_size = variables.settings_obj["realtime"]["overlay_tx_size"]
+        bold = True
+        Overlay.__init__(self, position, self.text, master=master, font={"family": font_family,
+                                                                         "size": font_size,
+                                                                         "bold": bold,
+                                                                         "italic": False})
+        self.original_position = position
+        self._fadeout = fadeout
+        self._fadetime = fadetime
+        self._move_downward = move_downward
+        self.master.after(20, self.update_attributes)
+
+    def update_attributes(self):
+        """
+        Updates the window attributes to match Overlay behaviour
+        """
+        self._position = (self.original_position[0],
+                          self.original_position[1] +
+                          int(round(self._move_downward / self._fadetime * 20 * self.count, 0)))
+        opacity = 255 - int(round(255 / self._fadetime * 20 * self.count, 0))
+        if opacity <= 0:
+            self.destroy()
+            return
+        self._opacity = opacity
+        self.count += 1
+        self.master.after(20, self.update_attributes)
 
 
-
+if __name__ == '__main__':
+    root = tk.Tk()
+    var = tk.StringVar(value="Hello World")
+    overlay = MissOverlay(root, (500, 100))
+    overlay.initialize_window()
+    overlay_two = MissOverlay(root, (540, 1000), text="Evade")
+    overlay_two.initialize_window()
+    root.mainloop()
