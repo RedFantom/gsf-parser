@@ -19,7 +19,7 @@ class HitMissParser(threading.Thread):
     pass
 
 
-class MissOverlay(Overlay):
+class FlyText(Overlay):
     """
     Overlay that shows for a certain time and then fades out
     """
@@ -62,8 +62,8 @@ class MissOverlay(Overlay):
 if __name__ == '__main__':
     root = tk.Tk()
     var = tk.StringVar(value="Hello World")
-    overlay = MissOverlay(root, (500, 100))
+    overlay = FlyText(root, (500, 100))
     overlay.initialize_window()
-    overlay_two = MissOverlay(root, (540, 1000), text="Evade")
+    overlay_two = FlyText(root, (540, 1000), text="Evade")
     overlay_two.initialize_window()
     root.mainloop()
