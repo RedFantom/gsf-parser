@@ -13,6 +13,7 @@ import win32gui as gui
 import win32ui as ui
 from tkinter import StringVar, Tk
 from variables import main_window
+import random
 
 
 class Overlay(object):
@@ -56,7 +57,7 @@ class Overlay(object):
         self._opacity = opacity
         # pywin32 interface attributes
         self._h_instance = None
-        self._class_name = "GSF Parser Overlay"
+        self._class_name = "GSF Parser Overlay {}".format(random.getrandbits(32))
         self._window_class = None
         self._window_class_atom = None
         self._ex_style = None
