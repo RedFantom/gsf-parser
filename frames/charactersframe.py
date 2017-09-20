@@ -402,9 +402,7 @@ class CharactersFrame(ttk.Frame):
             server, name = character
         else:
             character = self.characters_list.selection()
-            if character == ():
-                return
-            if len(character[0]) < 4:
+            if character == () or len(character[0]) < 4:
                 return
             server = character[0][:3]
             name = character[0][4:].replace("{", "").replace("}", "")

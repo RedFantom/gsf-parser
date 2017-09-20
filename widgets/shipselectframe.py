@@ -57,7 +57,8 @@ class ShipSelectFrame(ttk.Frame):
             self.faction_frames[faction] = ttk.Frame(self.frame)
             for category in self.data[faction]:
                 if category["CategoryName"] == "Infiltrator":
-                    continue  # pass
+                    # continue  # pass
+                    pass
                 self.category_frames[faction][category["CategoryName"]] = ToggledFrame(self.frame,
                                                                                        text=category["CategoryName"],
                                                                                        labelwidth=27)
@@ -105,7 +106,9 @@ class ShipSelectFrame(ttk.Frame):
             mb.showinfo("Request", "Please choose a character first.")
             return
         ship_name = ships.other_ships[ship_name]
-        if self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
+        if ship_name not in self.window.characters_frame.characters[self.character_tuple]["Ship Objects"]:
+            ship_object = ships.Ship(ship_name)
+        elif self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
             ship_object = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]
         else:
             ship_object = ships.Ship(ship_name)

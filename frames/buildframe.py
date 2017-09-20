@@ -4,7 +4,12 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
+<<<<<<< HEAD
 from frames.shipstatsframe import ShipStatsFrame
+=======
+from widgets import *
+from parsing.ships import Ship, Component, ShipStats, reverse_ships, companions_db_categories
+>>>>>>> Add more debugging code to start on finishing the build calculator
 from parsing.abilities import all_ships
 from parsing.ships import Ship, Component, companions_db_categories
 from tools.utilities import get_assets_directory
@@ -187,6 +192,7 @@ class BuildsFrame(ttk.Frame):
             self.crew_select_frame.category_variables[category].set(name)
             self.crew_select_frame.set_crew_member(crew_member)
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
+        self.ship_name = ship
         self.grid_widgets()
 
     def set_component(self, category, component):
