@@ -6,7 +6,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from widgets import *
-from parsing.ships import Ship, Component
+from parsing.ships import Ship, Component, ShipStats, reverse_ships
 from parsing.abilities import all_ships
 import pickle as pickle
 from os import path
@@ -168,6 +168,7 @@ class BuildsFrame(ttk.Frame):
         if ship == "Novadive":
             ship = "NovaDive"
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
+        self.ship_name = ship
         self.grid_widgets()
 
     def set_component(self, category, component):
@@ -245,6 +246,12 @@ class BuildsFrame(ttk.Frame):
             frame.grid_forget()
 
     def show_ship_stats(self):
+        print("Character: {}, Ship: {}".format(self.character, self.ship_name))
+        if self.character is None or self.ship_name is None:
+            return
+        data = self.window.characters_frame.get_character_data(self.character)
+        print(data)
+        ShipStats(data["Ship Objects"][reverse_ships[self.ship_name]])
         messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
 
     def set_faction(self, faction):

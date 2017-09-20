@@ -183,7 +183,15 @@ class ShipStats(object):
         self.stats = ship.data["Stats"]
         self.components = {}
         for category, component in ship.components.items():
-            pass
+            if component is None:
+                continue
+            print("Category: {}, Component: {}".format(category, component))
+            if not isinstance(component, Component):
+                raise ValueError()
+            for item, data in component:
+                print("Item: {}, Data: {}".format(item, data))
+        for category, item in ship.crew.items():
+            print("Category: {}, Crew: {}".format(category, item))
 
     def __getitem__(self, item):
         return self.stats[item]
