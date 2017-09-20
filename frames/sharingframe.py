@@ -13,7 +13,7 @@ from ttkwidgets import CheckboxTreeview
 from ttkwidgets.autocomplete import AutocompleteCombobox
 # Own modules
 from server.sharing_client import SharingClient
-import variables
+from variables import settings
 from parsing import parse, fileops
 from tools.utilities import get_temp_directory
 from toplevels.splashscreens import SplashScreen
@@ -91,9 +91,14 @@ class SharingFrame(ttk.Frame):
                 # Creating a nice file string failed, probably a custom filename
                 continue
             # Get the right values from the CombatLog to show in the tree
-            path = os.path.join(variables.settings_obj["parsing"]["cl_path"], item)
-            with open(path, "r") as fi:
-                lines = fi.readlines()
+            path = os.path.join(settings["parsing"]["path"], item)
+            with open(path, "rb") as fi:
+                lines = []
+                for line in fi:
+                    try:
+                        lines.append(line.decode())
+                    except UnicodeDecodeError:
+                        continue
             player_name = parse.determinePlayerName(lines)
             player_ids = parse.determinePlayer(lines)
             synchronized = self.get_amount_synchronized(item, player_ids)

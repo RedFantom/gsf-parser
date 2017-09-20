@@ -7,7 +7,7 @@
 # For license see LICENSE
 import os
 from datetime import datetime
-import variables
+from variables import settings
 from parsing import parse
 
 
@@ -16,7 +16,7 @@ def get_valid_combatlogs():
     Return a list of valid CombatLog filenames
     """
     # Generate a list of filenames
-    path = variables.settings_obj["parsing"]["cl_path"]
+    path = settings["parsing"]["path"]
     files = os.listdir(path)
     valid_combatlogs = []
     # Loop over the files to check whether they are valid GSF CombatLogs
@@ -55,9 +55,7 @@ def get_file_string(file_name):
         file_time = datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
     except ValueError:
         return None
-    file_string = file_time.strftime(
-        "%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"] == "ymd" else "%Y-%d-%m   %H:%M"
-    )
+    file_string = file_time.strftime("%Y-%m-%d   %H:%M")
     return file_string
 
 

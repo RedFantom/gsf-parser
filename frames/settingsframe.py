@@ -93,6 +93,19 @@ class SettingsFrame(ttk.Frame):
             self.parsing_frame, width=80 if sys.platform != "linux" else 60, textvariable=self.parsing_path)
         self.parsing_path_entry.bind("<Key>", self.save_settings_delayed)
         self.parsing_path_button = ttk.Button(self.parsing_frame, text="Browse", command=self.set_directory_dialog)
+        # Sharing server
+        self.parsing_sharing_server_frame = ttk.Frame(self.parsing_frame)
+        self.parsing_sharing_address = tk.StringVar()
+        self.parsing_sharing_port = tk.StringVar()
+        self.parsing_sharing_label = ttk.Label(self.parsing_sharing_server_frame, text="Sharing Server Address:")
+        self.parsing_sharing_address_label = ttk.Label(self.parsing_sharing_server_frame, text="Address:")
+        self.parsing_sharing_port_label = ttk.Label(self.parsing_sharing_server_frame, text="Port:")
+        self.parsing_sharing_address_entry = ttk.Entry(
+            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_address, width=40)
+        self.parsing_sharing_port_entry = ttk.Entry(
+            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_port, width=6)
+        self.parsing_sharing_address_entry.bind("<Key>", self.save_settings_delayed)
+        self.parsing_sharing_port_entry.bind("<Key>", self.save_settings_delayed)
 
         """
         RealTime settings
@@ -241,6 +254,13 @@ class SettingsFrame(ttk.Frame):
         self.parsing_path_label.grid(row=0, column=0, **padding_label, **sticky_default)
         self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
         self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
+        # Sharing server
+        self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
+        self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
+        self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
+        self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
+        self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
         """
         RealTime settings
         """
@@ -299,6 +319,9 @@ class SettingsFrame(ttk.Frame):
         Parsing Settings
         """
         self.parsing_path.set(settings["parsing"]["path"])
+        self.parsing_sharing_port.set(settings["parsing"]["port"])
+        self.parsing_sharing_address.set(settings["parsing"]["address"])
+    
         """
         Real-time Settings
         """
@@ -360,6 +383,8 @@ class SettingsFrame(ttk.Frame):
             },
             "parsing": {
                 "path": self.parsing_path.get(),
+                "address": self.parsing_sharing_address.get(),
+                "port": self.parsing_sharing_port.get()
             },
             "realtime": {
                 "overlay": self.realtime_overlay_enabled.get(),
@@ -396,5 +421,9 @@ class SettingsFrame(ttk.Frame):
         y = self.realtime_overlay_position_y.get()
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
+            return False
+        # Port
+        if not self.parsing_sharing_port.get().isdigit():
+            messagebox.showerror("Error", "The port entered is not a valid number.")
             return False
         return True

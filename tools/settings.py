@@ -104,6 +104,8 @@ class Settings(object):
         "parsing": {
             "path": os.path.realpath(
                 os.path.join(os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs")),
+            "address": "parser.thrantasquadron.tk",
+            "port": 83
         },
         "realtime": {
             "overlay": True,
@@ -114,7 +116,7 @@ class Settings(object):
             "screen_overlay": True,
             "screen_features": ["Tracking penalty", "Ship health", "Power management"],
             "overlay_experimental": False
-        }
+        },
     }
 
     # Set the file_name for use by other functions

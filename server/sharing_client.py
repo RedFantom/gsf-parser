@@ -6,7 +6,7 @@
 from tkinter import messagebox
 # Own modules
 from .client import Client
-import variables
+from variables import settings
 
 
 class SharingClient(Client):
@@ -15,8 +15,8 @@ class SharingClient(Client):
     bomb/owner id combinations, kills, and more. Does not provide any realtime functionality.
     """
     def __init__(self):
-        host = variables.settings_obj["sharing"]["server_address"]
-        port = variables.settings_obj["sharing"]["server_port"]
+        host = settings["parsing"]["address"]
+        port = settings["parsing"]["port"]
         Client.__init__(self, host, port)
 
     def send_name_id(self, server, faction, mainname, altname, id):
