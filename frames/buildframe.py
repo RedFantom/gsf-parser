@@ -23,6 +23,7 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
+
     # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
     # TODO: Implement toplevels.shipstats.ShipStats
 
@@ -219,10 +220,13 @@ class BuildsFrame(ttk.Frame):
             self.current_component = MajorComponentWidget(*args)
         else:
             raise ValueError("Component category not found: %s" % category)
-        if self.ship.components[category].name != component:
-            self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing],
-                                                       indexing,
-                                                       category)
+        if category in self.ship.components and self.ship.components[category].name != component:
+            new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
+                                      indexing,
+                                      category)
+            if self.ship.components[category] is not None:
+                new_component.upgrades = self.ship.components[category].upgrades
+            self.ship.components[category] = new_component
         self.current_component.grid_widgets()
         self.current_component.grid(sticky="nswe")
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
