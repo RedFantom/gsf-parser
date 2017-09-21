@@ -102,6 +102,7 @@ class BuildsFrame(ttk.Frame):
         print("Looking for companion {0} in category {1}".format(member[2], member[1]))
         value = None
         faction, category, name = member
+        self.ship.crew[category] = member
         category_index = companions_db_categories[category]
         for index, companion in enumerate(self.companions_data[faction][category_index][category]):
             print("Checking companion: {0}".format(companion["Name"]))
@@ -117,6 +118,7 @@ class BuildsFrame(ttk.Frame):
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
         self.current_component.grid_widgets()
         self.grid_widgets()
+        self.save_ship_data()
 
     def set_ship(self, faction, type, ship, ship_object):
         if not bool(self.ship_select_frame.category_frames[faction][type].show.get()):
@@ -162,6 +164,16 @@ class BuildsFrame(ttk.Frame):
                 break
         if ship == "Novadive":
             ship = "NovaDive"
+        for crew_member in self.ship.crew.values():
+            if crew_member is None:
+                continue
+            faction, category, name = crew_member
+            if category == "CoPilot":
+                self.crew_select_frame.copilot_variable.set(name)
+                self.crew_select_frame.set_crew_member(crew_member)
+                continue
+            self.crew_select_frame.category_variables[category].set(name)
+            self.crew_select_frame.set_crew_member(crew_member)
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
         self.ship_name = ship
         self.grid_widgets()
