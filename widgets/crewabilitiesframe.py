@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 
 # Written by RedFantom, Wing Commander of Thranta Squadron,
 # Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
@@ -7,6 +7,7 @@
 # For license see LICENSE
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 from os import path
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
@@ -21,8 +22,13 @@ class CrewAbilitiesFrame(ttk.Frame):
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         self.description_label = ttk.Label(self.frame.interior, text=self.data["Description"], justify=tk.LEFT,
                                            wraplength=300)
-        self.active_image = photo(img.open(path.join(self.icons_path, self.data["AbilityIcon"] + ".jpg")))
-        self.passive_one_image = photo(img.open(path.join(self.icons_path, self.data["AbilityIcon"] + ".jpg")))
+        try:
+            self.active_image = photo(img.open(path.join(self.icons_path, self.data["AbilityIcon"] + ".jpg")))
+        except FileNotFoundError:
+            messagebox.showerror("Error", "The GSF Parser is missing the following icon in the assets folder: {}. "
+                                          "Please report this error if you did not modify the assets folder.".
+                                          format(self.data["AbilityIcon"]))
+        self.passive_one_image = photo(img.open(path.join(self.icons_path, self.data["PassiveIcon"] + ".jpg")))
         self.passive_two_image = photo(img.open(path.join(self.icons_path, self.data["SecondaryPassiveIcon"] + ".jpg")))
         self.active_label = ttk.Label(self.frame.interior,
                                       text=(self.data["AbilityName"] + "\n" + self.data["AbilityDescription"]),

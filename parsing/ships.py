@@ -54,6 +54,14 @@ reverse_ships = {value.replace("Republic_", "").replace("Imperial_", "").replace
 other_ships = {value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key for key, value in
                ships.items()}
 
+companions_db_categories = {
+    "Engineering": 0,
+    "Offensive": 1,
+    "Tactical": 2,
+    "Defensive": 3,
+    "CoPilot": 4
+}
+
 
 class Ship(object):
     def __init__(self, ship_name):

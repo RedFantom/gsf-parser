@@ -6,7 +6,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from widgets import *
-from parsing.ships import Ship, Component
+from parsing.ships import Ship, Component, companions_db_categories
 from parsing.abilities import all_ships
 import pickle as pickle
 from os import path
@@ -23,9 +23,6 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
-
-    # TODO: Call set_component at loading of set_ship for each component that has been set if the ship has already been
-    # TODO: configured
 
     # TODO: Save the components entered correctly by creating Component objects and adding those to Ship objects, adding
     # TODO: in turn to the Character objects, adding those to the database and then immediately saving them
@@ -104,20 +101,25 @@ class BuildsFrame(ttk.Frame):
         self.reset()
 
     def set_crew_member(self, member):
+        """
+        Callback to set the crew member in both the database as well as in the CrewAbilitiesFrame
+        :param member: (faction, category, name)
+        """
         print("set_crew_member received member: {0}".format(member))
         print("Looking for companion {0} in category {1}".format(member[2], member[1]))
         value = None
-        print(self.companions_data["Imperial"][0]["Engineering"][0]["Name"])
-        for index, companion in enumerate(self.companions_data[member[0]][0][member[1]]):
+        faction, category, name = member
+        category_index = companions_db_categories[category]
+        for index, companion in enumerate(self.companions_data[faction][category_index][category]):
             print("Checking companion: {0}".format(companion["Name"]))
-            if member[2] == companion["Name"]:
+            if name == companion["Name"]:
                 print("Companion is valid!")
                 value = index
                 print("Index was {0}, so value set to {1}".format(index, value))
                 break
         if value is None:
             raise ValueError()
-        member_dict = self.companions_data[member[0]][0][member[1]][value]
+        member_dict = self.companions_data[faction][category_index][category][value]
         self.current_component.destroy()
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
         self.current_component.grid_widgets()
