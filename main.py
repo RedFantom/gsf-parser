@@ -5,6 +5,7 @@
 # For license see LICENSE
 
 from os.path import dirname, join, basename
+from tkinter import messagebox, filedialog
 import sys
 import shutil
 import platform
@@ -12,7 +13,19 @@ import platform
 
 def new_window():
     import gui
-    main_window = gui.MainWindow()
+    try:
+        main_window = gui.MainWindow()
+    except Exception as e:
+        save = messagebox.askyesno("Error", "The GSF Parser window failed to correctly initialize. Please report this "
+                                            "error along with the debug output below.\n\n{}\n\nWould you like to save "
+                                            "the debug output to a file?".format(e))
+        if save is True:
+            filename = filedialog.asksaveasfilename()
+            if filename is None:
+                raise ValueError("Invalid filename provided")
+            with open(filename, "w") as fo:
+                fo.write(e)
+        raise
     main_window.mainloop()
 
 
