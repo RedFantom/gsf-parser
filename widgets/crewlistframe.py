@@ -45,7 +45,7 @@ class CrewListFrame(ttk.Frame):
         self.copilot_icons = {}
         self.copilot_buttons = {}
         self.category_variables = {}
-        self.copilot_variable = tk.IntVar()
+        self.copilot_variable = tk.StringVar()
         self.faction = faction
         for category in self.data:
             # Category is a dictionary (weirdly): {crole: [{}, {}]}
@@ -77,7 +77,7 @@ class CrewListFrame(ttk.Frame):
             elif crole == "":
                 raise ValueError("Invalid role detected.")
             self.category_frames[crole] = ToggledFrame(self, text=crole)
-            self.category_variables[crole] = tk.IntVar()
+            self.category_variables[crole] = tk.StringVar()
             print("crole is ", crole)
             for member_dict in category:
                 self.member_icons[member_dict["Name"]] = photo(img.open(path.join(self.icons_path,
@@ -90,7 +90,7 @@ class CrewListFrame(ttk.Frame):
                                                                            self.set_crew_member(i),
                                                                            width=16,
                                                                            variable=self.category_variables[crole],
-                                                                           value=category.index(member_dict))
+                                                                           value=member_dict["Name"])
                 if member_dict["IsDefaultCompanion"]:
                     self.copilots[crole] = member_dict["Name"]
         self.update_copilots()
@@ -117,7 +117,7 @@ class CrewListFrame(ttk.Frame):
                                                          command=lambda faction=self.faction, name=name:
                                                          self.set_crew_member((faction, "CoPilot", name)),
                                                          width=16,
-                                                         variable=self.copilot_variable, value=index)
+                                                         variable=self.copilot_variable, value=name)
             # , value=self.copilots.index(name))
             index += 1
         self.grid_widgets()
