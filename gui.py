@@ -14,6 +14,7 @@ import os
 import variables
 from tools import client
 import main
+import socket
 from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
@@ -247,7 +248,6 @@ class MainWindow(ThemedTk):
         Function to check for GSF Parser updates by checking tags and opening a window if an update is available
         :return: None
         """
-        print("Rate limit: ", Github().rate_limiting)
         if not variables.settings_obj["misc"]["autoupdate"]:
             return
         try:
@@ -267,7 +267,7 @@ class MainWindow(ThemedTk):
                 except ValueError as e:
                     print(e)
                     continue
-        except GithubException:
+        except (GithubException, socket.timeout, socket.error):
             pass
 
     def destroy(self):
