@@ -17,8 +17,8 @@ def new_window():
         main_window = gui.MainWindow()
     except Exception as e:
         save = messagebox.askyesno("Error", "The GSF Parser window failed to correctly initialize. Please report this "
-                                            "error along with the debug output below.\n\n{}\n\nWould you like to save "
-                                            "the debug output to a file?".format(e))
+                                            "error along with the debug output below.\n\n{}: {}\n\nWould you like to "
+                                            "save the debug output to a file?".format(type(e), e))
         if save is True:
             filename = filedialog.asksaveasfilename()
             if filename is None:
