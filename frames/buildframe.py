@@ -30,7 +30,7 @@ class BuildsFrame(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.window = variables.main_window
         self.working = [
-            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems", "Engine",
             "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         self.categories = {
             "Bomber": 0,
@@ -55,17 +55,23 @@ class BuildsFrame(ttk.Frame):
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
+        # Open all required databases
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
+            # Contains data on the components
             self.ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as f:
+            # Contains data on the ships (specifically descriptions and the like)
             self.categories_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
                   "rb") as f:
+            # Contains data on the Crew members
             self.companions_data = pickle.load(f)
+        # ScrollFrame to contain the component lists (ToggledFrames) and the CrewSelectFrame
         self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=260, canvasheight=315)
+
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
@@ -73,9 +79,11 @@ class BuildsFrame(ttk.Frame):
         self.ship = Ship("Bloodmark")
         self.character = None
         self.ship_name = None
+        # Header above the Components ToggledFrames
         self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
                                                        justify=tk.LEFT, font=("Calibiri", 12))
         for category in self.working:
+            # Bloodmark is the default around which the widgets are created
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
             self.components_lists[category] = \
@@ -87,6 +95,7 @@ class BuildsFrame(ttk.Frame):
                                                       self.ship)
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.faction,
                                                self.companions_data[self.faction], self.set_crew_member)
+        # Image for on the ShipStats button
         self.ship_stats_image = photo(Image.open(
             os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
@@ -121,7 +130,14 @@ class BuildsFrame(ttk.Frame):
         self.save_ship_data()
 
     def set_ship(self, faction, type, ship, ship_object):
-        if not bool(self.ship_select_frame.category_frames[faction][type].show.get()):
+        """
+        Callback to update the component lists and other widgets to match the newly selected ship
+        :param faction: faction, str
+        :param type: ship type (Scout, Strike etc)
+        :param ship: Ship name
+        :param ship_object: parsing.ships.Ship instance
+        """
+        if not self.ship_select_frame.category_frames[faction][type].show.get():
             self.ship_select_frame[faction][type].toggle()
         ship_name = ""
         if faction == "Imperial":
@@ -178,39 +194,36 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
 
     def set_component(self, category, component):
+        """
+        Callback to set a new component in a certain category
+        """
         self.current_component.grid_forget()
         self.current_component.destroy()
-        # category = {value: key for key, value in self.component_strings.items()}[category]
-        print("[DEBUG] set_component(%s, %s)" % (category, component))
+        print("set_component(%s, %s)" % (category, component))
         indexing = -1
-        print("[DEBUG] type is: ", type(self.ships_data[self.ship.ship_name][category]))
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
                 indexing = index
                 break
-        print(indexing)
+        print("Index determined as {}".format(indexing))
         if indexing == -1:
             raise ValueError("Component not found in database with ship {0}, category {1} and component {2}".format(
                 self.ship.ship_name, category, component
             ))
+        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship)
         if category in self.minor_components:
-            self.current_component = MinorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][indexing],
-                                                          self.ship)
+            self.current_component = MinorComponentWidget(*args)
         elif category in self.middle_components:
-            self.current_component = MiddleComponentWidget(self.component_frame,
-                                                           self.ships_data[self.ship.ship_name][category][indexing],
-                                                           self.ship)
+            self.current_component = MiddleComponentWidget(*args)
         elif category in self.major_components:
-            self.current_component = MajorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][indexing],
-                                                          self.ship)
+            self.current_component = MajorComponentWidget(*args)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing], indexing,
-                                                   category)
+        if self.ship.components[category].name != component:
+            self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing],
+                                                       indexing,
+                                                       category)
         self.current_component.grid_widgets()
-        print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
         for button in self.current_component.upgrade_buttons:
