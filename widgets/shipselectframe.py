@@ -13,6 +13,7 @@ import pickle as pickle
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import ToggledFrame, VerticalScrollFrame
+from widgets.hoverinfo import HoverInfo
 import variables
 from parsing import ships
 from collections import OrderedDict
@@ -80,6 +81,7 @@ class ShipSelectFrame(ttk.Frame):
                                    command=lambda faction=faction, category=category, ship_dict=ship_dict:
                                    self.set_ship(faction, category["CategoryName"], ship_dict["Name"]),
                                    width=18)
+                    HoverInfo(self.ship_buttons[ship_dict["Name"]], ship_dict["Description"], headertext="Description")
         self.update_servers()
 
     def grid_widgets(self):
@@ -98,7 +100,7 @@ class ShipSelectFrame(ttk.Frame):
                     frame.grid_forget()
         set_row = 40
         for button in self.ship_buttons.values():
-            button.grid(row=set_row, column=0, sticky="nswe")
+            button.grid(row=set_row, column=0, sticky="nswe", padx=2, pady=2)
             set_row += 1
 
     def set_ship(self, faction, category, ship_name):
