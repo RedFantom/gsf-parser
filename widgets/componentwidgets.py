@@ -112,6 +112,7 @@ class MajorComponentWidget(ComponentWidget):
             if i >= 3:
                 self.boolvars.append([tk.BooleanVar(), tk.BooleanVar()])
                 if self.category not in self.ship.components:
+                    print("Category {} not found in the Ship components".format(self.category))
                     self.boolvars[i][0].set(False)
                     self.boolvars[i][1].set(False)
                 else:

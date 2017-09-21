@@ -68,9 +68,6 @@ class Ship(object):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
             ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
-                  "rb") as f:
-            categories_data = pickle.load(f)
         if ship_name not in ships_data:
             self.ship_name = ships[ship_name]
         else:
@@ -94,7 +91,7 @@ class Ship(object):
         }
         self.crew = {
             "Engineering": None,
-            "Offfensive": None,
+            "Offensive": None,
             "Tactical": None,
             "Defensive": None,
             "CoPilot": None
@@ -148,13 +145,6 @@ class Component(object):
             (3, 1): False,
             (4, 0): False,
             (4, 1): False
-        }
-        self.crew = {
-            "CoPilot": None,
-            "Engineering": None,
-            "Defensive": None,
-            "Offensive": None,
-            "Tactical": None
         }
 
     def __setitem__(self, key, value):
