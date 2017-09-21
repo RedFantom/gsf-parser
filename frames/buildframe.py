@@ -294,6 +294,7 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
         self.current_component.grid(row=0, rowspan=3, column=2, sticky="nswe")
 
+
     def set_faction(self, faction):
         self.faction = faction
         self.grid_widgets()
