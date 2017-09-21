@@ -21,7 +21,6 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
-
     # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
     # TODO: Implement toplevels.shipstats.ShipStats
 
