@@ -276,7 +276,7 @@ class BuildsFrame(ttk.Frame):
             return
         data = self.window.characters_frame.get_character_data(self.character)
         print(data)
-        ShipStats(data["Ship Objects"][reverse_ships[self.ship_name]])
+        ShipStats(data["Ship Objects"][reverse_ships[self.ship_name]], self.ships_data, self.companions_data)
         messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
 
     def set_faction(self, faction):

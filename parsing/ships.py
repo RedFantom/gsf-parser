@@ -177,19 +177,92 @@ class Component(object):
 
 
 class ShipStats(object):
-    def __init__(self, ship):
+    def __init__(self, ship, ships_data, companions_data):
         self.stats = ship.data["Stats"]
         self.components = {}
         for category, component in ship.components.items():
-            if component is None:
+            if category not in ship.data:
+                # print("Category {} not found for ship {}".format(category, ship.name))
+                # print("Keys for this ship: {}".format(ship.data.keys()))
                 continue
-            print("Category: {}, Component: {}".format(category, component))
-            if not isinstance(component, Component):
-                raise ValueError()
-            for item, data in component:
-                print("Item: {}, Data: {}".format(item, data))
-        for category, item in ship.crew.items():
-            print("Category: {}, Crew: {}".format(category, item))
+            print("Reading category {} for ship {}".format(category, ship.name))
+            component_stats = ship.data[category][component.index]["Stats"]
+            talent_tree = ship.data[category][component.index]["TalentTree"]
+            for upgrade, enabled in component.upgrades.items():
+                if enabled is False:
+                    continue
+                side = None
+                if isinstance(upgrade, tuple):
+                    upgrade, side = upgrade
+                if side:
+                    upgrade_stats = talent_tree[upgrade][side]["Stats"]
+                else:
+                    upgrade_stats = talent_tree[upgrade][0]["Stats"]
+                for stat, value in upgrade_stats.items():
+                    print("Updating stat {} of component {}".format(stat, component.name))
+                    multiplicative = "[Pc]" in stat
+                    stat_names = [stat, stat.replace("[Pc]", "")]
+                    for stat in stat_names:
+                        if stat in component_stats:
+                            if multiplicative:
+                                value += 1
+                                component_stats[stat] = component_stats[stat] * value
+                            else:
+                                component_stats[stat] += value
+                        elif stat in self.stats:
+                            if multiplicative:
+                                value += 1
+                                self.stats[stat] = self.stats[stat] * value
+                            else:
+                                self.stats[stat] += value
+                        else:
+                            print("Unknown statistic found: {}".format(stat))
+            for stat, value in component_stats.items():
+                multiplicative = "[Pc]" in stat
+                stat_names = [stat, stat.replace("[Pc]", "")]
+                for stat in stat_names:
+                    if stat in self.stats:
+                        print("Updating component stat {} for component {} in ship {}".format(stat, component.name, ship.name))
+                        if multiplicative:
+                            value += 1
+                            self.stats[stat] = self.stats[stat] * value
+                        else:
+                            self.stats[stat] += value
+        for category, companion in ship.crew.items():
+            # {faction: [{category: [{companion}, {companion}]], [category: []}]}
+            if not companion:
+                continue
+            if category == "CoPilot":
+                continue
+            faction, category, name = companion
+            index = 0
+            companion_stats = None
+            for index, dictionary in enumerate(companions_data[faction]):
+                if category in dictionary:
+                    break
+            for member in companions_data[faction][index][category]:
+                one = member["Name"].strip().lower()
+                two = name.strip().lower()
+                print("Comparing {} to {}".format(one, two))
+                print("Are they equal? {}".format(one == two))
+                if one == two:
+                    companion_stats = member["PassiveStats"]
+                    companion_stats.update(member["SecondaryPassiveStats"])
+                    print("Updated companion_stats")
+                    break
+            for stat, value in companion_stats.items():
+                multiplicative = "[Pc]" in stat
+                stat_names = [stat, stat.replace("[Pc]", "")]
+                for stat in stat_names:
+                    if stat in self.stats:
+                        if multiplicative:
+                            value += 1
+                            self.stats[stat] = self.stats[stat] * value
+                        else:
+                            self.stats[stat] += value
+
+        from pprint import pformat
+        print(pformat(self.stats))
 
     def __getitem__(self, item):
         return self.stats[item]
