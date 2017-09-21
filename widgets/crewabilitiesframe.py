@@ -32,19 +32,19 @@ class CrewAbilitiesFrame(ttk.Frame):
         self.passive_two_image = photo(img.open(path.join(self.icons_path, self.data["SecondaryPassiveIcon"] + ".jpg")))
         self.active_label = ttk.Label(self.frame.interior,
                                       text=(self.data["AbilityName"] + "\n" + self.data["AbilityDescription"]),
-                                      image=self.active_image, compound=tk.LEFT, justify=tk.LEFT, wraplength=250)
+                                      image=self.active_image, compound=tk.LEFT, justify=tk.LEFT, wraplength=240)
         self.passive_one_label = ttk.Label(self.frame.interior, text=(self.data["PassiveName"] + "\n" +
                                                                       self.data["PassiveDescription"]),
                                            image=self.passive_one_image, compound=tk.LEFT, justify=tk.LEFT,
-                                           wraplength=250)
+                                           wraplength=240)
         self.passive_two_label = ttk.Label(self.frame.interior, text=(self.data["SecondaryPassiveName"] + "\n" +
                                                                       self.data["SecondaryPassiveDescription"]),
                                            image=self.passive_two_image, compound=tk.LEFT, justify=tk.LEFT,
-                                           wraplength=250)
+                                           wraplength=240)
 
     def grid_widgets(self):
         self.frame.grid()
-        self.description_label.grid(column=0, row=0, sticky="we")
-        self.active_label.grid(column=0, row=1, sticky="we")
-        self.passive_one_label.grid(column=0, row=2, sticky="we")
-        self.passive_two_label.grid(column=0, row=3, sticky="we")
+        self.description_label.grid(column=0, row=0, sticky="we", padx=5, pady=5)
+        self.active_label.grid(column=0, row=1, sticky="we", padx=5, pady=(0, 5))
+        self.passive_one_label.grid(column=0, row=2, sticky="we", padx=5, pady=(0, 5))
+        self.passive_two_label.grid(column=0, row=3, sticky="we", padx=5, pady=(0, 5))

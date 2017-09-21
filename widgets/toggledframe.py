@@ -37,12 +37,13 @@ class ToggledFrame(ttk.Frame):
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=labelwidth, image=self.closed,
                                              command=self.toggle, variable=self.show, style='Toolbutton',
                                              text=text, compound=tk.LEFT)
-        self.toggle_button.grid(sticky="nswe")
+        self.toggle_button.grid(sticky="nswe", padx=5, pady=(0, 5))
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
+        self.interior = self.sub_frame
 
     def toggle(self):
         if bool(self.show.get()):
-            self.sub_frame.grid(sticky="nswe")
+            self.sub_frame.grid(sticky="nswe", padx=5, pady=(0, 5))
             self.toggle_button.configure(image=self.open)
         else:
             self.sub_frame.grid_forget()

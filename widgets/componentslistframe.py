@@ -36,7 +36,7 @@ class ComponentListFrame(ttk.Frame):
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=28)
+        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=26)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}
@@ -55,7 +55,7 @@ class ComponentListFrame(ttk.Frame):
                 if not component_dictionary:
                     raise ValueError("component_dictionary not set: {0}".format(category))
             else:
-                 component_dictionary = component
+                component_dictionary = component
             try:
                 name = component_dictionary["Name"]
                 icon = component_dictionary["Icon"]
@@ -68,7 +68,7 @@ class ComponentListFrame(ttk.Frame):
                                                                          command=lambda
                                                                              name=component_dictionary["Name"]:
                                                                          self.set_component(name),
-                                                                         compound=tk.LEFT, width=19,
+                                                                         compound=tk.LEFT, width=16,
                                                                          variable=self.variable,
                                                                          value=data_list.index(
                                                                              component_dictionary))

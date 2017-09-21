@@ -23,14 +23,7 @@ class BuildsFrame(ttk.Frame):
     This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
-
-    # TODO: Save the components entered correctly by creating Component objects and adding those to Ship objects, adding
-    # TODO: in turn to the Character objects, adding those to the database and then immediately saving them
-
-    # TODO: Create a callback system for the upgrades to be saved in a similar manner as described above ^^
-
     # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
-
     # TODO: Implement toplevels.shipstats.ShipStats
 
     def __init__(self, master):
@@ -72,7 +65,7 @@ class BuildsFrame(ttk.Frame):
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
                   "rb") as f:
             self.companions_data = pickle.load(f)
-        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=315)
+        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=260, canvasheight=315)
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
@@ -226,14 +219,15 @@ class BuildsFrame(ttk.Frame):
         self.component_frame.grid(row=0, rowspan=2, column=2, sticky="nswe")
         self.current_component.grid(sticky="nswe")
         self.current_component.grid_widgets()
-        self.components_lists_header_label.grid(row=0, column=0, sticky="w")
+        self.components_lists_header_label.grid(row=0, column=0, sticky="w", pady=5)
         set_row = 1
         for frame in self.components_lists.values():
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
         # self.crew_select_frame.destroy()
-        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction],
+        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior,
+        #                                        self.companions_data[self.faction],
         #                                        self.set_crew_member_frame)
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 

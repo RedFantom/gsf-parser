@@ -71,7 +71,7 @@ class CrewListFrame(ttk.Frame):
             # The CoPilot role is a special case
             if crole == "CoPilot":
                 for member_dict in category:
-                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=29)
+                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=26)
                     self.copilot_dicts[member_dict["Name"]] = member_dict
                 continue
             elif crole == "":
@@ -88,7 +88,7 @@ class CrewListFrame(ttk.Frame):
                                                                            command=lambda i=(faction, crole,
                                                                                              member_dict["Name"]):
                                                                            self.set_crew_member(i),
-                                                                           width=18,
+                                                                           width=16,
                                                                            variable=self.category_variables[crole],
                                                                            value=category.index(member_dict))
                 if member_dict["IsDefaultCompanion"]:
@@ -116,21 +116,21 @@ class CrewListFrame(ttk.Frame):
                                                          image=self.member_icons[name],
                                                          command=lambda faction=self.faction, name=name:
                                                          self.set_crew_member((faction, "CoPilot", name)),
-                                                         width=18,
+                                                         width=16,
                                                          variable=self.copilot_variable, value=index)
             # , value=self.copilots.index(name))
             index += 1
         self.grid_widgets()
 
     def grid_widgets(self):
-        self.header_label.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.header_label.grid(row=0, column=0, sticky="nswe", pady=5)
         set_row = 1
         for frame in self.category_frames.values():
-            frame.grid(row=set_row, column=0, sticky="nswe", padx=5, pady=(0, 5))
+            frame.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
         for button in self.member_buttons.values():
-            button.grid(row=set_row, column=0, sticky="nswe", padx=5, pady=(0, 5))
+            button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
         for button in self.copilot_buttons.values():
-            button.grid(row=set_row, column=0, sticky="nswe", padx=5, pady=(0, 5))
+            button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
