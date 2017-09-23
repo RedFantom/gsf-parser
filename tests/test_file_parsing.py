@@ -11,6 +11,7 @@ from parsing import parse
 import os
 import tkinter.messagebox
 from tools import utilities
+from decimal import Decimal
 
 
 class TestFileParsing(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestFileParsing(unittest.TestCase):
         self.assertIsInstance(stats_tuple[4], int)  # selfdamage
         self.assertIsInstance(stats_tuple[5], list)  # enemies
         self.assertIsInstance(stats_tuple[6], int)  # criticalcount
-        self.assertIsInstance(stats_tuple[7], float)  # criticalluck
+        self.assertIsInstance(stats_tuple[7], Decimal)  # criticalluck
         self.assertIsInstance(stats_tuple[8], int)  # hitcount
         self.assertIsInstance(stats_tuple[9], list)  # ships_list
         self.assertIsInstance(stats_tuple[10], dict)  # enemydamaged
@@ -100,7 +101,7 @@ class TestFileParsing(unittest.TestCase):
         self.assertIsInstance(stats_tuple[4], int)  # selfdamage
         self.assertIsInstance(stats_tuple[5], list)  # enemies
         self.assertIsInstance(stats_tuple[6], int)  # criticalcount
-        self.assertIsInstance(stats_tuple[7], float)  # criticalluck
+        self.assertIsInstance(stats_tuple[7], Decimal)  # criticalluck
         self.assertIsInstance(stats_tuple[8], int)  # hitcount
         self.assertIsInstance(stats_tuple[9], list)  # ships_list
         self.assertIsInstance(stats_tuple[10], dict)  # enemydamaged
