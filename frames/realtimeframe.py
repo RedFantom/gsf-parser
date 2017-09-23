@@ -56,7 +56,7 @@ class RealtimeFrame(ttk.Frame):
         self.statistics_label_one_text = tk.StringVar()
         self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text,
                                               justify=tk.LEFT)
-        self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.start_parsing,
+        self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.parsing_button_callback,
                                                width=25)
         self.server = tk.StringVar()
         self.character = tk.StringVar()
@@ -101,92 +101,84 @@ class RealtimeFrame(ttk.Frame):
         self.character_tuple = None
 
     def start_parsing(self):
+        self.window.notebook.tab(2, state=tk.DISABLED)
+        self.window.notebook.tab(3, state=tk.DISABLED)
+        self.window.notebook.tab(8, state=tk.DISABLED)
+        self.parsing = True
+        self.main_window.after(100, self.insert)
+        if variables.settings_obj["realtime"]["screenparsing"] is True:
+            self.data_queue = Queue()
+            self.exit_queue = Queue()
+            self.query_queue = Queue()
+            self.return_queue = Queue()
+            self.return_queue.put(0)
+            features = variables.settings_obj["realtime"]["screenparsing_features"]
+            name = "Enemy name and ship type" in features
+            tracking = "Tracking penalty" in features
+            health = "Ship health" in features
+            powermgmt = "Power management" in features
+            self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
+                                             self.window.characters_frame.character_data, name=False,
+                                             tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
+                                             distance=False, ammo=False)
+            self.screenparser.start()
+        else:
+            self.screenparser = None
+            self.data_queue = None
+        self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
+                                      lineops.pretty_event, screen=variables.settings_obj["realtime"]["screenparsing"],
+                                      screenoverlay=variables.settings_obj["realtime"]["screenparsing_overlay"],
+                                      screen_parser=self.screenparser, data_queue=self.data_queue)
+        self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
+                                                   folder=variables.settings_obj["parsing"]["cl_path"],
+                                                   watching_stringvar=self.watching_stringvar,
+                                                   newfilecallback=self.parser.new_file, )
+        variables.realtime_flag = True
+        if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
+            self.overlay = RealtimeOverlay(self.main_window)
+        self.parsing_bar.start(3)
+        self.start_parsing_button.configure(text="Stop real-time parsing")
+        self.stalker_obj.start()
+        self.stalking_exit_queue = self.stalker_obj.exit_queue
+
+    def stop_parsing(self):
+        self.window.notebook.tab(2, state=tk.NORMAL)
+        self.window.notebook.tab(3, state=tk.NORMAL)
+        self.window.notebook.tab(8, state=tk.NORMAL)
+        write_debug_log("Stopping real-time parsing")
+        if self.screenparser:
+            self.exit_queue.put(False)
+        write_debug_log("Put False in exit_queue of Parser")
+        print("Joining threads")
+        if variables.settings_obj["realtime"]["screenparsing"]:
+            print("Joining ScreenParser thread")
+            self.screenparser.join()
+            print("Screenparser thread joined")
+            if variables.settings_obj["realtime"]["screenparsing_overlay"]:
+                self.screenparser.screenoverlay.destroy()
+        self.stalking_exit_queue.put(False)
+        print("Joining LogStalker thread")
+        self.stalker_obj.join()
+        print("LogStalker thread joined")
+        print("Threads joined")
+        self.parsing = False
+        write_debug_log("Real-time parsing joining threads")
+        if variables.settings_obj["realtime"]["overlay"] and self.overlay:
+            self.overlay.destroy()
+        self.overlay = None
+        self.parsing_bar.stop()
+        self.start_parsing_button.configure(text="Start real-time parsing")
+        self.watching_stringvar.set("Watching no CombatLog...")
+        write_debug_log("Finished stopping parsing...")
+
+    def parsing_button_callback(self):
         if not self.character_tuple:
             mb.showinfo("Requirement", "You have to select a character before starting this process.")
             return
         if not self.parsing:
-            # self.main_window.file_select_frame.add_files()
-            # self.start_parsing_button.config(relief=tk.SUNKEN)
-            self.window.notebook.tab(2, state=tk.DISABLED)
-            self.window.notebook.tab(3, state=tk.DISABLED)
-            self.window.notebook.tab(8, state=tk.DISABLED)
-            self.parsing = True
-            self.main_window.after(100, self.insert)
-            if variables.settings_obj["realtime"]["screenparsing"]:
-                self.data_queue = Queue()
-                self.exit_queue = Queue()
-                self.query_queue = Queue()
-                self.return_queue = Queue()
-                self.return_queue.put(0)
-                features = variables.settings_obj["realtime"]["screenparsing_features"]
-                if "Enemy name and ship type" in features:
-                    name = True
-                else:
-                    name = False
-                if "Tracking penalty" in features:
-                    tracking = True
-                else:
-                    tracking = False
-                if "Ship health" in features:
-                    health = True
-                else:
-                    health = False
-                if "Power management" in features:
-                    powermgmt = True
-                else:
-                    powermgmt = False
-                self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
-                                                 self.window.characters_frame.character_data, name=False,
-                                                 tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
-                                                 distance=False, ammo=False)
-                self.screenparser.start()
-            else:
-                self.screenparser = None
-                self.data_queue = None
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          lineops.pretty_event, screen=variables.settings_obj["realtime"]["screenparsing"],
-                                          screenoverlay=variables.settings_obj["realtime"]["screenparsing_overlay"],
-                                          data_queue=self.data_queue)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
-                                                       folder=variables.settings_obj["parsing"]["cl_path"],
-                                                       watching_stringvar=self.watching_stringvar,
-                                                       newfilecallback=self.parser.new_file, )
-            variables.realtime_flag = True
-            if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
-                self.overlay = RealtimeOverlay(self.main_window)
-            self.parsing_bar.start(3)
-            self.start_parsing_button.configure(text="Stop real-time parsing")
-            self.stalker_obj.start()
-            self.stalking_exit_queue = self.stalker_obj.exit_queue
+            self.start_parsing()
         elif self.parsing:
-            self.window.notebook.tab(2, state=tk.NORMAL)
-            self.window.notebook.tab(3, state=tk.NORMAL)
-            self.window.notebook.tab(8, state=tk.NORMAL)
-            write_debug_log("Stopping real-time parsing")
-            if self.screenparser:
-                self.exit_queue.put(False)
-            write_debug_log("Put False in exit_queue of Parser")
-            print("Joining threads")
-            if variables.settings_obj["realtime"]["screenparsing"]:
-                print("Joining ScreenParser thread")
-                self.screenparser.join()
-                print("Screenparser thread joined")
-                if variables.settings_obj["realtime"]["screenparsing_overlay"]:
-                    self.screenparser.screenoverlay.destroy()
-            self.stalking_exit_queue.put(False)
-            print("Joining LogStalker thread")
-            self.stalker_obj.join()
-            print("LogStalker thread joined")
-            print("Threads joined")
-            self.parsing = False
-            write_debug_log("Real-time parsing joining threads")
-            if variables.settings_obj["realtime"]["overlay"] and self.overlay:
-                self.overlay.destroy()
-            self.overlay = None
-            self.parsing_bar.stop()
-            self.start_parsing_button.configure(text="Start real-time parsing")
-            self.watching_stringvar.set("Watching no CombatLog...")
-            write_debug_log("Finished stopping parsing...")
+            self.stop_parsing()
 
     def grid_widgets(self):
         self.start_parsing_button.grid(column=0, row=1, padx=5, pady=5)
