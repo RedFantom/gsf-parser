@@ -28,6 +28,11 @@ class TestVision(TestCase):
             self.assertEqual(result, int(filename.replace(".jpg", "")))
         return
 
+    def test_get_timer_status_none(self):
+        box_tuple = (100, 100, 170, 140)
+        image = self.image.crop(box_tuple)
+        self.assertIsNone(get_timer_status(image))
+
     def test_get_power_management(self):
         coordinates = self.gui.get_ship_powermgmt_coordinates()
         power_management = get_power_management(self.screen, *coordinates)

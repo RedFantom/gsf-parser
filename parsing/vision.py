@@ -103,8 +103,11 @@ def get_timer_status(source):
             continue
         image_path = os.path.join(folder, img)
         image = Image.open(image_path)
-        similarity =get_similarity(source, image)
-        image_similarity[img.replace(".jpg", "")] = similarity
+        similarity = get_similarity(source, image)
+        if similarity < 0.25:
+            image_similarity[img.replace(".jpg", "")] = similarity
+    if len(image_similarity) == 0:
+        return None
     return int(min(image_similarity.items(), key=operator.itemgetter(1))[0])
 
 
