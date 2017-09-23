@@ -376,16 +376,21 @@ class CharactersFrame(ttk.Frame):
         self.save_button.invoke()
         self.update_tree()
 
-    def get_character_data(self):
+    def get_character_data(self, character=None):
         """
         Get a character_data dictionary from the selected character in the Treeview
         :return: None
         """
-        character = self.characters_list.selection()
-        if len(character[0]) < 4:
-            return
-        server = character[0][:3]
-        name = character[0][4:]
+        if character is not None:
+            server, name = character
+        else:
+            character = self.characters_list.selection()
+            if character == ():
+                return
+            if len(character[0]) < 4:
+                return
+            server = character[0][:3]
+            name = character[0][4:].replace("{", "").replace("}", "")
         if not server:
             raise ValueError("Server not found: {0}".format(character[0]))
         self.clear_character_data()
