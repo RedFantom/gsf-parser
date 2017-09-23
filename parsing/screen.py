@@ -495,7 +495,6 @@ class ScreenParser(threading.Thread):
             self.data_dictionary[self._file] = self._file_dict
             self.save_data_dictionary()
             write_debug_log("Finished a screen parsing cycle")
-            time.sleep(0.05)
         print("ScreenParser stopping activities")
         write_debug_log("ScreenParser stopping activities")
         try:
