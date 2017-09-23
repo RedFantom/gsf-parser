@@ -24,13 +24,13 @@ class Parser(object):
     each element is the respective amount done per match.
     (=> length of list = # of matches)
 
-    The element of this lists are themself a list where the elemnts represent
+    The elements of these lists are themselves a list where the elements represent
     the spawns. The only elements not to be a list are abilites and crit luck,
-    which are a tuple and a dictionary respectivly.
+    which are a tuple and a dictionary respectively.
     (=> length of list = # of spawns)
 
     The abilities dictionary has as key the name of the ability and
-    as value a ?list/dictionary? containig the respective amount for each statistic.
+    as value a ?list/dictionary? containing the respective amount for each statistic.
     This dictionary is then stored in the list abilities for each match.
 
     The crit luck tuple contains the absolute amount of critical hit,
@@ -40,45 +40,26 @@ class Parser(object):
 
     To clarify which list is what, here is a short reference:
     :var: spawn_* is the list updated live
-    :var: tmp_* is the list of the live match, containig infos per spawn
+    :var: tmp_* is the list of the live match, containing infos per spawn
     :var: * is the list of the parse, containing infos per match
-
-    Usage Example:
-
-    >>> # put the path in config.ini
-    >>> config = read_config()
-    >>> stalker = LogStalker(config['path'], callback=callback)
-    >>> stalker.loop()
-
-    To access the parse data you need to modify the callback function under the 'HERE' comment
-    Example:
-
-    >>> def callback(...):
-    ...     [...]
-    ...     for line in lines:
-    ...         process = line_to_dictionary(line)
-    ...         parser.parse(process)
-    ...         # HERE
-    ...         damage_done = parser.tmp_dmg_done
     """
 
     DEBUG = False
 
     def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
-                 ship=None, data_queue=None):
-        if not screen and screenoverlay:
+                 ship=None, screen_parser=None, data_queue=None):
+        if screen is False and screenoverlay is True:
             showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
             raise ValueError("screenoverlay True but screen False")
-        if screen and not ship:
+        if screen is True and ship is None:
             # showerror("Error", "Screen parsing enabled but no ship object acquired.")
             # raise ValueError("screen True but ship None")
             pass
 
+        self.screen_parser = screen_parser
         self.data_queue = data_queue
-        if data_queue:
+        if self.screen_parser is not None and self.data_queue is not None:
             self.screenparser = True
-        else:
-            self.screenparser = False
         self.player_name = ''
         self.crit_nr = 0
         self.is_match = False
@@ -121,8 +102,9 @@ class Parser(object):
         self.dprint("[DEBUG] line", line)
         if not line:
             print("[DEBUG] Line is of NoneType")
-            # Should be return for #20?
             return
+        if self.screenparser:
+            self.screen_parser.line_queue.put(line)
 
         if "SetLevel" in line:
             return
@@ -138,7 +120,7 @@ class Parser(object):
         if self.player_name == '' and '@' in line['source']:
             self.player_name = line['source'][1:]
             variables.rt_name = self.player_name
-            print((self.player_name))
+            print(self.player_name)
         # Sometimes multiple log-ins are stored in one log
         # Then the player_name must be changed if it is a self-targeted ability
         if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
@@ -146,7 +128,7 @@ class Parser(object):
             if line['source'][1:] != self.player_name:
                 self.player_name = line['source'][1:]
                 variables.rt_name = self.player_name
-                print((self.player_name))
+                print(self.player_name)
 
         if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
             self.dprint("[DEBUG] out of match, skip")
@@ -293,26 +275,3 @@ class Parser(object):
     def new_file(self, filename):
         if self.screenparser:
             self.data_queue.put(("file", filename))
-
-
-# ===================================================================
-# --- Utility Tools
-# ===================================================================
-def read_config():
-    """
-    Reads the config file and determines all the configuration
-    variables.
-
-    :return: dictionary containing all the needed information
-    """
-    values = {}
-    with open('config.ini', 'r') as config:
-        for line in config:
-            if line is '' or line.startswith(';'):
-                continue
-            elif 'PATH' in line:
-                elements = re.split("=", line)
-                path = elements[1]
-                # path = line.split(None, 2)[2]
-                values['path'] = path
-        return values
