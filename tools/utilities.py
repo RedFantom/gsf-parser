@@ -79,17 +79,6 @@ def get_cursor_position(screen):
         raise ValueError("Unknown platform detected")
 
 
-def get_pillow_screen():
-    """
-    Returns the appropriate Image object
-    :return: Image object
-    """
-    sct = mss.mss()
-    sct.enum_display_monitors()
-    sct.get_pixels(sct.monitors[0])
-    return Image.frombytes("RGB", (sct.width, sct.height), sct.image)
-
-
 def write_debug_log(line):
     """
     If the debug variable is set to True, enables logging to a file in the temporary files folder.

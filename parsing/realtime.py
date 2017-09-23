@@ -9,9 +9,7 @@ from decimal import Decimal
 import datetime
 import re
 from tkinter.messagebox import showerror
-from parsing.stalking import LogStalker
 import variables
-from .lineops import line_to_dictionary
 from tools.utilities import write_debug_log
 
 
