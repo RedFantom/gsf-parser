@@ -17,7 +17,7 @@ def get_similarity(image_one, image_two):
     :return: ratio
     """
     if image_one.size != image_two.size:
-        raise ValueError("These images are not the same size.")
+        raise ValueError("These images are not the same size. One: {}, Two: {}.".format(image_one.size, image_two.size))
     pairs = zip(image_one.getdata(), image_two.getdata())
     diff = sum(abs(c1 - c2) for p1, p2 in pairs for c1, c2 in zip(p1, p2))
     ncomponents = image_one.size[0] * image_one.size[1] * 3
