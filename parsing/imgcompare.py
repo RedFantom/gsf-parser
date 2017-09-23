@@ -5,7 +5,6 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from PIL import Image
 
 
 def get_similarity(image_one, image_two):
@@ -17,10 +16,6 @@ def get_similarity(image_one, image_two):
     :param image_two: Image object or path
     :return: ratio
     """
-    if not isinstance(image_one, Image):
-        image_one = Image.open(image_one)
-    if not isinstance(image_two, Image):
-        image_two = Image.open(image_two)
     if image_one.size != image_two.size:
         raise ValueError("These images are not the same size.")
     pairs = zip(image_one.getdata(), image_two.getdata())
