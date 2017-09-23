@@ -68,57 +68,10 @@ def openCombatLog():
     # Start iterating through the matches and add items to the menu cascade
     index = 0
     amountOfMatches = 0
-    for match in vars.matches:
+    for index, match in enumerate(vars.matches):
         # This can only be done with a lambda function with a static argument for setStatistics()
-        if index == 0:
-            logMenu.add_command(label=vars.timings[0], command=lambda: setStatistics(0))
-        elif index == 1:
-            logMenu.add_command(label=vars.timings[2], command=lambda: setStatistics(1))
-        elif index == 2:
-            logMenu.add_command(label=vars.timings[4], command=lambda: setStatistics(2))
-        elif index == 3:
-            logMenu.add_command(label=vars.timings[6], command=lambda: setStatistics(3))
-        elif index == 4:
-            logMenu.add_command(label=vars.timings[8], command=lambda: setStatistics(4))
-        elif index == 5:
-            logMenu.add_command(label=vars.timings[10], command=lambda: setStatistics(5))
-        elif index == 6:
-            logMenu.add_command(label=vars.timings[12], command=lambda: setStatistics(6))
-        elif index == 7:
-            logMenu.add_command(label=vars.timings[14], command=lambda: setStatistics(7))
-        elif index == 8:
-            logMenu.add_command(label=vars.timings[16], command=lambda: setStatistics(8))
-        elif index == 9:
-            logMenu.add_command(label=vars.timings[18], command=lambda: setStatistics(9))
-        elif index == 10:
-            logMenu.add_command(label=vars.timings[20], command=lambda: setStatistics(10))
-        elif index == 11:
-            logMenu.add_command(label=vars.timings[22], command=lambda: setStatistics(11))
-        elif index == 12:
-            logMenu.add_command(label=vars.timings[24], command=lambda: setStatistics(12))
-        elif index == 13:
-            logMenu.add_command(label=vars.timings[26], command=lambda: setStatistics(13))
-        elif index == 14:
-            logMenu.add_command(label=vars.timings[28], command=lambda: setStatistics(14))
-        elif index == 15:
-            logMenu.add_command(label=vars.timings[30], command=lambda: setStatistics(15))
-        elif index == 16:
-            logMenu.add_command(label=vars.timings[32], command=lambda: setStatistics(16))
-        elif index == 17:
-            logMenu.add_command(label=vars.timings[34], command=lambda: setStatistics(17))
-        elif index == 18:
-            logMenu.add_command(label=vars.timings[36], command=lambda: setStatistics(18))
-        elif index == 19:
-            logMenu.add_command(label=vars.timings[38], command=lambda: setStatistics(19))
-        else:
-            # If the user has more than twenty matches in one combatLog, there are not enough menu items.
-            # Display a warning.
-            tkinter.messagebox.showinfo("Notice",
-                                        "More than twenty matches in a single CombatLog are not suppuported. Only your first "
-                                        "twenty matches have been added.")
-            break
+        logMenu.add_command(label=vars.timings[index * 2], command=lambda index=index: setStatistics(index))
         amountOfMatches += 1
-        index += 1
     # Show the user how many matches were added
     tkinter.messagebox.showinfo("Notice", str(amountOfMatches) + " matches were added.")
     menuBar.add_cascade(label="Matches", menu=logMenu)
