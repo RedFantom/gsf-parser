@@ -234,17 +234,17 @@ class RealtimeFrame(ttk.Frame):
             return
         for line in lines:
             # self.listbox.see(tk.END)
-            process = realtime.line_to_dictionary(line)
+            process = lineops.line_to_dictionary(line)
             self.parser.parse(process)
-            dmg_done = self.parser.spawn_dmg_done
-            dmg_taken = self.parser.spawn_dmg_taken
-            selfdamage = self.parser.spawn_selfdmg
-            healing = self.parser.spawn_healing_rcvd
-            abilities = self.parser.tmp_abilities
-            enemies = self.parser.recent_enemies
-            spawns = self.parser.active_ids
-            self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
-                              len(enemies), len(spawns))
+        dmg_done = self.parser.spawn_dmg_done
+        dmg_taken = self.parser.spawn_dmg_taken
+        selfdamage = self.parser.spawn_selfdmg
+        healing = self.parser.spawn_healing_rcvd
+        abilities = self.parser.tmp_abilities
+        enemies = self.parser.recent_enemies
+        spawns = self.parser.active_ids
+        self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
+                          len(enemies), len(spawns))
         for obj in self.parse:
             obj.close()
 
