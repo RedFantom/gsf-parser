@@ -26,7 +26,7 @@ class TestRealtimeParsing(unittest.TestCase):
         self.stalker.start()
 
     def tearDown(self):
-        self.stalker.FLAG = False
+        self.stalker.exit_queue.put(False)
         time.sleep(5)
         self.assertFalse(self.stalker.is_alive())
 
