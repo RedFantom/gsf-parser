@@ -23,7 +23,6 @@ import mss
 import tkinter.messagebox as messagebox
 import tkinter.filedialog as filedialog
 from shutil import copyfile
-import operator
 from PIL import Image
 
 """
@@ -93,47 +92,91 @@ class ScreenParser(threading.Thread):
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
                  powermgmt=True, health=True, name=True, ttk=True, tracking=True, ammo=True, distance=True,
                  cursor=True):
+        """
+        :param data_queue: Queue that will inform about new matches, spawns, etc.
+        :param exit_queue: Queue that will contain True if an exit is requested
+        :param query_queue: Queue that will contain requests to get data from the ScreenParser
+        :param return_queue: Queue that will contain the answers to the requests in the query_queue
+        :param character_data: Character data for the character selected
+        :param rgb: Parameter for feature that is not yet implemented
+        :param cooldowns: Parameter for feature that is not yet implemented
+        :param powermgmt: True if powermgmt function is enabled
+        :param health: True if health amount function is enabled
+        :param name: True if name feature is enabled (TODO)
+        :param ttk: True if ttk feature is enabled (TODO)
+        :param tracking: True if tracking degrees feature is enabled
+        :param ammo: True if ammo amount function is enabled (TODO)
+        :param distance: True if distance feature is enabled (TODO)
+        :param cursor: True if cursor feature is enabled (TODO)
+        """
         threading.Thread.__init__(self)
+        # The rgb and cooldowns parameters offer the possibility of enabling LED effects on supported RGB keyboards
         if rgb and not cooldowns:
             write_debug_log("ScreenParser encountered the following error during initialization: "
                             "rgb requested but cooldowns not specified")
             raise ValueError("rgb requested but cooldowns not specified")
+        # Interface filename
         interface = character_data["GUI"]
+        # Get a GSFInterface instance for the selected character's GUI profile
         if not isinstance(interface, GSFInterface):
             interface = GSFInterface(interface)
         self.interface = interface
+        # Parameters for unimplemented features
         self.rgb = rgb
         self.cooldowns = cooldowns
+        # Queues (see docstring)
         self.query_queue = query_queue
         self.data_queue = data_queue
         self.exit_queue = exit_queue
         self._internal_queue = Queue()
         self.return_queue = return_queue
+        # A Queue that receives line dictionaries from the realtime.Parser
+        self.line_queue = Queue()
+        # The name of the realtime screen parsing database
         self.pickle_name = os.path.join(get_temp_directory(), "realtime.db")
+        # A dictionary containing the values of the features
         self.features = {
+            # Determine the power management setting (1-4)
             "powermgmt": powermgmt,
+            # Determine the health numbers of the ship
             "health": health,
+            # Determine the name of the target by using OCR
             "name": name,
+            # Determine the time-to-kill in realtime (to use for queries)
             "ttk": ttk,
+            # Determine the amount of tracking degrees
             "tracking": tracking,
+            # Determine the amount of ammo of the equipped secondary weapon by using OCR
             "ammo": ammo,
+            # Determine the distance to the target by using OCR
             "distance": distance,
+            # Determine the cursor position
             "cursor": cursor
         }
+        # The data for the character selected in the RealtimeFrame
         self.character = character_data
+        # List of features (str) generated from the feature dictionary
         self.features_list = [key for key, value in self.features.items() if value]
+        # If debug is enabled, the ScreenParser will log various activities to the program wide debug log file
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
+        # Set up the Overlay instance if that setting is enabled
         self.screenoverlay = HitChanceOverlay(variables.main_window) if \
             variables.settings_obj["realtime"]["screenparsing_overlay"] else None
-        self.moving_overlay = True if \
-            variables.settings_obj["realtime"]["screenparsing_overlay_geometry"] else False
+        # The overlay moves with the cursor if this setting is enabled
+        self.moving_overlay = variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]
 
+        # Open the realtime database file
         try:
+            # Try to open the database (with a bytes-like object)
             with open(self.pickle_name, "rb") as fi:
                 self.data_dictionary = pickle.load(fi)
         except IOError:
+            # IOError means that there is no file with the correct name and a new database is created on the fly
             self.data_dictionary = {}
         except EOFError as e:
+            # If an EOFError occurs, then the database was not saved correctly and the database cannot be restored by
+            # any automated process. The user is offered the option to save the corrupted database to a different
+            # location so it may be restored in some manual manner.
             messagebox.showerror("Error", "The realtime data database did not open correctly. The data in the file may "
                                           "be corrupted. You will now have the chance to dump the data to a separate "
                                           "location together with a debug log. After this, the data will be "
@@ -145,7 +188,8 @@ class ScreenParser(threading.Thread):
                                                     mustexist=True)
                 copyfile(self.pickle_name, directory)
                 with open(os.path.join(directory, "debug.txt"), "w") as f:
-                    f.writelines(str(e))
+                    f.writelines(repr(e))
+            # The data is now discarded
             self.data_dictionary = {}
         write_debug_log("ScreenParser is creating all required data variables")
         # String of filename
@@ -179,12 +223,15 @@ class ScreenParser(threading.Thread):
         self.is_match = None
 
     def run(self):
+        """
+        Runs a loop in a separate Thread in order to collect the data that is required to perform the functionality
+        """
         # Start the listeners for keyboard and mouse input
         write_debug_log("ScreenParser starting main functions")
         write_debug_log("Threads active: %s" % str(threading.enumerate()))
         # self._kb_listener.start()
         # self._ms_listener.start()
-        # Start the loop to parse the screen data
+        # Python-MSS provides a ctypes library with very fast functions to capture the screen contents
         sct = mss.mss()
         resolution = get_screen_resolution()
         
@@ -200,6 +247,10 @@ class ScreenParser(threading.Thread):
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
 
+        health_hull, health_shields_f, health_shields_r = None, None, None
+        ammo, distance = None, None
+
+        # Start the screen parsing loop
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
@@ -258,15 +309,10 @@ class ScreenParser(threading.Thread):
             current_time = datetime.now()
             if "powermgmt" in self.features_list:
                 power_mgmt = vision.get_power_management(screen, *power_mgmt_cds)
-            else:
-                power_mgmt = None
             self._power_mgmt_dict[current_time] = power_mgmt
             if "healh" in self.features_list:
                 health_hull = vision.get_ship_health_hull(screen)
                 (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
-            else:
-                health_hull = None
-                health_shields_f, health_shields_r = None, None
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             if "ttk" in self.features_list:
                 # Calculate TTK
@@ -276,15 +322,11 @@ class ScreenParser(threading.Thread):
                 pass
             if "name" in self.features_list:
                 name = vision.perform_ocr(pil_screen, name_cds)
-                type = vision.perform_ocr(pil_screen, ship_type_cds)
-                self._target_dict[current_time] = (type, name)
-            else:
-                pass
+                ship_type = vision.perform_ocr(pil_screen, ship_type_cds)
+                self._target_dict[current_time] = (ship_type, name)
             if "tracking" in self.features_list:
                 distance = vision.get_distance_from_center(pointer_cds, resolution)
                 tracking_degrees = vision.get_tracking_degrees(distance)
-            else:
-                tracking_degrees = None
             self._tracking_dict[current_time] = tracking_degrees
             if "distance" in self.features_list:
                 try:
@@ -292,8 +334,6 @@ class ScreenParser(threading.Thread):
                 except ValueError as e:
                     print(e)
                     distance = None
-            else:
-                distance = None
             self._distance_dict[current_time] = distance
             if "ammo" in self.features_list:
                 try:
@@ -301,8 +341,6 @@ class ScreenParser(threading.Thread):
                 except ValueError as e:
                     print(e)
                     ammo = None
-            else:
-                ammo = None
             self._ammo_dict[current_time] = ammo
             self._cursor_pos_dict[current_time] = pointer_cds
             if not self.exit_queue.empty():
@@ -386,7 +424,7 @@ class ScreenParser(threading.Thread):
         if pressed:
             self.on_press_ms(button)
         else:
-            self.on_press_ms(button)
+            self.on_release_ms(button)
 
     def close(self):
         self.__exit__()
