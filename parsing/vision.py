@@ -214,7 +214,6 @@ def get_ship_health_shields(image, cds):
         "red": 12.5,
         "none": 0.0
     }
-    print(front_one)
     f_one_rgb = image.getpixel((front_one[0], front_one[1]))
     f_two_rgb = image.getpixel((front_two[0], front_two[1]))
     b_one_rgb = image.getpixel((back_one[0], back_one[1]))
@@ -227,12 +226,9 @@ def get_ship_health_shields(image, cds):
             valid = True
             for index, color in enumerate(color_rgb_tuple):
                 if not color - 25 <= rgb_code[index] <= color + 25:
-                    print("Color {} is not valid for {} because of index {} as the range is {} < {} < {}".
-                          format(color_name, shield_index, index, color - 25, rgb_code[index], color + 25))
                     valid = False
                     break
             if valid is True:
-                print("Determined color to be {}".format(color_name))
                 color_shields.append(color_name)
                 break
 

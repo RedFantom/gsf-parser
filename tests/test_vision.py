@@ -35,7 +35,6 @@ class TestVision(TestCase):
 
     def test_get_ship_health_shields(self):
         coordinates = self.gui.get_ship_health_coordinates()
-        print(coordinates)
         result = get_ship_health_shields(self.image, coordinates)
         self.assertEqual(len(result), 2)
         self.assertIsNotNone(result[0])
