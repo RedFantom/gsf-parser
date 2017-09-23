@@ -385,10 +385,12 @@ class CharactersFrame(ttk.Frame):
             server, name = character
         else:
             character = self.characters_list.selection()
+            if character == ():
+                return
             if len(character[0]) < 4:
                 return
             server = character[0][:3]
-            name = character[0][4:]
+            name = character[0][4:].replace("{", "").replace("}", "")
         if not server:
             raise ValueError("Server not found: {0}".format(character[0]))
         self.clear_character_data()
