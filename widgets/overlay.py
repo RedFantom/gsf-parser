@@ -10,11 +10,9 @@ https://stackoverflow.com/questions/21840133/how-to-display-text-on-the-screen-w
 import win32api as api
 import win32con as con
 import win32gui as gui
-import win32ui as ui
 from tkinter import StringVar, Tk
 from variables import main_window
 import random
-from time import sleep
 
 
 class Overlay(object):
@@ -148,7 +146,8 @@ class Overlay(object):
         """
         if message == con.WM_PAINT:
             hdc, paint_struct = gui.BeginPaint(window)
-            dpi_scale = ui.GetDeviceCaps(hdc, con.LOGPIXELSX) / 60.0
+            dpi_scale = self.get_dpi_scale(hdc)
+            print(dpi_scale)
             log_font = gui.LOGFONT()
             log_font.lfFaceName = self._font_family
             log_font.lfHeight = int(round(dpi_scale * self._font_size))
@@ -178,6 +177,20 @@ class Overlay(object):
 
         else:
             return gui.DefWindowProc(window, message, w_parameter, l_parameter)
+
+    def get_dpi_scale(self, hdc=None):
+        """
+        Return the DPI scaling value
+        """
+        if main_window is not None:
+            return main_window.get_dpi_scaling()
+        elif self._master is not None:
+            return self._master.winfo_pixels("1i") / 60.0
+        elif hdc is not None:
+            import win32ui as ui
+            return ui.GetDeviceCaps(hdc, con.LOGPIXELSX) / 60.0
+        else:
+            raise ValueError("No valid method of determining the DPI scaling found.")
 
     def update(self):
         if self.init is False:
