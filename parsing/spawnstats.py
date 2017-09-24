@@ -8,7 +8,7 @@ import tkinter.messagebox
 import datetime
 from . import abilities
 from . import parse
-from . import realtime
+from .lineops import line_to_dictionary
 
 
 def spawn_statistics(spawn, spawn_timing):
@@ -80,7 +80,7 @@ def spawn_statistics(spawn, spawn_timing):
         del comps[comps.index("Shield")]
     if "System" in comps:
         del comps[comps.index("System")]
-    last_line_dict = realtime.line_to_dictionary(spawn[len(spawn) - 1])
+    last_line_dict = line_to_dictionary(spawn[len(spawn) - 1])
     timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
     delta = timing - spawn_timing
     elapsed = divmod(delta.total_seconds(), 60)

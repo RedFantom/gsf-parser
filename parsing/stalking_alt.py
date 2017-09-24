@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 import variables
 from queue import Queue
-from . import realtime
+from parsing import lineops
 
 
 class LogStalker(threading.Thread):
@@ -109,7 +109,7 @@ class LogStalker(threading.Thread):
             line_temp = lines_temp[-1]
         except IndexError:
             return []
-        if realtime.line_to_dictionary(line_temp):
+        if lineops.line_to_dictionary(line_temp):
             self.lines = lines_temp
         else:
             self.lines = lines_temp[:-1]
