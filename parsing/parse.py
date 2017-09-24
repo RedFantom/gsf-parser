@@ -8,9 +8,9 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from .abilities import *
-from . import realtime
 import os
 from variables import settings_obj
+from .lineops import line_to_dictionary
 
 
 def parse_file_name(string):
@@ -612,7 +612,7 @@ def determineShip(abilitiesDictionary):
 def get_amount_enemies(spawn, player):
     enemies = []
     for line in spawn:
-        line_dict = realtime.line_to_dictionary(line)
+        line_dict = line_to_dictionary(line)
         if line_dict['source'] not in player and line_dict['source'] not in enemies:
             enemies.append(line_dict['source'])
         if line_dict['destination'] not in player and line_dict['destination'] not in enemies:

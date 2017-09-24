@@ -8,7 +8,7 @@
 import decimal
 import datetime
 from . import parse
-from . import realtime
+from .lineops import line_to_dictionary
 
 
 def match_statistics(match, match_timing):
@@ -89,7 +89,7 @@ def match_statistics(match, match_timing):
     except ZeroDivisionError:
         total_criticalluck = 0
     delta = datetime.datetime.strptime(
-        realtime.line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1])
+        line_to_dictionary(match[len(match) - 1][len(match[len(match) - 1]) - 1])
         ['time'][:-4].strip(), "%H:%M:%S") - match_timing
     elapsed = divmod(delta.total_seconds(), 60)
     string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
