@@ -29,7 +29,8 @@ class Overlay(object):
     }
 
     def __init__(self, position, text_variable, wait_time=20, font=default_font,
-                 master=None, color=(0, 255, 255), opacity=255, auto_init=True):
+                 master=None, color=(0, 255, 255), opacity=255, auto_init=True,
+                 size=(40, 40)):
         """
         :param font:
         :param position: Position of the window (x, y)
@@ -53,6 +54,7 @@ class Overlay(object):
             raise ValueError("Invalid color tuple passed to Overlay.__init__")
         if not isinstance(self._master, Tk):
             raise ValueError("The Overlay class only accepts Tk objects as master")
+        self._size = size
         self._opacity = opacity
         # pywin32 interface attributes
         self._h_instance = None
@@ -69,8 +71,8 @@ class Overlay(object):
         # Setup the window style
         self.initialize_style()
         if auto_init is True:
-            self.initialize_window()
             self.init = True
+            self.initialize_window()
         else:
             self.init = False
 
@@ -110,8 +112,8 @@ class Overlay(object):
             self._style,  # Window style
             self._position[0],  # X coordinate
             self._position[1],  # y coordinate
-            api.GetSystemMetrics(con.SM_CXSCREEN),  # Width
-            api.GetSystemMetrics(con.SM_CYSCREEN),  # Height
+            self._size[0],  # Width
+            self._size[1],  # Height
             None,  # Parent window
             None,  # Menu
             self._h_instance,
@@ -139,6 +141,8 @@ class Overlay(object):
         # Make sure the window is actually shown
         gui.ShowWindow(self._window, con.SW_SHOW)
         # gui.PumpMessages()
+        if self.init:
+            self.update()
 
     def draw(self, window, message, w_parameter, l_parameter):
         """
@@ -147,7 +151,6 @@ class Overlay(object):
         if message == con.WM_PAINT:
             hdc, paint_struct = gui.BeginPaint(window)
             dpi_scale = self.get_dpi_scale(hdc)
-            print(dpi_scale)
             log_font = gui.LOGFONT()
             log_font.lfFaceName = self._font_family
             log_font.lfHeight = int(round(dpi_scale * self._font_size))

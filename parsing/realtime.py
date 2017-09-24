@@ -103,7 +103,7 @@ class Parser(object):
             print("[DEBUG] Line is of NoneType")
             return
         if self.screenparser:
-            self.screen_parser.line_queue.put(line)
+            self.screen_parser.line_queue.put((line, self.active_id))
 
         if "SetLevel" in line:
             return

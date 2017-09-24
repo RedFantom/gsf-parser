@@ -21,7 +21,8 @@ class TimerParser(object):
         """
         self.exit_queue = Queue()
         self.text_var = StringVar()
-        self.overlay = Overlay((100, 100), self.text_var, master=master, auto_init=False, wait_time=5000)
+        self.overlay = Overlay((100, 100), self.text_var, master=master, auto_init=False, wait_time=5000,
+                               size=(200, 50))
         if not isinstance(start_time, datetime):
             raise ValueError("start_time is not a datetime instance but {}".format(repr(start_time)))
         self.start_time = start_time

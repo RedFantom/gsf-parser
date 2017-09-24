@@ -105,7 +105,6 @@ def get_timer_status(source):
         image = Image.open(image_path)
         similarity = get_similarity(source, image)
         if similarity < 15.0:
-            print("Added {} with similarity {}".format(img, similarity))
             image_similarity[img.replace(".jpg", "")] = similarity
     if len(image_similarity) == 0:
         return None
@@ -235,9 +234,11 @@ def get_ship_health_shields(image, cds):
             if valid is True:
                 color_shields.append(color_name)
                 break
-
-    f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
-    b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
+    try:
+        f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
+        b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
+    except IndexError:
+        return None, None
     return f, b
 
 

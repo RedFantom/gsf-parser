@@ -6,8 +6,9 @@
 
 # Own modules
 from parsing.guiparsing import GSFInterface
-from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_screen_resolution
 from parsing.timer import TimerParser
+from parsing.flytext import FlyTextParser
+from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_screen_resolution
 from . import vision
 from .keys import keys
 from toplevels.screenoverlay import HitChanceOverlay
@@ -132,7 +133,9 @@ class ScreenParser(threading.Thread):
         self._internal_queue = Queue()
         self.return_queue = return_queue
         # A Queue that receives line dictionaries from the realtime.Parser
-        self.line_queue = Queue()
+        self.timer_line_queue = Queue()
+        self.flytext_line_queue = Queue()
+        self.line_queue = MultiQueue(self.timer_line_queue, self.flytext_line_queue)
         # The name of the realtime screen parsing database
         self.pickle_name = os.path.join(get_temp_directory(), "realtime.db")
         # A dictionary containing the values of the features
@@ -218,12 +221,15 @@ class ScreenParser(threading.Thread):
         # Listeners for keyboard and mouse input
         self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
         self._ms_listener = pynput.mouse.Listener(on_click=self.on_click)
+
         self._current_match = None
         self._current_spawn = None
         self.file = None
         self.match = None
         self.is_match = False
         self.timer_parser = None
+
+        self.flytext_parser = None
 
     def run(self):
         """
@@ -256,6 +262,9 @@ class ScreenParser(threading.Thread):
         waiting_for_timer = None
         self.timer_parser = None
 
+        if "flytext" in self.features:
+            self.flytext_parser = FlyTextParser(variables.main_window, self.flytext_line_queue)
+
         # Start the screen parsing loop
         while True:
             if self.timer_parser is not None:
@@ -268,14 +277,20 @@ class ScreenParser(threading.Thread):
                     print("ScreenParser loop break")
                     break
             write_debug_log("ScreenParser started a cycle")
-            # If the Line Queue is not empty, process the line first
-            if not self.line_queue.empty():
-                line = self.line_queue.get()
-                if self.is_match is False and waiting_for_timer is None and "Safe Login" in line["ability"]:
+            # If the Line Queue is not empty, process the lines first
+            while not self.timer_line_queue.empty():
+                line, _ = self.timer_line_queue.get()
+                if (self.is_match is False and waiting_for_timer is None and
+                        isinstance(line, dict) and "Safe Login" in line["ability"] and self.timer_parser is None):
                     # If a Safe Login event is detected, a 60 second period is started to try and detect the timer
                     # status.
                     print("Starting to wait for a timer with event {}.".format(line))
                     waiting_for_timer = datetime.now()
+                # If not waiting for a trigger event, the event must be discarded
+                elif self.is_match is True and waiting_for_timer is None:
+                    self.timer_line_queue.get()
+                else:
+                    pass
             # Check if a spawn timer must be started
             if waiting_for_timer is not None:
                 screenshot = sct.grab(sct.monitors[0])
@@ -348,12 +363,16 @@ class ScreenParser(threading.Thread):
             screen = vision.pillow_to_numpy(pil_screen)
             pointer_cds = get_cursor_position(screen)
             current_time = datetime.now()
+
+            if self.flytext_parser is not None:
+                self.flytext_parser.update(pil_screen, pointer_cds)
+
             if "powermgmt" in self.features_list:
                 power_mgmt = vision.get_power_management(screen, *power_mgmt_cds)
             self._power_mgmt_dict[current_time] = power_mgmt
-            if "healh" in self.features_list:
+            if "health" in self.features_list:
                 health_hull = vision.get_ship_health_hull(screen)
-                (health_shields_f, health_shields_r) = vision.get_ship_health_shields(screen, health_cds)
+                (health_shields_f, health_shields_r) = vision.get_ship_health_shields(pil_screen, health_cds)
             self._health_dict[current_time] = (health_hull, health_shields_f, health_shields_r)
             if "ttk" in self.features_list:
                 # Calculate TTK
@@ -509,5 +528,14 @@ class ScreenParser(threading.Thread):
         self._spawn_dict.clear()
         self.clear_feature_dicts()
 
-    def open_timer_parser(self, start_time):
-        self.timer_parser = TimerParser(variables.main_window, start_time)
+
+class MultiQueue(object):
+    def __init__(self, *args):
+        self.queues = [queue for queue in args if isinstance(queue, Queue)]
+
+    def put(self, *args):
+        for queue in self.queues:
+            queue.put(*args)
+
+    def get(self):
+        raise NotImplementedError
