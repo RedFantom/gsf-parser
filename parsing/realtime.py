@@ -45,7 +45,7 @@ class Parser(object):
     DEBUG = False
 
     def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
-                 ship=None, screen_parser=None, data_queue=None):
+                 ship=None, screen_parser=None, data_queue=None, return_queue=None):
         if screen is False and screenoverlay is True:
             showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
             raise ValueError("screenoverlay True but screen False")
@@ -56,6 +56,7 @@ class Parser(object):
 
         self.screen_parser = screen_parser
         self.data_queue = data_queue
+        self.return_queue = return_queue
         if self.screen_parser is not None and self.data_queue is not None:
             self.screenparser = True
         self.player_name = ''

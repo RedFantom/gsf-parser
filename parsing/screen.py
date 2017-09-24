@@ -7,6 +7,7 @@
 # Own modules
 from parsing.guiparsing import GSFInterface
 from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_screen_resolution
+from parsing.timer import TimerParser
 from . import vision
 from .keys import keys
 from toplevels.screenoverlay import HitChanceOverlay
@@ -15,7 +16,7 @@ import variables
 import threading
 import pickle as pickle
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from queue import Queue
 import time
 import pynput
@@ -91,7 +92,7 @@ class ScreenParser(threading.Thread):
     """
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
                  powermgmt=True, health=True, name=True, ttk=True, tracking=True, ammo=True, distance=True,
-                 cursor=True):
+                 cursor=True, timer=True):
         """
         :param data_queue: Queue that will inform about new matches, spawns, etc.
         :param exit_queue: Queue that will contain True if an exit is requested
@@ -151,7 +152,9 @@ class ScreenParser(threading.Thread):
             # Determine the distance to the target by using OCR
             "distance": distance,
             # Determine the cursor position
-            "cursor": cursor
+            "cursor": cursor,
+            # Determine the spawn timer
+            "timer": timer
         }
         # The data for the character selected in the RealtimeFrame
         self.character = character_data
@@ -219,8 +222,8 @@ class ScreenParser(threading.Thread):
         self._current_spawn = None
         self.file = None
         self.match = None
-        self.is_match = None
-        self.is_match = None
+        self.is_match = False
+        self.timer_parser = None
 
     def run(self):
         """
@@ -242,16 +245,21 @@ class ScreenParser(threading.Thread):
         player_buff_cds = self.interface.get_ship_buffs_coordinates()
         target_buff_cds = self.interface.get_target_buffs_coordinates()
         score_cds = self.interface.get_score_coordinates()
-        spawn_timer_cds = self.interface.get_spawn_timer_coordinates()
-        match_timer_cds = self.interface.get_match_timer_coordinates()
+        spawn_timer_box = (1466, 835, 1536, 875)
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
 
         health_hull, health_shields_f, health_shields_r = None, None, None
         ammo, distance = None, None
 
+        line = None
+        waiting_for_timer = None
+        self.timer_parser = None
+
         # Start the screen parsing loop
         while True:
+            if self.timer_parser is not None:
+                self.timer_parser.update()
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
             if not self.exit_queue.empty():
@@ -260,6 +268,34 @@ class ScreenParser(threading.Thread):
                     print("ScreenParser loop break")
                     break
             write_debug_log("ScreenParser started a cycle")
+            # If the Line Queue is not empty, process the line first
+            if not self.line_queue.empty():
+                line = self.line_queue.get()
+                if self.is_match is False and waiting_for_timer is None and "Safe Login" in line["ability"]:
+                    # If a Safe Login event is detected, a 60 second period is started to try and detect the timer
+                    # status.
+                    print("Starting to wait for a timer with event {}.".format(line))
+                    waiting_for_timer = datetime.now()
+            # Check if a spawn timer must be started
+            if waiting_for_timer is not None:
+                screenshot = sct.grab(sct.monitors[0])
+                image = Image.frombytes("RGB", screenshot.size, screenshot.rgb).crop(spawn_timer_box)
+                timer = vision.get_timer_status(image)
+                if timer is not None:
+                    print("The timer was determined to be at {}".format(timer))
+                    # If the timer has a value, a spawn timer was found in the correct location
+                    # The TimerParser will run on MainThread
+                    start_time = datetime.now() + timedelta(seconds=timer)
+                    self.timer_parser = TimerParser(variables.main_window, start_time)
+                    print("The TimerParser was initialized.")
+                    waiting_for_timer = None
+                # waiting_for_timer may be set to None again by the if above
+                if waiting_for_timer is not None and (datetime.now() - waiting_for_timer).seconds > 60:
+                    # The 60 second period has expired, the waiting for timer is stopped
+                    # Note: This means that the GSF match environment must be loaded within
+                    # 60 seconds after getting this event!
+                    print("The wait for a timer was cancelled.")
+                    waiting_for_timer = None
             # While data_queue is not empty, process the data in it
             if not self.data_queue.empty():
                 data = self.data_queue.get()
@@ -276,6 +312,11 @@ class ScreenParser(threading.Thread):
                     self._file_dict.clear()
                 # ("match", False, datetime)
                 elif data[0] == "match" and not data[1] and self.is_match:
+                    # Close down the TimerParser
+                    if self.timer_parser is not None:
+                        print("The TimerParser was closed")
+                        self.timer_parser.exit_queue.put(True)
+                        self.timer_parser = None
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
                     self._match_dict.clear()
@@ -467,3 +508,6 @@ class ScreenParser(threading.Thread):
         self._match_dict.clear()
         self._spawn_dict.clear()
         self.clear_feature_dicts()
+
+    def open_timer_parser(self, start_time):
+        self.timer_parser = TimerParser(variables.main_window, start_time)

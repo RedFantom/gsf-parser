@@ -236,8 +236,7 @@ class SettingsFrame(ttk.Frame):
         self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
                                                       text="Features enabled for screen parsing:")
         self.screenparsing_features = ["Tracking penalty", "Ship health",
-                                       "Power management"]
-
+                                       "Power management", "Spawn timer"]
         self.screenparsing_checkboxes = OrderedDict()
         self.screenparsing_variables = {}
         for feature in self.screenparsing_features:

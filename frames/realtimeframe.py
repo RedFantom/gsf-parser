@@ -111,16 +111,16 @@ class RealtimeFrame(ttk.Frame):
             self.exit_queue = Queue()
             self.query_queue = Queue()
             self.return_queue = Queue()
-            self.return_queue.put(0)
             features = variables.settings_obj["realtime"]["screenparsing_features"]
             name = "Enemy name and ship type" in features
             tracking = "Tracking penalty" in features
             health = "Ship health" in features
             powermgmt = "Power management" in features
+            timer = "Spawn timer" in features
             self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
                                              self.window.characters_frame.character_data, name=False,
                                              tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
-                                             distance=False, ammo=False)
+                                             distance=False, ammo=False, timer=timer)
             self.screenparser.start()
         else:
             self.screenparser = None

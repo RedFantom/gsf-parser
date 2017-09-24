@@ -14,6 +14,7 @@ import win32ui as ui
 from tkinter import StringVar, Tk
 from variables import main_window
 import random
+from time import sleep
 
 
 class Overlay(object):
@@ -30,7 +31,7 @@ class Overlay(object):
     }
 
     def __init__(self, position, text_variable, wait_time=20, font=default_font,
-                 master=None, color=(0, 255, 255), opacity=255):
+                 master=None, color=(0, 255, 255), opacity=255, auto_init=True):
         """
         :param font:
         :param position: Position of the window (x, y)
@@ -69,6 +70,11 @@ class Overlay(object):
         self.initialize_pywin32()
         # Setup the window style
         self.initialize_style()
+        if auto_init is True:
+            self.initialize_window()
+            self.init = True
+        else:
+            self.init = False
 
     def initialize_pywin32(self):
         """
@@ -135,7 +141,6 @@ class Overlay(object):
         # Make sure the window is actually shown
         gui.ShowWindow(self._window, con.SW_SHOW)
         # gui.PumpMessages()
-        self.update()
 
     def draw(self, window, message, w_parameter, l_parameter):
         """
@@ -175,6 +180,9 @@ class Overlay(object):
             return gui.DefWindowProc(window, message, w_parameter, l_parameter)
 
     def update(self):
+        if self.init is False:
+            self.initialize_window()
+            self.init = True
         gui.UpdateWindow(self._window)
         if self._master:
             self._after_code = self._master.after(self._wait_time, self.update)
@@ -253,15 +261,18 @@ class Overlay(object):
 
 if __name__ == '__main__':
     import tkinter as tk
+
     root = tk.Tk()
     string = StringVar(master=root)
     string.set("Something great")
     overlay = Overlay((-900, 100), string, master=root)
 
+
     def change_text():
         string.set("Something else\nEntirely")
         overlay.config(opacity=100)
         overlay.config(position=(500, 100))
+
 
     overlay.initialize_window()
     root.after(5000, change_text)
