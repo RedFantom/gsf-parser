@@ -236,7 +236,8 @@ class SettingsFrame(ttk.Frame):
         self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
                                                       text="Features enabled for screen parsing:")
         self.screenparsing_features = ["Tracking penalty", "Ship health",
-                                       "Power management", "Spawn timer"]
+                                       "Power management", "Spawn timer",
+                                       "Miss/Evade FlyText"]
         self.screenparsing_checkboxes = OrderedDict()
         self.screenparsing_variables = {}
         for feature in self.screenparsing_features:
@@ -496,11 +497,11 @@ class SettingsFrame(ttk.Frame):
         :return: None
         """
         print("[DEBUG] Save_settings called!")
-        if str(self.color.get()) == variables.settings_obj["gui"]["color"] and \
-                        self.logo_color.get() == variables.settings_obj["gui"]["logo_color"]:
-            reboot = False
-        else:
-            reboot = True
+        current_color = variables.settings_obj["gui"]["color"]
+        current_logo = variables.settings_obj["gui"]["logo_color"]
+        if (self.color.get() != current_color and self.color.get() != "Custom") or \
+                (current_logo != self.logo_color.get()):
+            tkinter.messagebox.showinfo("Info", "You must restart the GSF Parser for some settings to take effect.")
         print(self.color.get())
         if "custom" in self.color.get().lower():
             hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
@@ -564,8 +565,6 @@ class SettingsFrame(ttk.Frame):
         variables.settings_obj.write_settings(dictionary)
         self.update_settings()
         self.main_window.file_select_frame.add_files()
-        if reboot:
-            self.main_window.update_style()
         variables.color_scheme.set_scheme(self.event_scheme.get())
 
     def discard_settings(self):
