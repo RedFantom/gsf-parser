@@ -430,12 +430,6 @@ class GSFInterface(GUIParser):
     def get_score_coordinates(self):
         pass
 
-    def get_match_timer_coordinates(self):
-        pass
-
-    def get_spawn_timer_coordinates(self):
-        pass
-
     def get_secondary_icon_coordinates(self):
         # (95, 16)
         box = self.get_box_coordinates("FreeFlightShipAmmo")

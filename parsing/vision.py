@@ -104,7 +104,8 @@ def get_timer_status(source):
         image_path = os.path.join(folder, img)
         image = Image.open(image_path)
         similarity = get_similarity(source, image)
-        if similarity < 0.25:
+        if similarity < 15.0:
+            print("Added {} with similarity {}".format(img, similarity))
             image_similarity[img.replace(".jpg", "")] = similarity
     if len(image_similarity) == 0:
         return None
