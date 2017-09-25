@@ -143,6 +143,7 @@ class Overlay(object):
         # gui.PumpMessages()
         if self.init:
             self.update()
+        self.init = True
 
     def draw(self, window, message, w_parameter, l_parameter):
         """
@@ -198,9 +199,8 @@ class Overlay(object):
     def update(self):
         if self.init is False:
             self.initialize_window()
-            self.init = True
         gui.UpdateWindow(self._window)
-        if self._master:
+        if self._master is not None:
             self._after_code = self._master.after(self._wait_time, self.update)
         gui.SetWindowPos(self._window, None, self._position[0], self._position[1], 0, 0, con.SWP_NOSIZE)
         gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, self._opacity, con.LWA_COLORKEY | con.LWA_ALPHA)
