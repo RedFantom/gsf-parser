@@ -48,8 +48,12 @@ class FlyTextParser(object):
         Runs the loop, receiving data from all the queues (managed from separate Threads) in order to perform
         the functionality of this class
         """
+        for overlay in self.overlays:
+            self.overlays.remove(overlay) if overlay.alive is False else None
         if not self._mouse_listener.is_alive():
+            print("Starting mouse Listener")
             self._mouse_listener.start()
+        print("Updating FlyText")
         while not self.mouse_queue.empty():
             x, y, pressed = self.mouse_queue.get()
             print("Mouse button was {}".format(pressed))
@@ -57,14 +61,13 @@ class FlyTextParser(object):
         if screenshot is not None and cursor_position is not None: # and self.firing is True:
             # (datetime.now() - self.last_shot).seconds < self.ship.components["PrimaryWeapon"]["FiringRate"]
             if not self.on_target(screenshot, cursor_position):
-                self.overlays.append(FlyText(self.master, cursor_position))
+                if not len(self.overlays) > 0:
+                    self.overlays.append(FlyText(self.master, cursor_position))
                 print("New FlyText opened for miss")
             else:
                 self.internal_queue.put((datetime.now(), cursor_position))
                 print("Waiting for the result of shot made at {}".format(datetime.now().strftime("%H:%M:%S")))
         self.update_evade()
-        for overlay in self.overlays:
-            self.overlays.remove(overlay) if overlay.alive is False else None
 
     def update_evade(self):
         """
@@ -116,11 +119,12 @@ class FlyTextParser(object):
         if isinstance(screenshot, ScreenShot):
             screenshot = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
         x, y = cursor_position
-        box = (x - 21, y - 20, x + 23, y + 23)
+        box = (x - 22, y - 21, x + 22, y + 22)
+        print("Cropping with box value {}".format(box))
         pointer = screenshot.crop(box)
         similarity = get_similarity(pointer, self.on_target_template)
-        print("Similirity score: ", similarity)
-        return similarity < 6.0
+        pointer.save("image.png")
+        return similarity < 7.0
 
     def line_callback(self, lines):
         """

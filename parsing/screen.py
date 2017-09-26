@@ -93,7 +93,7 @@ class ScreenParser(threading.Thread):
     """
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
                  powermgmt=True, health=True, name=True, ttk=True, tracking=True, ammo=True, distance=True,
-                 cursor=True, timer=True):
+                 cursor=True, timer=True, flytext=True):
         """
         :param data_queue: Queue that will inform about new matches, spawns, etc.
         :param exit_queue: Queue that will contain True if an exit is requested
@@ -157,7 +157,8 @@ class ScreenParser(threading.Thread):
             # Determine the cursor position
             "cursor": cursor,
             # Determine the spawn timer
-            "timer": timer
+            "timer": timer,
+            "flytext": flytext
         }
         # The data for the character selected in the RealtimeFrame
         self.character = character_data
@@ -230,6 +231,7 @@ class ScreenParser(threading.Thread):
         self.timer_parser = None
 
         self.flytext_parser = None
+        self.screenoverlay = None
 
     def run(self):
         """
@@ -262,8 +264,8 @@ class ScreenParser(threading.Thread):
         waiting_for_timer = None
         self.timer_parser = None
 
-        if "flytext" in self.features:
-            self.flytext_parser = FlyTextParser(variables.main_window, self.flytext_line_queue)
+        print("Opening FlyText parser")
+        self.flytext_parser = FlyTextParser(variables.main_window, self.flytext_line_queue)
 
         # Start the screen parsing loop
         while True:
@@ -278,7 +280,7 @@ class ScreenParser(threading.Thread):
                     break
             write_debug_log("ScreenParser started a cycle")
             # If the Line Queue is not empty, process the lines first
-            while not self.timer_line_queue.empty():
+            if not self.timer_line_queue.empty():
                 line, _ = self.timer_line_queue.get()
                 if (self.is_match is False and waiting_for_timer is None and
                         isinstance(line, dict) and "Safe Login" in line["ability"] and self.timer_parser is None):
@@ -288,7 +290,8 @@ class ScreenParser(threading.Thread):
                     waiting_for_timer = datetime.now()
                 # If not waiting for a trigger event, the event must be discarded
                 elif self.is_match is True and waiting_for_timer is None:
-                    self.timer_line_queue.get()
+                    with self.timer_line_queue.mutex:
+                        self.timer_line_queue.queue.clear()
                 else:
                     pass
             # Check if a spawn timer must be started
@@ -338,13 +341,17 @@ class ScreenParser(threading.Thread):
                     self.is_match = False
                     self.match = None
                     self.screenoverlay.running = False
-                    time.sleep(0.05)
+                    self.screenoverlay.destroy()
+                    self.screenoverlay = None
                 # ("match", True, datetime)
                 elif data[0] == "match" and data[1] and not self.is_match:
                     self._match = data[2]
                     if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
                         self.set_new_match()
                     self.is_match = True
+                    # Set up the Overlay instance if that setting is enabled
+                    self.screenoverlay = HitChanceOverlay(variables.main_window) if \
+                        variables.settings_obj["realtime"]["screenparsing_overlay"] else None
                 # ("spawn", datetime)
                 elif data[0] == "spawn":
                     self.set_new_spawn()
@@ -355,7 +362,7 @@ class ScreenParser(threading.Thread):
                     raise ValueError("Unexpected data received: ", str(data))
             if not self.is_match:
                 write_debug_log("No match is active, so ScreenParser ends cycle")
-                time.sleep(1)
+                time.sleep(0.5)
                 continue
             write_debug_log("Start pulling vision functions data")
             image = sct.grab(sct.monitors[0])

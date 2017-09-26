@@ -154,7 +154,7 @@ class RealtimeFrame(ttk.Frame):
             print("Joining ScreenParser thread")
             self.screenparser.join()
             print("Screenparser thread joined")
-            if variables.settings_obj["realtime"]["screenparsing_overlay"]:
+            if self.screenparser.screenoverlay is not None:
                 self.screenparser.screenoverlay.destroy()
         self.stalking_exit_queue.put(False)
         print("Joining LogStalker thread")
@@ -243,8 +243,8 @@ class RealtimeFrame(ttk.Frame):
         abilities = self.parser.tmp_abilities
         enemies = self.parser.recent_enemies
         spawns = self.parser.active_ids
-        self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
-                          len(enemies), len(spawns))
+        self.after(10, lambda: self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
+                               len(enemies), len(spawns)))
         for obj in self.parse:
             obj.close()
 
