@@ -5,6 +5,7 @@
 # For license see LICENSE
 from parsing.ships import Ship, Component
 from parsing.shipstats import ShipStats
+from parsing.ships import Ship, Component
 from math import ceil, floor
 
 
