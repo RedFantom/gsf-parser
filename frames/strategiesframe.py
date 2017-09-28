@@ -35,7 +35,7 @@ class StrategiesFrame(ttk.Frame):
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
         # Bind the KeyPress event to a callback. A KeyPress is fired when *any* key is pressed on the keyboard.
-        self.description.bind("<KeyPress>", self.set_description)
+        self.description.bind("<KeyPress>", self.set_description_callback)
         self.description_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.description.yview)
         self.description.config(yscrollcommand=self.description_scroll.set)
         self.client = None
@@ -76,7 +76,13 @@ class StrategiesFrame(ttk.Frame):
             map.update_map(self.list.db[self.list.selected_strategy][phase])
         return
 
-    def set_description(self, *args):
+    def set_description_callback(self, *args):
+        """
+        Delay for issue #142
+        """
+        self.after(5, self.set_description)
+
+    def set_description(self):
         """
         Update the description of a certain item in the database. Also immediately saves the database, so the
         description is automatically saved when updated.
