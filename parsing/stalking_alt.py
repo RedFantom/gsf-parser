@@ -41,7 +41,7 @@ class LogStalker(threading.Thread):
         threading.Thread.__init__(self)
         self.folder = folder
         self.stringvar = watching_stringvar
-        print((self.folder))
+        print(self.folder)
         if not callback or not newfilecallback:
             raise ValueError("callback is not allowed to be None")
         self.callback = callback
@@ -65,10 +65,8 @@ class LogStalker(threading.Thread):
         """
         while True:
             if not self.exit_queue.empty():
-                print("LogStalker exit_queue not empty, getting value")
-                if not self.exit_queue.get():
-                    print("LogStalker value was False, break loop")
-                    break
+                print("LogStalker exit_queue not empty exit loop")
+                return
             folder_list = os.listdir(self.folder)
             self.datetime_dict.clear()
             for name in folder_list:
