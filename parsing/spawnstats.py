@@ -9,9 +9,11 @@ import datetime
 from . import abilities
 from . import parse
 from .lineops import line_to_dictionary
+import os
+import variables
 
 
-def spawn_statistics(spawn, spawn_timing):
+def spawn_statistics(file_name, spawn, spawn_timing):
     """
     Does the same as match_statistics but for a spawn
 
@@ -36,6 +38,9 @@ def spawn_statistics(spawn, spawn_timing):
     player_numbers = parse.determinePlayer(spawn)
     (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
      criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
+
+    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as fi:
+        name = parse.determinePlayerName(fi.readlines())
     killsassists = 0
     for enemy in enemies:
         if enemydamaget[enemy] > 0:
@@ -93,9 +98,17 @@ def spawn_statistics(spawn, spawn_timing):
         damage_ratio_string = str(str(round(float(damagedealt) / float(damagetaken), 1)) + " : 1") + "\n"
     except ZeroDivisionError:
         damage_ratio_string = "0.0 : 1\n"
-    statistics_string = (str(killsassists) + " enemies" + "\n" + str(damagedealt) + "\n" + str(damagetaken) + "\n" +
-                         damage_ratio_string +
-                         str(selfdamage) + "\n" + str(healingreceived) + "\n" +
-                         str(hitcount) + "\n" + str(criticalcount) + "\n" +
-                         str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" + str(dps))
+    statistics_string = (
+        name + "\n" +
+        str(killsassists) + " enemies" + "\n" +
+        str(damagedealt) + "\n" +
+        str(damagetaken) + "\n" +
+        damage_ratio_string +
+        str(selfdamage) + "\n" +
+        str(healingreceived) + "\n" +
+        str(hitcount) + "\n" +
+        str(criticalcount) + "\n" +
+        str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" +
+        str(dps)
+    )
     return abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget

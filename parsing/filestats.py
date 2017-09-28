@@ -8,9 +8,11 @@
 import decimal
 from . import parse
 from parsing import abilities
+import os
+import variables
 
 
-def file_statistics(file_cube):
+def file_statistics(filename, file_cube):
     """
      Puts the statistics found in a file_cube from parse.splitter() into a
      format that is usable by the file_frame to display them to the user
@@ -39,7 +41,8 @@ def file_statistics(file_cube):
                 lines.append(line)
     player_list = parse.determinePlayer(lines)
     _, match_timings, spawn_timings = parse.splitter(lines, player_list)
-
+    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], filename), "r") as fi:
+        name = parse.determinePlayerName(fi.readlines())
     (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
         parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
@@ -135,7 +138,7 @@ def file_statistics(file_cube):
             str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
     except ZeroDivisionError:
         damage_ratio_string = "0.0 : 1\n"
-    statistics_string = (
+    statistics_string = (name + "\n" +
         str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
         str(total_damagetaken) + "\n" + damage_ratio_string + str(total_selfdamage) + "\n" +
         str(total_healingrecv) + "\n" + str(total_hitcount) + "\n" +

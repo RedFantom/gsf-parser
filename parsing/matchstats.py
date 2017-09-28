@@ -9,9 +9,11 @@ import decimal
 import datetime
 from . import parse
 from .lineops import line_to_dictionary
+import os
+import variables
 
 
-def match_statistics(match, match_timing):
+def match_statistics(file_name, match, match_timing):
     """
     Does the same as file_statistics but for a match
 
@@ -47,6 +49,9 @@ def match_statistics(match, match_timing):
     total_enemydamaget = {}
     total_killsassists = 0
     ships_uncounted = 0
+
+    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as fi:
+        name = parse.determinePlayerName(fi.readlines())
 
     for spawn in match:
         player_numbers = parse.determinePlayer(spawn)
@@ -102,7 +107,8 @@ def match_statistics(match, match_timing):
             str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
     except ZeroDivisionError:
         damage_ratio_string = "0.0 : 1\n"
-    statistics_string = (str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
+    statistics_string = (name + "\n" +
+                         str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
                          str(total_damagetaken) + "\n" + damage_ratio_string +
                          str(total_selfdamage) + "\n" + str(total_healingrecv) + "\n" +
                          str(total_hitcount) + "\n" + str(total_criticalcount) + "\n" +

@@ -69,8 +69,8 @@ class StatsFrame(ttk.Frame):
         self.events_button = ttk.Button(self.events_frame, text="Show events for spawn", command=self.show_events,
                                         state=tk.DISABLED, width=43)
         self.statistics_label_var = tk.StringVar()
-        string = "Damage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\nHealing received:\n" + \
-                 "Hitcount:\nCriticalcount:\nCriticalluck:\nDeaths:\nDuration:\nDPS:"
+        string = "Character name:\nDamage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\n" \
+                 "Healing received:\nHit count:\nCritical count:\nCritical Percentage:\nDeaths:\nDuration:\nDPS:"
         self.statistics_label_var.set(string)
         self.statistics_label = ttk.Label(self.stats_frame, textvariable=self.statistics_label_var, justify=tk.LEFT,
                                           wraplength=145)

@@ -303,7 +303,7 @@ class FileFrame(ttk.Frame):
         player_list = parse.determinePlayer(lines)
         file_cube, _, _ = parse.splitter(lines, player_list)
         (abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
-         enemydamaget, uncounted) = filestats.file_statistics(file_cube)
+         enemydamaget, uncounted) = filestats.file_statistics(file_name, file_cube)
         self.update_widgets(abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                             enemydamaget, uncounted)
 
@@ -337,7 +337,9 @@ class FileFrame(ttk.Frame):
         file_cube, match_timings, _ = parse.splitter(lines, player_list)
         match = file_cube[match_index]
         (abilities_dict, statistics_string, shipsdict, enemies,
-         enemydamaged, enemydamaget, uncounted) = matchstats.match_statistics(match, match_timings[::2][match_index])
+         enemydamaged, enemydamaget, uncounted) = matchstats.match_statistics(file_name,
+                                                                              match,
+                                                                              match_timings[::2][match_index])
         self.update_widgets(abilities_dict, statistics_string, shipsdict, enemies,
                             enemydamaged, enemydamaget, uncounted)
 
@@ -359,7 +361,8 @@ class FileFrame(ttk.Frame):
         match = file_cube[match_index]
         spawn = match[spawn_index]
         (abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
-         enemydamaget) = spawnstats.spawn_statistics(spawn,
+         enemydamaget) = spawnstats.spawn_statistics(file_name,
+                                                     spawn,
                                                      spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged,
                                   enemydamaget)
