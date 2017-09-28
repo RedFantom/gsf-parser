@@ -414,8 +414,8 @@ class CharactersFrame(ttk.Frame):
             character_data = self.get_character_data()
             if not character_data:
                 return
-        self.character_name_entry.insert(tk.END, character_data["Name"])
-        self.legacy_name_entry.insert(tk.END, character_data["Legacy"])
+        print("Name: {}, Legacy: {}".format(character_data["Name"], character_data["Legacy"]))
+        self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
         if character_data["Faction"] == "Imperial":
@@ -448,3 +448,16 @@ class CharactersFrame(ttk.Frame):
             intvar.set(0)
         for intvar in self.rep_ship_variables.values():
             intvar.set(0)
+
+    def insert_into_entries(self, name, legacy):
+        """
+        Insert values into the character name and legacy name entries
+        """
+        self.character_name_entry.config(state=tk.NORMAL)
+        self.legacy_name_entry.config(state=tk.NORMAL)
+        self.character_name_entry.delete(0, tk.END)
+        self.legacy_name_entry.delete(0, tk.END)
+        self.character_name_entry.insert(tk.END, name)
+        self.legacy_name_entry.insert(tk.END, legacy)
+        self.character_name_entry.config(state="readonly")
+        self.legacy_name_entry.config(state="readonly")
