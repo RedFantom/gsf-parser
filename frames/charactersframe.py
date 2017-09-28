@@ -74,9 +74,7 @@ class CharactersFrame(ttk.Frame):
         try:
             with open(os.path.join(self.directory, "characters.db"), "rb") as f:
                 self.characters = pickle.load(f)
-        except OSError:
-            self.new_database()
-        except EOFError:
+        except (OSError, EOFError):
             self.new_database()
         # Set up the characters list
         self.characters_list = ttk.Treeview(self)
@@ -348,11 +346,12 @@ class CharactersFrame(ttk.Frame):
         General function to save the character database to the file
         :return: None
         """
-        self.character_data["GUI"] = self.gui_profile.get()
         print("[DEBUG] Saving character database")
-        server = self.character_data["Server"]
-        name = self.character_data["Name"]
-        self.characters[(server, name)] = self.character_data
+        if self.character_data is not None:
+            self.character_data["GUI"] = self.gui_profile.get()
+            server = self.character_data["Server"]
+            name = self.character_data["Name"]
+            self.characters[(server, name)] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 
@@ -370,8 +369,8 @@ class CharactersFrame(ttk.Frame):
         Delete a character for the database, callback for the delete_button
         :return: None
         """
+        self.set_character()
         del self.characters[(self.character_data["Server"], self.character_data["Name"])]
-        self.characters_list.delete(*((self.character_data["Server"] + " " + self.character_data["Name"]),))
         self.clear_character_data()
         self.save_button.invoke()
         self.update_tree()
@@ -448,6 +447,7 @@ class CharactersFrame(ttk.Frame):
             intvar.set(0)
         for intvar in self.rep_ship_variables.values():
             intvar.set(0)
+        self.character_data = None
 
     def insert_into_entries(self, name, legacy):
         """
