@@ -165,6 +165,7 @@ class Map(ttk.Frame):
         if not isinstance(phase, Phase):
             raise ValueError("map is not a Map instance")
         self.canvas.delete("all")
+        self.items.clear()
         type, map = phase.map
         self.set_background(type, map)
         for item, value in phase:
@@ -172,7 +173,8 @@ class Map(ttk.Frame):
             self.canvas.coords(item, int(value["x"] / 768 * self._canvaswidth),
                                int(value["y"] / 768 * self._canvasheight))
             self.canvas.coords(rectangle, self.canvas.bbox(item))
-        return
+        self.canvas.tag_lower("background")
+        self.canvas.tag_raise("item")
 
     def edit_item(self):
         pass
