@@ -26,7 +26,7 @@ class ShipSelectFrame(ttk.Frame):
         self.faction = "Imperial"
         self.ship = "Bloodmark"
         self.component = "Light Laser Cannon"
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=240, canvasheight=315, width=240, height=315)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=222, canvasheight=315, width=240, height=315)
         self.frame = self.scroll_frame.interior
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
