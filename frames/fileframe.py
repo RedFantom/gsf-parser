@@ -218,7 +218,8 @@ class FileFrame(ttk.Frame):
         for enemy in enemies:
             self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
         self.main_window.middle_frame.events_button.config(state=tk.DISABLED)
-        most_used_ship = max(iter(shipsdict.items()), key=operator.itemgetter(1))[0]
+        sequence = shipsdict.items()
+        most_used_ship = "default" if len(sequence) == 0 else max(sequence, key=operator.itemgetter(1))[0]
         self.main_window.ship_frame.update_ship([most_used_ship])
         self.main_window.ship_frame.update()
         self.main_window.middle_frame.screen_label_var.set("Not available for files and matches")
