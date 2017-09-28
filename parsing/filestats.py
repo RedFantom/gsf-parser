@@ -47,13 +47,7 @@ def file_statistics(filename, file_cube):
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
         parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
     total_abilities = {}
-    total_damagetaken = 0
-    total_damagedealt = 0
-    total_selfdamage = 0
-    total_healingrecv = 0
     total_enemies = []
-    total_criticalcount = 0
-    total_hitcount = 0
 
     for mat in abs:
         for dic in mat:
@@ -62,31 +56,19 @@ def file_statistics(filename, file_cube):
                     total_abilities[key] = value
                 else:
                     total_abilities[key] += value
-    for lst in damagetaken:
-        for amount in lst:
-            total_damagetaken += amount
-    for lst in damagedealt:
-        for amount in lst:
-            total_damagedealt += amount
-    for lst in selfdamage:
-        for amount in lst:
-            total_selfdamage += amount
-    for lst in healingreceived:
-        for amount in lst:
-            total_healingrecv += amount
+    total_damagetaken = sum(sum(lst) for lst in damagetaken)
+    total_damagedealt = sum(sum(lst) for lst in damagedealt)
+    total_selfdamage = sum(sum(lst) for lst in selfdamage)
+    total_healingrecv = sum(sum(lst) for lst in healingreceived)
+    total_criticalcount = sum(sum(lst) for lst in criticalcount)
+    total_hitcount = sum(sum(lst) for lst in hitcount)
     for matrix in enemies:
         for lst in matrix:
             for enemy in lst:
                 if enemy not in total_enemies:
                     total_enemies.append(enemy)
-    for lst in criticalcount:
-        for amount in lst:
-            total_criticalcount += amount
-    for lst in hitcount:
-        for amount in lst:
-            total_hitcount += amount
     try:
-        total_criticalluck = decimal.Decimal(float(total_criticalcount / total_hitcount))
+        total_criticalluck = decimal.Decimal(total_criticalcount / total_hitcount)
     except ZeroDivisionError:
         total_criticalluck = 0
     total_enemydamaged = enemydamaged
@@ -99,30 +81,7 @@ def file_statistics(filename, file_cube):
         for spawn in match:
             ships_possible = parse.parse_spawn(spawn, player_list)[9]
             if len(ships_possible) == 1:
-                if ships_possible[0] == "Razorwire":
-                    total_shipsdict["Razorwire"] += 1
-                elif ships_possible[0] == "Legion":
-                    total_shipsdict["Legion"] += 1
-                elif ships_possible[0] == "Decimus":
-                    total_shipsdict["Decimus"] += 1
-                elif ships_possible[0] == "Bloodmark":
-                    total_shipsdict["Bloodmark"] += 1
-                elif ships_possible[0] == "Sting":
-                    total_shipsdict["Sting"] += 1
-                elif ships_possible[0] == "Blackbolt":
-                    total_shipsdict["Blackbolt"] += 1
-                elif ships_possible[0] == "Mangler":
-                    total_shipsdict["Mangler"] += 1
-                elif ships_possible[0] == "Dustmaker":
-                    total_shipsdict["Dustmaker"] += 1
-                elif ships_possible[0] == "Jurgoran":
-                    total_shipsdict["Jurgoran"] += 1
-                elif ships_possible[0] == "Imperium":
-                    total_shipsdict["Imperium"] += 1
-                elif ships_possible[0] == "Quell":
-                    total_shipsdict["Quell"] += 1
-                elif ships_possible[0] == "Rycer":
-                    total_shipsdict["Rycer"] += 1
+                total_shipsdict[ships_possible[0]] += 1
             else:
                 uncounted += 1
     total_killsassists = 0

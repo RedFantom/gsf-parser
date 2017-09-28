@@ -47,8 +47,11 @@ def spawn_statistics(file_name, spawn, spawn_timing):
             killsassists += 1
     ship_components = []
     for key in abilitiesdict:
+        key = key.strip()
         if key in abilities.components:
             ship_components.append(key)
+        else:
+            print("Key not found in components: '{}'".format(key))
     comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
     for component in ship_components:
         if component in abilities.primaries:
@@ -73,6 +76,8 @@ def spawn_statistics(file_name, spawn, spawn_timing):
             comps[3] = component
         elif component in abilities.systems:
             comps[4] = component
+        elif component in abilities.components:
+            raise ValueError("Component '{}' not found in any of the categories".format(component))
         else:
             tkinter.messagebox.showinfo("WHAT?!", "DID GSF GET AN UPDATE?!")
     if "Primary" in comps:
