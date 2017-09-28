@@ -72,9 +72,9 @@ class StrategiesFrame(ttk.Frame):
         :param phase: phase name
         :return: None
         """
-        self.map.update_map(self.list.db[self.list.selected_strategy][phase])
-        if self.in_map:
-            self.in_map.update_map(self.list.db[self.list.selected_strategy][phase])
+        for map in self.maps:
+            map.update_map(self.list.db[self.list.selected_strategy][phase])
+        return
 
     def set_description(self, *args):
         """
@@ -286,7 +286,7 @@ class StrategiesFrame(ttk.Frame):
         """
         :return: list of Map objects available in StrategiesFrame instance
         """
-        if self.in_map:
+        if self.in_map is not self.map:
             return [self.map, self.in_map]
         else:
             return [self.map]
