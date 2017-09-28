@@ -84,6 +84,7 @@ class ToolsFrame(ttk.Frame):
         self.simulator_button = ttk.Button(self.interior_frame.interior, text="Start simulator",
                                            command=self.start_simulator,
                                            state=tk.DISABLED)
+        self.simulator_thread = None
         self.separator_four = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
         self.splitting_heading_label = ttk.Label(self.interior_frame.interior, text="CombatLogs Splitting",
                                                  font=("Calibri", 12))
@@ -119,13 +120,15 @@ class ToolsFrame(ttk.Frame):
         self.separator_seven = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
 
     def start_simulator(self):
-        self.simulator_thread = threading.Thread(target=lambda file_name=self.simulator_file,
-                                                               dir=variables.settings_obj["parsing"][
-                                                                   "cl_path"]: simulator.simulate(
-            file_name,
-            output_directory=dir
-        ))
+        if self.simulator_thread is not None:
+            self.simulator_thread.exit_queue.put(True)
+            self.simulator_thread = None
+            self.simulator_button.config(text="Start simulator")
+            return
+        self.simulator_thread = simulator.Simulator(self.simulator_file,
+                                                    output_directory=variables.settings_obj["parsing"]["cl_path"])
         self.simulator_thread.start()
+        self.simulator_button.config(text="Stop simulator")
 
     @staticmethod
     def start_splitter():
