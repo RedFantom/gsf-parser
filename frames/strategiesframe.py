@@ -92,9 +92,10 @@ class StrategiesFrame(ttk.Frame):
         else:
             self.list.db[self.list.selected_strategy].description = self.description.get("1.0", tk.END)
             self.list.db.save_database()
-        allowed = self.settings.client_permissions[self.client.name][1]
-        if self.client and (allowed is True or allowed == "True" or allowed == "Master"):
-            self.send_description()
+        if self.settings is not None:
+            allowed = self.settings.client_permissions[self.client.name][1]
+            if self.client and (allowed is True or allowed == "True" or allowed == "Master"):
+                self.send_description()
 
     def send_description(self):
         """
