@@ -1,4 +1,3 @@
-from .calendarwidget import *
 from .hoverinfo import *
 from .toggledframe import *
 from .verticalscrollframe import *
@@ -8,3 +7,4 @@ from .shipselectframe import *
 from .componentslistframe import *
 from .componentwidgets import *
 from .scaleentry import ScaleEntry
+from ttkwidgets import Calendar

@@ -74,9 +74,7 @@ class CharactersFrame(ttk.Frame):
         try:
             with open(os.path.join(self.directory, "characters.db"), "rb") as f:
                 self.characters = pickle.load(f)
-        except OSError:
-            self.new_database()
-        except EOFError:
+        except (OSError, EOFError):
             self.new_database()
         # Set up the characters list
         self.characters_list = ttk.Treeview(self)
@@ -348,11 +346,12 @@ class CharactersFrame(ttk.Frame):
         General function to save the character database to the file
         :return: None
         """
-        self.character_data["GUI"] = self.gui_profile.get()
         print("[DEBUG] Saving character database")
-        server = self.character_data["Server"]
-        name = self.character_data["Name"]
-        self.characters[(server, name)] = self.character_data
+        if self.character_data is not None:
+            self.character_data["GUI"] = self.gui_profile.get()
+            server = self.character_data["Server"]
+            name = self.character_data["Name"]
+            self.characters[(server, name)] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 
@@ -370,22 +369,27 @@ class CharactersFrame(ttk.Frame):
         Delete a character for the database, callback for the delete_button
         :return: None
         """
+        self.set_character()
         del self.characters[(self.character_data["Server"], self.character_data["Name"])]
-        self.characters_list.delete(*((self.character_data["Server"] + " " + self.character_data["Name"]),))
         self.clear_character_data()
         self.save_button.invoke()
         self.update_tree()
 
-    def get_character_data(self):
+    def get_character_data(self, character=None):
         """
         Get a character_data dictionary from the selected character in the Treeview
         :return: None
         """
-        character = self.characters_list.selection()
-        if len(character[0]) < 4:
-            return
-        server = character[0][:3]
-        name = character[0][4:]
+        if character is not None:
+            server, name = character
+        else:
+            character = self.characters_list.selection()
+            if character == ():
+                return
+            if len(character[0]) < 4:
+                return
+            server = character[0][:3]
+            name = character[0][4:].replace("{", "").replace("}", "")
         if not server:
             raise ValueError("Server not found: {0}".format(character[0]))
         self.clear_character_data()
@@ -409,8 +413,8 @@ class CharactersFrame(ttk.Frame):
             character_data = self.get_character_data()
             if not character_data:
                 return
-        self.character_name_entry.insert(tk.END, character_data["Name"])
-        self.legacy_name_entry.insert(tk.END, character_data["Legacy"])
+        print("Name: {}, Legacy: {}".format(character_data["Name"], character_data["Legacy"]))
+        self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
         if character_data["Faction"] == "Imperial":
@@ -443,3 +447,17 @@ class CharactersFrame(ttk.Frame):
             intvar.set(0)
         for intvar in self.rep_ship_variables.values():
             intvar.set(0)
+        self.character_data = None
+
+    def insert_into_entries(self, name, legacy):
+        """
+        Insert values into the character name and legacy name entries
+        """
+        self.character_name_entry.config(state=tk.NORMAL)
+        self.legacy_name_entry.config(state=tk.NORMAL)
+        self.character_name_entry.delete(0, tk.END)
+        self.legacy_name_entry.delete(0, tk.END)
+        self.character_name_entry.insert(tk.END, name)
+        self.legacy_name_entry.insert(tk.END, legacy)
+        self.character_name_entry.config(state="readonly")
+        self.legacy_name_entry.config(state="readonly")

@@ -35,7 +35,7 @@ class StrategiesFrame(ttk.Frame):
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
         self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
         # Bind the KeyPress event to a callback. A KeyPress is fired when *any* key is pressed on the keyboard.
-        self.description.bind("<KeyPress>", self.set_description)
+        self.description.bind("<KeyPress>", self.set_description_callback)
         self.description_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.description.yview)
         self.description.config(yscrollcommand=self.description_scroll.set)
         self.client = None
@@ -72,11 +72,17 @@ class StrategiesFrame(ttk.Frame):
         :param phase: phase name
         :return: None
         """
-        self.map.update_map(self.list.db[self.list.selected_strategy][phase])
-        if self.in_map:
-            self.in_map.update_map(self.list.db[self.list.selected_strategy][phase])
+        for map in self.maps:
+            map.update_map(self.list.db[self.list.selected_strategy][phase])
+        return
 
-    def set_description(self, *args):
+    def set_description_callback(self, *args):
+        """
+        Delay for issue #142
+        """
+        self.after(5, self.set_description)
+
+    def set_description(self):
         """
         Update the description of a certain item in the database. Also immediately saves the database, so the
         description is automatically saved when updated.
@@ -92,9 +98,10 @@ class StrategiesFrame(ttk.Frame):
         else:
             self.list.db[self.list.selected_strategy].description = self.description.get("1.0", tk.END)
             self.list.db.save_database()
-        allowed = self.settings.client_permissions[self.client.name][1]
-        if self.client and (allowed is True or allowed == "True" or allowed == "Master"):
-            self.send_description()
+        if self.settings is not None:
+            allowed = self.settings.client_permissions[self.client.name][1]
+            if self.client and (allowed is True or allowed == "True" or allowed == "Master"):
+                self.send_description()
 
     def send_description(self):
         """
@@ -285,7 +292,7 @@ class StrategiesFrame(ttk.Frame):
         """
         :return: list of Map objects available in StrategiesFrame instance
         """
-        if self.in_map:
+        if self.in_map is not self.map:
             return [self.map, self.in_map]
         else:
             return [self.map]

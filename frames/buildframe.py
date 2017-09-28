@@ -6,7 +6,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from widgets import *
-from parsing.ships import Ship, Component
+from parsing.ships import Ship, Component, companions_db_categories
 from parsing.abilities import all_ships
 import pickle as pickle
 from os import path
@@ -24,23 +24,14 @@ class BuildsFrame(ttk.Frame):
     is explained in the README file. This also includes the not-enabled Infiltrator class ships.
     """
 
-    # TODO: Call set_component at loading of set_ship for each component that has been set if the ship has already been
-    # TODO: configured
-
-    # TODO: Save the components entered correctly by creating Component objects and adding those to Ship objects, adding
-    # TODO: in turn to the Character objects, adding those to the database and then immediately saving them
-
-    # TODO: Create a callback system for the upgrades to be saved in a similar manner as described above ^^
-
     # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
-
     # TODO: Implement toplevels.shipstats.ShipStats
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.window = variables.main_window
         self.working = [
-            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Engine", "Systems",
+            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems", "Engine",
             "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         self.categories = {
             "Bomber": 0,
@@ -65,17 +56,23 @@ class BuildsFrame(ttk.Frame):
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
+        # Open all required databases
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
                   "rb") as f:
+            # Contains data on the components
             self.ships_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
                   "rb") as f:
+            # Contains data on the ships (specifically descriptions and the like)
             self.categories_data = pickle.load(f)
         with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
                   "rb") as f:
+            # Contains data on the Crew members
             self.companions_data = pickle.load(f)
-        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=300, canvasheight=315)
+        # ScrollFrame to contain the component lists (ToggledFrames) and the CrewSelectFrame
+        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=260, canvasheight=315)
+
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
         self.faction = "Imperial"
@@ -83,9 +80,11 @@ class BuildsFrame(ttk.Frame):
         self.ship = Ship("Bloodmark")
         self.character = None
         self.ship_name = None
+        # Header above the Components ToggledFrames
         self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
                                                        justify=tk.LEFT, font=("Calibiri", 12))
         for category in self.working:
+            # Bloodmark is the default around which the widgets are created
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
             self.components_lists[category] = \
@@ -97,6 +96,7 @@ class BuildsFrame(ttk.Frame):
                                                       self.ship)
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.faction,
                                                self.companions_data[self.faction], self.set_crew_member)
+        # Image for on the ShipStats button
         self.ship_stats_image = photo(Image.open(
             os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
         self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
@@ -104,27 +104,41 @@ class BuildsFrame(ttk.Frame):
         self.reset()
 
     def set_crew_member(self, member):
+        """
+        Callback to set the crew member in both the database as well as in the CrewAbilitiesFrame
+        :param member: (faction, category, name)
+        """
         print("set_crew_member received member: {0}".format(member))
         print("Looking for companion {0} in category {1}".format(member[2], member[1]))
         value = None
-        print(self.companions_data["Imperial"][0]["Engineering"][0]["Name"])
-        for index, companion in enumerate(self.companions_data[member[0]][0][member[1]]):
+        faction, category, name = member
+        self.ship.crew[category] = member
+        category_index = companions_db_categories[category]
+        for index, companion in enumerate(self.companions_data[faction][category_index][category]):
             print("Checking companion: {0}".format(companion["Name"]))
-            if member[2] == companion["Name"]:
+            if name == companion["Name"]:
                 print("Companion is valid!")
                 value = index
                 print("Index was {0}, so value set to {1}".format(index, value))
                 break
         if value is None:
             raise ValueError()
-        member_dict = self.companions_data[member[0]][0][member[1]][value]
+        member_dict = self.companions_data[faction][category_index][category][value]
         self.current_component.destroy()
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
         self.current_component.grid_widgets()
         self.grid_widgets()
+        self.save_ship_data()
 
     def set_ship(self, faction, type, ship, ship_object):
-        if not bool(self.ship_select_frame.category_frames[faction][type].show.get()):
+        """
+        Callback to update the component lists and other widgets to match the newly selected ship
+        :param faction: faction, str
+        :param type: ship type (Scout, Strike etc)
+        :param ship: Ship name
+        :param ship_object: parsing.ships.Ship instance
+        """
+        if not self.ship_select_frame.category_frames[faction][type].show.get():
             self.ship_select_frame[faction][type].toggle()
         ship_name = ""
         if faction == "Imperial":
@@ -167,43 +181,53 @@ class BuildsFrame(ttk.Frame):
                 break
         if ship == "Novadive":
             ship = "NovaDive"
+        for crew_member in self.ship.crew.values():
+            if crew_member is None:
+                continue
+            faction, category, name = crew_member
+            if category == "CoPilot":
+                self.crew_select_frame.copilot_variable.set(name)
+                self.crew_select_frame.set_crew_member(crew_member)
+                continue
+            self.crew_select_frame.category_variables[category].set(name)
+            self.crew_select_frame.set_crew_member(crew_member)
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
         self.grid_widgets()
 
     def set_component(self, category, component):
+        """
+        Callback to set a new component in a certain category
+        """
         self.current_component.grid_forget()
         self.current_component.destroy()
-        # category = {value: key for key, value in self.component_strings.items()}[category]
-        print("[DEBUG] set_component(%s, %s)" % (category, component))
+        print("set_component(%s, %s)" % (category, component))
         indexing = -1
-        print("[DEBUG] type is: ", type(self.ships_data[self.ship.ship_name][category]))
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
                 indexing = index
                 break
-        print(indexing)
+        print("Index determined as {}".format(indexing))
         if indexing == -1:
             raise ValueError("Component not found in database with ship {0}, category {1} and component {2}".format(
                 self.ship.ship_name, category, component
             ))
+        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship)
         if category in self.minor_components:
-            self.current_component = MinorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][indexing],
-                                                          self.ship)
+            self.current_component = MinorComponentWidget(*args)
         elif category in self.middle_components:
-            self.current_component = MiddleComponentWidget(self.component_frame,
-                                                           self.ships_data[self.ship.ship_name][category][indexing],
-                                                           self.ship)
+            self.current_component = MiddleComponentWidget(*args)
         elif category in self.major_components:
-            self.current_component = MajorComponentWidget(self.component_frame,
-                                                          self.ships_data[self.ship.ship_name][category][indexing],
-                                                          self.ship)
+            self.current_component = MajorComponentWidget(*args)
         else:
             raise ValueError("Component category not found: %s" % category)
-        self.ship.components[category] = Component(self.ships_data[self.ship.ship_name][category][indexing], indexing,
-                                                   category)
+        if category in self.ship.components and self.ship.components[category].name != component:
+            new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
+                                      indexing,
+                                      category)
+            if self.ship.components[category] is not None:
+                new_component.upgrades = self.ship.components[category].upgrades
+            self.ship.components[category] = new_component
         self.current_component.grid_widgets()
-        print("[DEBUG] Gridding DEBUG component")
         self.current_component.grid(sticky="nswe")
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
         for button in self.current_component.upgrade_buttons:
@@ -223,14 +247,15 @@ class BuildsFrame(ttk.Frame):
         self.component_frame.grid(row=0, rowspan=2, column=2, sticky="nswe")
         self.current_component.grid(sticky="nswe")
         self.current_component.grid_widgets()
-        self.components_lists_header_label.grid(row=0, column=0, sticky="w")
+        self.components_lists_header_label.grid(row=0, column=0, sticky="w", pady=5)
         set_row = 1
         for frame in self.components_lists.values():
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
         # self.crew_select_frame.destroy()
-        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.companions_data[self.faction],
+        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior,
+        #                                        self.companions_data[self.faction],
         #                                        self.set_crew_member_frame)
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 

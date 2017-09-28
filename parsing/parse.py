@@ -8,9 +8,9 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from .abilities import *
-from . import realtime
 import os
 from variables import settings_obj
+from .lineops import line_to_dictionary
 
 
 def parse_file_name(string):
@@ -221,7 +221,7 @@ def parse_spawn(spawn, player):
             source = ability
 
         if source in player:
-            if "AbilityActivate" in effect:
+            if "AbilityActivate" in effect or "kinetic" in event:
                 if "Hull Cutter" in ability:
                     if source != target:
                         if ability not in abilities:
@@ -384,18 +384,6 @@ def parse_file(file, player, match_timingsList, spawn_timingsMatrix):
 
     match_timings = []
     spawn_timings = []
-    spawn_timingstemp = []
-
-    # For all the cooldowns the maximum (default) cooldown is used. These variables are for future features.
-    engine_cooldowns = {'Retro Thrusters': 20, 'Koiogran Turn': 20, 'Snap Turn': 20, 'Power Dive': 15,
-                        'Barrel Roll': 30, 'Shield Power Converter': 9, 'Weapon Power Converter': 9,
-                        'Interdiction Drive': 60, 'Rotational Thrusters': 10, 'Hyperspace Beacon': 180}
-    shield_cooldowns = {'Charged Plating': 30, 'Overcharged Shield': 60, 'Shield Projector': 30,
-                        'Directional Shield': 0, 'Distortion Field': 30, 'Feedback Shield': 30, 'Repair Drone': 90,
-                        'Fortress Shield': 30}
-    system_cooldowns = {'Combat Command': 90, 'Repair Probes': 90, 'Remote Slicing': 60, 'Interdiction Mine': 20,
-                        'Concussion Mine': 20, 'Ion Mine': 20, 'Booster Recharge': 60, 'Targeting Telemetry': 45,
-                        'Blaster Overcharge': 60, 'EMP Field': 60}
 
     for match in file:
         for spawn in match:
@@ -612,7 +600,7 @@ def determineShip(abilitiesDictionary):
 def get_amount_enemies(spawn, player):
     enemies = []
     for line in spawn:
-        line_dict = realtime.line_to_dictionary(line)
+        line_dict = line_to_dictionary(line)
         if line_dict['source'] not in player and line_dict['source'] not in enemies:
             enemies.append(line_dict['source'])
         if line_dict['destination'] not in player and line_dict['destination'] not in enemies:
