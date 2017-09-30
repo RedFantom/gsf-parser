@@ -97,7 +97,7 @@ class FileFrame(ttk.Frame):
         self.ascending = not self.ascending
         self.add_files()
 
-    def add_files(self, silent=False):
+    def add_files(self, silent=False, splash_screen=None):
         """
         Function that checks files found in the in the settings specified folder for
         GSF matches and if those are found in a file, it gets added to the listbox
@@ -149,11 +149,12 @@ class FileFrame(ttk.Frame):
                     file_string = file
                 self.file_string_dict[file_string] = file
                 number += 1
-                if splash_screen:
+                if splash_screen is not None:
                     splash_screen.update_progress(number)
+                    splash_screen.update()
                 self.insert_file(file_string)
                 variables.main_window.update()
-        if splash_screen:
+        if splash_screen is not None:
             splash_screen.destroy()
         return
 

@@ -48,7 +48,7 @@ class BootSplash(tk.Toplevel):
         self.panel.pack()
         self.window = window
         self.label_var = tk.StringVar()
-        self.label_var.set("Connecting to specified server...")
+        self.label_var.set("Parsing files...")
         self.label = ttk.Label(self, textvariable=self.label_var)
         self.label.pack()
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=462, mode="determinate")

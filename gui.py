@@ -85,10 +85,10 @@ class MainWindow(ThemedTk):
         self.setup_notebook()
         # Update the files in the file_select frame
         self.notebook.grid(column=0, row=0)
-        self.file_select_frame.add_files(silent=True)
+        self.file_select_frame.add_files(silent=True, splash_screen=self.splash)
         self.settings_frame.update_settings()
         # Check for updates
-        self.splash.label_var.set("Checking for updates")
+        self.splash.label_var.set("Checking for updates...")
         self.update()
         self.check_update()
         # Give focus to the main window
