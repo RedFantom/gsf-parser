@@ -111,13 +111,12 @@ class MajorComponentWidget(ComponentWidget):
         for i in range(5):
             if i >= 3:
                 self.boolvars.append([tk.BooleanVar(), tk.BooleanVar()])
-                if self.category not in self.ship.components:
-                    print("Category {} not found in the Ship components".format(self.category))
-                    self.boolvars[i][0].set(False)
-                    self.boolvars[i][1].set(False)
-                else:
+                if self.category in self.ship.components and self.ship.components[self.category] is not None:
                     self.boolvars[i][0].set(self.ship.components[self.category][(i, 0)])
                     self.boolvars[i][1].set(self.ship.components[self.category][(i, 1)])
+                else:
+                    self.boolvars[i][0].set(False)
+                    self.boolvars[i][1].set(False)
                 image_left = open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg")
                 image_right = open_image(data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")
                 self.photos.append([image_left, image_right])
@@ -139,9 +138,9 @@ class MajorComponentWidget(ComponentWidget):
                                                    width=50)])
             else:
                 self.boolvars.append(tk.BooleanVar())
-                try:
+                if self.category in self.ship.components and self.ship.components[self.category] is not None:
                     self.boolvars[i].set(self.ship.components[self.category][i])
-                except KeyError:
+                else:
                     self.boolvars[i].set(False)
                 self.photos.append(open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
                 self.upgrade_buttons.append(ttk.Checkbutton(self.interior, image=self.photos[i],
@@ -208,9 +207,9 @@ class MiddleComponentWidget(ComponentWidget):
                                                    width=50)])
             else:
                 self.boolvars.append(tk.BooleanVar())
-                try:
+                if self.category in self.ship.components and self.ship.components[self.category] is not None:
                     self.boolvars[i].set(self.ship.components[self.category][i])
-                except KeyError:
+                else:
                     self.boolvars[i].set(False)
                 self.photos.append(open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
                 self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
@@ -256,9 +255,9 @@ class MinorComponentWidget(ComponentWidget):
         self.boolvars = []
         for i in range(3):
             self.boolvars.append(tk.BooleanVar())
-            try:
+            if self.category in self.ship.components and self.ship.components[self.category] is not None:
                 self.boolvars[i].set(self.ship.components[self.category][i])
-            except KeyError:
+            else:
                 self.boolvars[i].set(False)
             self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.icon_photo,
                                                         command=lambda index=i: self.set_level(index),

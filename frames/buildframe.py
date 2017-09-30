@@ -167,6 +167,8 @@ class BuildsFrame(ttk.Frame):
                 ComponentListFrame(self.components_lists_frame.interior, type,
                                    self.ship.data[type], self.set_component)
             try:
+                if self.ship.components[type] is None:
+                    continue
                 index = self.ship.components[type].index
                 print("Setting type {0} to index {1}".format(type, index))
                 self.components_lists[type].variable.set(index)
@@ -220,13 +222,12 @@ class BuildsFrame(ttk.Frame):
             self.current_component = MajorComponentWidget(*args)
         else:
             raise ValueError("Component category not found: %s" % category)
-        if category in self.ship.components and self.ship.components[category].name != component:
-            new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
-                                      indexing,
-                                      category)
-            if self.ship.components[category] is not None:
-                new_component.upgrades = self.ship.components[category].upgrades
-            self.ship.components[category] = new_component
+        new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
+                                  indexing,
+                                  category)
+        if self.ship.components[category] is not None:
+            new_component.upgrades = self.ship.components[category].upgrades
+        self.ship.components[category] = new_component
         self.current_component.grid_widgets()
         self.current_component.grid(sticky="nswe")
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
