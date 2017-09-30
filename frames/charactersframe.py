@@ -312,6 +312,7 @@ class CharactersFrame(ttk.Frame):
         self.save_button.invoke()
         self.window.realtime_frame.update_characters()
         self.update_tree()
+        self.window.builds_frame.ship_select_frame.update_characters()
 
     def set_character_faction(self, faction):
         """
@@ -413,7 +414,8 @@ class CharactersFrame(ttk.Frame):
             character_data = self.get_character_data()
             if not character_data:
                 return
-        print("Name: {}, Legacy: {}".format(character_data["Name"], character_data["Legacy"]))
+        if character_data is None:
+            return
         self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
