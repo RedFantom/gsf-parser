@@ -87,7 +87,8 @@ primaries = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad L
 secondaries = ["Proton Torpedo", "Concussion Missile", "Thermite Torpedo", "Cluster Missiles", "Seeker Mine",
                "Rocket Pod", "EMP Missile", "Ion Missile",
                "Sabotage Probe", "Seismic Mine", "Slug Railgun", "Ion Railgun", "Plasma Railgun",
-               "Interdiction Missile"]
+               "Interdiction Missile", "Rocket Pods"]
+               # The reference to Rocket Pods (plural) is for the build calculator
 engines = ["Shield Power Converter", "Weapon Power Converter", "Engine Power Converter", "Rotational Thrusters",
            "Koiogran Turn", "Snap Turn", "Retro Thrusters",
            "Power Dive", "Interdiction Drive", "Hyperspace Beacon", "Barrel Roll"]
