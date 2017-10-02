@@ -6,7 +6,7 @@
 
 # Own modules
 from parsing.guiparsing import GSFInterface
-from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position
+from tools.utilities import write_debug_log, get_temp_directory, get_cursor_position, get_screen_resolution
 from . import vision
 from .keys import keys
 from toplevels.screenoverlay import HitChanceOverlay
@@ -330,6 +330,7 @@ class ScreenParser(threading.Thread):
         # self._ms_listener.start()
         # Start the loop to parse the screen data
         sct = mss.mss()
+        resolution = get_screen_resolution()
         
         power_mgmt_cds = self.interface.get_ship_powermgmt_coordinates()
         health_cds = self.interface.get_ship_health_coordinates()
@@ -424,7 +425,7 @@ class ScreenParser(threading.Thread):
             else:
                 pass
             if "tracking" in self.features_list:
-                distance = vision.get_distance_from_center(pointer_cds)
+                distance = vision.get_distance_from_center(pointer_cds, resolution)
                 tracking_degrees = vision.get_tracking_degrees(distance)
             else:
                 tracking_degrees = None

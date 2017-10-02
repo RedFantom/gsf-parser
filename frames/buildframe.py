@@ -93,7 +93,7 @@ class BuildsFrame(ttk.Frame):
         self.component_frame = ttk.Frame(self)
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
-                                                      self.ship)
+                                                      self.ship, "PrimaryWeapon")
         self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.faction,
                                                self.companions_data[self.faction], self.set_crew_member)
         # Image for on the ShipStats button
@@ -167,7 +167,9 @@ class BuildsFrame(ttk.Frame):
                 ComponentListFrame(self.components_lists_frame.interior, type,
                                    self.ship.data[type], self.set_component)
             try:
-                index = self.ship.components[type].index
+                if self.ship[type] is None:
+                    continue
+                index = self.ship[type].index
                 print("Setting type {0} to index {1}".format(type, index))
                 self.components_lists[type].variable.set(index)
             except KeyError as e:
@@ -196,22 +198,32 @@ class BuildsFrame(ttk.Frame):
 
     def set_component(self, category, component):
         """
-        Callback to set a new component in a certain category
+        Callback for the Radiobuttons in components list frame to update the component set for a certain category
+        on the currently selected ship.
         """
+        # Remove the current ComponentWidget
         self.current_component.grid_forget()
         self.current_component.destroy()
         print("set_component(%s, %s)" % (category, component))
+        # To update the data, we need the index of the component in the list of dictionaries in the category
         indexing = -1
         for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
                 indexing = index
                 break
         print("Index determined as {}".format(indexing))
+        # This ValueError is raised when something is wrong with the database
+        # This error should not be raised if the database is okay
         if indexing == -1:
+            messagebox.showerror("Error", "The GSF Parser encountered an error. A component was not found in the "
+                                          "component database:\nShip: {}\nCategory: {}\nComponent:{}\nPlease report "
+                                          "this issue.".format(self.ship.ship_name, category, component))
             raise ValueError("Component not found in database with ship {0}, category {1} and component {2}".format(
                 self.ship.ship_name, category, component
             ))
-        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship)
+        # Create a tuple of arguments for the new Component widget
+        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship, category)
+        # Create an appropriate ComponentWidget
         if category in self.minor_components:
             self.current_component = MinorComponentWidget(*args)
         elif category in self.middle_components:
@@ -219,23 +231,34 @@ class BuildsFrame(ttk.Frame):
         elif category in self.major_components:
             self.current_component = MajorComponentWidget(*args)
         else:
+            # For debugging purposes
             raise ValueError("Component category not found: %s" % category)
-        if category in self.ship.components and self.ship.components[category].name != component:
-            new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
-                                      indexing,
-                                      category)
-            if self.ship.components[category] is not None:
-                new_component.upgrades = self.ship.components[category].upgrades
-            self.ship.components[category] = new_component
+        # Create a new Component object
+        new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
+                                  indexing,
+                                  category)
+        # Transfer the upgrades of the currently selected component on the ship to the new Component
+        if self.ship[category] is not None:
+            new_component.upgrades = self.ship[category].upgrades
+        # Check if it is indeed a different component
+        if self.ship[category] is None or self.ship[category].name != component:
+            # Set the new component
+            print("Updating component {} in category {} of ship {}".format(component, category, self.ship.ship_name))
+            if self.ship[category] is not None:
+                print("Replacing old component '{}' with a new one.".format(self.ship[category].name))
+            self.ship[category] = new_component
+        # Put the new ComponentWidget in place
         self.current_component.grid_widgets()
         self.current_component.grid(sticky="nswe")
-        self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
+        # Unlock all the upgrade buttons
         for button in self.current_component.upgrade_buttons:
             if isinstance(button, list):
                 button[0].config(state=tk.NORMAL)
                 button[1].config(state=tk.NORMAL)
                 continue
             button.config(state=tk.NORMAL)
+        # Save the altered ship
+        self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
         self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):

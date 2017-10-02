@@ -99,6 +99,7 @@ class Ship(object):
 
     def __setitem__(self, item, value):
         print("Setting item...")
+        item = self.process_key(item)
         if item in self.components:
             self.components[item] = value
         elif item in self.crew:
@@ -107,16 +108,37 @@ class Ship(object):
             self.data[item] = value
 
     def __getitem__(self, item):
+        item = self.process_key(item)
         if item in self.components:
             return self.components[item]
         elif item in self.crew:
             return self.crew[item]
         else:
+            print("Key not component or crew: '{}'".format(item))
             return self.data[item]
 
     def __iter__(self):
         for key, value in self.data.items():
             yield (key, value)
+
+    def process_key(self, item):
+        if item == "PrimaryWeapon":
+            item = "primary"
+        elif item == "PrimaryWeapon2":
+            item = "primary2"
+        elif item == "SecondaryWeapon":
+            item = "secondary"
+        elif item == "SecondaryWeapon2":
+            item = "secondary2"
+        elif item == "ShieldProjector":
+            item = "shields"
+        elif item == "Sensor":
+            item = "sensors"
+        elif item == "Thruster":
+            item = "thrusters"
+        elif item.lower() in self.components:
+            item = item.lower()
+        return item
 
     def update(self, dictionary):
         for key, value in dictionary.items():

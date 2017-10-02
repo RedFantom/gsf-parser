@@ -44,4 +44,4 @@ class HitChanceOverlay(tk.Toplevel):
             self.destroy()
 
     def set_percentage(self, string):
-        self.label["text"] = string
+        self.after(5, lambda: self.label.config(text=string))

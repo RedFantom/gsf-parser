@@ -68,14 +68,8 @@ class CharactersFrame(ttk.Frame):
         }
         # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
-        # Try to load the character database
-        if "characters.db" not in os.listdir(self.directory):
-            self.new_database()
-        try:
-            with open(os.path.join(self.directory, "characters.db"), "rb") as f:
-                self.characters = pickle.load(f)
-        except (OSError, EOFError):
-            self.new_database()
+        self.characters = {}
+        self.load_character_database()
         # Set up the characters list
         self.characters_list = ttk.Treeview(self)
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
@@ -220,7 +214,13 @@ class CharactersFrame(ttk.Frame):
                 self.characters_list.insert(identifier, tk.END, iid=server, text=self.servers[server])
 
         for character, data in self.characters.items():
-            self.characters_list.insert(data["Server"], tk.END, iid=(data["Server"], data["Name"]), text=data["Name"])
+            try:
+                self.characters_list.insert(
+                    data["Server"], tk.END, iid=(data["Server"], data["Name"]), text=data["Name"]
+                )
+            except TypeError:
+                self.new_database()
+                self.update_tree()
 
     def widgets_grid_forget(self):
         """
@@ -249,7 +249,7 @@ class CharactersFrame(ttk.Frame):
                                            "GUI": "Default"}}
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
-        self.characters = {}
+        self.characters = characters
 
     def detect_profile(self):
         """
@@ -312,6 +312,7 @@ class CharactersFrame(ttk.Frame):
         self.save_button.invoke()
         self.window.realtime_frame.update_characters()
         self.update_tree()
+        self.window.builds_frame.ship_select_frame.update_characters()
 
     def set_character_faction(self, faction):
         """
@@ -354,6 +355,20 @@ class CharactersFrame(ttk.Frame):
             self.characters[(server, name)] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
+
+    def load_character_database(self):
+        """
+        Loads the character database from disk
+        """
+        # Try to load the character database
+        if "characters.db" not in os.listdir(self.directory):
+            self.new_database()
+        try:
+            with open(os.path.join(self.directory, "characters.db"), "rb") as f:
+                self.characters = pickle.load(f)
+        except (OSError, EOFError):
+            self.new_database()
+        return
 
     def discard_character_data(self):
         """
@@ -413,7 +428,8 @@ class CharactersFrame(ttk.Frame):
             character_data = self.get_character_data()
             if not character_data:
                 return
-        print("Name: {}, Legacy: {}".format(character_data["Name"], character_data["Legacy"]))
+        if character_data is None:
+            return
         self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
