@@ -28,6 +28,10 @@ if __name__ == '__main__':
                     elements = re.split(r"[\[\]]", event)
                     # print(elements)
                     _, timestamp, _, source, _, target, _, ability, _, effect, damage = elements
+                    ability = ability.split("{")[0].strip()
+                    effect = effect.split("{")[1].split(":")[1].strip()
+                    if effect == "AbilityActivate":
+                        continue
                     if ability not in effects:
                         effects[ability] = [effect]
                     elif effect not in effects[ability]:
