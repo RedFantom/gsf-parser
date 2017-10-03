@@ -42,11 +42,13 @@ class Parser(object):
     MODE_SPAWN = "spawn"
 
     def __init__(self, events_view=None, line_queue=None, character_data=None, real_time=False, screen_parsing=False,
-                 mode=MODE_SPAWN):
+                 file_name=None, mode=MODE_FILE):
         """
         :param events_view: An EventsView widget with .timeline and .eventslist attributes
         :param line_queue: Queue object (or object with .put()) to pass lines parsed to
         :param character_data: Character dictionary with "Ship Objects" keys
+        :param file_name: The name of the log being parsed (e.g. to collect data from FileHandler)
+        :param mode: The mode the new Parser is started in
         """
         # Perform type checks
         if not isinstance(events_view, Frame):
@@ -66,7 +68,31 @@ class Parser(object):
         self.character_data = character_data
         self.log_stalker = Parser.setup_log_stalker() if real_time is True else None
         self.screen_parser = self.setup_screen_parser() if screen_parsing is True else None
-        # Create
+
+        #
+        # Create the necessary runtime data variables
+        #
+
+        # Spawn data
+        self.spawn_dmg_d = 0  # Damage dealt
+        self.spawn_dmg_t = 0  # Damage taken
+        self.spawn_dmg_s = 0  # Selfdamage
+        self.spawn_heals = 0  # Healing received
+        self.spawn_enemies_list = []  # List of enemy identifiers
+        self.spawn_enemies_dict = {}  # Dictionary of enemy identifiers: string identifiers
+        self.spawn_player_id_list = []  # List of spawn player ID numbers
+        self.spawn_ship = None  # Ship instance of the ship flown by the player, if not known will stay None
+        self.spawn_ship_name = ""  # Name of the ship flown by the player
+        self.ship_components = {}  # Dictionary of category: component name
+        # Match data
+        self.match_dmg_d = []
+        self.match_dmg_t = []
+        self.match_dmg_s = []
+        self.match_heals = []
+        self.match_enemies_list = []
+        self.match_enemies_dict = {}
+        self.match_player_id_list = []
+        self.match_ships_list = []
 
     def process_line(self, line):
         pass
