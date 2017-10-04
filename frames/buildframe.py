@@ -7,6 +7,7 @@
 # For license see LICENSE
 from widgets import *
 from parsing.ships import Ship, Component, companions_db_categories
+from toplevels.shipstatstoplevel import ShipStatsToplevel
 from parsing.abilities import all_ships
 import pickle as pickle
 from os import path
@@ -293,6 +294,9 @@ class BuildsFrame(ttk.Frame):
             frame.grid_forget()
 
     def show_ship_stats(self):
+        if self.ship is None:
+            return
+        window = ShipStatsToplevel(self.window, self.ship, self.ships_data, self.companions_data)
         messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
 
     def set_faction(self, faction):
