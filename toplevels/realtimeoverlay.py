@@ -5,20 +5,21 @@
 # For license see LICENSE
 
 # UI imports
-import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox
+from tkinter import StringVar
 import os
 import sys
 # Own modules
 from tools import utilities
+from widgets.overlay import Overlay
 import variables
 
 
-class RealtimeOverlay(tk.Toplevel):
+class RealtimeOverlay(object):
+    """
+    Wrapper class around Overlay instance
+    """
     def __init__(self, window):
-        tk.Toplevel.__init__(self, window)
-        self.update_position()
         if sys.platform == "win32":
             try:
                 with open(os.path.join(utilities.get_swtor_directory(), "swtor", "settings", "client_settings.ini"),
@@ -32,62 +33,36 @@ class RealtimeOverlay(tk.Toplevel):
                 tkinter.messagebox.showerror("Error",
                                              "The settings file for SWTOR cannot be found. Is SWTOR correctly "
                                              "installed?")
-        print("[DEBUG] Setting overlay font to: ", (
-            variables.settings_obj["realtime"]["overlay_tx_font"], variables.settings_obj["realtime"]["overlay_tx_size"]))
-        if variables.settings_obj["realtime"]["size"] == "big":
-            self.text_label = ttk.Label(self, text="Damage done:\nDamage taken:\nHealing "
-                                                   "recv:\nSelfdamage:\nRecent enemies:\nSpawns:",
-                                        justify=tk.LEFT, font=(variables.settings_obj["realtime"]["overlay_tx_font"],
-                                                               int(variables.settings_obj["realtime"]["overlay_tx_size"])),
-                                        foreground=variables.settings_obj["realtime"]["overlay_tx_color"],
-                                        background=variables.settings_obj["realtime"]["overlay_bg_color"])
-        elif variables.settings_obj["realtime"]["size"] == "small":
-            self.text_label = ttk.Label(self, text="DD:\nDT:\nHR:\nSD:", justify=tk.LEFT,
-                                        font=(variables.settings_obj["realtime"]["overlay_tx_font"],
-                                              int(variables.settings_obj["realtime"]["overlay_tx_size"])),
-                                        foreground=variables.settings_obj["realtime"]["overlay_tx_color"],
-                                        background=variables.settings_obj["realtime"]["overlay_bg_color"])
+        size = variables.settings_obj["realtime"]["size"]
+        self.unformatted_string = ("Damage done: {}\nDamage taken: {}\nHealing recv: {}\nSelfdamage: {}\n"
+                                   "Recent enemies: {}\nSpawns: {}") if size == "big" else ("DD: {}\nDT: {}\nHR: {}\n"
+                                                                                            "SD: {}")
+        self.text_var = StringVar()
+        # Determine required size
+        text_size = variables.settings_obj["realtime"]["overlay_tx_size"]
+        h_req = int((int(text_size) * 1.6) * (6 if size == "big" else 4))
+        w_req = int(((int(text_size) / 1.5) + 2) * ((14 if size == "big" else 4) + 6))
+        # Determine position
+        position = variables.settings_obj["realtime"]["pos"]
+        if position == "TL":
+            position = (0, 0)
+        elif position == "BL":
+            position = (0, variables.screen_h - h_req)
+        elif position == "TR":
+            position = (variables.screen_w - w_req, 0)
+        elif position == "BR":
+            position = (variables.screen_w - w_req, variables.screen_h - h_req)
+        elif position == "UC":
+            position = (0, int(0.25 * variables.screen_h))
+        elif position == "NQ":
+            position = (int(variables.screen_w * 0.25), int(variables.screen_h) - int(h_req))
+        elif position == "UT":
+            position = (int(variables.screen_w) - int(w_req), variables.screen_h - int(0.75 * variables.screen_h))
         else:
-            raise ValueError("Size setting not valid.")
-        self.stats_var = tk.StringVar()
-        self.stats_label = ttk.Label(self, textvariable=self.stats_var, justify=tk.RIGHT,
-                                     font=(variables.settings_obj["realtime"]["overlay_tx_font"],
-                                           int(variables.settings_obj["realtime"]["overlay_tx_size"])),
-                                     foreground=variables.settings_obj["realtime"]["overlay_tx_color"],
-                                     background=variables.settings_obj["realtime"]["overlay_bg_color"])
-        self.text_label.pack(side=tk.LEFT)
-        self.stats_label.pack(side=tk.RIGHT)
-        self.configure(background=variables.settings_obj["realtime"]["overlay_bg_color"])
-        self.wm_attributes("-transparentcolor", variables.settings_obj["realtime"]["overlay_tr_color"])
-        self.overrideredirect(True)
-        self.attributes("-topmost", True)
-        self.attributes("-alpha", variables.settings_obj["realtime"]["opacity"])
+            elements = position.split("+")
+            position = (elements[1], elements[2])
+        # Open the Overlay
+        self.overlay = Overlay(position, self.text_var, master=window, size=(w_req, h_req))
 
-    def update_position(self):
-        if variables.settings_obj["realtime"]["size"] == "big":
-            h_req = (int(variables.settings_obj["realtime"]["overlay_tx_size"]) * 1.6) * 6
-            w_req = ((int(variables.settings_obj["realtime"]["overlay_tx_size"]) / 1.5) + 2) * (14 + 6)
-        elif variables.settings_obj["realtime"]["size"] == "small":
-            h_req = (int(variables.settings_obj["realtime"]["overlay_tx_size"]) * 1.6) * 4
-            w_req = ((int(variables.settings_obj["realtime"]["overlay_tx_size"]) / 1.5) + 2) * (4 + 6)
-        else:
-            raise ValueError("Not a valid overlay size found.")
-        if variables.settings_obj["realtime"]["pos"] == "TL":
-            pos_c = "+0+0"
-        elif variables.settings_obj["realtime"]["pos"] == "BL":
-            pos_c = "+0+%s" % (int(variables.screen_h) - int(h_req))
-        elif variables.settings_obj["realtime"]["pos"] == "TR":
-            pos_c = "+%s+0" % (int(variables.screen_w) - int(w_req))
-        elif variables.settings_obj["realtime"]["pos"] == "BR":
-            pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req), int(variables.screen_h) - int(h_req))
-        elif variables.settings_obj["realtime"]["pos"] == "UC":
-            pos_c = "+0+%s" % int(0.25 * variables.screen_h)
-        elif variables.settings_obj["realtime"]["pos"] == "NQ":
-            pos_c = "+%s+%s" % (int(variables.screen_w * 0.25), int(variables.screen_h) - int(h_req))
-        elif variables.settings_obj["realtime"]["pos"] == "UT":
-            pos_c = "+%s+%s" % (int(variables.screen_w) - int(w_req),
-                                variables.screen_h - int(0.75 * variables.screen_h))
-        else:
-            raise ValueError("vars.settings_obj.pos not valid")
-        self.wm_geometry("%sx%s" % (int(w_req), int(h_req)) + pos_c)
-        print("[DEBUG] Overlay position set to: ", "%sx%s" % (int(w_req), int(h_req)) + pos_c)
+    def destroy(self):
+        self.overlay.destroy()

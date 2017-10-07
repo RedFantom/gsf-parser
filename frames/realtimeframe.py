@@ -213,21 +213,11 @@ class RealtimeFrame(ttk.Frame):
                                            str(selfdamage) + "\n" +
                                            str(healing) + "\n" +
                                            str(spawns))
-        if self.overlay:
-            if variables.settings_obj["realtime"]["size"] == "big":
-                self.overlay.stats_var.set(str(damage_done) + "\n" +
-                                           str(damage_taken) + "\n" +
-                                           str(healing) + "\n" +
-                                           str(selfdamage) + "\n" +
-                                           str(enemies) + "\n" +
-                                           str(spawns))
-            elif variables.settings_obj["realtime"]["size"] == "small":
-                self.overlay.stats_var.set(str(damage_done) + "\n" +
-                                           str(damage_taken) + "\n" +
-                                           str(healing) + "\n" +
-                                           str(selfdamage) + "\n")
-            else:
-                raise ValueError("Not a valid overlay size found.")
+        if self.overlay is not None:
+            size = variables.settings_obj["realtime"]["size"]
+            args = ((damage_done, damage_taken, selfdamage, healing) if size == "small" else
+                    (damage_done, damage_taken, selfdamage, healing, spawns, enemies))
+            self.overlay.text_var.set(self.overlay.unformatted_string.format(*args))
 
     def callback(self, lines):
         if not self.parsing:
