@@ -19,6 +19,7 @@ class RealtimeOverlay(object):
     """
     Wrapper class around Overlay instance
     """
+
     def __init__(self, window):
         if sys.platform == "win32":
             try:
@@ -34,14 +35,16 @@ class RealtimeOverlay(object):
                                              "The settings file for SWTOR cannot be found. Is SWTOR correctly "
                                              "installed?")
         size = variables.settings_obj["realtime"]["size"]
-        self.unformatted_string = ("Damage done: {}\nDamage taken: {}\nHealing recv: {}\nSelfdamage: {}\n"
-                                   "Recent enemies: {}\nSpawns: {}") if size == "big" else ("DD: {}\nDT: {}\nHR: {}\n"
-                                                                                            "SD: {}")
+        self.unformatted_string = ("{dd:<20}{}\n{dt:<20}{}\n{hr:<20}{}\n{sd:<20}{}\n{en:<20}{}\n{sp:<20}{}".
+                                   format(*(("{:>6}",) * 6), dd="Damage dealt:", dt="Damage taken:",
+                                          hr="Healing received:", sd="Selfdamage:", en="Recent Enemies:", sp="Spawns:")
+                                   if size == "big" else
+                                   "DD: {}\nDT: {}\nHR: {}\nSD: {}")
         self.text_var = StringVar()
         # Determine required size
         text_size = variables.settings_obj["realtime"]["overlay_tx_size"]
         h_req = int((int(text_size) * 1.6) * (6 if size == "big" else 4))
-        w_req = int(((int(text_size) / 1.5) + 2) * ((14 if size == "big" else 4) + 6))
+        w_req = int(((int(text_size) / 0.9) + 2) * ((14 if size == "big" else 4) + 6))
         # Determine position
         position = variables.settings_obj["realtime"]["pos"]
         if position == "TL":
@@ -62,7 +65,23 @@ class RealtimeOverlay(object):
             elements = position.split("+")
             position = (elements[1], elements[2])
         # Open the Overlay
-        self.overlay = Overlay(position, self.text_var, master=window, size=(w_req, h_req))
+        color = variables.settings_obj["realtime"]["overlay_tx_color"].lower()
+        if color == "red":
+            color_tuple = (255, 0, 0)
+        elif color == "yellow":
+            color_tuple = (255, 255, 0)
+        elif color == "green":
+            color_tuple = (0, 255, 0)
+        elif color == "blue":
+            color_tuple = (0, 255, 255)
+        elif color == "white":
+            color_tuple = (255, 255, 255)
+        else:
+            color_tuple = (255, 255, 0)
+        opacity = int(variables.settings_obj["realtime"]["opacity"] * 255)
+        self.overlay = Overlay(position, self.text_var, master=window, size=(w_req, h_req),
+                               font={"family": "Courier New", "bold": True, "size": text_size, "italic": False},
+                               color=color_tuple, opacity=opacity)
 
     def destroy(self):
         self.overlay.destroy()
