@@ -6,7 +6,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from ttkwidgets import CheckboxTreeview, SnapToplevel
+from ttkwidgets import CheckboxTreeview
+from widgets.snaptoplevel import SnapToplevel
 # Own modules
 from parsing.strategies import StrategyDatabase
 from tools.strategy_client import Client

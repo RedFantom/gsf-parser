@@ -8,7 +8,7 @@ from tkinter import ttk
 from tkinter import messagebox, filedialog
 import _pickle as pickle
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
-from ttkwidgets import SnapToplevel
+from widgets.snaptoplevel import SnapToplevel
 from ast import literal_eval
 # Own modules
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
