@@ -24,21 +24,32 @@ class ShipStatsToplevel(tk.Toplevel):
     def __init__(self, master, ship, ships_data, companions_data):
         tk.Toplevel.__init__(self, master)
         stats = ShipStats(ship, ships_data, companions_data)
-        self.stats_treeview = ttk.Treeview(self, show=("headings", "tree"), columns=("#0", "value"))
+        self.stats_scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.stats_treeview = ttk.Treeview(self, show=("headings", "tree"), columns=("value",),
+                                           yscrollcommand=self.stats_scrollbar.set)
+        self.stats_scrollbar.config(command=self.stats_treeview.yview)
+        self.stats_treeview.heading("#0", text="Statistic")
+        self.stats_treeview.heading("value", text="Value")
+        self.stats_treeview.column("value", anchor=tk.E, width=50)
+        self.stats_treeview.column("#0", anchor=tk.W, width=350)
         self.stats_treeview.insert("", tk.END, iid="Ship", text="Ship statistics")
+        self.stats_treeview.tag_configure("even", background="lightgrey")
+        tags = ("even", )
         for item in sorted(stats.stats.keys()):
             if item.isdigit() or "OBSOLETE" in item:
                 continue
-            value = stats.stats[item]
+            value = "{.0f}".format(round(stats.stats[item], 0))
             item = item.replace("_", " ")
-            self.stats_treeview.insert("Ship", tk.END, iid=item, values=value, text=item)
+            self.stats_treeview.insert("Ship", tk.END, iid=item, values=value, text=item, tags=tags)
+            tags = ("odd", ) if tags == ("even", ) else ("even", )
         for component in stats.components:
             pass
         self.bind("<Configure>", self.configure)
         self.grid_widgets()
 
     def grid_widgets(self):
-        self.stats_treeview.grid()
+        self.stats_treeview.grid(row=1, column=1, sticky="nswe", padx=5, pady=5)
+        self.stats_scrollbar.grid(row=1, column=2, sticky="ns", padx=(0, 5), pady=5)
 
     def configure(self, *args):
         self.grid_widgets()
