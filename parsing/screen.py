@@ -167,8 +167,8 @@ class ScreenParser(threading.Thread):
         # If debug is enabled, the ScreenParser will log various activities to the program wide debug log file
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
         # Set up the Overlay instance if that setting is enabled
-        self.screenoverlay = HitChanceOverlay(variables.main_window) if \
-            variables.settings_obj["realtime"]["screenparsing_overlay"] else None
+        # self.screenoverlay = HitChanceOverlay(variables.main_window) if \
+        #     variables.settings_obj["realtime"]["screenparsing_overlay"] else None
         # The overlay moves with the cursor if this setting is enabled
         self.moving_overlay = variables.settings_obj["realtime"]["screenparsing_overlay_geometry"]
 
@@ -304,7 +304,7 @@ class ScreenParser(threading.Thread):
                     # If the timer has a value, a spawn timer was found in the correct location
                     # The TimerParser will run on MainThread
                     start_time = datetime.now() + timedelta(seconds=timer)
-                    self.timer_parser = TimerParser(variables.main_window, start_time)
+                    # self.timer_parser = TimerParser(variables.main_window, start_time)
                     print("The TimerParser was initialized.")
                     waiting_for_timer = None
                 # waiting_for_timer may be set to None again by the if above
@@ -417,7 +417,7 @@ class ScreenParser(threading.Thread):
                     print("ScreenParser loop break")
                     break
             if self.screenoverlay:
-                self.screenoverlay.set_percentage("{:.02f}".format(tracking_degrees) + "°")
+                self.screenoverlay.set_percentage("{:02d.02f}".format(tracking_degrees) + "°")
             write_debug_log("Start logging and saving vision functions data")
             self._tracking_dict[current_time] = tracking_degrees * 1
             if not self._internal_queue.empty():
