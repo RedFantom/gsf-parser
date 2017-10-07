@@ -340,9 +340,10 @@ class ScreenParser(threading.Thread):
                     self._match_dict.clear()
                     self.is_match = False
                     self.match = None
-                    self.screenoverlay.running = False
-                    self.screenoverlay.destroy()
-                    self.screenoverlay = None
+                    if self.screenoverlay is not None:
+                        self.screenoverlay.running = False
+                        self.screenoverlay.destroy()
+                        self.screenoverlay = None
                 # ("match", True, datetime)
                 elif data[0] == "match" and data[1] and not self.is_match:
                     self._match = data[2]
