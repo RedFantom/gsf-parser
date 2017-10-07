@@ -416,7 +416,7 @@ class ScreenParser(threading.Thread):
                     print("ScreenParser loop break")
                     break
             if self.screenoverlay:
-                self.screenoverlay.set_percentage(str(tracking_degrees) + "°")
+                self.screenoverlay.set_percentage("{:.02f}".format(tracking_degrees) + "°")
             write_debug_log("Start logging and saving vision functions data")
             self._tracking_dict[current_time] = tracking_degrees * 1
             if not self._internal_queue.empty():
