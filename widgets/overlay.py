@@ -121,7 +121,7 @@ class Overlay(object):
             None  # lpParam
         )
         # Set white as a transparent color
-        gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, 255, con.LWA_COLORKEY | con.LWA_ALPHA)
+        gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, self._opacity, con.LWA_COLORKEY | con.LWA_ALPHA)
         # Call an UpdateWindow
         gui.UpdateWindow(self._window)
         # Change the position of the window
@@ -157,12 +157,12 @@ class Overlay(object):
             log_font.lfHeight = int(round(dpi_scale * self._font_size))
             # Remove the anti-aliasing of the font
             log_font.lfQuality = con.NONANTIALIASED_QUALITY
-            log_font.lfWeight = 700 if self._bold is True else 400
+            log_font.lfWeight = 900 if self._bold is True else 400
             log_font.lfItalic = self._italic
             hard_font = gui.CreateFontIndirect(log_font)
             gui.SelectObject(hdc, hard_font)
             gui.SetTextColor(hdc, eval("0x00{0:02x}{1:02x}{2:02x}".format(
-                self._color[0], self._color[1], self._color[2])
+                self._color[2], self._color[1], self._color[0])
             ))
             text = self._text_var.get()
             rectangle = gui.GetClientRect(window)
