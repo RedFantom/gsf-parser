@@ -104,6 +104,7 @@ class Overlay(object):
         """
         Initialize the actual window
         """
+        self.init = None
         # Initialize the window object
         self._window = gui.CreateWindowEx(
             self._ex_style,  # External style
@@ -141,9 +142,8 @@ class Overlay(object):
         # Make sure the window is actually shown
         gui.ShowWindow(self._window, con.SW_SHOW)
         # gui.PumpMessages()
-        if self.init:
-            self.update()
         self.init = True
+        self.update()
 
     def draw(self, window, message, w_parameter, l_parameter):
         """
@@ -155,7 +155,7 @@ class Overlay(object):
             log_font = gui.LOGFONT()
             log_font.lfFaceName = self._font_family
             log_font.lfHeight = int(round(dpi_scale * self._font_size))
-            # Remove the antialiasing of the font
+            # Remove the anti-aliasing of the font
             log_font.lfQuality = con.NONANTIALIASED_QUALITY
             log_font.lfWeight = 700 if self._bold is True else 400
             log_font.lfItalic = self._italic
@@ -164,10 +164,11 @@ class Overlay(object):
             gui.SetTextColor(hdc, eval("0x00{0:02x}{1:02x}{2:02x}".format(
                 self._color[0], self._color[1], self._color[2])
             ))
+            text = self._text_var.get()
             rectangle = gui.GetClientRect(window)
             gui.DrawText(
                 hdc,
-                self._text_var.get(),
+                text,
                 -1,
                 rectangle,
                 con.DT_NOCLIP | con.DT_CENTER | con.DT_WORDBREAK | con.DT_VCENTER
@@ -199,13 +200,16 @@ class Overlay(object):
     def update(self):
         if self.init is False:
             self.initialize_window()
+        elif self.init is None:
+            # return
+            pass
         gui.UpdateWindow(self._window)
-        if self._master is not None:
-            self._after_code = self._master.after(self._wait_time, self.update)
         gui.SetWindowPos(self._window, None, self._position[0], self._position[1], 0, 0, con.SWP_NOSIZE)
         gui.SetLayeredWindowAttributes(self._window, 0x00ffffff, self._opacity, con.LWA_COLORKEY | con.LWA_ALPHA)
         gui.RedrawWindow(self._window, None, None, con.RDW_INVALIDATE | con.RDW_ERASE)
         gui.PumpWaitingMessages()
+        if self._master is not None and self.init:
+            self._after_code = self._master.after(self._wait_time, self.update)
 
     def destroy(self):
         """
@@ -281,7 +285,7 @@ if __name__ == '__main__':
     root = tk.Tk()
     string = StringVar(master=root)
     string.set("Something great")
-    overlay = Overlay((-900, 100), string, master=root)
+    overlay = Overlay((100, 100), string, master=root, auto_init=False, size=(200, 200))
 
 
     def change_text():
