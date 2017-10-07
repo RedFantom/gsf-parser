@@ -4,12 +4,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-<<<<<<< HEAD
 from frames.shipstatsframe import ShipStatsFrame
-=======
-from widgets import *
-from parsing.ships import Ship, Component, ShipStats, reverse_ships, companions_db_categories
->>>>>>> Add more debugging code to start on finishing the build calculator
 from parsing.abilities import all_ships
 from parsing.ships import Ship, Component, companions_db_categories
 from tools.utilities import get_assets_directory
