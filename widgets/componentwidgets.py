@@ -7,32 +7,9 @@
 # For license see LICENSE
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import messagebox
-from os import path
-from PIL import Image as img
-from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, VerticalScrollFrame
-from parsing import abilities
 import variables
-
-
-def open_image(image_name):
-    """
-    Open an image from the assets folder
-    """
-    # Type check for PyCharm completion
-    if not isinstance(image_name, str):
-        raise ValueError()
-    icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-    if not image_name.endswith(".jpg"):
-        image_name += ".jpg"
-    filename = path.join(icons_path, image_name)
-    if not path.exists(filename):
-        messagebox.showinfo("Error", "A non-critical error occurred. The GSF Parser is missing an icon "
-                                     "with the name {}. Please report this error if you did not modify the "
-                                     "assets folder.".format(image_name))
-        filename = path.join(icons_path, "imperial.png")
-    return photo(img.open(filename))
+from tools.utilities import open_icon
 
 
 class ComponentWidget(ttk.Frame):
@@ -79,7 +56,7 @@ class MajorComponentWidget(ComponentWidget):
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self.interior, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
-        self.icon_photo = open_image(self.icon)
+        self.icon_photo = open_icon(self.icon)
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
         self.hover_infos = []
@@ -94,8 +71,8 @@ class MajorComponentWidget(ComponentWidget):
                 else:
                     self.boolvars[i][0].set(False)
                     self.boolvars[i][1].set(False)
-                image_left = open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg")
-                image_right = open_image(data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")
+                image_left = open_icon(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg")
+                image_right = open_icon(data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg")
                 self.photos.append([image_left, image_right])
                 self.upgrade_buttons.append([ttk.Checkbutton(self.interior, image=self.photos[i][0],
                                                              command=lambda index=i: self.set_level((index, 0)),
@@ -119,7 +96,7 @@ class MajorComponentWidget(ComponentWidget):
                     self.boolvars[i].set(self.ship[self.category][i])
                 else:
                     self.boolvars[i].set(False)
-                self.photos.append(open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
+                self.photos.append(open_icon(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
                 self.upgrade_buttons.append(ttk.Checkbutton(self.interior, image=self.photos[i],
                                                             command=lambda index=i: self.set_level(index),
                                                             variable=self.boolvars[i]))  # , style="TButton"))
@@ -147,7 +124,7 @@ class MiddleComponentWidget(ComponentWidget):
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
-        self.icon_photo = open_image(self.icon)
+        self.icon_photo = open_icon(self.icon)
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
         self.hover_infos = []
@@ -164,7 +141,7 @@ class MiddleComponentWidget(ComponentWidget):
                     self.boolvars[i][1].set(False)
                 icon_left = data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"
                 icon_right = data_dictionary["TalentTree"][i][1]["Icon"] + ".jpg"
-                self.photos.append([open_image(icon_left), open_image(icon_right)])
+                self.photos.append([open_icon(icon_left), open_icon(icon_right)])
                 self.upgrade_buttons.append([ttk.Checkbutton(self, image=self.photos[i][0],
                                                              command=lambda index=i: self.set_level((index, 0)),
                                                              # style="TButton",
@@ -188,7 +165,7 @@ class MiddleComponentWidget(ComponentWidget):
                     self.boolvars[i].set(self.ship[self.category][i])
                 else:
                     self.boolvars[i].set(False)
-                self.photos.append(open_image(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
+                self.photos.append(open_icon(data_dictionary["TalentTree"][i][0]["Icon"] + ".jpg"))
                 self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.photos[i],
                                                             command=lambda index=i: self.set_level(index),
                                                             variable=self.boolvars[i]))
@@ -225,7 +202,7 @@ class MinorComponentWidget(ComponentWidget):
         self.description = data_dictionary["Description"]
         self.description_label = ttk.Label(self, text=self.description, justify=tk.LEFT, wraplength=300)
         self.icon = data_dictionary["Icon"] + ".jpg"
-        self.icon_photo = open_image(self.icon)
+        self.icon_photo = open_icon(self.icon)
         self.icon_label = ttk.Label(self, image=self.icon_photo)
         self.upgrade_buttons = []
         self.hover_infos = []

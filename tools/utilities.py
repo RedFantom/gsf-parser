@@ -5,9 +5,11 @@
 # For license see LICENSE
 
 import os
+from os import path
 import sys
 from datetime import datetime
 from PIL import Image
+from PIL.ImageTk import PhotoImage as photo
 import cv2
 import numpy
 from sys import platform
@@ -28,6 +30,32 @@ map_dictionary = {
         "de": "denonexosphere"
     }
 }
+
+
+def open_icon_pil(image_name):
+    """
+    Open an image from the assets folder and return a PIL Image
+    """
+    # Type check for PyCharm completion
+    if not isinstance(image_name, str):
+        raise ValueError()
+    icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+    if not image_name.endswith(".jpg"):
+        image_name += ".jpg"
+    filename = path.join(icons_path, image_name)
+    if not path.exists(filename):
+        messagebox.showinfo("Error", "A non-critical error occurred. The GSF Parser is missing an icon "
+                                     "with the name {}. Please report this error if you did not modify the "
+                                     "assets folder.".format(image_name))
+        filename = path.join(icons_path, "imperial.png")
+    return Image.open(filename)
+
+
+def open_icon(image_name):
+    """
+    Open an image from the assets folder
+    """
+    return photo(open_icon_pil(image_name))
 
 
 def get_pointer_position_cv2(screen):
