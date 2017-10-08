@@ -70,7 +70,15 @@ class ShipStatsToplevel(tk.Toplevel):
             self.stats_treeview.insert("Ship", tk.END, iid=item, values=value, text=item, tags=tags)
             tags = ("odd",) if tags == ("even",) else ("even",)
         for component in self.stats.components:
-            print("Component: {}".format(component))
+            print("Component: {}, {}".format(component, self.stats.components[component]))
+            self.stats_treeview.insert("", tk.END, iid=component, text=component, tags=("category",))
+            for key in sorted(self.stats.components[component].keys()):
+                print("Processing component stat {}".format(key))
+                value = "{:.2f}".format(self.stats.components[component][key])
+                key = key.replace("_", " ")
+                self.stats_treeview.insert(component, tk.END, iid="{}_{}".format(component, key), text=key, tags=tags,
+                                           values=value)
+                tags = ("odd",) if tags == ("even",) else ("even",)
 
     def grid_widgets(self):
         self.stats_treeview.grid(row=1, column=1, sticky="nswe", padx=5, pady=5)
@@ -111,8 +119,12 @@ class ShipStatsToplevel(tk.Toplevel):
         self.stats_treeview.heading("value", text="Value")
         self.stats_treeview.column("value", anchor=tk.E, width=50)
         self.stats_treeview.column("#0", anchor=tk.W, width=350)
-        self.stats_treeview.tag_configure("category", background="", font=("default", 12, "bold"))
-        self.stats_treeview.tag_configure("even", background="lightgrey")
+        self.stats_treeview.tag_configure("category", background="grey90", font=("default", 12, "bold"))
+        self.stats_treeview.tag_configure("even", background="gray80")
+
+    @staticmethod
+    def format_value(key, value):
+        pass
 
     def configure(self, *args):
         pass

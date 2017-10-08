@@ -4,6 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from parsing.ships import component_types
+from parsing.ships import ships as ships_dict
 
 
 class ShipStats(object):
@@ -14,14 +15,15 @@ class ShipStats(object):
         print("Ship components: {}".format(ship.components))
         for category, component in ship.components.items():
             category = component_types[category] if category in component_types else category
-            if category not in ship.data:
-                print("Category {} not found for ship {}".format(category, ship.name))
-                print("Keys for this ship: {}".format(ship.data.keys()))
-                continue
+
             print("Reading category {} for ship {}".format(category, ship.name))
             if component is None:
                 continue
-            component_stats = ship.data[category][component.index]["Stats"]
+            component_stats = ships_data[ships_dict[ship.name]][category][component.index]["Stats"]
+            if len(component_stats) == 0:
+                component_stats = ships_data[ships_dict[ship.name]][category][component.index]["Base"]["Stats"]
+            self.components[category] = {key.replace("[Pc]", ""): value for key, value in component_stats.items()}
+            print(component_stats)
             talent_tree = ship.data[category][component.index]["TalentTree"]
             for upgrade, enabled in component.upgrades.items():
                 print("Checking upgrade {} of component {}: {}".format(upgrade, component.name, enabled))
@@ -42,9 +44,9 @@ class ShipStats(object):
                         if stat in component_stats:
                             if multiplicative:
                                 value += 1
-                                component_stats[stat] = component_stats[stat] * value
+                                self.components[category][stat] = component_stats[stat] * value
                             else:
-                                component_stats[stat] += value
+                                self.components[category][stat] += value
                         elif stat in self.stats:
                             if multiplicative:
                                 value += 1

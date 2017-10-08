@@ -63,10 +63,10 @@ companions_db_categories = {
 }
 
 component_types = {
-    "primary": "Primary",
-    "primary2": "Primary2",
-    "secondary": "Secondary",
-    "secondary2": "Secondary2",
+    "primary": "PrimaryWeapon",
+    "primary2": "PrimaryWeapon2",
+    "secondary": "SecondaryWeapon",
+    "secondary2": "SecondaryWeapon2",
     "engine": "Engine",
     "shields": "ShieldProjector",
     "systems": "Systems",

@@ -65,7 +65,7 @@ class MajorComponentWidget(ComponentWidget):
         for i in range(5):
             if i >= 3:
                 self.boolvars.append([tk.BooleanVar(), tk.BooleanVar()])
-                if self.category in self.ship.components and self.ship[self.category] is not None:
+                if self.ship[self.category] is not None:
                     self.boolvars[i][0].set(self.ship[self.category][(i, 0)])
                     self.boolvars[i][1].set(self.ship[self.category][(i, 1)])
                 else:
