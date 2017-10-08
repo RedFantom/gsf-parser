@@ -297,7 +297,6 @@ class BuildsFrame(ttk.Frame):
         if self.ship is None:
             return
         window = ShipStatsToplevel(self.window, self.ship, self.ships_data, self.companions_data)
-        messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
 
     def set_faction(self, faction):
         self.faction = faction
