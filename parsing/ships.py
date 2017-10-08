@@ -78,6 +78,30 @@ component_types = {
     "capacitor": "Capacitor"
 }
 
+component_strings = {
+    "PrimaryWeapon": "Primary Weapon",
+    "PrimaryWeapon2": "Primary Weapon II",
+    "SecondaryWeapon": "Secondary Weapon",
+    "SecondaryWeapon2": "Secondary Weapon II",
+    "ShieldProjector": "Shields"
+}
+
+component_types_list = [
+    "PrimaryWeapon",
+    "PrimaryWeapon2",
+    "SecondaryWeapon",
+    "SecondaryWeapon2",
+    "Engine",
+    "ShieldProjector",
+    "Systems",
+    "Armor",
+    "Reactor",
+    "Magazine",
+    "Sensor",
+    "Thruster",
+    "Capacitor"
+]
+
 
 class Ship(object):
     def __init__(self, ship_name):

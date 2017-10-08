@@ -13,6 +13,7 @@ import sys
 # Own modules
 from tools import utilities
 from parsing.shipstats import ShipStats
+from parsing.ships import component_types_list, component_strings
 import variables
 
 
@@ -69,11 +70,16 @@ class ShipStatsToplevel(tk.Toplevel):
             item = item.replace("_", " ")
             self.stats_treeview.insert("Ship", tk.END, iid=item, values=value, text=item, tags=tags)
             tags = ("odd",) if tags == ("even",) else ("even",)
-        for component in self.stats.components:
+        for component in component_types_list:
+            if component not in self.stats.components:
+                continue
             print("Component: {}, {}".format(component, self.stats.components[component]))
-            self.stats_treeview.insert("", tk.END, iid=component, text=component, tags=("category",))
+            string = component_strings[component] if component in component_strings else component
+            self.stats_treeview.insert("", tk.END, iid=component, text=string, tags=("category",))
             for key in sorted(self.stats.components[component].keys()):
                 print("Processing component stat {}".format(key))
+                if "OBSOLETE" in key or "[Pc]" in key:
+                    continue
                 value = "{:.2f}".format(self.stats.components[component][key])
                 key = key.replace("_", " ")
                 self.stats_treeview.insert(component, tk.END, iid="{}_{}".format(component, key), text=key, tags=tags,
