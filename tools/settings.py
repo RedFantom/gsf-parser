@@ -91,7 +91,8 @@ class Settings(object):
     defaults = {
         "misc": {
             "version": "v3.3.3",
-            "autoupdate": True
+            "autoupdate": True,
+            "patch_level": "5.5"
         },
         "gui": {
             "color": "#2f77d0",

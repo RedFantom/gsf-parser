@@ -6,6 +6,7 @@
 *.ini
 *.spec
 .idea
+*.json
 __pycache__
 realtime.db
 *.xcf

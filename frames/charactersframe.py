@@ -20,6 +20,7 @@ from parsing import abilities
 from collections import OrderedDict
 from tkinter import messagebox as mb
 from parsing.ships import Ship
+from parsing.characters import CharacterDatabase
 
 
 class CharactersFrame(ttk.Frame):
@@ -240,13 +241,7 @@ class CharactersFrame(ttk.Frame):
         mb.showinfo("Notification", "The GSF Parser is creating a new characters database, discarding all your "
                                     "character data, if you had any, and ship builds. If you did not expect this, "
                                     "please file an issue report in the GitHub repository.")
-        characters = {("TRE", "Example"): {"Server": "TRE",
-                                           "Faction": "Imperial",
-                                           "Name": "Example",
-                                           "Legacy": "E_Legacy",
-                                           "Ships": ("Blackbolt", "Rycer"),
-                                           "Ship Objects": {name: Ship(name) for name in abilities.sorted_ships.keys()},
-                                           "GUI": "Default"}}
+        characters = CharacterDatabase()
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(characters, f)
         self.characters = characters
@@ -367,6 +362,14 @@ class CharactersFrame(ttk.Frame):
             with open(os.path.join(self.directory, "characters.db"), "rb") as f:
                 self.characters = pickle.load(f)
         except (OSError, EOFError):
+            self.new_database()
+        if not isinstance(self.characters, CharacterDatabase) or\
+                self.characters.version != variables.settings_obj["misc"]["patch_level"]:
+            mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
+                                      "Parser database has been updated, and your character database must be updated "
+                                      "as well to match the data. Currently, this process is destructive, and "
+                                      "all your character data, including builds, will be deleted.\n\nThe screen "
+                                      "parsing results are not affected.")
             self.new_database()
         return
 
