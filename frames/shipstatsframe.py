@@ -17,7 +17,7 @@ from parsing.ships import component_types_list, component_strings
 import variables
 
 
-class ShipStatsToplevel(tk.Toplevel):
+class ShipStatsFrame(ttk.Frame):
     """
     A Toplevel that shows the statistics for a certain ship in an organized manner, categorized and in alphabetical
     order where applicable, in human readable format.
@@ -30,15 +30,13 @@ class ShipStatsToplevel(tk.Toplevel):
         :param ships_data: Ships data dictionary (ships.db)
         :param companions_data: Companions data dictionary (companions.db)
         """
-        tk.Toplevel.__init__(self, master, width=350, height=400)
-        self.resizable(False, False)
+        ttk.Frame.__init__(self, master)
         self.stats = ShipStats(ship, ships_data, companions_data)
-        self.title("GSF Parser: Statistics for {}".format(ship.name))
 
         # Create the Treeview and its scrollbar
         self.stats_scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         self.stats_treeview = ttk.Treeview(self, show=("headings", "tree"), columns=("value",),
-                                           yscrollcommand=self.stats_scrollbar.set)
+                                           yscrollcommand=self.stats_scrollbar.set, height=16)
         self.stats_scrollbar.config(command=self.stats_treeview.yview)
         self.setup_treeview()
 
@@ -115,7 +113,7 @@ class ShipStatsToplevel(tk.Toplevel):
         self.main_menu.add_cascade(label="File", menu=self.file_menu)
         self.main_menu.add_cascade(label="Stats", menu=self.stats_menu)
         # Add the menu to the window
-        self.config(menu=self.main_menu)
+        # self.config(menu=self.main_menu)
 
     def setup_treeview(self):
         """
@@ -123,8 +121,8 @@ class ShipStatsToplevel(tk.Toplevel):
         """
         self.stats_treeview.heading("#0", text="Statistic")
         self.stats_treeview.heading("value", text="Value")
-        self.stats_treeview.column("value", anchor=tk.E, width=50)
-        self.stats_treeview.column("#0", anchor=tk.W, width=350)
+        self.stats_treeview.column("value", anchor=tk.E, width=40)
+        self.stats_treeview.column("#0", anchor=tk.W, width=220)
         self.stats_treeview.tag_configure("category", background="grey90", font=("default", 12, "bold"))
         self.stats_treeview.tag_configure("even", background="gray80")
 
