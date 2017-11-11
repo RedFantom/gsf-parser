@@ -128,3 +128,13 @@ ability_to_effects = {
 effect_to_ability = {
     effect: ability for ability, list in ability_to_effects.items() for effect in list if effect != "Damage"
 }
+
+allied_effects = [
+    "Tensor Field",
+    "Combat Command",
+    "Shield Projector",
+    "Running Interference",
+    "Wingman",
+    "Repair Drone",
+    "Repair Probes"
+]

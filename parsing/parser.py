@@ -9,7 +9,7 @@ from queue import Queue
 from parsing.screen import ScreenParser, FileHandler
 from parsing.stalking_alt import LogStalker
 from parsing.screen import ScreenParser
-from parsing import abilities
+from parsing import abilities, effects
 # Variables
 import variables
 
@@ -136,12 +136,14 @@ class Parser(object):
         if not log['amount'] == '':
             log['amount'] = log['amount'].split(None, 1)[0]
         log["time"] = datetime.strptime(log["time"], "%H:%M:%S.%f")
+        log["target"] = log["target"] if log["target"].strip() != "" else "System"
         log["destination"] = log["target"]
         log["ability"] = log["ability"].split("{", 1)[0].strip()
+        log["line"] = line
         return log
 
     @staticmethod
-    def line_to_event_dictionary(line, active_id):
+    def line_to_event_dictionary(line, active_id, lines):
         """
         Turn a line into a dictionary that makes it suitable for all sorts of operations, including adding an effect to
         the event and making it easier to sort them into categories. Event structure:
@@ -162,27 +164,29 @@ class Parser(object):
         :return: dictionary
         """
         # Get the base dictionary
-        line_dict = Parser.line_to_dictionary(line)
+        line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
         # Determine line type
-        if "Damage" in line or "Heal" in line:
+        if "Damage" in line["effect"] or "Heal" in line["effect"]:
             line_type = Parser.LINE_NUMBER
-        elif "AbilityActivate" in line:
+        elif "AbilityActivate" in line["effect"]:
             line_type = Parser.LINE_ABILITY
         else:
             line_type = Parser.LINE_EFFECT
         # Get the right text color
         color = Parser.get_event_color(line_dict, active_id)
         # Create the dictionary with additional items
+        effects = []
+        # TODO: Parse lines after the current one to support insertion
         additional = {
-            "effect": None,
+            "effects": effects if len(effects) != 0 else None,
             "line": line,
             "type": line_type,
             "color": color,
             "active_id": active_id
         }
         # Make one nice dictionary and return it
-        total = line_dict.update(additional)
-        return total
+        line_dict.update(additional)
+        return line_dict
 
     @staticmethod
     def get_event_color(line_dict, active_id, colors=variables.color_scheme):
@@ -193,7 +197,8 @@ class Parser(object):
         :param colors: color scheme dict-like
         :return: str color
         """
-        return colors[Parser.get_event_category(line_dict, active_id)][1]
+        category = Parser.get_event_category(line_dict, active_id)
+        return colors[category][1]
 
     @staticmethod
     def get_event_category(line_dict, active_id):
@@ -207,7 +212,7 @@ class Parser(object):
         ability = line_dict['ability'].split(' {', 1)[0].strip()
         # If the ability is empty, this is a Gunship scope activation
         if ability == "":
-            return None
+            raise ValueError()
         # Damage events
         if "Damage" in line_dict['effect']:
             # Check for damage taken
@@ -243,8 +248,11 @@ class Parser(object):
                 return "shield"
             elif line_dict["ability"] in abilities.systems:
                 return "system"
-        else:
-            return None
+            else:
+                return "other"
+        elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
+            return "other"
+        raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
 
     @staticmethod
     def compare_ids(id, active_ids):
@@ -260,6 +268,15 @@ class Parser(object):
             return id == active_ids
         else:
             raise ValueError("Invalid type of active_ids: {}".format(repr(active_ids)))
+
+    @staticmethod
+    def get_effect_allied(ability):
+        """
+        Determine whether an ability is an allied (positive) one or an enemy (negative) one.
+        :param ability: ability str
+        :return: True if allied, False if enemy
+        """
+        return ability in effects.allied_effects
 
     """
     This section contains mostly legacy code that might or might not be re-used in the new Parser parsing engine. Treat

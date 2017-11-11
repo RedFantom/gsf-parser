@@ -10,8 +10,7 @@ from decimal import Decimal
 from .abilities import *
 import os
 from variables import settings_obj
-from .lineops import line_to_dictionary
-
+from parsing.parser import Parser
 
 def parse_file_name(string):
     try:
@@ -600,7 +599,7 @@ def determineShip(abilitiesDictionary):
 def get_amount_enemies(spawn, player):
     enemies = []
     for line in spawn:
-        line_dict = line_to_dictionary(line)
+        line_dict = Parser.line_to_dictionary(line)
         if line_dict['source'] not in player and line_dict['source'] not in enemies:
             enemies.append(line_dict['source'])
         if line_dict['destination'] not in player and line_dict['destination'] not in enemies:

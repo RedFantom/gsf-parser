@@ -96,7 +96,7 @@ systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry 
            "Blaster Overcharge", "Booster Recharge",
            "Combat Command", "Repair Probes", "Remote Slicing", "Sensor Beacon", "EMP Field", "Interdiction Mine",
            "Ion Mine", "Concussion Mine", "Tensor Field"]
-shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone", "Overcharged Shield",
+shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone",
            "Fortress Shield", "Feedback Shield",
            "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
@@ -193,7 +193,7 @@ excluded_abilities = [
     "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
     "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct",
-    "Tutorial", "Melting Hull"
+    "Tutorial", "Melting Hull", "Contamination"
 ]
 
 # All ships with their Imperial Faction names available in GSF

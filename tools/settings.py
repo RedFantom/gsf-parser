@@ -238,10 +238,6 @@ class ColorSchemes(object):
     def __getitem__(self, key):
         try:
             return list(self.current_scheme[key])
-        except KeyError:
-            tkinter.messagebox.showerror("Error", "The requested color for %s was not found, "
-                                                  "did you alter the event_colors.ini file?" % key)
-            return ['#ffffff', '#000000']
         except TypeError:
             tkinter.messagebox.showerror("Error", "The requested color for %s was could not be "
                                                   "type changed into a list. Did you alter the "

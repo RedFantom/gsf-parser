@@ -100,7 +100,7 @@ class StatsFrame(ttk.Frame):
         self.screen_label = ttk.Label(self.screen_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
                                       wraplength=295)
         # Create widgets for events frame
-        self.time_view = TimeView(self.events_frame, height=14)
+        self.time_view = TimeView(self.events_frame, height=9)
         self.time_scroll = ttk.Scrollbar(self.events_frame, command=self.time_view.yview)
         self.time_view.config(yscrollcommand=self.time_scroll.set)
 
