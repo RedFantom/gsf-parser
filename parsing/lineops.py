@@ -37,9 +37,6 @@ def pretty_event(line_dict, start_of_match, active_id):
         string = "%02d:%02d    " % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
     except TypeError:
         string = "00:00" + 4 * " "
-    except:
-        print("[DEBUG] An unknown error occurred while doing the delta thing")
-        return
     # If the player name is too long, shorten it
     if variables.rt_name:
         if len(variables.rt_name) > 14:

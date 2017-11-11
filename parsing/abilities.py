@@ -193,7 +193,7 @@ excluded_abilities = [
     "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
     "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct",
-    "Tutorial"
+    "Tutorial", "Melting Hull"
 ]
 
 # All ships with their Imperial Faction names available in GSF
@@ -201,6 +201,21 @@ ships = [
     "Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting",
     "Imperium", "Rycer", "Quell"
 ]
+# Ships abilities
+ships_abilities = {
+    "Legion": legionAbilities,
+    "Decimus": decimusAbilities,
+    "Razorwire": razorwireAbilities,
+    "Jurgoran": jurgoranAbilities,
+    "Dustmaker": dustmakerAbilities,
+    "Mangler": manglerAbilities,
+    "Bloodmark": bloodmarkAbilities,
+    "Blackbolt": blackboltAbilities,
+    "Sting": stingAbilities,
+    "Imperium": imperiumAbilities,
+    "Rycer": rycerAbilities,
+    "Quell": quellAbilities
+}
 
 # A dictionary for converting the names of the ships to the Republic Faction
 # names, for future feature of allowing both faction names
