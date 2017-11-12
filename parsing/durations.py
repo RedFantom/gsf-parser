@@ -19,5 +19,8 @@ durations = {
     "Wingman": (True, 20, False),
     "Running Interference": (True, 15, False),
     "Melting Hull": (False, 4, True),
-    "Plasma Burn": (False, 6, True)
+    "Plasma Burn": (False, 6, True),
+    "Plasma Warheads": (False, 10, True)
 }
+
+special_cases = ["EMP Missile", "EMP Field", "Plasma Warheads"]

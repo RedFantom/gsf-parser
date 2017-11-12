@@ -75,6 +75,7 @@ class Parser(object):
         """
         Split the file into matches and spawns
         """
+        pass
 
     def process_line(self, line):
         pass
@@ -208,21 +209,23 @@ class Parser(object):
         effects_list = effects.ability_to_effects[ability]
         ability_duration = durations.durations[ability]
         for event in lines[lines.index(line_dict):]:
-            if (event["time"] - line_dict["time"]).total_seconds() > ability_duration[1]:
+            if (event["time"] - line_dict["time"]).total_seconds() > ability_duration[1] + 5:
                 break
             effect = event["effect"].split(":")[1].split("{")[0].strip()
-            if (effect not in effects_list or
-                        line_dict["source"] != event["source"] or
-                        "RemoveEffect" in event["effect"]):
+            if "RemoveEffect" in event["effect"] and effect in ability_effects:
+                time_diff = (event["time"] - ability_effects[effect]["start"]["time"]).total_seconds()
+                ability_effects[effect]["duration"] = time_diff
+            if effect not in effects_list or line_dict["source"] != event["source"]:
                 continue
             if event["ability"] != ability:
                 continue
             if effect not in ability_effects:
                 ability_effects[effect] = {
                     "name": effect,
+                    "start": event,
                     "allied": durations.durations[ability][0] if effect != "Missile Lock Immunity" else True,
                     "count": 1,
-                    "duration": ability_duration[1],
+                    "duration": 0,
                     "damage": int(event["amount"].replace("*", "")) if event["amount"] != "" else 0,
                     "dot": (event["time"] - line_dict["time"]).total_seconds() if ability_duration[2] is True else None
                 }
@@ -257,12 +260,13 @@ class Parser(object):
         for prev_line in lines[index-5:index-1]:
             # The source of the previous event must be equal
             source_is_equal = prev_line["source"] == line_dict["source"]
-            target_is_equal = prev_line["target"] == line_dict["target"]
             ability_is_equal = prev_line["ability"] == line_dict["ability"]
-            effect_is_damage = "Damage" in line_dict["effect"]
-            ability_is_emp = "EMP" in prev_line["line"] and "EMP" in line_dict["line"]
-            effect_is_activate = "AbilityActivate" in prev_line["effect"]
-            if (source_is_equal and ability_is_equal and not ability_is_emp) or (ability_is_emp and not effect_is_damage):
+            ability_is_special = any(special in line_dict["line"] for special in durations.special_cases)
+            time_diff = (line_dict["time"] - prev_line["time"]).total_seconds()
+            source_is_player = Parser.compare_ids(prev_line["source"], active_id)
+            if source_is_equal and ability_is_equal and not ability_is_special:
+                return False
+            if ability_is_special and source_is_player and time_diff < 15 and ability_is_equal:
                 return False
         return True
 

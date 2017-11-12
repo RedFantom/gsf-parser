@@ -92,7 +92,19 @@ icons = {
     "Hyperspace Slingshot": "spvp_increaseenginepowerefficiency",  # Hyperspace Beacon speed upgrade
     "Railgun": "spvp_hyperspacebeacon",  # Railgun Sentry Drone damage
     "Selfdamage": "spvp_decoybeacon",  # Damage dealt to self
+    "Space Exhaustion": "spvp_decoybeacon",  # Out of map bounds
     "Hull Resonance": "spvp_damageovertime",  # Seismic Mine DoT
+    "Contamination": "spvp_targettracker",
+    "Damage": "spvp_damagereduction",
+    "Drone Disabled": "spvp_jammingfield",
+    "System Ability Disabled": "spvp_reducedpowerdraw1",
+    "Engine Ability Disabled": "spvp_reducedpowerdraw",
+    "Shield Ability Disabled": "spvp_reducedpowerdraw2",
+    "Missile Lock Immunity": "spvp_missiletargeting",
+    "Accuracy Reduced": "spvp_communicationjammed",
+    "Sensors Jammed": "spvp_sensorshadows",
+    "Plasma Warheads": "spvp_damageovertime",  # Rocket Pods DoT
+    "Plasma Burn": "spvp_plasmarailgun",  # Plasma Railgun DoT
     # Default
     "default": "republic.png"
 }

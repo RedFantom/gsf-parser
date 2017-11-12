@@ -75,8 +75,10 @@ class TimeView(ttk.Treeview):
             return
         values = (
             TimeView.format_time_diff(line_dict["time"], start_time),
-            player_name if Parser.compare_ids(line_dict["source"], active_ids) else line_dict["source"],
-            player_name if Parser.compare_ids(line_dict["destination"], active_ids) else line_dict["destination"],
+            player_name if Parser.compare_ids(line_dict["source"], active_ids) else (line_dict["source"] if
+                line_dict["source"] != "" else "System"),
+            player_name if Parser.compare_ids(line_dict["destination"], active_ids) else (line_dict["destination"] if
+                line_dict["destination"] != "" else "System"),
             line_dict["ability"],
             line_dict["amount"]
         )
@@ -97,20 +99,19 @@ class TimeView(ttk.Treeview):
                 target_string = "for {} damage".format(effect["damage"])
             else:
                 target_string = "{} {}".format(effect["count"], "Allies" if effect["allied"] is True else "Enemies")
-            if effect["name"] != "Damage":
-                duration_string = "for {} seconds".format(effect["duration"])
+            if effect["name"] != "Damage" and effect["duration"] == 0:
+                duration_string = ""
+            elif effect["name"] != "Damage":
+                duration_string = "for {:.1f} seconds".format(effect["duration"])
             elif effect["dot"] is None:
                 duration_string = "for {} damage total".format(effect["damage"])
             else:
                 duration_string = "over {:.1f} seconds".format(effect["dot"])
-            values = (
-                "",
-                effect["name"],
-                target_string,
-                duration_string,
-                ""
-            )
-            self.insert(iid, tk.END, values=values, tags=(tag,))
+            values = ("", effect["name"], target_string, duration_string, "")
+            kwargs = {"values": values, "tags": (tag,)}
+            if effect["name"] in self.icons:
+                kwargs.update({"image": self.icons[effect["name"]]})
+            self.insert(iid, tk.END, **kwargs)
 
     def insert_spawn(self, spawn, player_name):
         """
