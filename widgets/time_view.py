@@ -14,6 +14,7 @@ import os
 # Own modules
 from parsing.parser import Parser
 from parsing.icons import icons
+from parsing.effects import all_effects
 from tools.utilities import get_assets_directory
 import variables
 
@@ -68,7 +69,9 @@ class TimeView(ttk.Treeview):
         :param line_dict: line dictionary (Parser.line_to_dictionary)
         :return: None
         """
-        if line_dict["type"] == Parser.LINE_EFFECT:
+        if line_dict is None or line_dict["type"] == Parser.LINE_EFFECT:
+            return
+        if line_dict["effect"].split(":")[1].split("{")[0].strip() in all_effects:
             return
         values = (
             TimeView.format_time_diff(line_dict["time"], start_time),
@@ -89,17 +92,24 @@ class TimeView(ttk.Treeview):
         self.index += 1
         if line_dict["effects"] is None:
             return
-        values = (
-            "",
-            player_name,
-            str(len(line_dict["effects"])) + \
-                (" Allies" if Parser.get_effect_allied(line_dict["ability"]) else " Enemies"),
-            line_dict["ability"],
-            line_dict["amount"]
-        )
-        self.insert(iid, tk.END, values=values, tags=(tag,))
-        for effect in line_dict["effects"]:
-            values = TimeView.get_treeview_values(effect, player_name, start_time, active_ids)
+        for _, effect in sorted(line_dict["effects"].items()):
+            if effect["dot"] is not None:
+                target_string = "for {} damage".format(effect["damage"])
+            else:
+                target_string = "{} {}".format(effect["count"], "Allies" if effect["allied"] is True else "Enemies")
+            if effect["name"] != "Damage":
+                duration_string = "for {} seconds".format(effect["duration"])
+            elif effect["dot"] is None:
+                duration_string = "for {} damage total".format(effect["damage"])
+            else:
+                duration_string = "over {:.1f} seconds".format(effect["dot"])
+            values = (
+                "",
+                effect["name"],
+                target_string,
+                duration_string,
+                ""
+            )
             self.insert(iid, tk.END, values=values, tags=(tag,))
 
     def insert_spawn(self, spawn, player_name):

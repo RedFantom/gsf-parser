@@ -1,3 +1,9 @@
+# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
+# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
+# All additions are under the copyright of their respective authors
+# For license see LICENSE
+
 """
 Dictionary of abilities with all their known effects
 """
@@ -137,4 +143,8 @@ allied_effects = [
     "Wingman",
     "Repair Drone",
     "Repair Probes"
+]
+
+all_effects = [
+    effect for effect in (ability_effects for ability_effects in ability_to_effects.values()) if effect != "Damage"
 ]

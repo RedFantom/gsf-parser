@@ -9,7 +9,7 @@ from queue import Queue
 from parsing.screen import ScreenParser, FileHandler
 from parsing.stalking_alt import LogStalker
 from parsing.screen import ScreenParser
-from parsing import abilities, effects
+from parsing import abilities, effects, durations
 # Variables
 import variables
 
@@ -140,6 +140,8 @@ class Parser(object):
         log["destination"] = log["target"]
         log["ability"] = log["ability"].split("{", 1)[0].strip()
         log["line"] = line
+        if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
+            log["target"] = "Launch Projectile"
         return log
 
     @staticmethod
@@ -175,10 +177,11 @@ class Parser(object):
         # Get the right text color
         color = Parser.get_event_color(line_dict, active_id)
         # Create the dictionary with additional items
-        effects = []
-        # TODO: Parse lines after the current one to support insertion
+        effects = Parser.get_effects_ability(line_dict, lines, active_id)
+        if effects is False:
+            return None
         additional = {
-            "effects": effects if len(effects) != 0 else None,
+            "effects": effects,
             "line": line,
             "type": line_type,
             "color": color,
@@ -187,6 +190,81 @@ class Parser(object):
         # Make one nice dictionary and return it
         line_dict.update(additional)
         return line_dict
+
+    @staticmethod
+    def get_effects_ability(line_dict, lines, active_id):
+        """
+        Parse the lines after an event to determine what events are effects of the event specified
+        :param line_dict: line dictionary
+        :param lines: lines
+        :param active_id: argument for Parser.compare_ids
+        :return: dict with events or None or False if not eligible for having effects
+        """
+        eligibility = Parser.get_effects_eligible(line_dict, lines, active_id)
+        if eligibility is False or eligibility is None:
+            return eligibility
+        ability = line_dict["ability"]
+        ability_effects = {}
+        effects_list = effects.ability_to_effects[ability]
+        ability_duration = durations.durations[ability]
+        for event in lines[lines.index(line_dict):]:
+            if (event["time"] - line_dict["time"]).total_seconds() > ability_duration[1]:
+                break
+            effect = event["effect"].split(":")[1].split("{")[0].strip()
+            if (effect not in effects_list or
+                        line_dict["source"] != event["source"] or
+                        "RemoveEffect" in event["effect"]):
+                continue
+            if event["ability"] != ability:
+                continue
+            if effect not in ability_effects:
+                ability_effects[effect] = {
+                    "name": effect,
+                    "allied": durations.durations[ability][0] if effect != "Missile Lock Immunity" else True,
+                    "count": 1,
+                    "duration": ability_duration[1],
+                    "damage": int(event["amount"].replace("*", "")) if event["amount"] != "" else 0,
+                    "dot": (event["time"] - line_dict["time"]).total_seconds() if ability_duration[2] is True else None
+                }
+            else:
+                ability_effects[effect]["count"] += 1
+                if effect == "Damage":
+                    ability_effects[effect]["damage"] += int(event["amount"].replace("*", ""))
+                    if ability_effects[effect]["dot"] is not None:
+                        ability_effects[effect]["dot"] = (event["time"] - line_dict["time"]).total_seconds()
+        return ability_effects
+
+    @staticmethod
+    def get_effects_eligible(line_dict, lines, active_id):
+        """
+        Determine whether or not this event is eligible for having events. Only abilities that are applied to more
+        than a single target or that are applied for a certain time are eligible by default. A special exclusion
+        is set up for the activation of secondary weapons (launching projectiles)
+        """
+        # Exclusion for launching projectiles, only hits have effects
+        if line_dict["ability"] in abilities.secondaries and "AbilityActivate" in line_dict["effect"]:
+            return False
+        # Exclusion for any event that is not in the durations dictionary (and thus either is not applied to multiple
+        # targets or does apply an effect over time or is not included for some other reason)
+        ability = line_dict["ability"]
+        if ability not in effects.ability_to_effects or ability not in durations.durations:
+            return None
+        # The previous line is used in determining whether
+        index = lines.index(line_dict)
+        if index == 0:
+            return None
+        # The requirements for being eligible are quite strict
+        for prev_line in lines[index-5:index-1]:
+            # The source of the previous event must be equal
+            source_is_equal = prev_line["source"] == line_dict["source"]
+            target_is_equal = prev_line["target"] == line_dict["target"]
+            ability_is_equal = prev_line["ability"] == line_dict["ability"]
+            effect_is_damage = "Damage" in line_dict["effect"]
+            ability_is_emp = "EMP" in prev_line["line"] and "EMP" in line_dict["line"]
+            effect_is_activate = "AbilityActivate" in prev_line["effect"]
+            if (source_is_equal and ability_is_equal and not ability_is_emp) or (ability_is_emp and not effect_is_damage):
+                return False
+        return True
 
     @staticmethod
     def get_event_color(line_dict, active_id, colors=variables.color_scheme):

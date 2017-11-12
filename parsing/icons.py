@@ -88,9 +88,11 @@ icons = {
     "Suppression": "spvp_suppression",
     "Lingering Effect": "spvp_damageovertime",
     # Effects
-    "Melting Hull": "spvp_protontorpedoes",  # Proton Torpedo DOT
+    "Melting Hull": "spvp_protontorpedoes",  # Proton Torpedo DoT
     "Hyperspace Slingshot": "spvp_increaseenginepowerefficiency",  # Hyperspace Beacon speed upgrade
     "Railgun": "spvp_hyperspacebeacon",  # Railgun Sentry Drone damage
     "Selfdamage": "spvp_decoybeacon",  # Damage dealt to self
+    "Hull Resonance": "spvp_damageovertime",  # Seismic Mine DoT
+    # Default
     "default": "republic.png"
 }

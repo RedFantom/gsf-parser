@@ -352,7 +352,6 @@ class FileFrame(ttk.Frame):
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
-        print(file_cube)
         match = file_cube[match_index]
         try:
             spawn = match[spawn_index]
