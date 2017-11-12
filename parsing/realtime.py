@@ -11,7 +11,7 @@ import re
 from tkinter.messagebox import showerror
 from parsing.stalking import LogStalker
 import variables
-from .lineops import line_to_dictionary
+from parsing.parser import Parser
 from tools.utilities import write_debug_log
 
 
