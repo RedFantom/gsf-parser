@@ -17,4 +17,11 @@ debug.txt
 /release/*.spec
 /release/*.iss
 /release/Setups
+/release/add-ins
+/release/add-ins3
+/release/*.exe
+/release/*.bat
+/release/archive_scripts
+/release/*.zip
+
 

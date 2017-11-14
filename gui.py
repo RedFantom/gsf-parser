@@ -68,9 +68,10 @@ class MainWindow(ThemedTk):
         self.share_tab_frame = sharingframe.SharingFrame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.file_select_frame = fileframe.FileFrame(self.file_tab_frame, self)
-        self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
         self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
-        self.ship_frame = shipframe.ShipFrame(self.file_tab_frame)
+        self.ship_frame = shipframe.ShipFrame(self.middle_frame.notebook)
+        self.middle_frame.notebook.add(self.ship_frame, text="Ship")
+        self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
         self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
@@ -85,7 +86,7 @@ class MainWindow(ThemedTk):
         self.setup_notebook()
         # Update the files in the file_select frame
         self.notebook.grid(column=0, row=0)
-        self.file_select_frame.add_files(silent=True, splash_screen=self.splash)
+        self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
         # Check for updates
         self.splash.label_var.set("Checking for updates...")
@@ -104,7 +105,7 @@ class MainWindow(ThemedTk):
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
-        self.ship_frame.grid(column=3, row=1, sticky="nswe")
+        # self.ship_frame.grid(column=3, row=1, sticky="nswe")
         self.settings_frame.grid()
         self.graphs_frame.grid(column=0, row=0)
 

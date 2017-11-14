@@ -242,7 +242,7 @@ class RealtimeFrame(ttk.Frame):
             return
         for line in lines:
             # self.listbox.see(tk.END)
-            process = realtime.line_to_dictionary(line)
+            process = realtime.Parser.line_to_dictionary(line)
             self.parser.parse(process)
             dmg_done = self.parser.spawn_dmg_done
             dmg_taken = self.parser.spawn_dmg_taken

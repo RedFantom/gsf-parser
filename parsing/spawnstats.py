@@ -116,4 +116,4 @@ def spawn_statistics(file_name, spawn, spawn_timing):
         str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" +
         str(dps)
     )
-    return abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+    return name, spawn, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
