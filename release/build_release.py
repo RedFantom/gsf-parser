@@ -147,8 +147,9 @@ if __name__ == '__main__':
             move(alt_exe_path, os.path.join(build_dir, filename))
         printw("Done.\n")
     if not os.path.exists(build_dir):
+        from pprint import pprint
         printw("Failed.\n")
-        printw("PyInstaller Output: {}\n".format(p))
+        pprint("PyInstaller Output: {}\n".format(p))
         exit(-1)
     # Copy files to the generated directory
     printw("Copying asset files to build directory... ")
