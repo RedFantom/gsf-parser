@@ -78,7 +78,6 @@ class CrewListFrame(ttk.Frame):
                 raise ValueError("Invalid role detected.")
             self.category_frames[crole] = ToggledFrame(self, text=crole)
             self.category_variables[crole] = tk.StringVar()
-            print("crole is ", crole)
             for member_dict in category:
                 self.member_icons[member_dict["Name"]] = photo(img.open(path.join(self.icons_path,
                                                                                   member_dict["Icon"] + ".jpg")))

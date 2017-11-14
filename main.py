@@ -50,11 +50,7 @@ def setup_tkinter():
         tcl_lib = join(sys._MEIPASS, "lib")
         tcl_new_lib = join(dirname(dirname(tcl_lib)), basename(tcl_lib))
         shutil.copytree(src=tcl_lib, dst=tcl_new_lib)
-    except AttributeError:
-        pass
-    except FileNotFoundError:
-        pass
-    except FileExistsError:
+    except (AttributeError, FileNotFoundError, FileExistsError):
         pass
     return
 

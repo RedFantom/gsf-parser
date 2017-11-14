@@ -72,7 +72,6 @@ class ShipSelectFrame(ttk.Frame):
                     except IOError:
                         self.ship_photos[ship_dict["Name"]] = photo(img.open(path.join(self.icons_path,
                                                                                        faction.lower() + "_l.png")))
-                    print("Added to ShipSelectFrame: {0}".format(ship_dict["Name"]))
                     self.ship_buttons[ship_dict["Name"]] = \
                         ttk.Button(self.category_frames[faction][category["CategoryName"]].sub_frame,
                                    text=ship_dict["Name"],
@@ -86,7 +85,6 @@ class ShipSelectFrame(ttk.Frame):
     def grid_widgets(self):
         self.server_dropdown.grid(row=0, column=0, columnspan=2, sticky="nswe", pady=(5, 0))
         self.character_dropdown.grid(row=1, column=0, columnspan=2, sticky="nswe", pady=(5, 5))
-        # self.character_update_button.grid(row=2, column=0, columnspan=2, sticky="nswe", pady=5)
         self.scroll_frame.grid(row=3, rowspan=2, columnspan=2, sticky="nswe", pady=2)
         set_row = 20
         for faction in self.category_frames:
@@ -103,7 +101,6 @@ class ShipSelectFrame(ttk.Frame):
             set_row += 1
 
     def set_ship(self, faction, category, ship_name):
-        print("Faction: %s\nCategory: %s\nShipname: %s" % (faction, category, ship_name))
         if not self.ships:
             mb.showinfo("Request", "Please choose a character first.")
             return
@@ -112,7 +109,6 @@ class ShipSelectFrame(ttk.Frame):
             ship_object = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]
         else:
             ship_object = ships.Ship(ship_name)
-        print("Calling callback")
         for item, frame in self.window.builds_frame.components_lists.items():
             if item not in ship_object:
                 frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
@@ -155,7 +151,6 @@ class ShipSelectFrame(ttk.Frame):
         return
 
     def load_character(self):
-        print("Loading character {0}".format((self.server.get(), self.character.get())))
         server = self.window.characters_frame.reverse_servers[self.server.get()]
         self.character_tuple = (server, self.character.get())
         self.set_faction(self.window.characters_frame.characters[(server, self.character.get())]["Faction"])

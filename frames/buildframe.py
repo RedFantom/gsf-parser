@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
-
 # Written by RedFantom, Wing Commander of Thranta Squadron,
 # Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from widgets import *
-from parsing.ships import Ship, Component, companions_db_categories
+from frames.shipstatsframe import ShipStatsFrame
 from parsing.abilities import all_ships
-import pickle as pickle
-from os import path
-from collections import OrderedDict
-import tkinter as tk
-import tkinter.ttk as ttk
+from parsing.ships import Ship, Component, companions_db_categories
 from tools.utilities import get_assets_directory
-import variables
-from tkinter import messagebox
+from widgets import *
 
 
 class BuildsFrame(ttk.Frame):
@@ -276,10 +269,6 @@ class BuildsFrame(ttk.Frame):
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
-        # self.crew_select_frame.destroy()
-        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior,
-        #                                        self.companions_data[self.faction],
-        #                                        self.set_crew_member_frame)
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 
     def grid_forget_widgets(self):
@@ -293,14 +282,16 @@ class BuildsFrame(ttk.Frame):
             frame.grid_forget()
 
     def show_ship_stats(self):
-        messagebox.showinfo("Apology", "Sorry, this feature isn't ready for use yet.")
+        if self.ship is None:
+            return
+        self.grid_forget_widgets()
+        self.current_component = ShipStatsFrame(self, self.ship, self.ships_data, self.companions_data)
+        self.grid_widgets()
+        self.current_component.grid(row=0, rowspan=3, column=2, sticky="nswe")
 
     def set_faction(self, faction):
         self.faction = faction
         self.grid_widgets()
-
-    def set_character(self, character):
-        pass
 
     def save_ship_data(self):
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
