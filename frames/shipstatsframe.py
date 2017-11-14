@@ -40,14 +40,6 @@ class ShipStatsFrame(ttk.Frame):
         self.stats_scrollbar.config(command=self.stats_treeview.yview)
         self.setup_treeview()
 
-        # Create main menu objects
-        self.main_menu = tk.Menu(self, tearoff=False)
-        self.file_menu = tk.Menu(self.main_menu, tearoff=False)
-        self.stats_menu = tk.Menu(self.main_menu, tearoff=False)
-        self.ttk_menu = tk.Menu(self.main_menu, tearoff=False)
-        self.excel_menu = tk.Menu(self.main_menu, tearoff=False)
-        self.setup_menu()
-
         self.bind("<Configure>", self.configure)
         self.update_tree()
         self.grid_widgets()
@@ -92,29 +84,6 @@ class ShipStatsFrame(ttk.Frame):
         self.stats_treeview.grid_forget()
         self.stats_scrollbar.grid_forget()
 
-    def setup_menu(self):
-        """
-        Sets up the menu of the window
-        """
-        # Setup the File menu
-        self.file_menu.add_command(label="Export", command=self.export_ship)
-        self.file_menu.add_command(label="Import", command=self.import_ship)
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Close", command=self.destroy)
-        # Setup the stats menu
-        self.stats_menu.add_command(label="Distance travelled", command=lambda: self.calculate_stat("distance"))
-        # Setup the TTK menu
-        self.ttk_menu.add_command(label="TTK against self", command=lambda: self.calculate_stat("ttk_self"))
-        self.ttk_menu.add_command(label="TTK against target", command=lambda: self.calculate_stat("ttk_target"))
-        self.stats_menu.add_cascade(label="Time-to-kill", menu=self.ttk_menu)
-        # Setup the Excel menu
-        pass
-        # Add the menus to the main_menu
-        self.main_menu.add_cascade(label="File", menu=self.file_menu)
-        self.main_menu.add_cascade(label="Stats", menu=self.stats_menu)
-        # Add the menu to the window
-        # self.config(menu=self.main_menu)
-
     def setup_treeview(self):
         """
         Sets up the Treeview with columns and headings
@@ -127,22 +96,3 @@ class ShipStatsFrame(ttk.Frame):
         self.stats_treeview.tag_configure("even", background="gray80")
 
     @staticmethod
-    def format_value(key, value):
-        pass
-
-    def configure(self, *args):
-        pass
-
-    def export_ship(self):
-        pass
-
-    def import_ship(self):
-        pass
-
-    def calculate_stat(self, stat):
-        pass
-
-
-class StatsCalculationToplevel(tk.Toplevel):
-    def __init__(self, *args, **kwargs):
-        tk.Toplevel.__init__(self, *args, **kwargs)
