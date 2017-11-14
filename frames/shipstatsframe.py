@@ -93,7 +93,6 @@ class ShipStatsFrame(ttk.Frame):
         value_string = ShipStatsFrame.get_value_string(statistic, value)
         elements = textwrap.fill(statistic_strings[statistic][1], 25).split("\n")
         for index, element in enumerate(elements):
-            print("Inserting element for {}, {}, {}, {}".format(category, statistic, value, tag))
             self.stats_treeview.insert(
                 "{}_{}".format(category, subcategory), tk.END, tags=(tag,), text=element,
                 values=("",) if index != 0 else (value_string,)
