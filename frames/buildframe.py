@@ -269,10 +269,6 @@ class BuildsFrame(ttk.Frame):
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
-        # self.crew_select_frame.destroy()
-        # self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior,
-        #                                        self.companions_data[self.faction],
-        #                                        self.set_crew_member_frame)
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 
     def grid_forget_widgets(self):
@@ -296,9 +292,6 @@ class BuildsFrame(ttk.Frame):
     def set_faction(self, faction):
         self.faction = faction
         self.grid_widgets()
-
-    def set_character(self, character):
-        pass
 
     def save_ship_data(self):
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
