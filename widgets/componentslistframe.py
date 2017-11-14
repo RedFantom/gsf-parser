@@ -11,6 +11,7 @@ from os import path
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, ToggledFrame
+import textwrap
 
 
 class ComponentListFrame(ttk.Frame):
@@ -62,12 +63,7 @@ class ComponentListFrame(ttk.Frame):
                 self.icons[name] = photo(img.open(path.join(self.icons_path, icon + ".jpg")))
             except IOError:
                 self.icons[component_dictionary["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
-            name = ""
-            for word in component_dictionary["Name"].split(" "):
-                if len(name + " " + word) > 20:
-                    name += "\n " + word
-                else:
-                    name += " " + word
+            name = textwrap.fill(component_dictionary["Name"], 20)
             self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(self.frame,
                                                                          image=self.icons[component_dictionary["Name"]],
                                                                          text=name,
