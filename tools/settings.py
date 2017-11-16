@@ -155,6 +155,7 @@ class Settings(object):
         conf = configparser.ConfigParser()
         for section in dictionary.keys():
             self.settings[section].update(dictionary[section])
+        self.settings["misc"].update(Settings.defaults["misc"])
         conf.read_dict(self.settings)
         with open(self.file_name, "w") as fo:
             conf.write(fo)
