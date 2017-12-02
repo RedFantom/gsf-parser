@@ -11,6 +11,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from widgets.time_view import TimeView
 from widgets.timeline import TimeLine
+from collections import OrderedDict
 
 
 class StatsFrame(ttk.Frame):
@@ -73,7 +74,7 @@ class StatsFrame(ttk.Frame):
         self.notebook.add(self.timeline_frame, text="TimeLine")
         self.notebook.add(self.abilities_frame, text="Abilities")
         self.notebook.add(self.enemies_frame, text="Enemies")
-        self.notebook.add(self.screen_frame, text="Screen parsing")
+        # self.notebook.add(self.screen_frame, text="Screen parsing")
         # Create widgets for statistics frame
         self.statistics_label_var = tk.StringVar()
         string = "Character name:\nDamage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\n" \
@@ -92,6 +93,15 @@ class StatsFrame(ttk.Frame):
         # Create widgets for enemies frame
         self.enemies_treeview = ttk.Treeview(self.enemies_frame)
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, command=self.enemies_treeview.yview)
+        self.enemies_label = ttk.Label(
+            self.enemies_frame, font=("default", 10),
+            text="This Treeview contains a list of all enemy ID number that you encountered "
+                 "during the selected game period, together with each of their damage taken "
+                 "from you and damage dealt to you. This is calculated using the CombatLogs only.\n"
+                 "Please note that Bombers do not have the damage dealt by bombs recorded, "
+                 "due to CombatLog limitations.",
+            justify=tk.LEFT, wraplength=200
+        )
         self.setup_enemy_treeview()
         # Create widgets for abilities frame
         self.abilities_treeview = ttk.Treeview(self.abilities_frame)
@@ -106,13 +116,31 @@ class StatsFrame(ttk.Frame):
         self.time_scroll = ttk.Scrollbar(self.events_frame, command=self.time_view.yview)
         self.time_view.config(yscrollcommand=self.time_scroll.set)
         # Create widgets for timeline frame
+        categories = OrderedDict()
+        categories["primaries"] = {"text": "Primary Weapon", "foreground": "#ff6666", "font": ("default", 11)}
+        categories["secondaries"] = {"text": "Secondary Weapon", "foreground": "#ff3333", "font": ("default", 11)}
+        categories["shields_front"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
+        categories["shields_rear"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
+        categories["hull"] = {"text": "Hull Health", "foreground": "brown", "font": ("default", 11)}
+        categories["systems"] = {"text": "Systems", "foreground": "#668cff", "font": ("default", 11)}
+        categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
+        categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
+        categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
+        categories["tracking"] = {"text": "Tracking", "foreground": "#ffcc00", "font": ("default", 11)}
+        categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
+        categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=1, marker_outline="black",
-            categories={
-                "primaries": {"text": "Primary Weapon", "foreground": "red", "font": ("default", 11)}
-            }
+            marker_snap_to_ticks=False, width=350, height=280, background="#f5f6f7", categories=categories,
+            unit="m", start=0.0, finish=3.0, resolution=0.005
         )
+
+    def setup_timeline(self):
+        """
+        Setup the TimeLine widget
+        """
+        self.time_line
 
     def setup_enemy_treeview(self):
         """
@@ -121,15 +149,15 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
         self.enemies_treeview.config(columns=("Damage dealt", "Damage taken"))
         self.enemies_treeview["show"] = ("tree", "headings")
-        self.enemies_treeview.column("#0", width=200, anchor="w")
-        self.enemies_treeview.column("Damage dealt", width=125, anchor="e")
-        self.enemies_treeview.column("Damage taken", width=125, anchor="e")
+        self.enemies_treeview.column("#0", width=120, anchor="w")
+        self.enemies_treeview.column("Damage dealt", width=80, anchor="e")
+        self.enemies_treeview.column("Damage taken", width=80, anchor="e")
         command = lambda: self.treeview_sort_column(self.enemies_treeview, "Enemy name/ID", False, "str")
         self.enemies_treeview.heading("#0", text="Enemy name/ID", command=command)
         command = lambda: self.treeview_sort_column(self.enemies_treeview, "Damage dealt", False, "int")
-        self.enemies_treeview.heading("Damage dealt", text="Damage dealt to you", command=command)
+        self.enemies_treeview.heading("Damage dealt", text="Damage dealt", command=command)
         command = lambda: self.treeview_sort_column(self.enemies_treeview, "Damage taken", False, "int")
-        self.enemies_treeview.heading("Damage taken", text="Damage taken from you", command=command)
+        self.enemies_treeview.heading("Damage taken", text="Damage taken", command=command)
         self.enemies_treeview.config(height=14)
 
     def setup_ability_treeview(self):
@@ -139,9 +167,9 @@ class StatsFrame(ttk.Frame):
         self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
         self.abilities_treeview.config(columns=("Times used",))
         self.abilities_treeview["show"] = ("tree", "headings")
-        self.abilities_treeview.column("#0", width=250)
+        self.abilities_treeview.column("#0", width=200)
         self.abilities_treeview.config(height=14)
-        self.abilities_treeview.column("Times used", width=100, anchor=tk.E)
+        self.abilities_treeview.column("Times used", width=80, anchor=tk.E)
         command = lambda: self.treeview_sort_column(self.abilities_treeview, "Times used", False, "int")
         self.abilities_treeview.heading("Times used", text="Times used", command=command)
         command = lambda: self.treeview_sort_column(self.abilities_treeview, "#0", False, "str")
@@ -160,9 +188,11 @@ class StatsFrame(ttk.Frame):
         self.screen_label.grid(padx=5, pady=5)
         self.enemies_treeview.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
         self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe", pady=5)
+        self.enemies_label.grid(column=2, row=0, sticky="nwe", pady=5, padx=5)
         self.time_view.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
         self.time_scroll.grid(column=1, row=0, sticky="ns", pady=5)
-    
+        self.time_line.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
+
     def treeview_sort_column(self, treeview, column, reverse, type):
         if column == "Ability":
             column = "#0"
