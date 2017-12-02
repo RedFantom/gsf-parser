@@ -9,8 +9,8 @@
 # UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import variables
 from widgets.time_view import TimeView
+from widgets.timeline import TimeLine
 
 
 class StatsFrame(ttk.Frame):
@@ -63,12 +63,14 @@ class StatsFrame(ttk.Frame):
         # Create parent frames
         self.stats_frame = ttk.Frame(self.notebook)
         self.events_frame = ttk.Frame(self.notebook)
+        self.timeline_frame = ttk.Frame(self.notebook)
         self.abilities_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
         self.screen_frame = ttk.Frame(self.notebook)
         # Add notebook frames
         self.notebook.add(self.stats_frame, text="Statistics")
         self.notebook.add(self.events_frame, text="Events")
+        self.notebook.add(self.timeline_frame, text="TimeLine")
         self.notebook.add(self.abilities_frame, text="Abilities")
         self.notebook.add(self.enemies_frame, text="Enemies")
         self.notebook.add(self.screen_frame, text="Screen parsing")
@@ -103,6 +105,14 @@ class StatsFrame(ttk.Frame):
         self.time_view = TimeView(self.events_frame, height=9)
         self.time_scroll = ttk.Scrollbar(self.events_frame, command=self.time_view.yview)
         self.time_view.config(yscrollcommand=self.time_scroll.set)
+        # Create widgets for timeline frame
+        self.time_line = TimeLine(
+            self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
+            marker_font=("default", 11), marker_background="white", marker_border=1, marker_outline="black",
+            categories={
+                "primaries": {"text": "Primary Weapon", "foreground": "red", "font": ("default", 11)}
+            }
+        )
 
     def setup_enemy_treeview(self):
         """
