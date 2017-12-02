@@ -7,6 +7,7 @@
 # For license see LICENSE
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import messagebox
 import pickle as pickle
 import os
 from tools import utilities
@@ -29,6 +30,23 @@ class CharactersFrame(ttk.Frame):
     of this data in
     """
 
+    united_forces = {
+        "TRE": "DM",
+        "PRG": "DM",
+        "TFN": "DM",
+        "JCO": "SF",
+        "SHA": "SF",
+        "EBH": "SF",
+        "PRF": "SF",
+        "JUN": "SF",
+        "MFR": "TL",
+        "BMD": "TL",
+        "NTH": "TL",
+        "T3M": "TH",
+        "VCH": "TH",
+        "JKS": "TH"
+    }
+
     def __init__(self, parent):
         """
         Initializes the class instance and sets up all instance variables
@@ -39,34 +57,15 @@ class CharactersFrame(ttk.Frame):
         self.directory = utilities.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = {
-            "BAS": "The Bastion",
-            "BEG": "Begeren Colony",
-            "HAR": "The Harbinger",
-            "SHA": "The Shadowlands",
-            "JUN": "Jung Ma",
-            "EBH": "The Ebon Hawk",
-            "PRF": "Prophecy of the Five",
-            "JCO": "Jedi Covenant",
-            "T3M": "T3-M4",
-            "NTH": "Darth Nihilus",
-            "TFN": "The Tomb of Freedon Nadd",
-            "JKS": "Jar'kai Sword",
-            "PRG": "The Progenitor",
-            "VCH": "Vanjervalis Chain",
-            "BMD": "Battle Meditation",
-            "MFR": "Mantle of the Force",
-            "TRE": "The Red Eclipse"
+            # US servers
+            "SF": "Star Forge",
+            "SA": "Satele Shan",
+            # European servers
+            "TH": "Tulak Hord",
+            "DM": "Darth Malgus",
+            "TL": "The Leviathan"
         }
-        self.zones = OrderedDict()
-        self.zones["USE"] = "US East Coast"
-        self.zones["USW"] = "US West Coast"
-        self.zones["EUR"] = "Europe"
 
-        self.regions = {
-            "USE": ["SHA", "JUN", "EBH", "PRF", "JCO"],
-            "USW": ["BAS", "BEG", "HAR"],
-            "EUR": ["T3M", "NTH", "TFN", "JKS", "PRG", "VCH", "BMD", "MFR", "TRE"]
-        }
         # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
         self.characters = {}
@@ -209,15 +208,21 @@ class CharactersFrame(ttk.Frame):
         """
         self.characters_list.delete(*self.characters_list.get_children())
 
-        for identifier, region in self.zones.items():
-            self.characters_list.insert("", tk.END, iid=identifier, text=region)
-            for server in self.regions[identifier]:
-                self.characters_list.insert(identifier, tk.END, iid=server, text=self.servers[server])
-
-        for character, data in self.characters.items():
+        for character, data in sorted(self.characters.items()):
+            print(character)
+            if data["Server"] not in self.servers:
+                messagebox.showinfo(
+                    "United Forces Notification",
+                    "Since the United Forces update of SWTOR, the server names have changed and thus the character "
+                    "database must be updated. This process is non-destructive, meaning you should be able to keep "
+                    "all your characters, as long as the names do not conflict."
+                )
+                self.characters.update_servers(self.united_forces)
+                self.save_character_data()
             try:
                 self.characters_list.insert(
-                    data["Server"], tk.END, iid=(data["Server"], data["Name"]), text=data["Name"]
+                    "", tk.END, iid="{};{}".format(data["Server"], data["Name"]),
+                    text="{} ({})".format(data["Name"], self.servers[data["Server"]])
                 )
             except TypeError:
                 self.new_database()
@@ -404,12 +409,7 @@ class CharactersFrame(ttk.Frame):
             character = self.characters_list.selection()
             if character == ():
                 return
-            if len(character[0]) < 4:
-                return
-            server = character[0][:3]
-            name = character[0][4:].replace("{", "").replace("}", "")
-        if not server:
-            raise ValueError("Server not found: {0}".format(character[0]))
+            server, name = character[0].split(";")
         self.clear_character_data()
         try:
             return self.characters[(server, name)]
