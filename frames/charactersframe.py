@@ -209,8 +209,7 @@ class CharactersFrame(ttk.Frame):
         self.characters_list.delete(*self.characters_list.get_children())
 
         for character, data in sorted(self.characters.items()):
-            print(character)
-            if data["Server"] not in self.servers:
+            if data["Server"] not in self.servers or character[0] not in self.servers:
                 messagebox.showinfo(
                     "United Forces Notification",
                     "Since the United Forces update of SWTOR, the server names have changed and thus the character "
