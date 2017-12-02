@@ -112,7 +112,7 @@ class ShipStats(object):
                     )
         # Go over Crew
         for category, companion in self.ship.crew.items():
-            if category == "CoPilot":
+            if category == "CoPilot" or companion is None:
                 continue
             member_data = self.get_crew_member_data(*companion)
             for stats in (member_data["PassiveStats"], member_data["SecondaryPassiveStats"]):
