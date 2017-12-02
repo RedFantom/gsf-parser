@@ -6,7 +6,7 @@
 import tkinter as tk
 from tkinter import ttk
 # Own modules
-from parsing.screen import FileHandler
+from parsing.filehandler import FileHandler
 
 
 class DatabaseExplorer(tk.Toplevel):

@@ -22,7 +22,7 @@ from parsing import parse, abilities, folderstats, filestats, matchstats, spawns
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from collections import OrderedDict
-from parsing.screen import FileHandler
+from parsing.filehandler import FileHandler
 
 
 # Class for the _frame in the fileTab of the parser
