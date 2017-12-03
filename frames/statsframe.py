@@ -273,4 +273,4 @@ class StatsFrame(ttk.Frame):
         """
         if not isinstance(date_time_obj, datetime):
             raise TypeError("argument not of datetime type")
-        return float("{}.{}".format(date_time_obj.minute, date_time_obj.second))
+        return float("{}.{}".format(date_time_obj.minute, (date_time_obj.second / 60) * 100))

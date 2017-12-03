@@ -244,7 +244,6 @@ class FileHandler(object):
                     results[category].append((args, kwargs))
         return results
 
-
     @staticmethod
     def datetime_to_float(date_time_obj):
         """
@@ -252,7 +251,7 @@ class FileHandler(object):
         """
         if not isinstance(date_time_obj, datetime):
             raise TypeError("argument not of datetime type")
-        return float("{}.{}".format(date_time_obj.minute, date_time_obj.second))
+        return float("{}.{}".format(date_time_obj.minute, (date_time_obj.second / 60) * 100))
 
     @staticmethod
     def color_darken(rgb, factor):
