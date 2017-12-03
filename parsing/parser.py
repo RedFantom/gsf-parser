@@ -7,7 +7,6 @@ from tkinter.ttk import Frame
 from queue import Queue
 # Own modules
 from parsing.screen import ScreenParser
-from parsing.filehandler import FileHandler
 from parsing.stalking_alt import LogStalker
 from parsing.screen import ScreenParser
 from parsing import abilities, effects, durations

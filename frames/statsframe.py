@@ -128,8 +128,8 @@ class StatsFrame(ttk.Frame):
         categories = OrderedDict()
         categories["primaries"] = {"text": "Primary Weapon", "foreground": "#ff6666", "font": ("default", 11)}
         categories["secondaries"] = {"text": "Secondary Weapon", "foreground": "#ff3333", "font": ("default", 11)}
-        categories["shields_front"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
-        categories["shields_rear"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
+        categories["shields_f"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
+        categories["shields_r"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
         categories["hull"] = {"text": "Hull Health", "foreground": "brown", "font": ("default", 11)}
         categories["systems"] = {"text": "Systems", "foreground": "#668cff", "font": ("default", 11)}
         categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
@@ -159,7 +159,7 @@ class StatsFrame(ttk.Frame):
                 text="The secondaries category displays when the right mouse button was being pressed. A darker marker "
                      "is shown when a missile was activated or landed.")
         text = "Each of the health categories displays the amount of health points for a certain health type."
-        for category in ("shields_front", "shields_rear", "hull"):
+        for category in ("shields_f", "shields_r", "hull"):
             Balloon(labels[category], text=text)
         text = "Each of the ability categories shows when an ability was used with a darker marker, and when it was " \
                "available to be used with a lighter marker."
@@ -246,7 +246,7 @@ class StatsFrame(ttk.Frame):
         """
         # Get start and end times of the spawn
         start = spawn_timings[match][spawn]
-        if spawn < len(spawn_timings[match]):
+        if spawn + 1 < len(spawn_timings[match]):
             finish = spawn_timings[match][spawn + 1]
         else:
             finish = Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"]

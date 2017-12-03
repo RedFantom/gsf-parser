@@ -6,6 +6,7 @@
 
 # Own modules
 from tools.utilities import get_temp_directory
+from parsing.parser import Parser
 # General imports
 from pynput.mouse import Button
 import pickle as pickle
@@ -32,6 +33,16 @@ class FileHandler(object):
         "wpower": "#ff9933",
         "epower": "#751aff",
         "power_mgmt": "darkblue",
+    }
+
+    health_colors = {
+        None: "grey",
+        0: "black",
+        25: "red",
+        50: "orange",
+        75: "yellow",
+        100: "green",
+        125: "blue"
     }
 
     @staticmethod
@@ -127,7 +138,10 @@ class FileHandler(object):
         Parse spawn screen data dictionary and spawn CombatLog data
         """
         results = {}
+        start_time = Parser.line_to_dictionary(spawn_list[-1])["time"]
         results.update(FileHandler.get_mouse_markers(screen_dict))
+        results.update(FileHandler.get_shield_markers(screen_dict, start_time))
+        return results
 
     @staticmethod
     def get_spawn_stats(file_name, match_dt, spawn_dt):
@@ -208,3 +222,47 @@ class FileHandler(object):
                     ((category, buttons[button], time),  {"background": FileHandler.colors[category]})
                 )
         return results
+
+    @staticmethod
+    def get_shield_markers(screen_dict, start_time):
+        """
+        Return health markers for TimeLine
+        """
+        sub_dict = screen_dict["health"]
+        categories = ["hull", "shields_f", "shields_r"]
+        health = {key: (None, None) for key in categories}
+        results = {key: [] for key in categories}
+        for time, (hull, shields_f, shields_r) in sub_dict.items():
+            new_values = {key: (time, locals()[key]) for key in categories}
+            for category in categories:
+                if health[category][1] != new_values[category][1]:
+                    start = health[category][0]
+                    start = start if start is not None else start_time
+                    finish = time
+                    args = (category, start, finish)
+                    kwargs = {"background": FileHandler.health_colors[health[category][1]]}
+                    results[category].append((args, kwargs))
+        return results
+
+
+    @staticmethod
+    def datetime_to_float(date_time_obj):
+        """
+        Convert a datetime object to a float value
+        """
+        if not isinstance(date_time_obj, datetime):
+            raise TypeError("argument not of datetime type")
+        return float("{}.{}".format(date_time_obj.minute, date_time_obj.second))
+
+    @staticmethod
+    def color_darken(rgb, factor):
+        return rgb * factor
+
+    @staticmethod
+    def color_tuple_to_html(rgb):
+        return format(rgb[0] << 16 | rgb[1] << 8 | rgb[2], '06x')
+
+    @staticmethod
+    def color_html_to_tuple(html):
+        return tuple(int(html.replace("#", "")[i:i + 2], 16) for i in (0, 2, 4))
+
