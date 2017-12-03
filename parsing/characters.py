@@ -35,8 +35,6 @@ class CharacterDatabase(dict):
         """
         updated = {}
         for character, data in self.items():
-            if data["Server"] not in trans:
-                raise ValueError("Incomplete translation data received. Missing {}".format(data["Server"]))
             character = list(character)
             character[0] = trans[character[0]]
             data["Server"] = character[0]

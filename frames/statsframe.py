@@ -98,7 +98,7 @@ class StatsFrame(ttk.Frame):
         self.enemies_scrollbar = ttk.Scrollbar(self.enemies_frame, command=self.enemies_treeview.yview)
         self.enemies_label = ttk.Label(
             self.enemies_frame, font=("default", 10),
-            text="This Treeview contains a list of all enemy ID number that you encountered "
+            text="This Treeview contains a list of all enemy ID numbers that you encountered "
                  "during the selected game period, together with each of their damage taken "
                  "from you and damage dealt to you. This is calculated using the CombatLogs only.\n"
                  "Please note that Bombers do not have the damage dealt by bombs recorded, "
@@ -110,6 +110,12 @@ class StatsFrame(ttk.Frame):
         self.abilities_treeview = ttk.Treeview(self.abilities_frame)
         self.abilities_scrollbar = ttk.Scrollbar(self.abilities_frame, command=self.abilities_treeview.yview)
         self.setup_ability_treeview()
+        self.abilities_label = ttk.Label(
+            self.abilities_frame, font=("default", 10), justify=tk.LEFT, wraplength=200,
+            text="In this Treeview you can see each ability that you used in the specified time period, together with "
+                 "the amount of times it was activated. This list may include abilities triggered by the GSF system, "
+                 "which you have no control over."
+        )
         # Create widgets for screen parsing frame
         self.screen_label_var = tk.StringVar()
         self.screen_label = ttk.Label(self.screen_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
@@ -207,6 +213,7 @@ class StatsFrame(ttk.Frame):
         """
         self.abilities_treeview.grid(column=0, row=0, pady=5, padx=5)
         self.abilities_scrollbar.grid(column=1, row=0, sticky="ns", pady=5)
+        self.abilities_label.grid(column=2, row=0, sticky="nwe", padx=5, pady=5)
         self.notebook.grid(column=0, row=0, columnspan=4, sticky="nwe")
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky="nswe", padx=(5, 0), pady=5)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
