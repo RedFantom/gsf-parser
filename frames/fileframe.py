@@ -14,8 +14,8 @@ import tkinter.filedialog
 # General imports
 import operator
 import os
-import re
 from datetime import datetime
+from pynput.mouse import Button
 # Own modules
 import variables
 from parsing import parse, abilities, folderstats, filestats, matchstats, spawnstats
@@ -232,6 +232,7 @@ class FileFrame(ttk.Frame):
         """
         This function sets the data widgets for the spawn parsing results
         :param name: player name
+        :param spawn: section of CombatLog
         :param abilitiesdict: abilities dictionary with abilities as keys and amounts as values
         :param statistics_string: string to set in the statistics tab
         :param ships_list: list of possible ships
@@ -363,6 +364,9 @@ class FileFrame(ttk.Frame):
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
         string = FileHandler.get_spawn_stats(*arguments)
         self.main_window.middle_frame.screen_label_var.set(string)
+        self.main_window.middle_frame.update_timeline(
+            file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube
+        )
 
     def clear_data_widgets(self):
         """
@@ -382,6 +386,8 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.time_view.delete(
             *self.main_window.middle_frame.time_view.get_children()
         )
+        self.main_window.middle_frame.time_line.clear_timeline()
+        self.main_window.middle_frame.time_line._markers.clear()
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         """

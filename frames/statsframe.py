@@ -6,12 +6,15 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 
-# UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
 from widgets.time_view import TimeView
 from widgets.timeline import TimeLine
 from collections import OrderedDict
+from ttkwidgets.frames import Balloon
+from parsing.filehandler import FileHandler
+from parsing.parser import Parser
+from datetime import datetime
 
 
 class StatsFrame(ttk.Frame):
@@ -129,18 +132,41 @@ class StatsFrame(ttk.Frame):
         categories["tracking"] = {"text": "Tracking", "foreground": "#ffcc00", "font": ("default", 11)}
         categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
+        categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=1, marker_outline="black",
-            marker_snap_to_ticks=False, width=350, height=280, background="#f5f6f7", categories=categories,
-            unit="m", start=0.0, finish=3.0, resolution=0.005
+            marker_snap_to_ticks=False, width=350, height=220, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
+            resolution=0.005, categories=categories, zoom_factors=(0.25, 0.5, 1.0, 2.0, 4.0, 8.0), zoom_default=1.0
         )
+        self.setup_timeline()
 
     def setup_timeline(self):
         """
         Setup the TimeLine widget
         """
-        self.time_line
+        labels = self.time_line._category_labels
+        Balloon(labels["primaries"],
+                text="The primaries category displays when the left mouse button was being pressed. A darker marker "
+                     "is shown when a shot was landed.")
+        Balloon(labels["secondaries"],
+                text="The secondaries category displays when the right mouse button was being pressed. A darker marker "
+                     "is shown when a missile was activated or landed.")
+        text = "Each of the health categories displays the amount of health points for a certain health type."
+        for category in ("shields_front", "shields_rear", "hull"):
+            Balloon(labels[category], text=text)
+        text = "Each of the ability categories shows when an ability was used with a darker marker, and when it was " \
+               "available to be used with a lighter marker."
+        for category in ["systems", "engines", "shields", "copilot"]:
+            Balloon(labels[category], text=text)
+        Balloon(labels["tracking"], text="The darker the marker in this category, the higher the tracking penalty was "
+                                         "at that moment. Please note that the markers in this category do not "
+                                         "indicate shots.")
+        text = "Each of the power categories shows a darker marker if more power was left in the power pool."
+        for category in ["wpower", "epower"]:
+            Balloon(labels[category], text=text)
+        Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
+                                           "time, and the darker markers indicate a switch in power management mode.")
 
     def setup_enemy_treeview(self):
         """
@@ -206,3 +232,38 @@ class StatsFrame(ttk.Frame):
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
         treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
+
+    def update_timeline(self, file, match, spawn, match_timings, spawn_timings, file_cube):
+        """
+        Update the TimeLine with the results of parsing the file and the screen parsing data
+        """
+        # Get start and end times of the spawn
+        start = spawn_timings[match][spawn]
+        if spawn < len(spawn_timings[match]):
+            finish = spawn_timings[match][spawn + 1]
+        else:
+            finish = Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"]
+        # Update the TimeLine with these values
+        self.time_line.config(start=self.datetime_to_float(start), finish=self.datetime_to_float(finish))
+        # Start updating the TimeLine
+
+        # Screen parsing only
+        screen_data = FileHandler.get_data_dictionary()
+        if file not in screen_data:
+            return  # File is not found in the screen parsing results dictionary
+        screen_dict = FileHandler.get_spawn_dictionary(
+            screen_data, file, match_timings[match], spawn_timings[match][spawn]
+        )
+        markers = FileHandler.get_markers(screen_dict, file_cube[match][spawn])
+        for category, data in markers.items():
+            for (args, kwargs) in data:
+                self.time_line.create_marker(*args, **kwargs)
+
+    @staticmethod
+    def datetime_to_float(date_time_obj):
+        """
+        Convert a datetime object to a float value
+        """
+        if not isinstance(date_time_obj, datetime):
+            raise TypeError("argument not of datetime type")
+        return float("{}.{}".format(date_time_obj.minute, date_time_obj.second))
