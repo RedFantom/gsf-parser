@@ -62,26 +62,10 @@ class RealtimeFrame(ttk.Frame):
         self.character = tk.StringVar()
         self.character_dropdown = ttk.OptionMenu(self, self.character, "Select a character",
                                                  command=self.load_character)
-        self.server_dropdown = ttk.OptionMenu(self, self.server,
-                                              "Select a server",
-                                              "The Bastion",
-                                              "Begeren Colony",
-                                              "The Harbinger",
-                                              "The Shadowlands",
-                                              "Jung Ma",
-                                              "The Ebon Hawk",
-                                              "Prophecy of the Five",
-                                              "Jedi Covenant",
-                                              "T3-M4",
-                                              "Darth Nihilus",
-                                              "The Tomb of Freedon Nadd",
-                                              "Jar'kai Sword",
-                                              "The Progenitor",
-                                              "Vanjervalis Chain",
-                                              "Battle Meditation",
-                                              "Mantle of the Force",
-                                              "The Red Eclipse",
-                                              command=self.update_characters)
+        self.server_dropdown = ttk.OptionMenu(
+            self, self.server, *(("Select a server...",) + tuple(self.main_window.characters_frame.servers.values())),
+            command=self.update_characters
+        )
         self.parsing = False
         self.parse = []
         self.parsing_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
@@ -144,7 +128,8 @@ class RealtimeFrame(ttk.Frame):
                 self.screenparser = None
                 self.data_queue = None
             self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          lineops.pretty_event, screen=variables.settings_obj["realtime"]["screenparsing"],
+                                          lineops.pretty_event,
+                                          screen=variables.settings_obj["realtime"]["screenparsing"],
                                           screenoverlay=variables.settings_obj["realtime"]["screenparsing_overlay"],
                                           data_queue=self.data_queue)
             self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
@@ -152,7 +137,8 @@ class RealtimeFrame(ttk.Frame):
                                                        watching_stringvar=self.watching_stringvar,
                                                        newfilecallback=self.parser.new_file, )
             variables.realtime_flag = True
-            if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
+            if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"][
+                "overlay_when_gsf"]:
                 self.overlay = RealtimeOverlay(self.main_window)
             self.parsing_bar.start(3)
             self.start_parsing_button.configure(text="Stop real-time parsing")
