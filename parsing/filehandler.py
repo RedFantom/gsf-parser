@@ -7,6 +7,7 @@
 # Own modules
 from tools.utilities import get_temp_directory
 from parsing.parser import Parser
+from parsing.vision import get_tracking_degrees, get_distance_from_center
 # General imports
 from pynput.mouse import Button
 import pickle as pickle
@@ -140,7 +141,8 @@ class FileHandler(object):
         results = {}
         start_time = Parser.line_to_dictionary(spawn_list[-1])["time"]
         results.update(FileHandler.get_mouse_markers(screen_dict))
-        results.update(FileHandler.get_shield_markers(screen_dict, start_time))
+        results.update(FileHandler.get_health_markers(screen_dict, start_time))
+        results.update(FileHandler.get_tracking_markers(screen_dict))
         return results
 
     @staticmethod
@@ -224,7 +226,7 @@ class FileHandler(object):
         return results
 
     @staticmethod
-    def get_shield_markers(screen_dict, start_time):
+    def get_health_markers(screen_dict, start_time):
         """
         Return health markers for TimeLine
         """
@@ -232,7 +234,7 @@ class FileHandler(object):
         categories = ["hull", "shields_f", "shields_r"]
         health = {key: (None, None) for key in categories}
         results = {key: [] for key in categories}
-        for time, (hull, shields_f, shields_r) in sub_dict.items():
+        for time, (hull, shields_f, shields_r) in sorted(sub_dict.items()):
             new_values = {key: (time, locals()[key]) for key in categories}
             for category in categories:
                 if health[category][1] != new_values[category][1]:
@@ -242,6 +244,23 @@ class FileHandler(object):
                     args = (category, start, finish)
                     kwargs = {"background": FileHandler.health_colors[health[category][1]]}
                     results[category].append((args, kwargs))
+        return results
+
+    @staticmethod
+    def get_tracking_markers(screen_dict, max_firing_arc=40):
+        sub = screen_dict["cursor_pos"]
+        results = {"tracking": []}
+        for key, value in sorted(sub.items()):
+            degrees = get_tracking_degrees(get_distance_from_center(value))
+            degrees = max(min(degrees, max_firing_arc), 1)
+            start = FileHandler.datetime_to_float(key)
+            finish = start + 0.01
+            args = ("tracking", start, finish)
+            background = FileHandler.color_html_to_tuple(FileHandler.colors["tracking"])
+            background = FileHandler.color_darken(background, 1/degrees)
+            background = FileHandler.color_tuple_to_html(background)
+            kwargs = {"background": background}
+            results["tracking"].append((args, kwargs))
         return results
 
     @staticmethod
