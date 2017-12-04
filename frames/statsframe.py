@@ -77,7 +77,7 @@ class StatsFrame(ttk.Frame):
         self.notebook.add(self.timeline_frame, text="TimeLine")
         self.notebook.add(self.abilities_frame, text="Abilities")
         self.notebook.add(self.enemies_frame, text="Enemies")
-        # self.notebook.add(self.screen_frame, text="Screen parsing")
+        self.notebook.add(self.screen_frame, text="Screen parsing")
         # Create widgets for statistics frame
         self.statistics_label_var = tk.StringVar()
         string = "Character name:\nDamage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\n" \
@@ -143,7 +143,8 @@ class StatsFrame(ttk.Frame):
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=1, marker_outline="black",
             marker_snap_to_ticks=False, width=350, height=220, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
-            resolution=0.005, categories=categories, zoom_factors=(0.25, 0.5, 1.0, 2.0, 4.0, 8.0), zoom_default=1.0
+            resolution=0.005, categories=categories, zoom_factors=(0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0),
+            zoom_default=1.0
         )
         self.setup_timeline()
 
@@ -245,13 +246,10 @@ class StatsFrame(ttk.Frame):
         Update the TimeLine with the results of parsing the file and the screen parsing data
         """
         # Get start and end times of the spawn
-        start = spawn_timings[match][spawn]
-        if spawn + 1 < len(spawn_timings[match]):
-            finish = spawn_timings[match][spawn + 1]
-        else:
-            finish = Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"]
+        start = Parser.line_to_dictionary(file_cube[match][spawn][0])["time"]
+        finish = Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"]
         # Update the TimeLine with these values
-        self.time_line.config(start=self.datetime_to_float(start), finish=self.datetime_to_float(finish))
+        self.time_line.config(start=self.datetime_to_float(start), finish=self.datetime_to_float(finish)+15.0)
         # Start updating the TimeLine
 
         # Screen parsing only
@@ -259,9 +257,12 @@ class StatsFrame(ttk.Frame):
         if file not in screen_data:
             return  # File is not found in the screen parsing results dictionary
         screen_dict = FileHandler.get_spawn_dictionary(
-            screen_data, file, match_timings[match], spawn_timings[match][spawn]
+            screen_data, file, match_timings[2 * match], spawn_timings[match][spawn]
         )
+        if isinstance(screen_dict, str):
+            return
         markers = FileHandler.get_markers(screen_dict, file_cube[match][spawn])
+        print(markers)
         for category, data in markers.items():
             for (args, kwargs) in data:
                 self.time_line.create_marker(*args, **kwargs)
@@ -273,4 +274,4 @@ class StatsFrame(ttk.Frame):
         """
         if not isinstance(date_time_obj, datetime):
             raise TypeError("argument not of datetime type")
-        return float("{}.{}".format(date_time_obj.minute, (date_time_obj.second / 60) * 100))
+        return float("{}.{}".format(date_time_obj.minute, int((date_time_obj.second / 60) * 100)))

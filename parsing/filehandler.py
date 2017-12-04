@@ -45,6 +45,14 @@ class FileHandler(object):
         125: "blue"
     }
 
+    power_mgmt_colors = {
+        1: "orange",
+        2: "cyan",
+        3: "purple",
+        4: "darkblue",
+        None: "black"
+    }
+
     @staticmethod
     def get_dictionary_key(dictionary, timing, value=False):
         if not isinstance(dictionary, dict):
@@ -103,6 +111,7 @@ class FileHandler(object):
             if key.hour == match_dt.hour and key.minute == match_dt.minute:
                 match_dict = value
         if match_dict is None:
+            raise ValueError("Invlaid")
             return "Not available for this match\n\nScreen parsing results are only available for spawns " \
                    "in matches which were spawned while screen parsing was enabled and real-time parsing " \
                    "was running"
@@ -141,6 +150,7 @@ class FileHandler(object):
         start_time = Parser.line_to_dictionary(spawn_list[-1])["time"]
         results.update(FileHandler.get_mouse_markers(screen_dict))
         results.update(FileHandler.get_shield_markers(screen_dict, start_time))
+        results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
         return results
 
     @staticmethod
@@ -204,6 +214,9 @@ class FileHandler(object):
         :param dictionary:
         :return: {"primaries": [(start, finish), ], "secondaries": ...}
         """
+        print(dictionary)
+        if not isinstance(dictionary, dict):
+            raise TypeError("Invalid argument received: {}".format(repr(dictionary)))
         clicks = dictionary["clicks"]
         buttons = {Button.left: None, Button.right: None}
         results = {"primaries": [], "secondaries": []}
@@ -239,9 +252,26 @@ class FileHandler(object):
                     start = health[category][0]
                     start = start if start is not None else start_time
                     finish = time
-                    args = (category, start, finish)
+                    args = (category, FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(finish))
                     kwargs = {"background": FileHandler.health_colors[health[category][1]]}
                     results[category].append((args, kwargs))
+        return results
+
+    @staticmethod
+    def get_power_mgmt_markers(screen_dict, start_time):
+        sub_dict = screen_dict["power_mgmt"]
+        categories = ["power_mgmt"]
+        power_mgmt = (None, None)
+        results = {key: [] for key in categories}
+        for time, value in sub_dict.items():
+            if power_mgmt[0] != value:
+                start = power_mgmt[0]
+                start = start if start is not None else start_time
+                finish = time
+                args = ("power_mgmt", FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(finish))
+                kwargs = {"background": FileHandler.power_mgmt_colors[value]}
+                results["power_mgmt"].append((args, kwargs))
+                power_mgmt = (time, value)
         return results
 
     @staticmethod
@@ -250,8 +280,8 @@ class FileHandler(object):
         Convert a datetime object to a float value
         """
         if not isinstance(date_time_obj, datetime):
-            raise TypeError("argument not of datetime type")
-        return float("{}.{}".format(date_time_obj.minute, (date_time_obj.second / 60) * 100))
+            raise TypeError("date_time_obj not of datetime type but {}".format(repr(date_time_obj)))
+        return float("{}.{}".format(date_time_obj.minute, int((date_time_obj.second / 60) * 100)))
 
     @staticmethod
     def color_darken(rgb, factor):
