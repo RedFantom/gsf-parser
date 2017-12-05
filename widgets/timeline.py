@@ -354,14 +354,12 @@ class TimeLine(ttk.Frame):
         pixel_height = total
         self._timeline.config(height=pixel_height)
 
-    def create_markers(self, markers):
+    def create_markers(self, markers=None):
         """
         Create all the markers in a given category dictionary, as in the markers property
         """
         self._canvas_markers.clear()
-        for marker in sorted(markers):
-            if not isinstance(marker, dict):
-                continue
+        for marker in markers.values() if markers is not None else self.markers.values():
             self.create_marker(marker["category"], marker["start"], marker["finish"], marker)
 
     def __configure_timeline(self, *args):
@@ -440,6 +438,7 @@ class TimeLine(ttk.Frame):
         # Calculate pixel positions
         x1 = self.get_time_position(start)
         x2 = max(self.get_time_position(finish), x1+1)
+        print("Drawing on {}".format((x1, x2)))
         y1, y2 = self._rows[category]
         # Create the rectangle
         rectangle_id = self._timeline.create_rectangle(
