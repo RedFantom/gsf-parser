@@ -14,7 +14,6 @@ from collections import OrderedDict
 from ttkwidgets.frames import Balloon
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
-from datetime import datetime
 
 
 class StatsFrame(ttk.Frame):
@@ -127,7 +126,7 @@ class StatsFrame(ttk.Frame):
         # Create widgets for timeline frame
         categories = OrderedDict()
         categories["primaries"] = {"text": "Primary Weapon", "foreground": "#ff6666", "font": ("default", 11)}
-        categories["secondaries"] = {"text": "Secondary Weapon", "foreground": "#ff3333", "font": ("default", 11)}
+        categories["secondaries"] = {"text": "Secondary Weapon", "foreground": "#ff003b", "font": ("default", 11)}
         categories["shields_f"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
         categories["shields_r"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
         categories["hull"] = {"text": "Hull Health", "foreground": "brown", "font": ("default", 11)}
@@ -246,13 +245,11 @@ class StatsFrame(ttk.Frame):
         Update the TimeLine with the results of parsing the file and the screen parsing data
         """
         # Get start and end times of the spawn
-        start = Parser.line_to_dictionary(file_cube[match][spawn][0])["time"]
-        finish = Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"]
-        # Update the TimeLine with these values
-        self.time_line.config(start=self.datetime_to_float(start), finish=self.datetime_to_float(finish)+15.0)
-        # Start updating the TimeLine
-
-        # Screen parsing only
+        start = FileHandler.datetime_to_float(Parser.line_to_dictionary(file_cube[match][spawn][0])["time"])
+        finish = FileHandler.datetime_to_float(Parser.line_to_dictionary(file_cube[match][spawn][-1])["time"])+1
+        self.time_line.delete_marker(tk.ALL)
+        self.time_line.config(start=start, finish=finish)
+        # Update the TimeLine
         screen_data = FileHandler.get_data_dictionary()
         if file not in screen_data:
             return  # File is not found in the screen parsing results dictionary
@@ -265,13 +262,9 @@ class StatsFrame(ttk.Frame):
         print(markers)
         for category, data in markers.items():
             for (args, kwargs) in data:
-                self.time_line.create_marker(*args, **kwargs)
-
-    @staticmethod
-    def datetime_to_float(date_time_obj):
-        """
-        Convert a datetime object to a float value
-        """
-        if not isinstance(date_time_obj, datetime):
-            raise TypeError("argument not of datetime type")
-        return float("{}.{}".format(date_time_obj.minute, int((date_time_obj.second / 60) * 100)))
+                try:
+                    self.time_line.create_marker(*args, **kwargs)
+                except ValueError:
+                    continue
+                print("Creating marker: '{}', '{}', '{}', '{}'".format(args[0], args[1], args[2], kwargs["background"]))
+        return
