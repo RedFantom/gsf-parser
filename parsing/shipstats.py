@@ -4,7 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from parsing.ships import component_types_list, Ship, Component, component_types
-
+from pprint import pprint
 reverse_component_types = {value: key for key, value in component_types.items()}
 
 
@@ -39,6 +39,7 @@ class ShipStats(object):
             category = reverse_component_types[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
+                print("Category not found: {}".format(category))
                 continue
             component = self.ship.components[category]
             # If component is None, then the component is not correctly set
@@ -49,9 +50,12 @@ class ShipStats(object):
             category = component_types[category]
             # Get the data belonging to the component
             component_data = self.ships_data[self.ship.ship_name][category][component.index].copy()
+            print("Retrieved component data for {} in category {}".format(component_data["Name"], category))
             # Go over the upgrades for the component first
             base_stats = component_data["Base"]["Stats"].copy()
-            self.stats[category] = component_data["Stats"].copy()
+            if base_stats == {}:
+                base_stats = component_data["Base"]
+            self.stats[category] = component_data["Stats"].copy() if component_data["Stats"] != {} else base_stats
             for upgrade, state in component.upgrades.items():
                 # Check the state first for efficiency
                 if state is False:
@@ -100,7 +104,10 @@ class ShipStats(object):
                         raise ValueError("Unknown upgrade target found: {}".format(upgrade_data["Target"]))
             # These are the statistics to go over
             component_stats = base_stats
+            print(component_stats)
             for stat, value in component_stats.items():
+                if not isinstance(value, (int, float)):
+                    continue
                 # Process the statistic name
                 statistic, multiplicative = ShipStats.is_multiplicative(stat)
                 # Perform the calculation
@@ -124,6 +131,7 @@ class ShipStats(object):
                         self.stats[category] = ShipStats.update_statistic(
                             self.stats[category], statistic, multiplicative, value
                         )
+        pprint(self.stats)
 
     """
     Functions to process statistics
