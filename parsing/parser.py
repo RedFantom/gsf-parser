@@ -471,7 +471,7 @@ class Parser(object):
         Get a list of player ID numbers for a certain list of lines
         """
         if not isinstance(lines[0], dict):
-            raise ValueError("Not a valid list of line dictionaries.")
+            lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
             # print("Processing line: {}".format(line.replace("\n", "")))
