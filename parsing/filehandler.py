@@ -8,6 +8,7 @@
 from tools.utilities import get_temp_directory
 from parsing.parser import Parser
 from parsing.vision import get_tracking_degrees, get_distance_from_center
+from parsing import abilities
 # General imports
 from pynput.mouse import Button
 import pickle as pickle
@@ -22,7 +23,7 @@ class FileHandler(object):
     """
     colors = {
         "primaries": "#ff6666",
-        "secondaries": "#ff3333",
+        "secondaries": "#ff003b",
         "shields_front": "green",
         "shields_rear": "green",
         "hull": "brown",
@@ -52,6 +53,15 @@ class FileHandler(object):
         3: "purple",
         4: "darkblue",
         None: "black"
+    }
+
+    click_colors = {
+        "primaries": "#ff7070",
+        "secondaries": "#ff5179",
+        "engines": "#c9a5ff",
+        "shields": "#c0d86e",
+        "systems": "#9bb4ff",
+        "copilot": "#77c3f4"
     }
 
     @staticmethod
@@ -112,7 +122,6 @@ class FileHandler(object):
             if key.hour == match_dt.hour and key.minute == match_dt.minute:
                 match_dict = value
         if match_dict is None:
-            raise ValueError("Invlaid")
             return "Not available for this match\n\nScreen parsing results are only available for spawns " \
                    "in matches which were spawned while screen parsing was enabled and real-time parsing " \
                    "was running"
@@ -149,7 +158,7 @@ class FileHandler(object):
         """
         results = {}
         start_time = Parser.line_to_dictionary(spawn_list[-1])["time"]
-        results.update(FileHandler.get_mouse_markers(screen_dict))
+        results.update(FileHandler.get_weapon_markers(screen_dict, spawn_list))
         results.update(FileHandler.get_health_markers(screen_dict, start_time))
         results.update(FileHandler.get_tracking_markers(screen_dict))
         results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
@@ -210,13 +219,13 @@ class FileHandler(object):
         """.format(*values)
 
     @staticmethod
-    def get_mouse_markers(dictionary):
+    def get_weapon_markers(dictionary, spawn):
         """
         Mouse button press intervals
         :param dictionary:
         :return: {"primaries": [(start, finish), ], "secondaries": ...}
         """
-        print(dictionary)
+        player_list = Parser.get_player_id_list(spawn)
         if not isinstance(dictionary, dict):
             raise TypeError("Invalid argument received: {}".format(repr(dictionary)))
         clicks = dictionary["clicks"]
@@ -234,8 +243,23 @@ class FileHandler(object):
                 buttons[button] = time
             else:
                 results[category].append(
-                    ((category, buttons[button], time),  {"background": FileHandler.colors[category]})
+                    ((category, buttons[button], time),  {"background": FileHandler.click_colors[category]})
                 )
+        for line in spawn:
+            if not isinstance(line, dict):
+                line = Parser.line_to_dictionary(line)
+            ability = line["ability"]
+            if line["source"] == line["target"] or line["source"] not in player_list:
+                continue
+            if ability in abilities.primaries:
+                category = "primaries"
+            elif ability in abilities.secondaries:
+                category = "secondaries"
+            else:
+                continue
+            start = FileHandler.datetime_to_float(line["time"])
+            args = (category, start, start + 1/60)
+            results[category].append((args, {"background": FileHandler.colors[category]}))
         return results
 
     @staticmethod
@@ -294,23 +318,33 @@ class FileHandler(object):
         return results
 
     @staticmethod
+    def get_ability_markers(screen_dict, ship_statistics):
+        categories = ["engines", "shields", "copilot", "systems"]
+        results = {key: [] for key in categories}
+
+
+    @staticmethod
     def datetime_to_float(date_time_obj):
         """
         Convert a datetime object to a float value
         """
         if not isinstance(date_time_obj, datetime):
             raise TypeError("date_time_obj not of datetime type but {}".format(repr(date_time_obj)))
-        return float("{}.{}".format(date_time_obj.minute, int((date_time_obj.second / 60) * 100)))
+        return float("{}.{}{}".format(date_time_obj.minute, (int((date_time_obj.second / 60) * 100)), date_time_obj.microsecond))
 
     @staticmethod
     def color_darken(rgb, factor):
-        return rgb * factor
+        darkened = tuple(max(int(item * factor), 0) for item in rgb)
+        print("Darkening {} to {} with factor {}".format(rgb, darkened, factor))
+        return darkened
 
     @staticmethod
     def color_tuple_to_html(rgb):
-        return format(rgb[0] << 16 | rgb[1] << 8 | rgb[2], '06x')
+        rgb = tuple(int(round(item)) for item in rgb)
+        html = "#" + format(rgb[0] << 16 | rgb[1] << 8 | rgb[2], '06x')
+        print("Converted {} to {}".format(rgb, html))
+        return html
 
     @staticmethod
     def color_html_to_tuple(html):
         return tuple(int(html.replace("#", "")[i:i + 2], 16) for i in (0, 2, 4))
-
