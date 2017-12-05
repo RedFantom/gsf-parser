@@ -359,7 +359,9 @@ class TimeLine(ttk.Frame):
         Create all the markers in a given category dictionary, as in the markers property
         """
         self._canvas_markers.clear()
-        for marker in self._markers.values():
+        for marker in sorted(markers):
+            if not isinstance(marker, dict):
+                continue
             self.create_marker(marker["category"], marker["start"], marker["finish"], marker)
 
     def __configure_timeline(self, *args):
@@ -411,7 +413,8 @@ class TimeLine(ttk.Frame):
         if category not in self._categories:
             raise ValueError("category argument not a valid category: {}".format(category))
         if start < self._start or finish > self._finish:
-            raise ValueError("time out of bounds")
+            raise ValueError("time out of bounds. bounds: {}-{}. requested: {}-{}".format(self._start, self._finish,
+                                                                                          start, finish))
         self.check_marker_kwargs(kwargs)
         # Update the options based on the tags. The last tag always takes precedence over the ones before it, and the
         # marker specific options take precedence over tag options
@@ -435,8 +438,8 @@ class TimeLine(ttk.Frame):
         allow_overlap = kwargs.get("allow_overlap", "default")
         snap_to_ticks = kwargs.get("snap_to_ticks", "default")
         # Calculate pixel positions
-        x1 = start / self._resolution * self._zoom_factor
-        x2 = finish / self._resolution * self._zoom_factor
+        x1 = self.get_time_position(start)
+        x2 = max(self.get_time_position(finish), x1+1)
         y1, y2 = self._rows[category]
         # Create the rectangle
         rectangle_id = self._timeline.create_rectangle(
@@ -511,10 +514,16 @@ class TimeLine(ttk.Frame):
         """
         Delete a marker from the timeline based on its iid
         """
+        if iid == tk.ALL:
+            print("Deleting all markers.")
+            for iid in self.markers.copy().keys():
+                self.delete_marker(iid)
+            return
         options = self._markers[iid]
         rectangle_id, text_id = options["rectangle_id"], options["text_id"]
         del self._canvas_markers[rectangle_id]
-        del self._canvas_markers[text_id]
+        if text_id is not None:
+            del self._canvas_markers[text_id]
         del self._markers[iid]
         self._timeline.delete(rectangle_id, text_id)
 
