@@ -69,14 +69,12 @@ class StatsFrame(ttk.Frame):
         self.timeline_frame = ttk.Frame(self.notebook)
         self.abilities_frame = ttk.Frame(self.notebook)
         self.enemies_frame = ttk.Frame(self.notebook)
-        self.screen_frame = ttk.Frame(self.notebook)
         # Add notebook frames
         self.notebook.add(self.stats_frame, text="Statistics")
         self.notebook.add(self.events_frame, text="Events")
         self.notebook.add(self.timeline_frame, text="TimeLine")
         self.notebook.add(self.abilities_frame, text="Abilities")
         self.notebook.add(self.enemies_frame, text="Enemies")
-        self.notebook.add(self.screen_frame, text="Screen parsing")
         # Create widgets for statistics frame
         self.statistics_label_var = tk.StringVar()
         string = "Character name:\nDamage dealt to\nDamage dealt:\nDamage taken:\nDamage ratio:\nSelfdamage:\n" \
@@ -117,8 +115,8 @@ class StatsFrame(ttk.Frame):
         )
         # Create widgets for screen parsing frame
         self.screen_label_var = tk.StringVar()
-        self.screen_label = ttk.Label(self.screen_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
-                                      wraplength=295)
+        self.screen_label = ttk.Label(self.timeline_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
+                                      wraplength=500)
         # Create widgets for events frame
         self.time_view = TimeView(self.events_frame, height=9)
         self.time_scroll = ttk.Scrollbar(self.events_frame, command=self.time_view.yview)
@@ -126,6 +124,7 @@ class StatsFrame(ttk.Frame):
         # Create widgets for timeline frame
         categories = OrderedDict()
         categories["primaries"] = {"text": "Primary Weapon", "foreground": "#ff6666", "font": ("default", 11)}
+        categories["tracking"] = {"text": "Tracking", "foreground": "#ffcc00", "font": ("default", 11)}
         categories["secondaries"] = {"text": "Secondary Weapon", "foreground": "#ff003b", "font": ("default", 11)}
         categories["shields_f"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
         categories["shields_r"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
@@ -134,16 +133,15 @@ class StatsFrame(ttk.Frame):
         categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
         categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
         categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
-        categories["tracking"] = {"text": "Tracking", "foreground": "#ffcc00", "font": ("default", 11)}
         categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
-            marker_font=("default", 11), marker_background="white", marker_border=1, marker_outline="black",
-            marker_snap_to_ticks=False, width=350, height=220, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
+            marker_font=("default", 11), marker_background="white", marker_border=0, marker_outline="black",
+            marker_snap_to_ticks=False, width=350, height=200, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
             resolution=0.005, categories=categories, zoom_factors=(0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0),
-            zoom_default=1.0
+            zoom_default=1.0,
         )
         self.setup_timeline()
 
@@ -218,13 +216,13 @@ class StatsFrame(ttk.Frame):
         self.statistics_label.grid(column=0, row=2, columnspan=2, sticky="nswe", padx=(5, 0), pady=5)
         self.statistics_numbers.grid(column=2, row=2, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
         self.notice_label.grid(column=0, row=3, columnspan=4, sticky="swe", padx=5, pady=5)
-        self.screen_label.grid(padx=5, pady=5)
         self.enemies_treeview.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
         self.enemies_scrollbar.grid(column=1, row=0, sticky="nswe", pady=5)
         self.enemies_label.grid(column=2, row=0, sticky="nwe", pady=5, padx=5)
         self.time_view.grid(column=0, row=0, sticky="nswe", pady=5, padx=5)
         self.time_scroll.grid(column=1, row=0, sticky="ns", pady=5)
         self.time_line.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
+        self.screen_label.grid(column=1, row=2, padx=5, pady=5, sticky="w")
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         if column == "Ability":
@@ -265,6 +263,9 @@ class StatsFrame(ttk.Frame):
                 try:
                     self.time_line.create_marker(*args, **kwargs)
                 except ValueError:
+                    print("Marker creation failed: '{}', '{}', '{}', '{}'".format(
+                        args[0], args[1], args[2], kwargs["background"])
+                    )
                     continue
                 print("Creating marker: '{}', '{}', '{}', '{}'".format(args[0], args[1], args[2], kwargs["background"]))
         return
