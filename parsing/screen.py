@@ -196,6 +196,9 @@ class ScreenParser(threading.Thread):
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
 
+        self._ms_listener.start()
+        self._kb_listener.start()
+
         while True:
             # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
             # for terminating the process entirely by saving all the data collected.
@@ -354,6 +357,9 @@ class ScreenParser(threading.Thread):
         except AttributeError:
             pass
         time.sleep(0.05)
+        print("Closing input listeners")
+        self._ms_listener.stop()
+        self._kb_listener.stop()
         print("Calling self.close()")
         self.data_dictionary[self.file] = self._file_dict
         print("Saving data dictionary")
@@ -382,7 +388,7 @@ class ScreenParser(threading.Thread):
         if pressed:
             self.on_press_ms(button)
         else:
-            self.on_press_ms(button)
+            self.on_release_ms(button)
 
     def close(self):
         self.__exit__()
