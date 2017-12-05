@@ -386,8 +386,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.time_view.delete(
             *self.main_window.middle_frame.time_view.get_children()
         )
-        self.main_window.middle_frame.time_line.clear_timeline()
-        self.main_window.middle_frame.time_line._markers.clear()
+        # self.main_window.middle_frame.time_line.delete_marker(tk.ALL)
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         """
