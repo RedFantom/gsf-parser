@@ -71,7 +71,10 @@ class ShipStatsFrame(ttk.Frame):
             if stats is None or len(stats) == 0:
                 continue
             # Insert the header for the category
-            self.stats_treeview.insert("", tk.END, iid=category, tags=("category",), text=component_strings[category])
+            self.stats_treeview.insert(
+                "", tk.END, iid=category, tags=("category",),
+                text=component_strings[category] if category in component_strings else category
+            )
             # insert the headers for the subcategories
             for subcategory in weapon_statistic_categories:
                 self.stats_treeview.insert(
@@ -80,12 +83,20 @@ class ShipStatsFrame(ttk.Frame):
                 )
             for statistic, value in sorted(stats):
                 self.insert_into_treeview(category, statistic, value)
+            for subcategory in weapon_statistic_categories:
+                item = "{}_{}".format(category, subcategory)
+                amount = len(self.stats_treeview.get_children(item))
+                if amount == 0:
+                    self.stats_treeview.delete(item)
         return
 
     def insert_into_treeview(self, category, statistic, value):
         """
         Insert a statistic into the treeview. Parent categories should already be in place.
         """
+        if statistic not in statistic_strings:
+            print("Skipping insertion of {}".format(statistic))
+            return
         subcategory = statistic_strings[statistic][0]
         if category == "Ship" and subcategory not in statistic_categories:
             return
