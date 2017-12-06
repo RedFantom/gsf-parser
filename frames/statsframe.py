@@ -129,17 +129,18 @@ class StatsFrame(ttk.Frame):
         categories["shields_f"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
         categories["shields_r"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
         categories["hull"] = {"text": "Hull Health", "foreground": "brown", "font": ("default", 11)}
-        categories["systems"] = {"text": "Systems", "foreground": "#668cff", "font": ("default", 11)}
-        categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
-        categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
-        categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
+        # categories["systems"] = {"text": "Systems", "foreground": "#668cff", "font": ("default", 11)}
+        # categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
+        # categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
+        # categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
+        categories["abilities"] = {"text": "Abilities", "foreground": "#17a3ff", "font": ("default", 11)}
         categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=0, marker_outline="black",
-            marker_snap_to_ticks=False, width=350, height=200, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
+            marker_snap_to_ticks=False, width=350, height=190, background="#f5f6f7", unit="m", start=0.0, finish=3.0,
             resolution=0.005, categories=categories, zoom_factors=(0.0625, 0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0),
             zoom_default=1.0,
         )
@@ -159,9 +160,9 @@ class StatsFrame(ttk.Frame):
         text = "Each of the health categories displays the amount of health points for a certain health type."
         for category in ("shields_f", "shields_r", "hull"):
             Balloon(labels[category], text=text)
-        text = "Each of the ability categories shows when an ability was used with a darker marker, and when it was " \
-               "available to be used with a lighter marker."
-        for category in ["systems", "engines", "shields", "copilot"]:
+        text = "Purple markers indicate Engine abilities, Green markers are for Shield abilities, Pale Blue markers " \
+               "for System abilities and Bright Blue markers for CoPilot abilities."
+        for category in ["abilities"]:
             Balloon(labels[category], text=text)
         Balloon(labels["tracking"], text="The darker the marker in this category, the higher the tracking penalty was "
                                          "at that moment. Please note that the markers in this category do not "
@@ -171,6 +172,7 @@ class StatsFrame(ttk.Frame):
             Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
+        self.time_line._scrollbar_vertical.grid_forget()
 
     def setup_enemy_treeview(self):
         """

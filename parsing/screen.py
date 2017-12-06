@@ -165,7 +165,7 @@ class ScreenParser(threading.Thread):
         self._ammo_dict = {}
 
         # Listeners for keyboard and mouse input
-        self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
+        self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb, on_release=self.on_release_kb)
         self._ms_listener = pynput.mouse.Listener(on_click=self.on_click)
         self._current_match = None
         self._current_spawn = None
@@ -371,6 +371,11 @@ class ScreenParser(threading.Thread):
             key = keys[key]
         write_debug_log("A keypress was inserted in the internal_queue: %s" % str(key))
         self._internal_queue.put(("keypress", key, datetime.now()))
+
+    def on_release_kb(self, key):
+        if key in keys:
+            key = keys[key]
+        self._internal_queue.put(("keyrelease", key, datetime.now()))
 
     def on_press_ms(self, key):
         if key in keys:

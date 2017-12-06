@@ -9,8 +9,10 @@ from tools.utilities import get_temp_directory
 from parsing.parser import Parser
 from parsing.vision import get_tracking_degrees, get_distance_from_center
 from parsing import abilities
+from parsing.keys import keys
 # General imports
 from pynput.mouse import Button
+from pynput.keyboard import Key
 import pickle as pickle
 import os
 from datetime import datetime
@@ -35,6 +37,17 @@ class FileHandler(object):
         "wpower": "#ff9933",
         "epower": "#751aff",
         "power_mgmt": "darkblue",
+    }
+
+    keys = {
+        "1": "systems",
+        "2": "shields",
+        "3": "engines",
+        "4": "copilot",
+        "F1": ("power_mgmt", 1),
+        "F2": ("power_mgmt", 2),
+        "F3": ("power_mgmt", 3),
+        "F4": ("power_mgmt", 4)
     }
 
     health_colors = {
@@ -162,6 +175,7 @@ class FileHandler(object):
         results.update(FileHandler.get_health_markers(screen_dict, start_time))
         results.update(FileHandler.get_tracking_markers(screen_dict))
         results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
+        results.update(FileHandler.get_ability_markers(spawn_list, None))
         return results
 
     @staticmethod
@@ -243,7 +257,7 @@ class FileHandler(object):
                 buttons[button] = time
             else:
                 results[category].append(
-                    ((category, buttons[button], time),  {"background": FileHandler.click_colors[category]})
+                    ((category, buttons[button], time), {"background": FileHandler.click_colors[category]})
                 )
         for line in spawn:
             if not isinstance(line, dict):
@@ -258,7 +272,7 @@ class FileHandler(object):
             else:
                 continue
             start = FileHandler.datetime_to_float(line["time"])
-            args = (category, start, start + 1/60)
+            args = (category, start, start + 1 / 60)
             results[category].append((args, {"background": FileHandler.colors[category]}))
         return results
 
@@ -285,19 +299,39 @@ class FileHandler(object):
 
     @staticmethod
     def get_power_mgmt_markers(screen_dict, start_time):
-        sub_dict = screen_dict["power_mgmt"]
         categories = ["power_mgmt"]
         power_mgmt = (None, None)
         results = {key: [] for key in categories}
-        for time, value in sub_dict.items():
-            if power_mgmt[0] != value:
-                start = power_mgmt[0]
-                start = start if start is not None else start_time
-                finish = time
-                args = ("power_mgmt", FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(finish))
-                kwargs = {"background": FileHandler.power_mgmt_colors[value]}
+        sub_dict = screen_dict["keys"]
+        if len(sub_dict) != 0:
+            power_mode = 4
+            previous = start_time
+            for time, (key, pressed) in sorted(sub_dict.items()):
+                pressed = "pressed" in pressed
+                if pressed is False or key not in FileHandler.keys:
+                    continue
+                result = FileHandler.keys[key]
+                if not isinstance(result, tuple) or len(result) != 2:
+                    continue
+                category, mode = result
+                if power_mode == mode:
+                    continue
+                args = ("power_mgmt", previous, time)
+                previous = time
+                kwargs = {"background": FileHandler.power_mgmt_colors[power_mode]}
+                power_mode = mode
                 results["power_mgmt"].append((args, kwargs))
-                power_mgmt = (time, value)
+        else:
+            sub_dict = screen_dict["power_mgmt"]
+            for time, value in sorted(sub_dict.items()):
+                if power_mgmt[0] != value:
+                    start = power_mgmt[0]
+                    start = start if start is not None else start_time
+                    finish = time
+                    args = ("power_mgmt", FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(finish))
+                    kwargs = {"background": FileHandler.power_mgmt_colors[value]}
+                    results["power_mgmt"].append((args, kwargs))
+                    power_mgmt = (time, value)
         return results
 
     @staticmethod
@@ -311,17 +345,44 @@ class FileHandler(object):
             finish = start + 0.01
             args = ("tracking", start, finish)
             background = FileHandler.color_html_to_tuple(FileHandler.colors["tracking"])
-            background = FileHandler.color_darken(background, 1/degrees)
+            background = FileHandler.color_darken(background, 1 / degrees)
             background = FileHandler.color_tuple_to_html(background)
             kwargs = {"background": background}
             results["tracking"].append((args, kwargs))
         return results
 
     @staticmethod
-    def get_ability_markers(screen_dict, ship_statistics):
+    def get_ability_markers(spawn_list, ship_statistics):
+        """
+        Parse a spawn list of lines and take the Engine, Shield, Systems and CoPilot ability activations and create
+        markers for them to be put in the TimeLine.
+        """
+        # TODO: Use ship_statistics to create availability markers
         categories = ["engines", "shields", "copilot", "systems"]
+        player_id_list = Parser.get_player_id_list(spawn_list)
         results = {key: [] for key in categories}
-
+        for line in spawn_list:
+            if not isinstance(line, dict):
+                line = Parser.line_to_dictionary(line)
+            ability = line["ability"]
+            if (line["source"] != line["target"] or line["source"] not in player_id_list or
+                    "AbilityActivate" not in line["effect"]):
+                continue
+            if ability in abilities.copilots:
+                category = "copilot"
+            elif ability in abilities.shields:
+                category = "shields"
+            elif ability in abilities.systems:
+                category = "systems"
+            elif ability in abilities.engines:
+                category = "engines"
+            else:
+                continue
+            start = FileHandler.datetime_to_float(line["time"])
+            args = ("abilities", start, start + 1/60)
+            kwargs = {"background": FileHandler.colors[category]}
+            results[category].append((args, kwargs))
+        return results
 
     @staticmethod
     def datetime_to_float(date_time_obj):
@@ -330,7 +391,8 @@ class FileHandler(object):
         """
         if not isinstance(date_time_obj, datetime):
             raise TypeError("date_time_obj not of datetime type but {}".format(repr(date_time_obj)))
-        return float("{}.{}{}".format(date_time_obj.minute, (int((date_time_obj.second / 60) * 100)), date_time_obj.microsecond))
+        return float(
+            "{}.{}{}".format(date_time_obj.minute, (int((date_time_obj.second / 60) * 100)), date_time_obj.microsecond))
 
     @staticmethod
     def color_darken(rgb, factor):
