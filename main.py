@@ -4,7 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 
-from os.path import dirname, join, basename
+from os.path import dirname, join, basename, exists
 from os import rmdir
 import sys
 import shutil
@@ -18,6 +18,8 @@ def new_window():
     try:
         main_window = gui.MainWindow()
     except Exception as e:
+        if exists("development"):
+            raise
         save = messagebox.askyesno("Error", "The GSF Parser window failed to correctly initialize. Please report this "
                                             "error along with the debug output below.\n\n{}: {}\n\nWould you like to "
                                             "save the debug output to a file?".format(type(e), e))
