@@ -110,43 +110,6 @@ def get_timer_status_cv2(screen):
         pass
 
 
-def get_timer_status_ocr(screen):
-    """
-    Determines the state of the spawn countdown timer by performing
-    OCR on the characters found in a certain section of the screen, that
-    is found by performing template matching.
-    :param screen: cv2 array of the screenshot
-    :return:
-    """
-    if not isinstance(screen, Image):
-        screen_pil = numpy_to_pillow(screen)
-        screen_cv2 = screen
-    else:
-        screen_pil = screen
-        screen_cv2 = pillow_to_numpy(screen)
-    pass
-
-
-def get_enemy_brackets(screen):
-    """
-    Determines the amount and places of the red brackets of the enemies on
-    the screen using template matching, at the default size.
-    :param screen: cv2 array of screenshot
-    :return: list of (x, y) tuples
-    """
-    pass
-
-
-def get_targeting_computer_pos(screen):
-    """
-    Determines the position of the targeting computer on the screen using
-    template matching.
-    :param screen: cv2 array of screenshot
-    :return: (x, y) tuple
-    """
-    pass
-
-
 def perform_ocr(pil_screen, coordinates):
     """
     Perform OCR on a screenshot to determine the ship type of the enemy player
@@ -155,8 +118,6 @@ def perform_ocr(pil_screen, coordinates):
     :param coordinates: (x, y, x, y) box tuple
     :return: string of ship type
     """
-    if not isinstance(pil_screen, Image):
-        raise ValueError("Parameter is not Image object")
     pil_screen.crop(coordinates, Image.ANTIALIAS)
     return pytesseract.image_to_string(pil_screen)
 
@@ -175,26 +136,23 @@ def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
              3: power to engines
              4: power to all
     """
-    power_mgmt = 4
     try:
         weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
         engine_rgb = screen[shield_cds[0]][shield_cds[1]]
         shield_rgb = screen[engine_cds[0]][engine_cds[1]]
     except IndexError:
         return None
-    weapon_power = list((value > 50) for value in weapon_rgb)
-    engine_power = list((value > 50) for value in engine_rgb)
-    shield_power = list((value > 50) for value in shield_rgb)
+    weapon_power = list((value > 25) for value in weapon_rgb)
+    engine_power = list((value > 25) for value in engine_rgb)
+    shield_power = list((value > 25) for value in shield_rgb)
     if True in weapon_power:
         power_mgmt = 1
-    if True in engine_power:
-        if power_mgmt != 4:
-            pass
+    elif True in engine_power:
         power_mgmt = 3
-    if True in shield_power:
-        if power_mgmt != 4:
-            pass
+    elif True in shield_power:
         power_mgmt = 2
+    else:
+        power_mgmt = 4
     return power_mgmt
 
 
