@@ -91,6 +91,7 @@ class ScreenParser(threading.Thread):
     """
     A Thread that takes automated screenshots and analyzes them in order to get more information from GSF matches
     """
+
     def __init__(self, data_queue, exit_queue, query_queue, return_queue, character_data, rgb=False, cooldowns=None,
                  powermgmt=True, health=True, name=True, ttk=True, tracking=True, ammo=True, distance=True,
                  cursor=True, timer=True, flytext=True):
@@ -220,7 +221,7 @@ class ScreenParser(threading.Thread):
         self._ammo_dict = {}
 
         # Listeners for keyboard and mouse input
-        self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb)
+        self._kb_listener = pynput.keyboard.Listener(on_press=self.on_press_kb, on_release=self.on_release_kb)
         self._ms_listener = pynput.mouse.Listener(on_click=self.on_click)
 
         self._current_match = None
@@ -268,6 +269,9 @@ class ScreenParser(threading.Thread):
         self.flytext_parser = FlyTextParser(variables.main_window, self.flytext_line_queue)
 
         # Start the screen parsing loop
+        self._ms_listener.start()
+        self._kb_listener.start()
+
         while True:
             if self.timer_parser is not None:
                 self.timer_parser.update()
@@ -464,6 +468,9 @@ class ScreenParser(threading.Thread):
         except AttributeError:
             pass
         time.sleep(0.05)
+        print("Closing input listeners")
+        self._ms_listener.stop()
+        self._kb_listener.stop()
         print("Calling self.close()")
         self.data_dictionary[self.file] = self._file_dict
         print("Saving data dictionary")
@@ -475,6 +482,11 @@ class ScreenParser(threading.Thread):
             key = keys[key]
         write_debug_log("A keypress was inserted in the internal_queue: %s" % str(key))
         self._internal_queue.put(("keypress", key, datetime.now()))
+
+    def on_release_kb(self, key):
+        if key in keys:
+            key = keys[key]
+        self._internal_queue.put(("keyrelease", key, datetime.now()))
 
     def on_press_ms(self, key):
         if key in keys:

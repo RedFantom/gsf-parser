@@ -6,7 +6,7 @@ from datetime import datetime
 from tkinter.ttk import Frame
 from queue import Queue
 # Own modules
-from parsing.screen import ScreenParser, FileHandler
+from parsing.screen import ScreenParser
 from parsing.stalking_alt import LogStalker
 from parsing.screen import ScreenParser
 from parsing import abilities, effects, durations
@@ -294,7 +294,7 @@ class Parser(object):
         ability = line_dict['ability'].split(' {', 1)[0].strip()
         # If the ability is empty, this is a Gunship scope activation
         if ability == "":
-            raise ValueError()
+            return "other"
         # Damage events
         if "Damage" in line_dict['effect']:
             # Check for damage taken
@@ -471,7 +471,7 @@ class Parser(object):
         Get a list of player ID numbers for a certain list of lines
         """
         if not isinstance(lines[0], dict):
-            raise ValueError("Not a valid list of line dictionaries.")
+            lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
             # print("Processing line: {}".format(line.replace("\n", "")))

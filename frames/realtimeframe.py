@@ -62,26 +62,10 @@ class RealtimeFrame(ttk.Frame):
         self.character = tk.StringVar()
         self.character_dropdown = ttk.OptionMenu(self, self.character, "Select a character",
                                                  command=self.load_character)
-        self.server_dropdown = ttk.OptionMenu(self, self.server,
-                                              "Select a server",
-                                              "The Bastion",
-                                              "Begeren Colony",
-                                              "The Harbinger",
-                                              "The Shadowlands",
-                                              "Jung Ma",
-                                              "The Ebon Hawk",
-                                              "Prophecy of the Five",
-                                              "Jedi Covenant",
-                                              "T3-M4",
-                                              "Darth Nihilus",
-                                              "The Tomb of Freedon Nadd",
-                                              "Jar'kai Sword",
-                                              "The Progenitor",
-                                              "Vanjervalis Chain",
-                                              "Battle Meditation",
-                                              "Mantle of the Force",
-                                              "The Red Eclipse",
-                                              command=self.update_characters)
+        self.server_dropdown = ttk.OptionMenu(
+            self, self.server, *(("Select a server...",) + tuple(self.main_window.characters_frame.servers.values())),
+            command=self.update_characters
+        )
         self.parsing = False
         self.parse = []
         self.parsing_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")

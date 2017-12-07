@@ -147,26 +147,23 @@ def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
              3: power to engines
              4: power to all
     """
-    power_mgmt = 4
     try:
         weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
         engine_rgb = screen[shield_cds[0]][shield_cds[1]]
         shield_rgb = screen[engine_cds[0]][engine_cds[1]]
     except IndexError:
         return None
-    weapon_power = list((value > 50) for value in weapon_rgb)
-    engine_power = list((value > 50) for value in engine_rgb)
-    shield_power = list((value > 50) for value in shield_rgb)
+    weapon_power = list((value > 25) for value in weapon_rgb)
+    engine_power = list((value > 25) for value in engine_rgb)
+    shield_power = list((value > 25) for value in shield_rgb)
     if True in weapon_power:
         power_mgmt = 1
-    if True in engine_power:
-        if power_mgmt != 4:
-            pass
+    elif True in engine_power:
         power_mgmt = 3
-    if True in shield_power:
-        if power_mgmt != 4:
-            pass
+    elif True in shield_power:
         power_mgmt = 2
+    else:
+        power_mgmt = 4
     return power_mgmt
 
 

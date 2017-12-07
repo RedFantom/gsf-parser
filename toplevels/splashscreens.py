@@ -54,7 +54,9 @@ class BootSplash(tk.Toplevel):
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=462, mode="determinate")
         self.progress_bar.pack()
         screen_res = utilities.get_screen_resolution()
-        req_size = (self.winfo_reqwidth(), self.winfo_reqheight())
+        self.update()
+        req_size = (self.winfo_width(), self.winfo_height())
+        self.update()
         self.wm_geometry("+{0}+{1}".format(int((screen_res[0] - req_size[0]) / 2),
                                            int((screen_res[1] - req_size[1]) / 2)))
         self.update()

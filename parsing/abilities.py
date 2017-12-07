@@ -99,6 +99,8 @@ systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry 
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone",
            "Fortress Shield", "Feedback Shield",
            "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
+copilots = ["Lockdown", "Slicer's Loop", "Servo Jammer", "Wingman", "Lingering Effect", "Hydro Spanner", "Nullify",
+            "Concentrated Fire", "In Your Sights", "Running Interference", "Suppression", "Bypass"]
 
 """
 These lists were made with the help of Yellowbird
