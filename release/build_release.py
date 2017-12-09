@@ -96,6 +96,7 @@ if __name__ == '__main__':
     answer = input()
     if answer != "n":
         pyinstaller_args.append("--uac-admin")
+        pyinstaller_args.append("--uac-uiaccess")
     # Ask whether a Setup, ZIP, or both should be created
     # For the Setup, Inno Setup is required in PATH, or in Program Files
     printw("Would you like to create a Setup, ZIP, both or neither? (s/z/b/n) [b] ")

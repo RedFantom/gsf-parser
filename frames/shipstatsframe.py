@@ -104,8 +104,11 @@ class ShipStatsFrame(ttk.Frame):
         value_string = ShipStatsFrame.get_value_string(statistic, value)
         elements = textwrap.fill(statistic_strings[statistic][1], 25).split("\n")
         for index, element in enumerate(elements):
+            parent = "{}_{}".format(category, subcategory)
+            if parent not in self.stats_treeview.get_children(category):
+                continue
             self.stats_treeview.insert(
-                "{}_{}".format(category, subcategory), tk.END, tags=(tag,), text=element,
+                parent, tk.END, tags=(tag,), text=element,
                 values=("",) if index != 0 else (value_string,)
             )
         self.tags[subcategory] = "even" if self.tags[subcategory] == "odd" else "odd"

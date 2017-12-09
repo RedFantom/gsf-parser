@@ -114,13 +114,6 @@ class SettingsFrame(ttk.Frame):
         self.path_entry = ttk.Entry(self.entry_frame, width=80, textvariable=self.path_var)
         self.path_entry_button = ttk.Button(self.entry_frame, text="Browse", command=self.set_directory_dialog)
         self.path_entry_label = ttk.Label(self.entry_frame, text="\tCombatLogs folder: ")
-        self.privacy_label = ttk.Label(self.privacy_frame,
-                                       text="\tConnect to server for player identification: ")
-        self.privacy_var = tk.BooleanVar()
-        self.privacy_select_true = ttk.Radiobutton(self.privacy_frame, variable=self.privacy_var, value=True,
-                                                   text="Yes")
-        self.privacy_select_false = ttk.Radiobutton(self.privacy_frame, variable=self.privacy_var, value=False,
-                                                    text="No")
         # SHARING SETTINGS
         self.sharing_label = ttk.Label(self.frame.interior, text="Share settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
@@ -128,12 +121,6 @@ class SettingsFrame(ttk.Frame):
         self.server_address_entry = ttk.Entry(self.server_frame, width=35)
         self.server_colon_label = ttk.Label(self.server_frame, text=":")
         self.server_port_entry = ttk.Entry(self.server_frame, width=8)
-        self.auto_upload_label = ttk.Label(self.upload_frame, text="\tAuto-upload CombatLogs to the server:\t\t")
-        self.auto_upload_var = tk.BooleanVar()
-        self.auto_upload_false = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=False,
-                                                 text="No")
-        self.auto_upload_true = ttk.Radiobutton(self.upload_frame, variable=self.auto_upload_var, value=True,
-                                                text="Yes")
         # REAL-TIME SETTINGS
         self.realtime_settings_label = ttk.Label(self.realtime_frame, text="Real-time parsing settings",
                                                  font=("Calibri", 12))
@@ -183,21 +170,10 @@ class SettingsFrame(ttk.Frame):
         self.overlay_tx_color = tk.StringVar()
         self.overlay_tr_color = tk.StringVar()
 
-        self.overlay_bg_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_bg_color,
-                                                  *self.overlay_color_options)
         self.overlay_tx_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_tx_color,
                                                   *self.overlay_color_options)
-        self.overlay_tr_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_tr_color,
-                                                  *self.overlay_color_options)
 
-        self.overlay_bg_label = ttk.Label(self.realtime_frame, text="\tOverlay background color: ")
         self.overlay_tx_label = ttk.Label(self.realtime_frame, text="\tOverlay text color: ")
-        self.overlay_tr_label = ttk.Label(self.realtime_frame, text="\tOverlay transparent color: ")
-
-        self.overlay_font_label = ttk.Label(self.realtime_frame, text="\tOverlay font: ")
-        self.overlay_font_options = ("Default", "Calibri", "Arial", "Consolas")
-        self.overlay_font = tk.StringVar()
-        self.overlay_font_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_font, *self.overlay_font_options)
 
         self.overlay_text_size_label = ttk.Label(self.realtime_frame, text="\tOverlay text size: ")
         self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width=10)
@@ -341,10 +317,6 @@ class SettingsFrame(ttk.Frame):
         self.path_entry_button.grid(column=2, row=0, sticky="nswe", padx=3)
         self.path_entry.grid(column=1, row=0, sticky="nswe")
         self.entry_frame.grid(column=0, row=3, sticky="nsw")
-        # self.privacy_label.grid(column=0, row=0, sticky="w")
-        # self.privacy_select_true.grid(column=1, row=0, sticky="w")
-        # self.privacy_select_false.grid(column=2, row=0, sticky="w")
-        # self.privacy_frame.grid(column=0, row=4, sticky="nswe")
         # SHARING SETTINGS
         # self.sharing_label.grid(column=0, row=5, sticky="w", pady=5)
         # self.server_label.grid(column=0, row=0, sticky="w")
@@ -352,10 +324,6 @@ class SettingsFrame(ttk.Frame):
         # self.server_colon_label.grid(column=2, row=0)
         # self.server_port_entry.grid(column=3, row=0)
         # self.server_frame.grid(column=0, row=6, sticky="nswe")
-        # self.auto_upload_label.grid(column=0, row=0)
-        # self.auto_upload_true.grid(column=1, row=0)
-        # self.auto_upload_false.grid(column=2, row=0)
-        # self.upload_frame.grid(column=0, row=7, sticky="nswe")
         # REALTIME SETTINGS
         self.overlay_enable_label.grid(column=0, row=1, sticky="w")
         self.overlay_enable_radio_yes.grid(column=1, row=1, sticky="w")
@@ -378,28 +346,14 @@ class SettingsFrame(ttk.Frame):
 
         self.realtime_frame.grid(column=0, row=8, sticky="nswe")
         self.overlay_tx_label.grid(column=0, row=6, sticky="nswe")
-        self.overlay_bg_label.grid(column=0, row=7, sticky="nswe")
-        self.overlay_tr_label.grid(column=0, row=8, sticky="nswe")
         self.overlay_tx_dropdown.grid(column=1, row=6, sticky="nswe")
-        self.overlay_bg_dropdown.grid(column=1, row=7, sticky="nswe")
-        self.overlay_tr_dropdown.grid(column=1, row=8, sticky="nswe")
 
-        self.overlay_font_label.grid(column=0, row=9, sticky="nswe")
         self.overlay_text_size_label.grid(column=0, row=10, sticky="nswe")
         self.overlay_text_size_entry.grid(column=1, row=10, sticky="nswe")
-        self.overlay_font_dropdown.grid(column=1, row=9, sticky="nswe")
 
         self.overlay_when_gsf_label.grid(column=0, row=11)
         self.overlay_when_gsf_true.grid(column=1, row=11, sticky="w")
         self.overlay_when_gsf_false.grid(column=2, row=11, sticky="w")
-        # self.realtime_timeout_label.grid(column=0, row=12, sticky="w")
-        # self.realtime_timeout_entry.grid(column=1, row=12, sticky="w")
-        # self.realtime_timeout_help_button.grid(column=2, row=12, sticky="w")
-        # self.realtime_timeout_help_label.grid(column=3, row=12, sticky="w", columnspan=5,
-        #                                      padx=5)
-        # self.realtime_event_overlay_label.grid(column=0, row=13, sticky="w")
-        # self.realtime_event_overlay_true.grid(column=1, row=13, sticky="w")
-        # self.realtime_event_overlay_false.grid(column=2, row=13, sticky="w")
         # Screen parsing
         self.screenparsing_header_label.grid(column=0, row=9, sticky="w")
         self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
@@ -457,12 +411,10 @@ class SettingsFrame(ttk.Frame):
         self.date_format.set(variables.settings_obj["gui"]["date_format"])
         self.faction.set(variables.settings_obj["gui"]["faction"])
         self.path_var.set(variables.settings_obj["parsing"]["cl_path"])
-        self.privacy_var.set(variables.settings_obj["parsing"]["auto_ident"])
         self.server_address_entry.delete(0, tk.END)
         self.server_address_entry.insert(0, variables.settings_obj["sharing"]["server_address"])
         self.server_port_entry.delete(0, tk.END)
         self.server_port_entry.insert(0, variables.settings_obj["sharing"]["server_port"])
-        self.auto_upload_var.set(variables.settings_obj["sharing"]["auto_upl"])
         self.overlay_enable_radio_var.set(variables.settings_obj["realtime"]["overlay"])
         self.overlay_opacity_input.delete(0, tk.END)
         self.overlay_opacity_input.insert(0, variables.settings_obj["realtime"]["opacity"])
@@ -471,7 +423,6 @@ class SettingsFrame(ttk.Frame):
         self.overlay_bg_color.set(variables.settings_obj["realtime"]["overlay_bg_color"])
         self.overlay_tr_color.set(variables.settings_obj["realtime"]["overlay_tr_color"])
         self.overlay_tx_color.set(variables.settings_obj["realtime"]["overlay_tx_color"])
-        self.overlay_font.set(variables.settings_obj["realtime"]["overlay_tx_font"])
         self.overlay_text_size_entry.delete(0, tk.END)
         self.overlay_text_size_entry.insert(0, variables.settings_obj["realtime"]["overlay_tx_size"])
         self.overlay_when_gsf.set(variables.settings_obj["realtime"]["overlay_when_gsf"])
@@ -534,12 +485,10 @@ class SettingsFrame(ttk.Frame):
             },
             "parsing": {
                 "cl_path": self.path_var.get(),
-                "auto_ident": self.privacy_var.get()
             },
             "sharing": {
                 "server_address": self.server_address_entry.get(),
                 "server_port": int(self.server_port_entry.get()),
-                "auto_upl": self.auto_upload_var.get()
             },
             "realtime": {
                 "overlay": self.overlay_enable_radio_var.get(),
@@ -549,7 +498,6 @@ class SettingsFrame(ttk.Frame):
                 "overlay_bg_color": self.overlay_bg_color.get(),
                 "overlay_tr_color": self.overlay_tr_color.get(),
                 "overlay_tx_color": self.overlay_tx_color.get(),
-                "overlay_tx_font": self.overlay_font.get(),
                 "overlay_tx_size": int(self.overlay_text_size_entry.get()),
                 "overlay_when_gsf": self.overlay_when_gsf.get(),
                 "timeout": float(self.realtime_timeout.get()),
