@@ -5,12 +5,15 @@
 # For license see LICENSE
 import os
 import math
-import win32api
-import cv2
-from PIL import Image
-import numpy
-from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
-import pytesseract
+try:
+    import win32api
+    import cv2
+    from PIL import Image
+    import numpy
+    from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
+    import pytesseract
+except ModuleNotFoundError:
+    pass
 
 
 def get_cv2_screen(testing=False):

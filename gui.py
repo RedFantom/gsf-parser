@@ -47,7 +47,7 @@ class MainWindow(ThemedTk):
         self.finished = False
         variables.main_window = self
         self.style = ttk.Style()
-        self.set_icon()
+        # self.set_icon()
         self.set_variables()
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
