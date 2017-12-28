@@ -14,7 +14,7 @@ import cv2
 import numpy
 from sys import platform
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import mss
 
 debug = False
@@ -154,12 +154,63 @@ def get_temp_directory():
         try:
             os.makedirs(path)
         except OSError:
-            raise ValueError("The GSF Parser was unable to gain access to the required temporary folder. "
-                             "This folder is located in /var/tmp/gsfparser. Do you have the required permissions "
-                             "to access this folder?")
+            pass
         return path
     else:
         raise ValueError("Unsupported platform: %s" % sys.platform)
+
+
+def get_swtor_directory_win32():
+    import tempfile
+    path = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "SWTOR"))
+    if not os.path.exists(path):
+        messagebox.showerror("Error",
+                             "Could not determine the SWTOR temporary files directory. Is SWTOR installed?")
+        raise ValueError("SWTOR directory not found. Is SWTOR installed?")
+    return path
+
+
+def get_swtor_directory_linux():
+    import variables
+    if "temp_dir" not in variables.settings_obj["misc"] or variables.settings_obj["misc"]["temp_dir"] is None or \
+            not os.path.exists(variables.settings_obj["misc"]["temp_dir"]):
+        messagebox.showinfo(
+            "Info",
+            "It appears that you are running SWTOR on Linux. The GSF Parser will now attempt to automatically "
+            "determine the location of the SWTOR temporary files directory."
+        )
+        bottle = os.path.realpath("~/.wine")
+        if not os.path.exists(bottle):
+            messagebox.showinfo(
+                "Info",
+                "It appears that you are not using the default Wine Bottle location. Please point the GSF Parser "
+                "to the location of your Bottle for SWTOR."
+            )
+            bottle = filedialog.askdirectory(title="SWTOR Bottle")
+            if bottle is None or not os.path.exists(bottle):
+                messagebox.showerror("Error", "This is not a valid Bottle location.")
+                raise ValueError("Invalid SWTOR Bottle location")
+        swtor_path = os.path.join(bottle, "drive_c", "Program Files (x86)", "Electronic Arts", "BioWare",
+                                  "Star Wars - The Old Republic")
+        if not os.path.exists(swtor_path):
+            messagebox.showerror("Error", "Could not find SWTOR in the default installation directory.")
+            raise ValueError("SWTOR install path not found: {}".format(swtor_path))
+        import getpass
+        username = getpass.getuser()
+        user_dir = os.path.join(bottle, "drive_c", "users", username)
+        if not os.path.exists(user_dir):
+            messagebox.showerror("Error", "Could not find a Wine user directory for the current user in this folder.")
+            raise ValueError("No Wine user directory for current user found: {}".format(user_dir))
+        temp_dir = os.path.join(user_dir, "Local Settings", "Application Data", "SWTOR")
+        if not os.path.exists(temp_dir):
+            messagebox.showerror("Error", "Determined SWTOR temporary directory as {}, but the folder does not exist. "
+                                          "Is SWTOR correctly installed and run at least once?".format(temp_dir))
+            raise ValueError("Temporary SWTOR directory does not exist")
+        if temp_dir is None:
+            raise ValueError()
+        variables.settings_obj["misc"]["temp_dir"] = temp_dir
+        variables.settings_obj.write_settings({"misc": {"temp_dir": temp_dir}})
+    return variables.settings_obj["misc"]["temp_dir"]
 
 
 def get_swtor_directory():
@@ -168,17 +219,9 @@ def get_swtor_directory():
     :return: str
     """
     if sys.platform == "win32":
-        import tempfile
-        path = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "SWTOR"))
-        if not os.path.exists(path):
-            messagebox.showerror("Error",
-                                 "Could not determine the SWTOR temporary files directory. Is SWTOR installed?")
-            raise ValueError("SWTOR directory not found. Is SWTOR installed?")
-        return path
+        return get_swtor_directory_win32()
     else:
-        messagebox.showerror("Error", "The GSF Parser has not implemented the function for finding the SWTOR temporary "
-                                      "files directory path for operating systems other than Windows.")
-        raise NotImplementedError
+        return get_swtor_directory_linux()
 
 
 def get_assets_directory():

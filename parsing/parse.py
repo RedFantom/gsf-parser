@@ -12,6 +12,7 @@ import os
 from variables import settings_obj
 from parsing.parser import Parser
 
+
 def parse_file_name(string):
     try:
         return datetime.strptime(string[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
@@ -23,12 +24,16 @@ def parse_file_name(string):
 def check_gsf(file_name):
     file_name = os.path.join(settings_obj["parsing"]["cl_path"], os.path.basename(file_name))
     with open(file_name, "r") as file_obj:
-        for line in file_obj:
-            if "@" not in line:
-                file_obj.close()
-                return True
-            else:
-                continue
+        try:
+            for line in file_obj:
+                if "@" not in line:
+                    file_obj.close()
+                    return True
+                else:
+                    continue
+        except UnicodeDecodeError:
+            print(file_name)
+            return False
     return False
 
 

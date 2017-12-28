@@ -11,6 +11,7 @@ from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 import os
+import sys
 import variables
 from tools import client
 import main
@@ -20,13 +21,15 @@ from frames import shipframe, statsframe
 from frames.strategiesframe import StrategiesFrame
 from toplevels.splashscreens import BootSplash
 import pyscreenshot
-from tools.utilities import get_temp_directory
+from tools.utilities import get_temp_directory, get_assets_directory
 from datetime import datetime
 from sys import exit
 from github import Github, GithubException
 from semantic_version import Version
 from toplevels.update import UpdateWindow
 from widgets.debugwindow import DebugWindow
+from PIL import Image
+from PIL.ImageTk import PhotoImage
 
 
 # Class that contains all code to start the parser
@@ -39,6 +42,8 @@ class MainWindow(ThemedTk):
     """
 
     def __init__(self):
+        self.width = 800 if sys.platform != "linux" else 825
+        self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
         ThemedTk.__init__(self)
         self.set_attributes()
@@ -56,13 +61,12 @@ class MainWindow(ThemedTk):
         self.withdraw()
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
-        # TODO Enable connecting to the server in a later phase
         if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
         self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
-        self.notebook = ttk.Notebook(self, height=420, width=800)
+        self.notebook = ttk.Notebook(self, height=420, width=self.width)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.share_tab_frame = sharingframe.SharingFrame(self.notebook)
@@ -85,7 +89,7 @@ class MainWindow(ThemedTk):
         # Add the frames to the Notebook
         self.setup_notebook()
         # Update the files in the file_select frame
-        self.notebook.grid(column=0, row=0)
+        self.notebook.grid(column=0, row=0, padx=2, pady=2)
         self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
         # Check for updates
@@ -176,8 +180,8 @@ class MainWindow(ThemedTk):
         Return the window size, taking scaling into account
         """
         factor = self.winfo_pixels("1i") / 96.0
-        size_x = int(800 * factor)
-        size_y = int(425 * factor)
+        size_x = int(self.width * factor)
+        size_y = int(self.height * factor)
         return size_x, size_y
 
     def update_scaling(self):
@@ -217,8 +221,10 @@ class MainWindow(ThemedTk):
         """
         Changes the window's icon
         """
-        self.iconbitmap(default=os.path.dirname(os.path.realpath(__file__)) + "\\assets\\logos\\icon_" +
-                                variables.settings_obj["gui"]["logo_color"] + ".ico")
+        color = variables.settings_obj["gui"]["logo_color"].lower()
+        icon_path = os.path.join(get_assets_directory(), "logos", "icon_{}.ico".format(color))
+        icon = PhotoImage(Image.open(icon_path))
+        self.tk.call("wm", "iconphoto", self._w, icon)
 
     def exit(self):
         """

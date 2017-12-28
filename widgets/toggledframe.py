@@ -4,10 +4,9 @@
 # IS redistributed under the license found in LICENSE, so you only have to accept one License when using the
 # software.
 import tkinter.ttk as ttk
-
 import tkinter as tk
-
 from PIL import Image, ImageTk
+from tools.utilities import get_assets_directory
 import os
 
 
@@ -26,14 +25,10 @@ class ToggledFrame(ttk.Frame):
         self.show.set(0)
         self.title_frame = ttk.Frame(self)
         self.title_frame.grid(sticky="nswe")
-        closed_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__))
-                                                + "\\..\\assets\\gui\\closed.png"))
+        closed_img = Image.open(os.path.join(get_assets_directory(), "gui", "closed.png"))
         self.closed = ImageTk.PhotoImage(closed_img)
-        open_img = Image.open(os.path.abspath(os.path.dirname(os.path.realpath(__file__)) +
-                                              "\\..\\assets\\gui\\open.png"))
+        open_img = Image.open(os.path.join(get_assets_directory(), "gui", "open.png"))
         self.open = ImageTk.PhotoImage(open_img)
-        # ttk.Label(self.title_frame, text=text, font=("Calibri", 11), width=labelwidth).\
-        #     pack(side="left", fill="x", expand=1)
         self.toggle_button = ttk.Checkbutton(self.title_frame, width=labelwidth, image=self.closed,
                                              command=self.toggle, variable=self.show, style='Toolbutton',
                                              text=text, compound=tk.LEFT)

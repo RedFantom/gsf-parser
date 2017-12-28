@@ -294,7 +294,7 @@ class Parser(object):
         ability = line_dict['ability'].split(' {', 1)[0].strip()
         # If the ability is empty, this is a Gunship scope activation
         if ability == "":
-            raise ValueError()
+            return "other"
         # Damage events
         if "Damage" in line_dict['effect']:
             # Check for damage taken

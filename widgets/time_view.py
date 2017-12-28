@@ -35,7 +35,7 @@ class TimeView(ttk.Treeview):
         ttk.Treeview.__init__(self, *args, **kwargs)
         color_scheme = variables.color_scheme.current_scheme
         for category in color_scheme.keys():
-            self.tag_configure(category, foreground=color_scheme[category][0], background="gray25")
+            self.tag_configure(category, foreground=color_scheme[category][0], background="gray25", font=("default", 9))
         for column in kwargs["columns"]:
             self.heading(column, text=column.title())
         self.setup_columns()
@@ -55,7 +55,6 @@ class TimeView(ttk.Treeview):
         """
         Setup the Treeview with the correct widths and tags
         """
-        # self.enemies_treeview.column("Damage taken", width=125, anchor="e")
         self.column("#0", width=40, anchor=tk.W)
         self.column("time", width=60)
         self.column("source", width=105)

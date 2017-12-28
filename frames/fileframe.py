@@ -173,7 +173,11 @@ class FileFrame(ttk.Frame):
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
         with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as f:
-            lines = f.readlines()
+            try:
+                lines = f.readlines()
+            except UnicodeDecodeError:
+                print(file_string, file_name)
+                return
         player_list = parse.determinePlayer(lines)
         try:
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)

@@ -92,7 +92,8 @@ class Settings(object):
         "misc": {
             "version": "v3.3.4",
             "autoupdate": True,
-            "patch_level": "5.5"
+            "patch_level": "5.5",
+            "temp_dir": ""
         },
         "gui": {
             "color": "#2f77d0",
@@ -142,7 +143,7 @@ class Settings(object):
         self.conf = configparser.ConfigParser()
         self.settings = {key: self.SettingsDictionary(key) for key in self.defaults.keys()}
         self.read_settings()
-        if self["misc"]["version"] is not self.defaults["misc"]["version"]:
+        if self["misc"]["version"] != self.defaults["misc"]["version"]:
             self.write_settings({"misc": {"version": self.defaults["misc"]["version"]}})
 
     def write_defaults(self):
@@ -152,10 +153,12 @@ class Settings(object):
             conf.write(fo)
 
     def write_settings(self, dictionary):
+        dictionary = {str(section): {str(key): str(value) for key, value in dictionary[section].items()}
+                      for section in dictionary.keys()}
         conf = configparser.ConfigParser()
         for section in dictionary.keys():
             self.settings[section].update(dictionary[section])
-        self.settings["misc"].update(Settings.defaults["misc"])
+        self.settings["misc"]["version"] = self.defaults["misc"]["version"]
         conf.read_dict(self.settings)
         with open(self.file_name, "w") as fo:
             conf.write(fo)
@@ -183,6 +186,9 @@ class Settings(object):
             self.read_settings()
         return self.settings[section]
 
+    def __contains__(self, item):
+        return item in self.settings
+
     class SettingsDictionary(object):
         def __init__(self, section):
             self._section = section
@@ -191,9 +197,14 @@ class Settings(object):
             self.update = self._data.update
 
         def __getitem__(self, item):
+            if item == 0:
+                return None
             if item not in self._data:
                 self._data[item] = Settings.defaults[self._section][item]
             return self._data[item]
+
+        def __contains__(self, item):
+            return item in self._data
 
         def __setitem__(self, key, value):
             self._data[key] = value
