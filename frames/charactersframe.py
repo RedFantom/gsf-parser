@@ -10,6 +10,7 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 import pickle as pickle
 import os
+import sys
 from tools import utilities
 from widgets import VerticalScrollFrame
 from PIL import Image, ImageTk
@@ -80,7 +81,7 @@ class CharactersFrame(ttk.Frame):
         self.characters_list["show"] = ("tree", "headings")
         self.characters_list.columnconfigure(0, minsize=50)
         # Create all the widgets for the character properties
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=450, canvasheight=350)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=350)
         self.options_frame = self.scroll_frame.interior
         self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
 
@@ -94,10 +95,11 @@ class CharactersFrame(ttk.Frame):
             Image.open(os.path.join(get_assets_directory(), "icons", "imperial_s.png")))
 
         # Character option widgets
+        width = 35 if sys.platform != "linux" else 27
         self.character_name_label = ttk.Label(self.options_frame, text="Character name")
-        self.character_name_entry = ttk.Entry(self.options_frame, width=35, state="readonly")
+        self.character_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
-        self.legacy_name_entry = ttk.Entry(self.options_frame, width=35, state="readonly")
+        self.legacy_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
         self.faction = tk.StringVar()
         self.faction.set("Imperial")
         self.faction_label = ttk.Label(self.options_frame, text="Faction")

@@ -128,6 +128,8 @@ class ShipSelectFrame(ttk.Frame):
         self.character_dropdown["menu"].delete(0, tk.END)
         servers = ["Choose server"]
         for data in self.window.characters_frame.characters:
+            if data[0] not in self.window.characters_frame.servers:
+                return
             server = self.window.characters_frame.servers[data[0]]
             if server in servers:
                 continue

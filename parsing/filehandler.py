@@ -162,7 +162,10 @@ class FileHandler(object):
 
     @staticmethod
     def get_data_dictionary(name="realtime.db"):
-        with open(os.path.join(get_temp_directory(), name), "rb") as fi:
+        file_name = os.path.join(get_temp_directory(), name)
+        if not os.path.exists(file_name):
+            return {}
+        with open(file_name, "rb") as fi:
             data = pickle.load(fi)
         return data
 

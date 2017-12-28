@@ -79,17 +79,20 @@ class CrewListFrame(ttk.Frame):
             self.category_frames[crole] = ToggledFrame(self, text=crole)
             self.category_variables[crole] = tk.StringVar()
             for member_dict in category:
-                self.member_icons[member_dict["Name"]] = photo(img.open(path.join(self.icons_path,
-                                                                                  member_dict["Icon"] + ".jpg")))
-                self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(self.category_frames[crole].sub_frame,
-                                                                           text=member_dict["Name"], compound=tk.LEFT,
-                                                                           image=self.member_icons[member_dict["Name"]],
-                                                                           command=lambda i=(faction, crole,
-                                                                                             member_dict["Name"]):
-                                                                           self.set_crew_member(i),
-                                                                           width=16,
-                                                                           variable=self.category_variables[crole],
-                                                                           value=member_dict["Name"])
+                icon_name = member_dict["Icon"].lower().replace("Crew", "crew")
+                self.member_icons[member_dict["Name"]] = \
+                    photo(img.open(path.join(self.icons_path, icon_name + ".jpg")))
+                self.member_buttons[member_dict["Name"]] = \
+                    ttk.Radiobutton(self.category_frames[crole].sub_frame,
+                                    text=member_dict["Name"],
+                                    compound=tk.LEFT,
+                                    image=self.member_icons[member_dict["Name"]],
+                                    command=lambda i=(faction, crole,
+                                                      member_dict["Name"]):
+                                    self.set_crew_member(i),
+                                    width=16,
+                                    variable=self.category_variables[crole],
+                                    value=member_dict["Name"])
                 if member_dict["IsDefaultCompanion"]:
                     self.copilots[crole] = member_dict["Name"]
         self.update_copilots()
@@ -108,15 +111,18 @@ class CrewListFrame(ttk.Frame):
         self.copilot_icons.clear()
         index = 0
         for category, name in self.copilots.items():
-            self.copilot_icons[name] = photo(img.open(path.join(self.icons_path,
-                                                                self.copilot_dicts[name]["Icon"] + ".jpg")))
-            self.copilot_buttons[name] = ttk.Radiobutton(self.category_frames["CoPilot"].sub_frame,
-                                                         text=name, compound=tk.LEFT,
-                                                         image=self.member_icons[name],
-                                                         command=lambda faction=self.faction, name=name:
-                                                         self.set_crew_member((faction, "CoPilot", name)),
-                                                         width=16,
-                                                         variable=self.copilot_variable, value=name)
+            self.copilot_icons[name] = \
+                photo(img.open(path.join(self.icons_path, self.copilot_dicts[name]["Icon"].lower() + ".jpg")))
+            self.copilot_buttons[name] = \
+                ttk.Radiobutton(self.category_frames["CoPilot"].sub_frame,
+                                text=name,
+                                compound=tk.LEFT,
+                                image=self.member_icons[name],
+                                command=lambda faction=self.faction, name=name:
+                                self.set_crew_member((faction, "CoPilot", name)),
+                                width=16,
+                                variable=self.copilot_variable,
+                                value=name)
             # , value=self.copilots.index(name))
             index += 1
         self.grid_widgets()

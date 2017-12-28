@@ -12,6 +12,7 @@ import tkinter.ttk as ttk
 import tkinter.messagebox
 import tkinter.filedialog
 import re
+import sys
 import variables
 from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
@@ -30,8 +31,9 @@ class SettingsFrame(ttk.Frame):
 
     def __init__(self, root_frame, main_window):
         # LAY-OUT
+        self.main_window = main_window
         ttk.Frame.__init__(self, root_frame)
-        self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=780)
+        self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=self.main_window.width - 20)
         self.gui_frame = ttk.Frame(self.frame.interior)
         self.entry_frame = ttk.Frame(self.frame.interior)
         self.privacy_frame = ttk.Frame(self.frame.interior)
@@ -42,9 +44,7 @@ class SettingsFrame(ttk.Frame):
         self.save_frame = ttk.Frame(self.bottom_frame)
         self.license_frame = ttk.Frame(self.bottom_frame)
         self.top_frame = self.frame
-        self.main_window = main_window
         # GUI SETTINGS
-        # TODO Add more GUI settings including colors
         self.gui_label = ttk.Label(self.frame.interior, text="GUI settings", justify=tk.LEFT,
                                    font=("Calibri", 12))
         self.color_label = ttk.Label(self.gui_frame, text="\tParser text color: ")
@@ -111,7 +111,9 @@ class SettingsFrame(ttk.Frame):
         self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
                                        font=("Calibri", 12))
         self.path_var = tk.StringVar()
-        self.path_entry = ttk.Entry(self.entry_frame, width=80, textvariable=self.path_var)
+        self.path_entry = ttk.Entry(
+            self.entry_frame, textvariable=self.path_var, width=80 if sys.platform != "linux" else 50
+        )
         self.path_entry_button = ttk.Button(self.entry_frame, text="Browse", command=self.set_directory_dialog)
         self.path_entry_label = ttk.Label(self.entry_frame, text="\tCombatLogs folder: ")
         # SHARING SETTINGS
@@ -144,27 +146,18 @@ class SettingsFrame(ttk.Frame):
         self.overlay_position_label = ttk.Label(self.realtime_frame, text="\tPosition of the in-game overlay:")
         self.overlay_position_var = tk.StringVar()
         self.overlay_position_var.set(variables.settings_obj["realtime"]["pos"])
-        self.overlay_position_radio_tl = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="TL", text="Top left")
-        self.overlay_position_radio_bl = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="BL", text="Bottom left")
-        self.overlay_position_radio_tr = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="TR", text="Top right")
-        self.overlay_position_radio_br = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="BR", text="Bottom right")
-        self.overlay_position_radio_ut = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="UT", text="Under targeting computer")
-        self.overlay_position_radio_uc = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="UC", text="Under chat box")
-        self.overlay_position_radio_nq = ttk.Radiobutton(self.realtime_frame,
-                                                         variable=self.overlay_position_var,
-                                                         value="NQ", text="Left from quickbar")
+        self.overlay_position_options = {
+            "BL": "Bottom Left",
+            "TL": "Top Left",
+            "TR": "Top Right",
+            "BR": "Bottom Right",
+            "UT": "Under targeting computer",
+            "UC": "Under chat box",
+            "NQ": "Left from Quickbar"
+        }
+        self.overlay_position_dropdown = ttk.OptionMenu(
+            self.realtime_frame, self.overlay_position_var, *tuple(self.overlay_position_options.values())
+        )
         self.overlay_color_options = ("Default", "White", "Yellow", "Green", "Blue", "Red")
         self.overlay_bg_color = tk.StringVar()
         self.overlay_tx_color = tk.StringVar()
@@ -246,13 +239,13 @@ class SettingsFrame(ttk.Frame):
 
     @staticmethod
     def show_timeout_help():
-        tkinter.messagebox.showinfo("Help", "This is the setting for the sleep timeout for realtime parsing. "
-                                            "Lowering this value will allow faster detection of change, but "
-                                            "it will also require more processing power and IO usage. Increasing "
-                                            "this value will reduce processing power requirements and IO usage. "
-                                            "Please do not change this value unless you are experiencing performance "
-                                            "issues that you can relate to the usage of the GSF Parser on a low-end "
-                                            "system.")
+        tkinter.messagebox.showinfo(
+            "Help",
+            "This is the setting for the sleep timeout for realtime parsing. Lowering this value will allow faster "
+            "detection of change, but it will also require more processing power and IO usage. Increasing this value "
+            "will reduce processing power requirements and IO usage. Please do not change this value unless you are "
+            "experiencing performance issues that you can relate to the usage of the GSF Parser on a low-end system."
+        )
 
     @staticmethod
     def set_custom_event_colors():
@@ -317,13 +310,7 @@ class SettingsFrame(ttk.Frame):
         self.path_entry_button.grid(column=2, row=0, sticky="nswe", padx=3)
         self.path_entry.grid(column=1, row=0, sticky="nswe")
         self.entry_frame.grid(column=0, row=3, sticky="nsw")
-        # SHARING SETTINGS
-        # self.sharing_label.grid(column=0, row=5, sticky="w", pady=5)
-        # self.server_label.grid(column=0, row=0, sticky="w")
-        # self.server_address_entry.grid(column=1, row=0)
-        # self.server_colon_label.grid(column=2, row=0)
-        # self.server_port_entry.grid(column=3, row=0)
-        # self.server_frame.grid(column=0, row=6, sticky="nswe")
+
         # REALTIME SETTINGS
         self.overlay_enable_label.grid(column=0, row=1, sticky="w")
         self.overlay_enable_radio_yes.grid(column=1, row=1, sticky="w")
@@ -336,13 +323,7 @@ class SettingsFrame(ttk.Frame):
         self.overlay_size_radio_big.grid(column=1, row=3, sticky="nswe")
         self.overlay_size_radio_small.grid(column=2, row=3, sticky="nswe")
         self.overlay_position_label.grid(column=0, row=4, sticky="nswe")
-        self.overlay_position_radio_tl.grid(column=1, row=4, sticky="nswe")
-        self.overlay_position_radio_bl.grid(column=2, row=4, sticky="nswe")
-        self.overlay_position_radio_tr.grid(column=3, row=4, sticky="nswe")
-        self.overlay_position_radio_br.grid(column=4, row=4, sticky="nswe")
-        self.overlay_position_radio_ut.grid(column=1, row=5, sticky="nswe", columnspan=2)
-        self.overlay_position_radio_uc.grid(column=5, row=4, sticky="nsw")
-        self.overlay_position_radio_nq.grid(column=4, row=5, sticky="nsw", columnspan=2)
+        self.overlay_position_dropdown.grid(column=1, row=4, sticky="nswe")
 
         self.realtime_frame.grid(column=0, row=8, sticky="nswe")
         self.overlay_tx_label.grid(column=0, row=6, sticky="nswe")
@@ -354,6 +335,7 @@ class SettingsFrame(ttk.Frame):
         self.overlay_when_gsf_label.grid(column=0, row=11)
         self.overlay_when_gsf_true.grid(column=1, row=11, sticky="w")
         self.overlay_when_gsf_false.grid(column=2, row=11, sticky="w")
+
         # Screen parsing
         self.screenparsing_header_label.grid(column=0, row=9, sticky="w")
         self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
@@ -372,7 +354,6 @@ class SettingsFrame(ttk.Frame):
         self.default_settings_button.grid(column=2, row=1, padx=2)
         self.save_frame.grid(column=0, row=1, sticky="w")
         self.license_button.grid(column=1, row=2, sticky="w", padx=5)
-        # self.privacy_button.grid(column=2, row=2, sticky="w", padx=5)
         self.copyright_label.grid(column=0, row=2, sticky="w")
         self.update_label.grid(column=0, row=2, sticky="w")
         self.thanks_label.grid(column=0, row=3, sticky="w", columnspan=2)
@@ -419,7 +400,9 @@ class SettingsFrame(ttk.Frame):
         self.overlay_opacity_input.delete(0, tk.END)
         self.overlay_opacity_input.insert(0, variables.settings_obj["realtime"]["opacity"])
         self.overlay_size_var.set(variables.settings_obj["realtime"]["size"])
-        self.overlay_position_var.set(variables.settings_obj["realtime"]["pos"])
+        self.overlay_position_var.set(
+            self.overlay_position_options[variables.settings_obj["realtime"]["pos"]]
+        )
         self.overlay_bg_color.set(variables.settings_obj["realtime"]["overlay_bg_color"])
         self.overlay_tr_color.set(variables.settings_obj["realtime"]["overlay_tr_color"])
         self.overlay_tx_color.set(variables.settings_obj["realtime"]["overlay_tx_color"])
@@ -494,7 +477,8 @@ class SettingsFrame(ttk.Frame):
                 "overlay": self.overlay_enable_radio_var.get(),
                 "opacity": float(self.overlay_opacity_input.get()),
                 "size": self.overlay_size_var.get(),
-                "pos": self.overlay_position_var.get(),
+                "pos": {value: key for key, value in self.overlay_position_options.items()}
+                                                                                      [self.overlay_position_var.get()],
                 "overlay_bg_color": self.overlay_bg_color.get(),
                 "overlay_tr_color": self.overlay_tr_color.get(),
                 "overlay_tx_color": self.overlay_tx_color.get(),
