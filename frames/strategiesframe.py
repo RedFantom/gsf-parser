@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from ast import literal_eval
+import sys
 # Own modules
 from widgets.strategy_list import StrategiesList
 from widgets.strategy_map import Map
@@ -33,7 +34,7 @@ class StrategiesFrame(ttk.Frame):
         self.in_map = self.map
         # Create the widgets to support the description section on the right of the frame.
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
-        self.description = tk.Text(self, width=20, height=23, wrap=tk.WORD)
+        self.description = tk.Text(self, width=20 if sys.platform != "linux" else 30, height=23, wrap=tk.WORD)
         # Bind the KeyPress event to a callback. A KeyPress is fired when *any* key is pressed on the keyboard.
         self.description.bind("<KeyPress>", self.set_description_callback)
         self.description_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.description.yview)

@@ -93,7 +93,7 @@ class Settings(object):
             "version": "v3.3.4",
             "autoupdate": True,
             "patch_level": "5.5",
-            "temp_dir": None
+            "temp_dir": ""
         },
         "gui": {
             "color": "#2f77d0",
@@ -144,8 +144,7 @@ class Settings(object):
         self.settings = {key: self.SettingsDictionary(key) for key in self.defaults.keys()}
         self.read_settings()
         if self["misc"]["version"] != self.defaults["misc"]["version"]:
-            # self.write_settings({"misc": {"version": self.defaults["misc"]["version"]}})
-            pass
+            self.write_settings({"misc": {"version": self.defaults["misc"]["version"]}})
 
     def write_defaults(self):
         conf = configparser.ConfigParser()
@@ -154,10 +153,12 @@ class Settings(object):
             conf.write(fo)
 
     def write_settings(self, dictionary):
+        dictionary = {str(section): {str(key): str(value) for key, value in dictionary[section].items()}
+                      for section in dictionary.keys()}
         conf = configparser.ConfigParser()
         for section in dictionary.keys():
             self.settings[section].update(dictionary[section])
-        self.settings["misc"].update(Settings.defaults["misc"])
+        self.settings["misc"]["version"] = self.defaults["misc"]["version"]
         conf.read_dict(self.settings)
         with open(self.file_name, "w") as fo:
             conf.write(fo)

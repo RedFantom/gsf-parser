@@ -172,7 +172,8 @@ def get_swtor_directory_win32():
 
 def get_swtor_directory_linux():
     import variables
-    if "temp_dir" not in variables.settings_obj["misc"] or variables.settings_obj["misc"]["temp_dir"] is None:
+    if "temp_dir" not in variables.settings_obj["misc"] or variables.settings_obj["misc"]["temp_dir"] is None or \
+            not os.path.exists(variables.settings_obj["misc"]["temp_dir"]):
         messagebox.showinfo(
             "Info",
             "It appears that you are running SWTOR on Linux. The GSF Parser will now attempt to automatically "
@@ -205,6 +206,8 @@ def get_swtor_directory_linux():
             messagebox.showerror("Error", "Determined SWTOR temporary directory as {}, but the folder does not exist. "
                                           "Is SWTOR correctly installed and run at least once?".format(temp_dir))
             raise ValueError("Temporary SWTOR directory does not exist")
+        if temp_dir is None:
+            raise ValueError()
         variables.settings_obj["misc"]["temp_dir"] = temp_dir
         variables.settings_obj.write_settings({"misc": {"temp_dir": temp_dir}})
     return variables.settings_obj["misc"]["temp_dir"]

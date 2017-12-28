@@ -5,15 +5,11 @@
 # For license see LICENSE
 import os
 import math
-try:
-    import win32api
-    import cv2
-    from PIL import Image
-    import numpy
-    from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
-    import pytesseract
-except ModuleNotFoundError:
-    pass
+import cv2
+from PIL import Image
+import numpy
+from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
+import pytesseract
 
 
 def get_cv2_screen(testing=False):
@@ -281,25 +277,3 @@ def get_ship_health_shields(screen, cds):
     b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
     write_debug_log(("[DEBUG] Shield health determined: " + str(f) + "  " + str(b)))
     return f, b
-
-
-def get_leftbutton_pressed():
-    """
-    Wrapper around win32api.GetKeyState for left button state
-    :return: boolean, True when pressed
-    """
-    if win32api.GetKeyState(0x01) >= 0:
-        return True
-    else:
-        return False
-
-
-def get_rightbutton_pressed():
-    """
-    Wrapper around win32api.GetKeyState for right button state
-    :return: boolean, True when pressed
-    """
-    if win32api.GetKeyState(0x02) >= 0:
-        return True
-    else:
-        return False
