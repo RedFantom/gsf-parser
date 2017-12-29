@@ -18,7 +18,7 @@ class HitChanceOverlay(tk.Toplevel):
         self.label = ttk.Label(self, foreground=variables.settings_obj["realtime"]["overlay_tx_color"],
                                background=variables.settings_obj["realtime"]["overlay_bg_color"], font=("Calibri", 16))
         self.configure(background=variables.settings_obj["realtime"]["overlay_bg_color"])
-        self.wm_attributes("-transparentcolor", variables.settings_obj["realtime"]["overlay_tr_color"])
+        # self.wm_attributes("-transparentcolor", variables.settings_obj["realtime"]["overlay_tr_color"])
         self.overrideredirect(True)
         self.attributes("-topmost", True)
         self.attributes("-alpha", variables.settings_obj["realtime"]["opacity"])

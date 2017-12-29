@@ -8,7 +8,7 @@
 import unittest
 import time
 from parsing import stalking_alt as stalking
-from parsing import realtime
+from parsing import realtime_alt
 import os
 from tools import utilities
 
@@ -19,10 +19,10 @@ class TestRealtimeParsing(unittest.TestCase):
             self.lines = log.readlines()
         self.stalking_lines = []
         self.stalker = stalking.LogStalker(callback=self.line_callback, newfilecallback=self.new_file_callback)
-        self.rlt = realtime.Parser(spawn_callback=self.spawn_callback,
-                                   match_callback=self.match_callback,
-                                   new_match_callback=self.new_match_callback,
-                                   insert=self.insert)
+        self.rlt = realtime_alt.Parser(spawn_callback=self.spawn_callback,
+                                       match_callback=self.match_callback,
+                                       new_match_callback=self.new_match_callback,
+                                       insert=self.insert)
         self.stalker.start()
 
     def tearDown(self):

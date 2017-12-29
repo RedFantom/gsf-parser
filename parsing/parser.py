@@ -6,9 +6,6 @@ from datetime import datetime
 from tkinter.ttk import Frame
 from queue import Queue
 # Own modules
-from parsing.screen import ScreenParser
-from parsing.stalking_alt import LogStalker
-from parsing.screen import ScreenParser
 from parsing import abilities, effects, durations
 # Variables
 import variables
@@ -18,7 +15,7 @@ class Parser(object):
     """
     A Parsing engine that can sequentially parse CombatLog lines and supports staticmethods for parsing individual
     spawns and matches to keep some backwards compatibility with the functions found in parse.py. Replaces the Parsing
-    engine found in realtime.py.
+    engine found in realtime_alt.py.
 
     Capabilities:
     - Determine player name and IDs
@@ -37,8 +34,7 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
-    def __init__(self, file_name, events_view=None, line_queue=None, character_data=None, real_time=False,
-                 screen_parsing=False):
+    def __init__(self, file_name, events_view=None, line_queue=None, character_data=None):
         """
         :param events_view: An EventsView widget with .timeline and .eventslist attributes
         :param line_queue: Queue object (or object with .put()) to pass lines parsed to
@@ -53,17 +49,10 @@ class Parser(object):
             raise ValueError("line_queue argument is not a Queue")
         if not isinstance(character_data, dict):
             raise ValueError("character_data argument is not a dict")
-        # Attributes required for ScreenParser
-        self.sp_data_queue = None if not screen_parsing else Queue()
-        self.sp_exit_queue = None if not screen_parsing else Queue()
-        self.sp_query_queue = None if not screen_parsing else Queue()
-        self.sp_return_queue = None if not screen_parsing else Queue()
         # Create attributes
         self.events_view = events_view
         self.line_queue = line_queue
         self.character_data = character_data
-        self.log_stalker = Parser.setup_log_stalker() if real_time is True else None
-        self.screen_parser = self.setup_screen_parser() if screen_parsing is True else None
 
         # Settings for this object
         self.file_name = file_name
@@ -76,26 +65,6 @@ class Parser(object):
         Split the file into matches and spawns
         """
         pass
-
-    def process_line(self, line):
-        pass
-
-    def setup_screen_parser(self):
-        """
-        Sets up a ScreenParser object with the correct arguments and keyword arguments
-        """
-        args = (self.sp_data_queue, self.sp_exit_queue, self.sp_query_queue, self.sp_return_queue)
-        kwargs = Parser.get_screen_parser_kwargs()
-        self.screen_parser = ScreenParser(*args, **kwargs)
-        return self.screen_parser
-
-    @staticmethod
-    def setup_log_stalker():
-        """
-        Sets up a LogStalker
-        """
-        log_stalker = LogStalker()
-        return log_stalker
 
     @staticmethod
     def get_screen_parser_kwargs():

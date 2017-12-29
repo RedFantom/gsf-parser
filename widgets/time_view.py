@@ -32,6 +32,7 @@ class TimeView(ttk.Treeview):
             "columns": ("time", "source", "target", "ability", "amount"),
             "show": ("headings", "tree")
         })
+        self._width = kwargs.pop("width", 1.0)
         ttk.Treeview.__init__(self, *args, **kwargs)
         color_scheme = variables.color_scheme.current_scheme
         for category in color_scheme.keys():
@@ -55,12 +56,12 @@ class TimeView(ttk.Treeview):
         """
         Setup the Treeview with the correct widths and tags
         """
-        self.column("#0", width=40, anchor=tk.W)
-        self.column("time", width=60)
-        self.column("source", width=105)
-        self.column("target", width=105)
-        self.column("ability", width=155)
-        self.column("amount", width=50)
+        self.column("#0", width=int(40 * self._width), anchor=tk.W)
+        self.column("time", width=int(60 * self._width))
+        self.column("source", width=int(105 * self._width))
+        self.column("target", width=int(105 * self._width))
+        self.column("ability", width=int(155 * self._width))
+        self.column("amount", width=int(50 * self._width))
 
     def insert_event(self, line_dict, player_name, active_ids, start_time):
         """
@@ -161,3 +162,6 @@ class TimeView(ttk.Treeview):
         """
         ttk.Treeview.delete(self, *items)
         self.index = 0
+
+    def delete_all(self):
+        self.delete(*self.get_children())

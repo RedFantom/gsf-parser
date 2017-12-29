@@ -8,7 +8,6 @@
 import tkinter.messagebox
 from tkinter import StringVar
 import os
-import sys
 # Own modules
 from tools import utilities
 from widgets.overlay import Overlay
@@ -21,19 +20,6 @@ class RealtimeOverlay(object):
     """
 
     def __init__(self, window):
-        if sys.platform == "win32":
-            try:
-                with open(os.path.join(utilities.get_swtor_directory(), "swtor", "settings", "client_settings.ini"),
-                          "r") as swtor:
-                    if "D3DFullScreen = true" in swtor:
-                        tkinter.messagebox.showerror("Error",
-                                                     "The overlay cannot be shown with the current SWTOR settings. "
-                                                     "Please set SWTOR to Fullscreen (windowed) in the Graphics "
-                                                     "settings.")
-            except IOError:
-                tkinter.messagebox.showerror("Error",
-                                             "The settings file for SWTOR cannot be found. Is SWTOR correctly "
-                                             "installed?")
         size = variables.settings_obj["realtime"]["size"]
         self.unformatted_string = ("{dd:<20}{}\n{dt:<20}{}\n{hr:<20}{}\n{sd:<20}{}\n{en:<20}{}\n{sp:<20}{}".
                                    format(*(("{:>6}",) * 6), dd="Damage dealt:", dt="Damage taken:",

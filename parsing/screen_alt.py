@@ -191,8 +191,6 @@ class ScreenParser(threading.Thread):
         player_buff_cds = self.interface.get_ship_buffs_coordinates()
         target_buff_cds = self.interface.get_target_buffs_coordinates()
         score_cds = self.interface.get_score_coordinates()
-        spawn_timer_cds = self.interface.get_spawn_timer_coordinates()
-        match_timer_cds = self.interface.get_match_timer_coordinates()
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
 

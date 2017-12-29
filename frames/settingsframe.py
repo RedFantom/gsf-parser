@@ -16,7 +16,6 @@ import sys
 import variables
 from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
-from toplevels.privacy import Privacy
 from collections import OrderedDict
 
 
@@ -223,8 +222,6 @@ class SettingsFrame(ttk.Frame):
         self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
         self.default_settings_button = ttk.Button(self.save_frame, text="Defaults", command=self.default_settings)
         self.license_button = ttk.Button(self.license_frame, text="License", command=self.show_license)
-        self.privacy_button = ttk.Button(self.license_frame, text="Privacy statement for server",
-                                         command=self.show_privacy)
         self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
         self.update_label_var = tk.StringVar()
         self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
@@ -525,15 +522,3 @@ class SettingsFrame(ttk.Frame):
         tkinter.messagebox.showinfo("License",
                                     "This program is licensed under the General Public License Version 3, by GNU. See "
                                     "LICENSE in the installation directory for more details")
-
-    def show_privacy(self):
-        """
-        A function that is not actually working yet, as the GSF-Server is
-        not yet available, but this will show the privacy statement of the
-        selected GSF-Server in a Toplevel
-        :return: None
-        """
-        if not variables.client_obj.INIT:
-            tkinter.messagebox.showerror("Error", "The connection to the server was not initialized correctly.")
-            return
-        Privacy(self.main_window)
