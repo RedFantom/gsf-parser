@@ -208,6 +208,9 @@ class CharactersFrame(ttk.Frame):
         Update the Treeview self.characters_list with all the characters found in the character database
         :return:
         """
+        if not isinstance(self.characters, CharacterDatabase):
+            raise TypeError("Invalid character database type")
+
         self.characters_list.delete(*self.characters_list.get_children())
 
         for character, data in sorted(self.characters.items()):

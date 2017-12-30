@@ -9,7 +9,7 @@ from tkinter import messagebox
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread
-from tools.utilities import get_temp_directory
+from tools.utilities import get_temp_directory, get_screen_resolution
 # File parsing
 import os
 import _pickle as pickle  # known as cPickle
@@ -17,6 +17,8 @@ import _pickle as pickle  # known as cPickle
 import mss
 import pynput
 from PIL import Image
+from datetime import datetime
+from parsing.guiparsing import GSFInterface
 
 
 class RealTimeParser(Thread):
@@ -25,10 +27,22 @@ class RealTimeParser(Thread):
     and save it to a data dictionary, in realtime.db.
     """
 
-    def __init__(self, character_data, exit_queue, spawn_callback=None, match_callback=None, file_callback=None,
-                 event_callback=None, screen_parsing_enabled=False, screen_parsing_features=None, data_queue=None,
-                 return_queue=None):
+    def __init__(
+            self,
+            character_db,
+            character_data,
+            exit_queue,
+            spawn_callback=None,
+            match_callback=None,
+            file_callback=None,
+            event_callback=None,
+            screen_parsing_enabled=False,
+            screen_parsing_features=None,
+            data_queue=None,
+            return_queue=None
+    ):
         """
+        :param character_db: Character database
         :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
         :param match_callback: Callback called with match_timing when a new match has been detected
         :param file_callback: Callback called with file_timing when a new file has been detected
@@ -59,6 +73,7 @@ class RealTimeParser(Thread):
         self._exit_queue = exit_queue
         # Data
         self._character_data = character_data
+        self._character_db = character_db
         self._realtime_db = {}
 
         """
@@ -72,6 +87,7 @@ class RealTimeParser(Thread):
         self.hold, self.hold_list = 0, []
         self.player_name = ""
         self.is_match = False
+        self.start = None
 
         """
         Screen parsing
@@ -81,6 +97,9 @@ class RealTimeParser(Thread):
         self._ms_listener = None
         self.setup_screen_parsing()
         self.ship = None
+        resolution = get_screen_resolution()
+        self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
+        self._interface = None
 
         """
         Data processing
@@ -97,6 +116,8 @@ class RealTimeParser(Thread):
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
+        file_name = self._character_db[self._character_data]["GUI"]
+        self._interface = GSFInterface(file_name)
 
     def start_listeners(self):
         """
@@ -141,19 +162,26 @@ class RealTimeParser(Thread):
         """
         Perform all the actions required for a single loop cycle
         """
+        # now = datetime.now()
         # File parsing
         lines = self._stalker.get_new_lines()
         for line in lines:
             self.process_line(line)
+        if not self.is_match:
+            return
         # Screen parsing
-        screenshot = self._mss.grab(1)
+        screenshot = self._mss.grab(self._monitor)
         image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
         self.process_screenshot(image)
+        # Performance measurements
+        # diff = datetime.now() - now
+        # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
 
     def process_line(self, line):
         """
         Parse a single line dictionary and update the data attributes of the instance accordingly
         """
+        print("[RealTimeParser] Parsing line: {}".format(line["line"].strip()))
         # Skip any and all SetLevel or Infection events
         ignorable = ("SetLevel", "Infection")
         if any(to_ignore in line["ability"] for to_ignore in ignorable):
@@ -161,14 +189,20 @@ class RealTimeParser(Thread):
         # Handle logins
         if line["source"] == line["destination"] and "@" in line["source"]:
             self.player_name = line["source"][1:]  # Do not store @
-            if self.player_name != self._character_data[2]:
+            print("[RealTimeParser] Login: {}".format(self.player_name))
+            if self.player_name != self._character_data[1]:
                 messagebox.showerror(
                     "Error",
                     "Another character name than the one provided was detected. The GSF Parser cannot continue."
                 )
-                raise ValueError("Invalid character name in CombatLog")
+                raise ValueError(
+                    "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
+                        self._character_data[1], self.player_name
+                    ))
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
+            print("[RealTimeParser] Match end.")
+            self.start = None
             # No longer a match
             self.is_match = False
             return
@@ -178,18 +212,22 @@ class RealTimeParser(Thread):
             if "@" in line["source"] or "@" in line["destination"]:
                 return
             else:  # Valid match event
+                print("[RealTimeParser] Match start.")
+                self.start = line["time"]
                 self.is_match = True
                 # Call the new match callback
                 if callable(self.match_callback):
                     self.match_callback()
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
+            print("[RealTimeParser] Player ID change: {}".format(self.active_id))
             self.active_id = ""
             # Call the spawn callback
             if callable(self.spawn_callback):
                 self.spawn_callback()
         # Update player ID if possible and required
         if self.active_id == "" and line["source"] == line["destination"]:
+            print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
             # Parse the lines that are on hold
@@ -203,13 +241,16 @@ class RealTimeParser(Thread):
 
         # If no active ID is set, then this line must be put on hold
         if self.active_id == "":
+            print("[RealTimeParser] Holding line.")
             self.hold_list.append(line)
             self.hold += 1
             return
 
         # Parse the line
-        if line["amount"] != "":
-            line["amount"] = int(line["amount"].replace("*", ""))
+        print("[RealTimeParser] Parsing GSF event.")
+        if line["amount"] == "":
+            line["amount"] = "0"
+        line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
             self._healing += line["amount"]
         elif "Damage" in line["effect"]:
@@ -224,6 +265,8 @@ class RealTimeParser(Thread):
             self.abilities[line["ability"]] += 1
         else:  # line["ability"] not in self.abilities:
             self.abilities[line["ability"]] = 1
+
+        self.event_callback(line, self.player_name, self.active_ids, self.start)
 
     def process_screenshot(self, screenshot):
         pass
@@ -241,7 +284,13 @@ class RealTimeParser(Thread):
             except Exception as e:
                 # Errors are not often handled well in Threads
                 print("RealTimeParser encountered an error: ", e)
-                break
+                messagebox.showerror(
+                    "Error",
+                    "The real-time parsing back-end encountered an error while performing operations. Please report "
+                    "this to the developer with the debug message below and, if possible, the full strack-trace. "
+                    "\n\n{}".format(e)
+                )
+                raise
         # Perform closing actions
         self.stop_listeners()
 
@@ -264,6 +313,7 @@ class RealTimeParser(Thread):
     """
     General functions
     """
+
     def __enter__(self):
         return self
 

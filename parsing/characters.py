@@ -16,8 +16,6 @@ class CharacterDatabase(dict):
     as updating the ships database requires the clearing of all data in the characters database.
     """
 
-    # TODO: Non-destructive update process
-
     def __init__(self):
         dict.__init__(self)
         self.version = settings_obj["misc"]["patch_level"]

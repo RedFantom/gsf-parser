@@ -95,23 +95,32 @@ class Parser(object):
         """
         if isinstance(line, dict):
             return line
-        line_pattern = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-        pattern = re.compile(line_pattern)
-        group = pattern.match(line) if isinstance(line, str) else pattern.match(line.decode('cp1252'))
-        if not hasattr(group, "groups"):
-            return None
-        group_tuple = group.groups()
-        colnames = ('time', 'source', 'target', 'ability', 'effect', 'amount')
-        log = dict(list(zip(colnames, group_tuple)))
-        if not log['amount'] == '':
-            log['amount'] = log['amount'].split(None, 1)[0]
-        log["time"] = datetime.strptime(log["time"], "%H:%M:%S.%f")
-        log["target"] = log["target"] if log["target"].strip() != "" else "System"
-        log["destination"] = log["target"]
-        log["ability"] = log["ability"].split("{", 1)[0].strip()
-        log["line"] = line
+
+        # Split the line into elements
+        def remove_brackets(elem):
+            return elem.replace("[", "").replace("]", "").replace("(", "").replace(")", "").strip()
+        elements = [remove_brackets(elem) for elem in line.split("]")]
+        """
+        Valid GSF CombatLog event:
+        [time] [source] [target] [ability] [effect] (amount)
+        """
+        if len(elements) != 6:
+            raise ValueError("Invalid SWTOR event: {}".format(line))
+        log = {
+            "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
+            "source": elements[1],
+            "target": elements[2], "destination": elements[2],
+            "ability": elements[3].split("{", 1)[0].strip(),
+            "effect": elements[4],
+            "amount": elements[5],
+            "line": line
+        }
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
+        if log["ability"].strip() == "":
+            log["ability"] = "Scope Mode"
+        if log["amount"].strip() != "":
+            log["amount"] = log["amount"].split(" ")[0]
         return log
 
     @staticmethod

@@ -14,7 +14,7 @@ class LogStalker(object):
     file and return the lines that are newly found in the most recent CombatLog. Not interchangeable with earlier
     implementations.
     """
-    def __init__(self, folder=variables.settings_obj["parsing", "cl_path"], watching_callback=None):
+    def __init__(self, folder=variables.settings_obj["parsing"]["cl_path"], watching_callback=None):
         """
         :param folder: Folder to watch CombatLogs in
         :param watching_callback: Callback to be called when the watched file changes
@@ -33,10 +33,12 @@ class LogStalker(object):
         if len(files) == 0:
             raise ValueError("No files found in this folder.")
         recent = sorted(files, key=Parser.parse_filename)[-1]
-        if recent == self._file:
+        if self._file is not None and recent == os.path.basename(self._file):
             return
         self._file = os.path.join(self._folder, recent)
+        print("[LogStalker] Watching new file: {}".format(self._file))
         self._read_so_far = 0
+        self._watching_callback(os.path.basename(self._file))
 
     def get_new_lines(self):
         """
@@ -47,4 +49,6 @@ class LogStalker(object):
             lines = fi.readlines()[self._read_so_far:]
         self._read_so_far += len(lines)
         dictionaries = [Parser.line_to_dictionary(line) for line in lines]
+        if None in dictionaries:
+            raise ValueError()
         return dictionaries

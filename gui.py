@@ -277,7 +277,7 @@ class MainWindow(ThemedTk):
             pass
 
     def destroy(self):
-        if self.strategies_frame.settings:
+        if self.strategies_frame.settings is not None:
             if self.strategies_frame.settings.server:
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
                 return False
@@ -285,5 +285,8 @@ class MainWindow(ThemedTk):
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while connected to a Strategy Server.")
                 return False
             self.strategies_frame.settings.destroy()
+        if self.realtime_frame.parser is not None:
+            if self.realtime_frame.parser.is_alive():
+                self.realtime_frame.stop_parsing()
         ThemedTk.destroy(self)
         return True
