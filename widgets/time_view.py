@@ -34,7 +34,7 @@ class TimeView(ttk.Treeview):
         })
         self._width = kwargs.pop("width", 1.0)
         ttk.Treeview.__init__(self, *args, **kwargs)
-        color_scheme = variables.color_scheme.current_scheme
+        color_scheme = variables.colors.current_scheme
         for category in color_scheme.keys():
             self.tag_configure(category, foreground=color_scheme[category][0], background="gray25", font=("default", 9))
         for column in kwargs["columns"]:

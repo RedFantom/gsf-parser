@@ -32,7 +32,7 @@ class SettingsImporter(tk.Toplevel):
     def export_settings_file():
         file_name = filedialog.asksaveasfilename(filetypes=[("Settings file", ".ini")])
         with open(file_name, "w") as file_obj:
-            variables.settings_obj.conf.write(file_obj)
+            variables.settings.conf.write(file_obj)
 
     @staticmethod
     def import_settings_file():
@@ -209,7 +209,7 @@ class SettingsImporter(tk.Toplevel):
             screenparsing_features = config.get("realtime", "screenparsing_features")
         except configparser.NoOptionError:
             screenparsing_features = settings.Defaults.screenparsing_features
-        variables.settings_obj.write_settings({
+        variables.settings.write_settings({
             "misc": {
                 "version": version,
                 "autoupdate": autoupdate

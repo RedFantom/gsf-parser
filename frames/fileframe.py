@@ -111,16 +111,16 @@ class FileFrame(ttk.Frame):
         self.main_window.ship_frame.ship_label_var.set("")
         try:
             old_cwd = os.getcwd()
-            os.chdir(variables.settings_obj["parsing"]["path"])
+            os.chdir(variables.settings["parsing"]["path"])
             os.chdir(old_cwd)
         except OSError:
             tkinter.messagebox.showerror("Error",
                                          "The CombatLogs folder found in the settings file is not valid. Please "
                                          "choose another folder.")
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings_obj.write_settings({'parsing': {'path': folder}})
-            variables.settings_obj.read_settings()
-        combatlogs_folder = variables.settings_obj["parsing"]["path"]
+            variables.settings.write_settings({'parsing': {'path': folder}})
+            variables.settings.read_settings()
+        combatlogs_folder = variables.settings["parsing"]["path"]
         file_list = os.listdir(combatlogs_folder)
         if not self.ascending:
             file_list = list(reversed(file_list))
@@ -144,7 +144,7 @@ class FileFrame(ttk.Frame):
             if parse.check_gsf(file):
                 try:
                     file_time = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
-                    file_string = file_time.strftime("%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"]
+                    file_string = file_time.strftime("%Y-%m-%d   %H:%M" if variables.settings["gui"]["date_format"]
                                                      == "ymd" else "%Y-%d-%m   %H:%M")
                 except ValueError:
                     file_string = file
@@ -172,7 +172,7 @@ class FileFrame(ttk.Frame):
         else:
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name), "r") as f:
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
             try:
                 lines = f.readlines()
             except UnicodeDecodeError:
@@ -213,7 +213,7 @@ class FileFrame(ttk.Frame):
             self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
         ships_string = "Ships used:\t\tCount:\n"
         for ship in abilities.ships_strings:
-            if variables.settings_obj["gui"]["faction"] == "republic":
+            if variables.settings["gui"]["faction"] == "republic":
                 name = abilities.rep_strings[ship]
             else:
                 name = ship
@@ -251,7 +251,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         ships_string = "Possible ships used:\n"
         for ship in ships_list:
-            faction = variables.settings_obj["gui"]["faction"]
+            faction = variables.settings["gui"]["faction"]
             ship_name = ship if faction == "imperial" else abilities.rep_ships[ship]
             ships_string += ship_name + "\n"
         ships_string += "\t\t\t\t\t\t\nWith the components:\n"
@@ -305,7 +305,7 @@ class FileFrame(ttk.Frame):
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name), "r") as f:
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, _, _ = parse.splitter(lines, player_list)
@@ -334,7 +334,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index = elements[0], int(elements[1])
-        with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name), "r") as f:
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, _ = parse.splitter(lines, player_list)
@@ -353,7 +353,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
-        with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name), "r") as f:
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
@@ -415,7 +415,7 @@ class FileFrame(ttk.Frame):
         if len(elements) is not 3:
             tkinter.messagebox.showinfo("Requirement", "Please select a spawn to view the events of.")
             return
-        with open(os.path.join(variables.settings_obj["parsing"]["path"], elements[0])) as f:
+        with open(os.path.join(variables.settings["parsing"]["path"], elements[0])) as f:
             lines = f.readlines()
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)

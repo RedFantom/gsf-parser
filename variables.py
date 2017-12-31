@@ -19,10 +19,10 @@
 # spawn_timings is a matrix of datetimes
 import os
 import queue
-from tools import settings
+from tools.settings import Settings, ColorSchemes
 
-settings_obj = settings.Settings()
-color_scheme = settings.ColorSchemes()
+settings = Settings()
+colors = ColorSchemes()
 
 realtime_flag = False
 
@@ -63,7 +63,7 @@ client_obj = None
 main_window = None
 path = None
 install_path = os.path.dirname(__file__)
-path = settings_obj["parsing"]["path"]
+path = settings["parsing"]["path"]
 
 match_timing = None
 match_timing_end = None

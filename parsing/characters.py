@@ -5,7 +5,7 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-from variables import settings_obj
+from variables import settings
 from .ships import Ship
 from . import abilities
 
@@ -18,7 +18,7 @@ class CharacterDatabase(dict):
 
     def __init__(self):
         dict.__init__(self)
-        self.version = settings_obj["misc"]["patch_level"]
+        self.version = settings["misc"]["patch_level"]
         self[("TRE", "Example")] = {"Server": "DM",
                                     "Faction": "Imperial",
                                     "Name": "Example",

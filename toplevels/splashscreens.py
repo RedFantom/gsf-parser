@@ -9,6 +9,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox
 import tkinter.filedialog
+# Others
 import os
 from PIL import Image, ImageTk
 # Own modules
@@ -43,7 +44,7 @@ class BootSplash(tk.Toplevel):
         self.title("GSF Parser: Starting...")
         self.logo = ImageTk.PhotoImage(
             Image.open(os.path.join(utilities.get_assets_directory(),
-                                    "logos", "logo_" + variables.settings_obj["gui"]["logo_color"].lower() + ".png")))
+                                    "logos", "logo_" + variables.settings["gui"]["logo_color"].lower() + ".png")))
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         self.window = window
@@ -66,9 +67,9 @@ class BootSplash(tk.Toplevel):
             tkinter.messagebox.showerror(
                 "Error", "The CombatLogs folder found in the settings file is not valid. Please choose another folder.")
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings_obj.write_settings({'parsing': {'path' : folder}})
-            variables.settings_obj.read_settings()
-            os.chdir(variables.settings_obj["parsing"]["path"])
+            variables.settings.write_settings({'parsing': {'path' : folder}})
+            variables.settings.read_settings()
+            os.chdir(variables.settings["parsing"]["path"])
             directory = os.listdir(os.getcwd())
         files = []
         for file in directory:
@@ -76,21 +77,14 @@ class BootSplash(tk.Toplevel):
                 files.append(file)
         variables.files_done = 0
         self.amount_files = len(files)
-        """
-        if self.amount_files >= 50:
-            tkMessageBox.showinfo("Notice", "You currently have more than 50 CombatLogs in your CombadwLogs folder. "+\
-            "You may want to archive some of your %s CombatLogs in order to speed up the parsing program and the "+\
-            "startup times." % self.amount_files)
-        """
         self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()
         self.done = False
 
     def update_progress(self):
-        if variables.files_done != self.amount_files:
-            self.label_var.set("Parsing the files...")
-            self.progress_bar["value"] = variables.files_done
-            self.update()
-        else:
+        if variables.files_done == self.amount_files:
             return
+        self.label_var.set("Parsing the files...")
+        self.progress_bar["value"] = variables.files_done
+        self.update()

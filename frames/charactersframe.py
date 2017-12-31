@@ -373,7 +373,7 @@ class CharactersFrame(ttk.Frame):
         except (OSError, EOFError):
             self.new_database()
         if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != variables.settings_obj["misc"]["patch_level"]:
+                self.characters.version != variables.settings["misc"]["patch_level"]:
             mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
                                       "Parser database has been updated, and your character database must be updated "
                                       "as well to match the data. Currently, this process is destructive, and "

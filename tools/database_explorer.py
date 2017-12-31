@@ -33,7 +33,7 @@ class DatabaseExplorer(tk.Toplevel):
     def update_tree(self, *args):
         self.tree.delete(*self.tree.get_children(""))
         self.data = FileHandler.get_data_dictionary()
-        for file, data_file in self.data.items():
+        for file, data_file in sorted(self.data.items()):
             if file == "" or file is None:
                 continue
             self.tree.insert("", tk.END, iid=file, text=file)

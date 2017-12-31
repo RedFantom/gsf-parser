@@ -274,7 +274,7 @@ class SettingsFrame(ttk.Frame):
 
     def update_settings(self):
         """
-        Read the settings from the settigns_obj in the variables
+        Read the settings from the settings_obj in the variables
         module and update the settings shown in the GUI accordingly.
         """
         pass
@@ -288,7 +288,7 @@ class SettingsFrame(ttk.Frame):
         print("[MainWindow] Saving settings")
         dictionary = {
             "misc": {
-                "version": variables.settings_obj["misc"]["version"],
+                "version": variables.settings["misc"]["version"],
                 "autoupdate": self.gui_check_updates.get()
             },
             "gui": {
@@ -309,10 +309,10 @@ class SettingsFrame(ttk.Frame):
                 "screenparsing_features": [key for key, value in self.screen_variables.items() if value.get() is True],
             }
         }
-        variables.settings_obj.write_settings(dictionary)
+        variables.settings.write_settings(dictionary)
         self.update_settings()
         self.main_window.file_select_frame.add_files()
-        variables.color_scheme.set_scheme(self.gui_event_colors_scheme.get())
+        variables.colors.set_scheme(self.gui_event_colors_scheme.get())
         self.after_id = None
 
     def save_settings_delayed(self, *args):
@@ -332,7 +332,7 @@ class SettingsFrame(ttk.Frame):
         Write the default settings to the settings_obj found in the
         settings.defaults class and then update the settings shown
         """
-        variables.settings_obj.write_defaults()
+        variables.settings.write_defaults()
         self.update_settings()
 
     @staticmethod

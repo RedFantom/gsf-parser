@@ -1,6 +1,5 @@
 # A new parsing engine built by RedFantom based on principles from parse.py and realtime.py
 # Is capable of parsing files as well as realtime parsing
-import re
 import os
 from datetime import datetime
 from tkinter.ttk import Frame
@@ -71,7 +70,7 @@ class Parser(object):
         """
         Return a dictionary of keyword arguments for a ScreenParser instance based on the settings for screen parsing
         """
-        feature_list = variables.settings_obj["realtime"]["screenparsing_features"]
+        feature_list = variables.settings["realtime"]["screenparsing_features"]
         arguments = {
             "rgb": False,
             "cooldowns": None,
@@ -249,7 +248,7 @@ class Parser(object):
         return True
 
     @staticmethod
-    def get_event_color(line_dict, active_id, colors=variables.color_scheme):
+    def get_event_color(line_dict, active_id, colors=variables.colors):
         """
         Return the correct text color for a certain event dictionary
         :param line_dict: line dictionary
@@ -349,7 +348,7 @@ class Parser(object):
         Split a CombatLog into matches and spawns with a file name and an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
-        combatlogs_path = variables.settings_obj["parsing"]["path"]
+        combatlogs_path = variables.settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
         if not os.path.exists(file_name):
             raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
@@ -518,7 +517,7 @@ class Parser(object):
         """
         Get a boolean of whether there are GSF matches in a file
         """
-        combatlogs_path = variables.settings_obj["parsing"]["path"]
+        combatlogs_path = variables.settings["parsing"]["path"]
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
             return None

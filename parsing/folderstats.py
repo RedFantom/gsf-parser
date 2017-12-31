@@ -40,9 +40,9 @@ def folder_statistics():
 
     # Add a CombatLogs in a folder with GSF matches to a list of names
     file_list = []
-    for file_name in os.listdir(variables.settings_obj["parsing"]["path"]):
-        if file_name.endswith(".txt") and parse.check_gsf(os.path.join(variables.settings_obj["parsing"]["path"], file_name)):
-            file_list.append(os.path.join(variables.settings_obj["parsing"]["path"], file_name))
+    for file_name in os.listdir(variables.settings["parsing"]["path"]):
+        if file_name.endswith(".txt") and parse.check_gsf(os.path.join(variables.settings["parsing"]["path"], file_name)):
+            file_list.append(os.path.join(variables.settings["parsing"]["path"], file_name))
 
     # Define all variables needed to store the statistics
     total_ddealt = 0

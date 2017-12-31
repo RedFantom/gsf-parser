@@ -44,7 +44,7 @@ class EventColors(tk.Toplevel):
         self.column_label_two = ttk.Label(self, text="Background color", font=("Calibri", 12))
         self.column_label_three = ttk.Label(self, text="Text color", font=("Calibri", 12))
         self.colors = collections.OrderedDict()
-        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
+        variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
         self.color_descriptions = collections.OrderedDict()
         self.color_descriptions["dmgd_pri"] = "Damage dealt by Primary Weapons: "
         self.color_descriptions["dmgt_pri"] = "Damage taken from Primary Weapons: "
@@ -61,7 +61,7 @@ class EventColors(tk.Toplevel):
         self.color_descriptions["match"] = "End of a match: "
         self.color_descriptions["default"] = "Unmatched categories: "
         for color in self.color_descriptions.keys():
-            self.colors[color] = [variables.color_scheme[color][0], variables.color_scheme[color][1]]
+            self.colors[color] = [variables.colors[color][0], variables.colors[color][1]]
         self.color_labels = {}
         self.color_entry_vars_bg = {}
         self.color_entry_vars_fg = {}
@@ -108,9 +108,9 @@ class EventColors(tk.Toplevel):
         if not file_to_open:
             self.focus_set()
             return
-        variables.color_scheme.set_scheme("custom", custom_file=file_to_open)
+        variables.colors.set_scheme("custom", custom_file=file_to_open)
         for color in self.color_descriptions.keys():
-            self.colors[color] = [variables.color_scheme[color][0], variables.color_scheme[color][1]]
+            self.colors[color] = [variables.colors[color][0], variables.colors[color][1]]
         for key in self.color_entry_vars_bg.keys():
             self.color_entry_widgets_bg[key].delete(0, tk.END)
             self.color_entry_widgets_fg[key].delete(0, tk.END)
@@ -132,8 +132,8 @@ class EventColors(tk.Toplevel):
         for color, variable in self.color_entry_vars_fg.items():
             self.colors[color][1] = variable.get()
         for color, lst in self.colors.items():
-            variables.color_scheme[color] = lst
-        variables.color_scheme.write_custom(custom_file=file_to_save)
+            variables.colors[color] = lst
+        variables.colors.write_custom(custom_file=file_to_save)
         self.focus_set()
 
     def set_color(self, key, fg=False):
@@ -179,8 +179,8 @@ class EventColors(tk.Toplevel):
         for color, widget in self.color_entry_widgets_fg.items():
             self.colors[color][1] = widget.get()
         for color, lst in self.colors.items():
-            variables.color_scheme[color] = lst
-        variables.color_scheme.write_custom()
+            variables.colors[color] = lst
+        variables.colors.write_custom()
         self.destroy()
 
     def cancel_button_cb(self):

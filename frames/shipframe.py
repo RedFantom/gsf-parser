@@ -78,7 +78,7 @@ class ShipFrame(ttk.Frame):
         else:
             print("[DEBUG]  Ship_list not larger than one, setting appropriate image")
             try:
-                if variables.settings_obj["gui"]["faction"] == "republic":
+                if variables.settings["gui"]["faction"] == "republic":
                     img = abilities.rep_ships[ships_list[0]]
                 else:
                     img = ships_list[0]

@@ -57,12 +57,12 @@ class MainWindow(ThemedTk):
         self.set_variables()
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings_obj["parsing"]["path"]
+        self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
         variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
-        if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
+        if variables.settings["sharing"]["auto_upl"] or variables.settings["parsing"]["auto_ident"]:
             variables.client_obj.init_conn()
             print("[DEBUG] Connection initialized")
         self.protocol("WM_DELETE_WINDOW", self.exit)
@@ -164,11 +164,11 @@ class MainWindow(ThemedTk):
         """
         Set program global variables in the shared variables module
         """
-        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
+        variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj["parsing"]["path"]
+        variables.path = variables.settings["parsing"]["path"]
 
     def get_scaling_factor(self):
         """
@@ -195,7 +195,7 @@ class MainWindow(ThemedTk):
         """
         Open a DebugWindow instance if that setting is set to True
         """
-        if variables.settings_obj["gui"]["debug"] is True:
+        if variables.settings["gui"]["debug"] is True:
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         return
 
@@ -211,7 +211,7 @@ class MainWindow(ThemedTk):
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
         try:
-            self.style.configure('.', foreground=variables.settings_obj["gui"]["color"])
+            self.style.configure('.', foreground=variables.settings["gui"]["color"])
         except KeyError:
             self.style.configure('.', foreground='#2f77d0')
         if not start:
@@ -222,7 +222,7 @@ class MainWindow(ThemedTk):
         """
         Changes the window's icon
         """
-        color = variables.settings_obj["gui"]["logo_color"].lower()
+        color = variables.settings["gui"]["logo_color"].lower()
         icon_path = os.path.join(get_assets_directory(), "logos", "icon_{}.ico".format(color))
         icon = PhotoImage(Image.open(icon_path))
         self.tk.call("wm", "iconphoto", self._w, icon)
@@ -254,12 +254,12 @@ class MainWindow(ThemedTk):
         Function to check for GSF Parser updates by checking tags and opening a window if an update is available
         :return: None
         """
-        if not variables.settings_obj["misc"]["autoupdate"]:
+        if not variables.settings["misc"]["autoupdate"]:
             return
         try:
             user = Github().get_user("RedFantom")
             repo = user.get_repo("GSF-Parser")
-            current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
+            current = Version(variables.settings["misc"]["version"].replace("v", ""))
             for item in repo.get_tags():
                 try:
                     if Version(item.name.replace("v", "")) > current:

@@ -126,7 +126,7 @@ class ToolsFrame(ttk.Frame):
             self.simulator_button.config(text="Start simulator")
             return
         self.simulator_thread = simulator.Simulator(self.simulator_file,
-                                                    output_directory=variables.settings_obj["parsing"]["path"])
+                                                    output_directory=variables.settings["parsing"]["path"])
         self.simulator_thread.start()
         self.simulator_button.config(text="Stop simulator")
 
