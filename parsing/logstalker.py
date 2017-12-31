@@ -21,7 +21,7 @@ class LogStalker(object):
         """
         self._folder = folder
         self._watching_callback = watching_callback
-        self._file = None
+        self.file = None
         self._read_so_far = 0
 
     def update_file(self):
@@ -33,19 +33,19 @@ class LogStalker(object):
         if len(files) == 0:
             raise ValueError("No files found in this folder.")
         recent = sorted(files, key=Parser.parse_filename)[-1]
-        if self._file is not None and recent == os.path.basename(self._file):
+        if self.file is not None and recent == self.file:
             return
-        self._file = os.path.join(self._folder, recent)
-        print("[LogStalker] Watching new file: {}".format(self._file))
+        self.file = recent
+        print("[LogStalker] Watching new file: {}".format(self.file))
         self._read_so_far = 0
-        self._watching_callback(os.path.basename(self._file))
+        self._watching_callback(self.file)
 
     def get_new_lines(self):
         """
         Read the new lines in the file and return them as a list.
         """
         self.update_file()
-        with open(self._file) as fi:
+        with open(os.path.join(self._folder, self.file)) as fi:
             lines = fi.readlines()[self._read_so_far:]
         self._read_so_far += len(lines)
         dictionaries = [Parser.line_to_dictionary(line) for line in lines]
