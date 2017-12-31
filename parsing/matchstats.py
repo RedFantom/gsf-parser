@@ -50,7 +50,7 @@ def match_statistics(file_name, match, match_timing):
     total_killsassists = 0
     ships_uncounted = 0
 
-    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as fi:
+    with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name), "r") as fi:
         name = parse.determinePlayerName(fi.readlines())
 
     for spawn in match:

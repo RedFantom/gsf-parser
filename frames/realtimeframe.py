@@ -43,13 +43,13 @@ class RealtimeFrame(ttk.Frame):
         self.watching_stringvar = tk.StringVar(self, value="Watching no file...")
         self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
         self.cpu_stringvar = tk.StringVar()
-        self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar)
+        self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar, justify=tk.LEFT)
         # Control widgets
         servers = ("Choose Server", ) + tuple(self.window.characters_frame.servers.values())
         self.server, self.character = tk.StringVar(), tk.StringVar()
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers, command=self.update_characters)
         self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose Character",))
-        self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing)
+        self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
         # Data widgets
         self.data = tk.StringVar()
         self.data_label = ttk.Label(self, textvariable=self.data)
@@ -68,11 +68,11 @@ class RealtimeFrame(ttk.Frame):
         self.character_dropdown.grid(row=1, column=0, sticky="nswe", padx=5, pady=(0, 5))
         self.parsing_control_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
-        self.data_label.grid(row=0, column=1, rowspan=3, sticky="nswe", padx=5, pady=5)
-        self.time_view.grid(row=3, column=0, columnspan=2, sticky="nswe", padx=5, pady=5)
+        self.data_label.grid(row=0, column=1, rowspan=3, columnspan=2, sticky="nswe", padx=5, pady=5)
+        self.time_view.grid(row=3, column=0, columnspan=3, sticky="nswe", padx=5, pady=5)
 
-        self.watching_label.grid(row=4, column=0, columnspan=1, sticky="nw", padx=5, pady=5)
-        self.cpu_label.grid(row=4, column=1, sticky="nw", padx=5, pady=5)
+        self.watching_label.grid(row=4, column=0, columnspan=2, sticky="nw", padx=5, pady=5)
+        self.cpu_label.grid(row=4, column=2, sticky="nw", padx=5, pady=5)
 
     """
     Parsing Functions
@@ -111,8 +111,6 @@ class RealtimeFrame(ttk.Frame):
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
         # Start the parser
-        if self.parser is None:
-            raise ValueError()
         self.parser.start()
 
     def stop_parsing(self):
@@ -127,9 +125,10 @@ class RealtimeFrame(ttk.Frame):
         try:
             self.parser.join()
         except Exception as e:
-            messagebox.showerror("Error", "While real-time parsing, the following error occurred\n{}".format(e))
+            messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
             raise
         self.watching_stringvar.set("Watching no file...")
+        self.parser = None
 
     def file_callback(self, file_name):
         """
@@ -155,10 +154,16 @@ class RealtimeFrame(ttk.Frame):
         Callback for the RealTimeParser to insert an event into the TimeView
         """
         self.time_view.insert_event(event, player_name, active_ids, start_time)
+        self.time_view.yview_moveto(1.0)
 
     def update_cpu_usage(self):
-        self.cpu_stringvar.set("CPU usage: {}%".format(self.process.cpu_percent()))
+        string = "CPU usage: {}%".format(self.process.cpu_percent())
         self.after(2000, self.update_cpu_usage)
+        if self.parser is not None and self.parser.diff is not None:
+            diff = self.parser.diff
+            diff = diff.seconds + diff.microseconds / 1000000
+            string += ", {:.03f}s".format(diff)
+        self.cpu_stringvar.set(string)
 
     """
     Overlay Handling

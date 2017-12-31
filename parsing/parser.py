@@ -204,7 +204,7 @@ class Parser(object):
                     "allied": durations.durations[ability][0] if effect != "Missile Lock Immunity" else True,
                     "count": 1,
                     "duration": 0,
-                    "damage": int(event["amount"].replace("*", "")) if event["amount"] != "" else 0,
+                    "damage": int(event["amount"].replace("*", "")) if isinstance(event["amount"], str) and event["amount"] != "" else "",
                     "dot": (event["time"] - line_dict["time"]).total_seconds() if ability_duration[2] is True else None
                 }
             else:
@@ -235,7 +235,7 @@ class Parser(object):
         if index == 0:
             return None
         # The requirements for being eligible are quite strict
-        for prev_line in lines[index-5:index-1]:
+        for prev_line in lines[max(index-5, 0):index-1]:
             # The source of the previous event must be equal
             source_is_equal = prev_line["source"] == line_dict["source"]
             ability_is_equal = prev_line["ability"] == line_dict["ability"]
@@ -349,7 +349,7 @@ class Parser(object):
         Split a CombatLog into matches and spawns with a file name and an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
-        combatlogs_path = variables.settings_obj["parsing"]["cl_path"]
+        combatlogs_path = variables.settings_obj["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
         if not os.path.exists(file_name):
             raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
@@ -518,7 +518,7 @@ class Parser(object):
         """
         Get a boolean of whether there are GSF matches in a file
         """
-        combatlogs_path = variables.settings_obj["parsing"]["cl_path"]
+        combatlogs_path = variables.settings_obj["parsing"]["path"]
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
             return None

@@ -42,7 +42,10 @@ def new_window():
             except OSError:
                 messagebox.showerror("Error", "Could not automatically delete the temporary files.")
         raise
-    main_window.mainloop()
+    try:
+        main_window.mainloop()
+    except KeyboardInterrupt:
+        exit(0)
 
 
 def setup_tkinter():

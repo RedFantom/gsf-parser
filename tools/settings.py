@@ -36,7 +36,7 @@ class Defaults(object):
     # Version to display in settings tab
     version = "v3.3.4"
     # Path to get the CombatLogs from
-    cl_path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
+    path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
@@ -105,7 +105,7 @@ class Settings(object):
             "debug": False
         },
         "parsing": {
-            "cl_path": os.path.realpath(
+            "path": os.path.realpath(
                 os.path.join(os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs")),
             "auto_ident": False
         },
@@ -257,7 +257,8 @@ class ColorSchemes(object):
             return ['#ffffff', '#000000']
 
     def set_scheme(self, name, custom_file=(os.path.join(utilities.get_temp_directory(), "events_colors.ini"))):
-        if name == "default":
+        name = name.lower()
+        if name == "bright":
             self.current_scheme = self.default_colors
         elif name == "pastel":
             self.current_scheme = self.pastel_colors

@@ -11,10 +11,10 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox
 import tkinter.filedialog
-import re
 import sys
+import os
 import variables
-from widgets import VerticalScrollFrame
+from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
 from collections import OrderedDict
 
@@ -29,478 +29,301 @@ class SettingsFrame(ttk.Frame):
     """
 
     def __init__(self, root_frame, main_window):
-        # LAY-OUT
+        self.after_id = None
         self.main_window = main_window
         ttk.Frame.__init__(self, root_frame)
-        self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=self.main_window.width - 20)
+        """
+        Parent Widgets
+        """
+        self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=self.main_window.width - 30)
         self.gui_frame = ttk.Frame(self.frame.interior)
-        self.entry_frame = ttk.Frame(self.frame.interior)
-        self.privacy_frame = ttk.Frame(self.frame.interior)
-        self.server_frame = ttk.Frame(self.frame.interior)
-        self.upload_frame = ttk.Frame(self.frame.interior)
+        self.parsing_frame = ttk.Frame(self.frame.interior)
         self.realtime_frame = ttk.Frame(self.frame.interior)
-        self.bottom_frame = ttk.Frame(self)
-        self.save_frame = ttk.Frame(self.bottom_frame)
-        self.license_frame = ttk.Frame(self.bottom_frame)
-        self.top_frame = self.frame
-        # GUI SETTINGS
-        self.gui_label = ttk.Label(self.frame.interior, text="GUI settings", justify=tk.LEFT,
-                                   font=("Calibri", 12))
-        self.color_label = ttk.Label(self.gui_frame, text="\tParser text color: ")
-        self.color = tk.StringVar()
-        self.custom_color_entry = ttk.Entry(self.gui_frame, width=15)
-        self.color_choices = {
-            "Darkgreen": "Darkgreen",
-            "Darkblue": "Darkblue",
-            "Darkred": "Darkred",
-            "Black": "Black",
-            "Custom": "Custom: ",
-            "Default": "#236ab2"
-        }
-        self.color_choices_tuple = ("Default", "Default", "Custom", "Darkblue", "Darkgreen", "Darkred", "Black")
-        self.color_dropdown = ttk.OptionMenu(self.gui_frame, self.color, *self.color_choices_tuple)
-        self.color.set(variables.settings_obj["gui"]["color"])
-        self.logo_color_label = ttk.Label(self.gui_frame, text="\tParser logo color: ")
-        self.logo_color = tk.StringVar()
-        self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
-        self.logo_color_dropdown = ttk.OptionMenu(self.gui_frame, self.logo_color, *("Default", "Green", "Blue", "Red"))
+        self.screen_frame = ttk.Frame(self.frame.interior)
+        self.credits_frame = ttk.Frame(self)
 
-        self.event_colors_label = ttk.Label(self.gui_frame, text="\tEvent colors: ")
-        self.event_colors = tk.StringVar()
-        self.event_colors_none = ttk.Radiobutton(self.gui_frame, text="None", variable=self.event_colors,
-                                                 value="none", width=15)
-        self.event_colors_basic = ttk.Radiobutton(self.gui_frame, text="Basic", variable=self.event_colors,
-                                                  value="basic", width=15)
-        self.event_colors_adv = ttk.Radiobutton(self.gui_frame, text="Advanced", variable=self.event_colors,
-                                                value="advanced", width=15)
+        """
+        UI Settings
+        """
+        self.gui_label = ttk.Label(
+            self.frame.interior, text="User Interface", justify=tk.LEFT, font=("default", 13, "bold"))
+        # Event color type
+        self.gui_event_colors_type = tk.BooleanVar()
+        self.gui_event_colors_checkbox = ttk.Checkbutton(
+            self.gui_frame, text="Use Advanced Event Color Scheme", variable=self.gui_event_colors_type,
+            command=self.save_settings)
+        HoverInfo(
+            self.gui_event_colors_checkbox,
+            text="The Advanced Color Scheme offers more colors to distinguish between more different types of events.")
+        # Event color scheme
+        self.gui_event_colors_scheme = tk.StringVar()
+        self.gui_event_colors_label = ttk.Label(self.gui_frame, text="Event Color Scheme:", justify=tk.LEFT)
+        self.gui_event_colors_dropdown = ttk.OptionMenu(
+            self.gui_frame, self.gui_event_colors_scheme, *("Choose", "Bright", "Pastel", "Custom"),
+            command=self.save_settings)
+        self.gui_event_colors_button = ttk.Button(
+            self.gui_frame, text="Edit Custom", command=self.set_custom_event_colors)
+        # Faction images
+        self.gui_faction = tk.StringVar()
+        self.gui_faction_label = ttk.Label(self.gui_frame, text="Faction: ", justify=tk.LEFT)
+        self.gui_faction_dropdown = ttk.OptionMenu(
+            self.gui_frame, self.gui_faction, *("Choose", "Empire", "Republic"), command=self.save_settings)
+        # Check for updates
+        self.gui_check_updates = tk.BooleanVar()
+        self.gui_check_updates_checkbox = ttk.Checkbutton(
+            self.gui_frame, text="Automatically check for updates on start-up", variable=self.gui_check_updates,
+            command=self.save_settings)
+        # Debug Window
+        self.gui_debug_window = tk.BooleanVar()
+        self.gui_debug_window_checkbox = ttk.Checkbutton(
+            self.gui_frame, text="Show window with debug output", variable=self.gui_debug_window,
+            command=self.save_settings)
 
-        self.event_scheme = tk.StringVar()
-        self.event_scheme_label = ttk.Label(self.gui_frame, text="\tEvent color scheme: ")
-        self.event_scheme_default = ttk.Radiobutton(self.gui_frame, text="Default", variable=self.event_scheme,
-                                                    value="default")
-        self.event_scheme_pastel = ttk.Radiobutton(self.gui_frame, text="Pastel", variable=self.event_scheme,
-                                                   value="pastel")
-        self.event_scheme_custom = ttk.Radiobutton(self.gui_frame, text="Custom", variable=self.event_scheme,
-                                                   value="custom")
-        self.event_scheme_custom_button = ttk.Button(self.gui_frame, text="Choose colors",
-                                                     command=self.set_custom_event_colors)
-        self.date_format_label = ttk.Label(self.gui_frame, text="\tDate format: ")
-        self.date_format = tk.StringVar()
-        self.date_format_ymd = ttk.Radiobutton(self.gui_frame, text="YYYY-MM-DD", value="ymd",
-                                               variable=self.date_format)
-        self.date_format_ydm = ttk.Radiobutton(self.gui_frame, text="YYYY-DD-MM", value="ydm",
-                                               variable=self.date_format)
-        self.faction_label = ttk.Label(self.gui_frame, text="\tFaction: ")
-        self.faction = tk.StringVar()
-        self.faction_choices = ["Imperial", "Republic"]
-        self.faction_options = []
-        self.faction.set(variables.settings_obj["gui"]["faction"])
-        for faction in self.faction_choices:
-            self.faction_options.append(ttk.Radiobutton(self.gui_frame, value=str(faction).lower(), text=faction,
-                                                        variable=self.faction, width=8))
-        self.auto_update = tk.BooleanVar()
-        self.auto_update_checkbox = ttk.Checkbutton(self.gui_frame, variable=self.auto_update,
-                                                    text="Automatically check for updates on startup")
+        """
+        Parsing settings
+        """
+        self.parsing_label = ttk.Label(
+            self.frame.interior, text="Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
+        # CombatLogs path
+        self.parsing_path = tk.StringVar()
+        self.parsing_path_label = ttk.Label(self.parsing_frame, text="CombatLogs folder:", justify=tk.LEFT)
+        self.parsing_path_entry = ttk.Entry(
+            self.parsing_frame, width=80 if sys.platform != "linux" else 60, textvariable=self.parsing_path)
+        self.parsing_path_entry.bind("<Key>", self.save_settings_delayed)
+        self.parsing_path_button = ttk.Button(self.parsing_frame, text="Browse", command=self.set_directory_dialog)
 
-        self.debug_window = tk.BooleanVar()
-        self.debug_window_checkbox = ttk.Checkbutton(self.gui_frame, text="Show window with debug output",
-                                                     variable=self.debug_window)
+        """
+        RealTime settings
+        """
+        self.realtime_label = ttk.Label(
+            self.frame.interior, text="Real-time Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
+        # Enable real-time overlay
+        self.realtime_overlay_enabled = tk.BooleanVar()
+        self.realtime_overlay_enabled_checkbox = ttk.Checkbutton(
+            self.realtime_frame, text="Enable overlay for real-time parsing", variable=self.realtime_overlay_enabled,
+            command=self.save_settings)
+        # Overlay text color
+        self.realtime_overlay_text_color = tk.StringVar()
+        self.realtime_overlay_text_color_label = ttk.Label(
+            self.realtime_frame, text="Overlay text color:", justify=tk.LEFT)
+        self.realtime_overlay_text_color_dropdown = ttk.OptionMenu(
+            self.realtime_frame, self.realtime_overlay_text_color, *("Yellow", "Green", "Blue", "Red", "Black"),
+            command=self.save_settings)
+        # Overlay position
+        self.realtime_overlay_position_frame = ttk.Frame(self.realtime_frame)
+        self.realtime_overlay_position_label = ttk.Label(self.realtime_overlay_position_frame, text="Overlay position:")
+        self.realtime_overlay_position_x_label = ttk.Label(self.realtime_overlay_position_frame, text="X Coordinate:")
+        self.realtime_overlay_position_x = ttk.Entry(self.realtime_overlay_position_frame, width=4)
+        self.realtime_overlay_position_y_label = ttk.Label(self.realtime_overlay_position_frame, text="Y Coordinate:")
+        self.realtime_overlay_position_y = ttk.Entry(self.realtime_overlay_position_frame, width=4)
+        help_text = "The overlay's position is set as a pair of coordinates, in pixels, measured from the top left " \
+                    "corner of the screen."
+        for widget in [self.realtime_overlay_position_x_label, self.realtime_overlay_position_y_label,
+                       self.realtime_overlay_position_y, self.realtime_overlay_position_x]:
+            HoverInfo(widget, text=help_text)
+        self.realtime_overlay_position_y.bind("<Key>", self.save_settings_delayed)
+        self.realtime_overlay_position_x.bind("<Key>", self.save_settings_delayed)
+        # Disable overlay when not in match
+        self.realtime_overlay_disable = tk.BooleanVar()
+        self.realtime_overlay_disable_checkbox = ttk.Checkbutton(
+            self.realtime_frame, text="Hide overlay when not in a GSF match", variable=self.realtime_overlay_disable,
+            command=self.save_settings)
 
-        # PARSING SETTINGS
-        self.parsing_label = ttk.Label(self.frame.interior, text="Parsing settings", justify=tk.LEFT,
-                                       font=("Calibri", 12))
-        self.path_var = tk.StringVar()
-        self.path_entry = ttk.Entry(
-            self.entry_frame, textvariable=self.path_var, width=80 if sys.platform != "linux" else 50
-        )
-        self.path_entry_button = ttk.Button(self.entry_frame, text="Browse", command=self.set_directory_dialog)
-        self.path_entry_label = ttk.Label(self.entry_frame, text="\tCombatLogs folder: ")
-        # SHARING SETTINGS
-        self.sharing_label = ttk.Label(self.frame.interior, text="Share settings", justify=tk.LEFT,
-                                       font=("Calibri", 12))
-        self.server_label = ttk.Label(self.server_frame, text="\tServer for sharing: ")
-        self.server_address_entry = ttk.Entry(self.server_frame, width=35)
-        self.server_colon_label = ttk.Label(self.server_frame, text=":")
-        self.server_port_entry = ttk.Entry(self.server_frame, width=8)
-        # REAL-TIME SETTINGS
-        self.realtime_settings_label = ttk.Label(self.realtime_frame, text="Real-time parsing settings",
-                                                 font=("Calibri", 12))
-        self.overlay_enable_label = ttk.Label(self.realtime_frame,
-                                              text="\tEnable overlay for real-time parsing: ")
-        self.overlay_enable_radio_var = tk.BooleanVar()
-        self.overlay_enable_radio_yes = ttk.Radiobutton(self.realtime_frame,
-                                                        variable=self.overlay_enable_radio_var,
-                                                        value=True, text="Yes", width=10)
-        self.overlay_enable_radio_no = ttk.Radiobutton(self.realtime_frame,
-                                                       variable=self.overlay_enable_radio_var,
-                                                       value=False, text="No")
-        self.overlay_opacity_label = ttk.Label(self.realtime_frame, text="\tOverlay opacity (between 0 and 1):")
-        self.overlay_opacity_input = ttk.Entry(self.realtime_frame, width=4)
-        self.overlay_size_label = ttk.Label(self.realtime_frame, text="\tOverlay window size: ")
-        self.overlay_size_var = tk.StringVar()
-        self.overlay_size_radio_big = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_size_var,
-                                                      value="big", text="Big")
-        self.overlay_size_radio_small = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_size_var,
-                                                        value="small", text="Small")
-        self.overlay_position_label = ttk.Label(self.realtime_frame, text="\tPosition of the in-game overlay:")
-        self.overlay_position_var = tk.StringVar()
-        self.overlay_position_var.set(variables.settings_obj["realtime"]["pos"])
-        self.overlay_position_options = {
-            "BL": "Bottom Left",
-            "TL": "Top Left",
-            "TR": "Top Right",
-            "BR": "Bottom Right",
-            "UT": "Under targeting computer",
-            "UC": "Under chat box",
-            "NQ": "Left from Quickbar"
-        }
-        self.overlay_position_dropdown = ttk.OptionMenu(
-            self.realtime_frame, self.overlay_position_var, *tuple(self.overlay_position_options.values())
-        )
-        self.overlay_color_options = ("Default", "White", "Yellow", "Green", "Blue", "Red")
-        self.overlay_bg_color = tk.StringVar()
-        self.overlay_tx_color = tk.StringVar()
-        self.overlay_tr_color = tk.StringVar()
+        """
+        Screen parsing settings
+        """
+        self.screen_label = ttk.Label(
+            self.frame.interior, text="Screen Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
+        # Screen parsing enabled
+        self.screen_enabled = tk.BooleanVar()
+        self.screen_checkbox = ttk.Checkbutton(
+            self.screen_frame, text="Enable screen parsing", variable=self.screen_enabled, command=self.save_settings)
+        # Screen parsing overlay
+        self.screen_overlay = tk.BooleanVar()
+        self.screen_overlay_checkbox = ttk.Checkbutton(
+            self.screen_frame, text="Enable screen parsing overlay", variable=self.screen_overlay,
+            command=self.save_settings)
+        # Screen parsing features
+        self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
+        self.screen_features = ["Tracking penalty", "Ship health", "Power management", "Mouse and Keyboard"]
+        self.screen_checkboxes = OrderedDict()
+        self.screen_variables = {}
+        for feature in self.screen_features:
+            self.screen_variables[feature] = tk.BooleanVar()
+            self.screen_checkboxes[feature] = ttk.Checkbutton(
+                self.screen_frame, text=feature, variable=self.screen_variables[feature], command=self.save_settings)
 
-        self.overlay_tx_dropdown = ttk.OptionMenu(self.realtime_frame, self.overlay_tx_color,
-                                                  *self.overlay_color_options)
-
-        self.overlay_tx_label = ttk.Label(self.realtime_frame, text="\tOverlay text color: ")
-
-        self.overlay_text_size_label = ttk.Label(self.realtime_frame, text="\tOverlay text size: ")
-        self.overlay_text_size_entry = ttk.Entry(self.realtime_frame, width=10)
-        self.overlay_when_gsf_label = ttk.Label(self.realtime_frame,
-                                                text="\tOnly display overlay in a GSF match: ")
-        self.overlay_when_gsf = tk.BooleanVar()
-        self.overlay_when_gsf_true = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_when_gsf,
-                                                     text="Yes", value=True)
-        self.overlay_when_gsf_false = ttk.Radiobutton(self.realtime_frame, variable=self.overlay_when_gsf,
-                                                      text="No", value=False)
-        self.realtime_timeout_label = ttk.Label(self.realtime_frame, text="\tRealtime parsing timeout: ")
-        self.realtime_timeout = tk.StringVar()
-        self.realtime_timeout_entry = ttk.Entry(self.realtime_frame, textvariable=self.realtime_timeout, width=10)
-        self.realtime_timeout_help_button = ttk.Button(self.realtime_frame, text="Help",
-                                                       command=self.show_timeout_help)
-        self.realtime_timeout_help_label = ttk.Label(self.realtime_frame, text="Only change this if you are "
-                                                                               "experiencing performance issues!")
-        self.realtime_event_overlay_label = ttk.Label(self.realtime_frame, text="\tShow events overlay: ")
-        self.realtime_event_overlay_var = tk.BooleanVar()
-        self.realtime_event_overlay_true = ttk.Radiobutton(self.realtime_frame, text="Yes",
-                                                           variable=self.realtime_event_overlay_var, value=True)
-        self.realtime_event_overlay_false = ttk.Radiobutton(self.realtime_frame, text="No",
-                                                            variable=self.realtime_event_overlay_var, value=False)
-        # Screen parsing settings
-        self.screenparsing_frame = ttk.Frame(self.frame.interior)
-        self.screenparsing_setoff_label = ttk.Label(self.screenparsing_frame, text="\t")
-        self.screenparsing_header_label = ttk.Label(self.frame.interior, text="Screen parsing", justify=tk.LEFT,
-                                                    font=("Calibri", 12))
-        self.screenparsing_var = tk.BooleanVar()
-        self.screenparsing_checkbox = ttk.Checkbutton(self.screenparsing_frame, text="Enable screen parsing",
-                                                      variable=self.screenparsing_var)
-        self.screenparsing_overlay_var = tk.BooleanVar()
-        self.screenparsing_overlay_checkbox = ttk.Checkbutton(self.screenparsing_frame,
-                                                              text="Enable screen parsing overlay",
-                                                              variable=self.screenparsing_overlay_var)
-        self.screenparsing_features_label = ttk.Label(self.screenparsing_frame,
-                                                      text="Features enabled for screen parsing:")
-        self.screenparsing_features = ["Tracking penalty", "Ship health",
-                                       "Power management"]
-
-        self.screenparsing_checkboxes = OrderedDict()
-        self.screenparsing_variables = {}
-        for feature in self.screenparsing_features:
-            self.screenparsing_variables[feature] = tk.BooleanVar()
-            self.screenparsing_checkboxes[feature] = ttk.Checkbutton(self.screenparsing_frame, text=feature,
-                                                                     variable=self.screenparsing_variables[feature])
-        self.screenparsing_overlay_geometry = tk.BooleanVar()
-        self.screenparsing_overlay_geometry_checkbox = ttk.Checkbutton(self.screenparsing_frame,
-                                                                       text="Move screen parsing overlay with cursor",
-                                                                       variable=self.screenparsing_overlay_geometry)
-        # MISC
+        """
+        Miscellaneous
+        """
         self.separator = ttk.Separator(self, orient=tk.HORIZONTAL)
-        self.save_settings_button = ttk.Button(self.save_frame, text="  Save  ", command=self.save_settings)
-        self.discard_settings_button = ttk.Button(self.save_frame, text="Discard", command=self.discard_settings)
-        self.default_settings_button = ttk.Button(self.save_frame, text="Defaults", command=self.default_settings)
-        self.license_button = ttk.Button(self.license_frame, text="License", command=self.show_license)
-        self.version_label = ttk.Label(self.license_frame, text="Version 2.0")
-        self.update_label_var = tk.StringVar()
-        self.update_label = ttk.Label(self.license_frame, textvariable=self.update_label_var)
-        self.copyright_label = ttk.Label(self.license_frame,
-                                         text="Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania",
-                                         justify=tk.LEFT)
-        self.thanks_label = ttk.Label(self.license_frame,
-                                      text="Special thanks to Nightmaregale for bèta testing and to Jedipedia for "
-                                           "providing clean map textures of the TDM maps",
-                                      justify=tk.LEFT)
+        self.credits_label = ttk.Label(
+            self.credits_frame,
+            text="Copyright (C) 2016-2018 RedFantom, Daethyra and Sprigellania\n"
+                 "Available under the GNU GPLv3 License\n\n"
+                 "Special thanks to everyone who has provided feedback, and to JediPedia for the the clean GSF map "
+                 "textures.")
         self.update_settings()
 
-    @staticmethod
-    def show_timeout_help():
-        tkinter.messagebox.showinfo(
-            "Help",
-            "This is the setting for the sleep timeout for realtime parsing. Lowering this value will allow faster "
-            "detection of change, but it will also require more processing power and IO usage. Increasing this value "
-            "will reduce processing power requirements and IO usage. Please do not change this value unless you are "
-            "experiencing performance issues that you can relate to the usage of the GSF Parser on a low-end system."
-        )
-
-    @staticmethod
-    def set_custom_event_colors():
+    def set_custom_event_colors(self):
         """
-        Opens a Toplevel to show the settings for the colors of the events
-        view. See toplevel.event_colors for more information.
-        :return: None
+        Opens a Toplevel to show the settings for the colors of the events view.
         """
         color_toplevel = EventColors(variables.main_window)
         color_toplevel.grid_widgets()
         color_toplevel.focus_set()
+        self.wait_window(color_toplevel)
+        self.focus_set()
 
     def set_directory_dialog(self):
         """
         Open a tkFileDialog to ask the user for the directory of the CombatLogs
         so the user does not have to enter the full path manually.
-        :return: None
         """
-        directory = tkinter.filedialog.askdirectory(initialdir=self.path_var.get(), mustexist=True,
-                                                    parent=self.main_window, title="GSF Parser: Choosing directory")
-        if directory == "":
+        directory = tkinter.filedialog.askdirectory(
+            initialdir=self.parsing_path.get(), mustexist=True, parent=self.main_window,
+            title="GSF Parser: Choosing directory")
+        if directory is None or directory == "" or not os.path.exists(directory):
             return
-        self.path_var.set(directory)
+        self.parsing_path.set(directory)
 
     def grid_widgets(self):
         """
-        Put all the widgets created in the __init__ function in their respective
-        places.
-        :return: None
+        Put all the widgets created in the __init__ function in their respective places.
         """
-        # GUI SETTINGS
-        self.gui_label.grid(column=0, row=0, sticky="nswe", pady=5)
-        self.gui_frame.grid(column=0, row=1, sticky="nswe")
-        self.color_label.grid(column=0, row=0, sticky="w")
-        self.color_dropdown.grid(column=1, row=0, sticky="nswe", padx=5)
-        self.custom_color_entry.grid(column=2, row=0, sticky="nswe", padx=5)
-        self.logo_color_label.grid(column=0, row=1, sticky="nswe")
-        self.logo_color_dropdown.grid(column=1, row=1, sticky="nswe", padx=5)
-        self.event_colors_label.grid(column=0, row=2, sticky="nswe")
-        self.event_colors_basic.grid(column=2, row=2, sticky="nswe")
-        self.event_colors_none.grid(column=1, row=2, sticky="nswe")
-        self.event_colors_adv.grid(column=3, row=2, sticky="nswe")
-        self.event_scheme_label.grid(column=0, row=3, sticky="nswe")
-        self.event_scheme_default.grid(column=1, row=3, sticky="nswe")
-        self.event_scheme_pastel.grid(column=2, row=3, sticky="nswe")
-        self.event_scheme_custom.grid(column=3, row=3, sticky="nswe")
-        self.event_scheme_custom_button.grid(column=4, row=3, sticky="nswe",
-                                             padx=5)
-        self.date_format_label.grid(column=0, row=4, sticky="w")
-        self.date_format_ymd.grid(column=1, row=4, sticky="w")
-        self.date_format_ydm.grid(column=2, row=4, sticky="w")
-        self.faction_label.grid(column=0, row=5, sticky="nswe")
-        set_column = 0
-        for radio in self.faction_options:
-            set_column += 1
-            radio.grid(column=set_column, row=5, sticky="nswe")
-        self.auto_update_checkbox.grid(column=0, row=6, columnspan=2, padx=(55, 0))
-        self.debug_window_checkbox.grid(column=0, row=7, columnspan=2, padx=(55, 0), sticky="w")
-        # PARSING SETTINGS
-        self.parsing_label.grid(column=0, row=2, sticky="w", pady=5)
-        self.path_entry_label.grid(column=0, row=0, sticky="nswe", padx=5)
-        self.path_entry_button.grid(column=2, row=0, sticky="nswe", padx=3)
-        self.path_entry.grid(column=1, row=0, sticky="nswe")
-        self.entry_frame.grid(column=0, row=3, sticky="nsw")
+        padding_default = {"padx": 5, "pady": (0, 5)}
+        padding_label = {"padx": (40, 5), "pady": (0, 5)}
+        padding_header = {"padx": 5, "pady": (10, 5)}
+        padding_frame = {"padx": 5, "pady": 5}
+        sticky_default = {"sticky": "nsw"}
+        sticky_button = {"sticky": "nswe"}
+        checkbox = {"columnspan": 2}
+        """
+        Parent widgets
+        """
+        self.frame.grid(row=0, column=0, **padding_frame)
+        self.separator.grid(row=1, column=0, **padding_default, sticky="we")
+        self.credits_frame.grid(row=2, column=0, **padding_default, **sticky_default)
+        self.credits_label.grid(row=0, column=0, **padding_default, **sticky_default)
+        """
+        UI settings
+        """
+        # General
+        self.gui_label.grid(row=0, column=0, **padding_header, **sticky_default)
+        self.gui_frame.grid(row=1, column=0, **padding_frame, **sticky_default)
+        # Event color type
+        self.gui_event_colors_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
+        # Event color scheme
+        self.gui_event_colors_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.gui_event_colors_dropdown.grid(row=1, column=1, **padding_default, **sticky_button)
+        self.gui_event_colors_button.grid(row=1, column=2, **padding_default, **sticky_button)
+        # Faction Images
+        self.gui_faction_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.gui_faction_dropdown.grid(row=2, column=1, **padding_default, **sticky_button)
+        # Updates
+        self.gui_check_updates_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
+        # Debug Window
+        self.gui_debug_window_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
+        """
+        Parsing settings
+        """
+        # General
+        self.parsing_label.grid(row=2, column=0, **padding_header, **sticky_default)
+        self.parsing_frame.grid(row=3, column=0, **padding_frame, **sticky_default)
+        # CombatLogs path
+        self.parsing_path_label.grid(row=0, column=0, **padding_label, **sticky_default)
+        self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
+        self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
+        """
+        RealTime settings
+        """
+        # General
+        self.realtime_label.grid(row=4, column=0, **padding_header, **sticky_default)
+        self.realtime_frame.grid(row=5, column=0, **padding_frame, **sticky_default)
+        # Enable real-time overlay
+        self.realtime_overlay_enabled_checkbox.grid(row=0, column=0, **padding_label, **sticky_button, **checkbox)
+        # Overlay text color
+        self.realtime_overlay_text_color_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.realtime_overlay_text_color_dropdown.grid(row=1, column=1, **padding_default, **sticky_button)
+        # Overlay position
+        self.realtime_overlay_position_frame.grid(row=2, column=0, columnspan=4, **padding_label, **sticky_default)
+        self.realtime_overlay_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
+        self.realtime_overlay_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.realtime_overlay_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
+        self.realtime_overlay_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.realtime_overlay_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
+        # Disable overlay when not in match
+        self.realtime_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
 
-        # REALTIME SETTINGS
-        self.overlay_enable_label.grid(column=0, row=1, sticky="w")
-        self.overlay_enable_radio_yes.grid(column=1, row=1, sticky="w")
-        self.overlay_enable_radio_no.grid(column=2, row=1, sticky="w")
-        self.overlay_opacity_label.grid(column=0, row=2, sticky="w")
-        self.overlay_opacity_input.grid(column=1, row=2, sticky="w")
-        self.realtime_settings_label.grid(column=0, row=0, sticky="w", pady=5)
-
-        self.overlay_size_label.grid(column=0, row=3, sticky="nswe")
-        self.overlay_size_radio_big.grid(column=1, row=3, sticky="nswe")
-        self.overlay_size_radio_small.grid(column=2, row=3, sticky="nswe")
-        self.overlay_position_label.grid(column=0, row=4, sticky="nswe")
-        self.overlay_position_dropdown.grid(column=1, row=4, sticky="nswe")
-
-        self.realtime_frame.grid(column=0, row=8, sticky="nswe")
-        self.overlay_tx_label.grid(column=0, row=6, sticky="nswe")
-        self.overlay_tx_dropdown.grid(column=1, row=6, sticky="nswe")
-
-        self.overlay_text_size_label.grid(column=0, row=10, sticky="nswe")
-        self.overlay_text_size_entry.grid(column=1, row=10, sticky="nswe")
-
-        self.overlay_when_gsf_label.grid(column=0, row=11)
-        self.overlay_when_gsf_true.grid(column=1, row=11, sticky="w")
-        self.overlay_when_gsf_false.grid(column=2, row=11, sticky="w")
-
-        # Screen parsing
-        self.screenparsing_header_label.grid(column=0, row=9, sticky="w")
-        self.screenparsing_frame.grid(column=0, row=10, sticky="nswe")
-        self.screenparsing_checkbox.grid(column=0, row=0, sticky="w", padx=(55, 0), pady=5)
-        self.screenparsing_features_label.grid(column=0, row=1, sticky="w", padx=(55, 0), pady=(0, 5))
+        """
+        Screen parsing settings
+        """
+        # General
+        self.screen_label.grid(row=6, column=0, **padding_header, **sticky_default)
+        self.screen_frame.grid(row=7, column=0, **padding_frame, **sticky_default)
+        # Screen parsing enabled
+        self.screen_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
+        # Screen parsing overlay
+        self.screen_overlay_checkbox.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
+        # Screen parsing features
+        self.screen_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
         set_row = 3
-        for feature in self.screenparsing_features:
-            self.screenparsing_checkboxes[feature].grid(column=0, row=set_row, sticky="w", padx=(75, 0), pady=(0, 5))
+        for feature in self.screen_checkboxes.values():
+            feature.grid(row=set_row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
             set_row += 1
-        self.screenparsing_overlay_checkbox.grid(column=0, row=10, sticky="w", padx=(55, 0), pady=(0, 5))
-        self.screenparsing_overlay_geometry_checkbox.grid(column=0, row=11, sticky="w", padx=(55, 0), pady=(0, 5))
-
-        # MISC
-        self.save_settings_button.grid(column=0, row=1, padx=2)
-        self.discard_settings_button.grid(column=1, row=1, padx=2)
-        self.default_settings_button.grid(column=2, row=1, padx=2)
-        self.save_frame.grid(column=0, row=1, sticky="w")
-        self.license_button.grid(column=1, row=2, sticky="w", padx=5)
-        self.copyright_label.grid(column=0, row=2, sticky="w")
-        self.update_label.grid(column=0, row=2, sticky="w")
-        self.thanks_label.grid(column=0, row=3, sticky="w", columnspan=2)
-        self.separator.grid(column=0, row=0, sticky="nswe", pady=10)
-        self.license_frame.grid(column=0, row=2, sticky="nswe", pady=5)
-        self.save_frame.grid(column=0, row=0)
-        # FINAL FRAME
-        self.grid(column=0, row=0, sticky="nswe")
-        self.top_frame.grid(column=0, row=0, sticky="nsw")
-        self.separator.grid(column=0, row=1, sticky="nswe", pady=10)
-        self.bottom_frame.grid(column=0, row=2, sticky="nsw")
 
     def update_settings(self):
         """
         Read the settings from the settigns_obj in the variables
         module and update the settings shown in the GUI accordingly.
-        :return: None
         """
-        self.auto_update.set(variables.settings_obj["misc"]["autoupdate"])
-        if "#" not in variables.settings_obj["gui"]["color"]:
-            self.color.set(variables.settings_obj["gui"]["color"])
-        else:
-            print("Set color: {0}, default color {1}".format(variables.settings_obj["gui"]["color"],
-                                                             variables.settings_obj.defaults["gui"]["color"]))
-            if variables.settings_obj["gui"]["color"] is variables.settings_obj.defaults["gui"]["color"]:
-                self.color.set("Default")
-                self.custom_color_entry.delete(0, tk.END)
-                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
-            else:
-                self.color.set("Custom")
-                self.custom_color_entry.delete(0, tk.END)
-                self.custom_color_entry.insert(0, variables.settings_obj["gui"]["color"])
-        self.logo_color.set(variables.settings_obj["gui"]["logo_color"])
-        self.event_colors.set(variables.settings_obj["gui"]["event_colors"])
-        self.event_scheme.set(variables.settings_obj["gui"]["event_scheme"])
-        self.date_format.set(variables.settings_obj["gui"]["date_format"])
-        self.faction.set(variables.settings_obj["gui"]["faction"])
-        self.path_var.set(variables.settings_obj["parsing"]["cl_path"])
-        self.server_address_entry.delete(0, tk.END)
-        self.server_address_entry.insert(0, variables.settings_obj["sharing"]["server_address"])
-        self.server_port_entry.delete(0, tk.END)
-        self.server_port_entry.insert(0, variables.settings_obj["sharing"]["server_port"])
-        self.overlay_enable_radio_var.set(variables.settings_obj["realtime"]["overlay"])
-        self.overlay_opacity_input.delete(0, tk.END)
-        self.overlay_opacity_input.insert(0, variables.settings_obj["realtime"]["opacity"])
-        self.overlay_size_var.set(variables.settings_obj["realtime"]["size"])
-        self.overlay_position_var.set(
-            self.overlay_position_options[variables.settings_obj["realtime"]["pos"]]
-        )
-        self.overlay_bg_color.set(variables.settings_obj["realtime"]["overlay_bg_color"])
-        self.overlay_tr_color.set(variables.settings_obj["realtime"]["overlay_tr_color"])
-        self.overlay_tx_color.set(variables.settings_obj["realtime"]["overlay_tx_color"])
-        self.overlay_text_size_entry.delete(0, tk.END)
-        self.overlay_text_size_entry.insert(0, variables.settings_obj["realtime"]["overlay_tx_size"])
-        self.overlay_when_gsf.set(variables.settings_obj["realtime"]["overlay_when_gsf"])
-        self.realtime_timeout.set(variables.settings_obj["realtime"]["timeout"])
-        self.realtime_event_overlay_var.set(variables.settings_obj["realtime"]["events_overlay"])
-        self.screenparsing_var.set(variables.settings_obj["realtime"]["screenparsing"])
-        self.screenparsing_overlay_var.set(variables.settings_obj["realtime"]["screenparsing_overlay"])
-        self.screenparsing_overlay_geometry.set(
-            variables.settings_obj["realtime"]["screenparsing_overlay_geometry"])
-        for key, value in self.screenparsing_variables.items():
-            if key in variables.settings_obj["realtime"]["screenparsing_features"]:
-                value.set(True)
-            else:
-                value.set(False)
-        self.debug_window.set(variables.settings_obj["gui"]["debug"])
-        return
+        pass
 
-    def save_settings(self):
+    def save_settings(self, *args):
         """
         Save the settings found in the widgets of the settings to the
         settings_obj in the variables module
         Some settings are checked before the writing occurs
-        :return: None
         """
-        print("[DEBUG] Save_settings called!")
-        current_color = variables.settings_obj["gui"]["color"]
-        current_logo = variables.settings_obj["gui"]["logo_color"]
-        if (self.color.get() != current_color and self.color.get() != "Custom") or \
-                (current_logo != self.logo_color.get()):
-            tkinter.messagebox.showinfo("Info", "You must restart the GSF Parser for some settings to take effect.")
-        print(self.color.get())
-        if "custom" in self.color.get().lower():
-            hex_color = re.search(r"^#(?:[0-9a-fA-F]{1,2}){3}$", self.custom_color_entry.get())
-            print(hex_color)
-            if not hex_color:
-                tkinter.messagebox.showerror("Error",
-                                             "The custom color you entered is not valid. It must be a hex color code.")
-                return
-            color = self.custom_color_entry.get()
-        else:
-            color = self.color_choices[self.color.get()]
-        if self.overlay_when_gsf.get() and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
-            help_string = ("""This setting makes the overlay only appear inside GSF matches. Please note that the """
-                           """overlay will only appear after the first GSF ability is executed, so the overlay """
-                           """may appear to display a little late, but this is normal behaviour.""")
-            tkinter.messagebox.showinfo("Notice", help_string.replace("\n", "").replace("  ", ""))
+        print("[MainWindow] Saving settings")
         dictionary = {
             "misc": {
                 "version": variables.settings_obj["misc"]["version"],
-                "autoupdate": self.auto_update.get()
+                "autoupdate": self.gui_check_updates.get()
             },
             "gui": {
-                "color": color,
-                "logo_color": self.logo_color.get(),
-                "event_colors": self.event_colors.get(),
-                "event_scheme": self.event_scheme.get(),
-                "date_format": self.date_format.get(),
-                "faction": self.faction.get(),
-                "debug": self.debug_window.get()
+                "event_colors": self.gui_event_colors_type.get(),
+                "event_scheme": self.gui_event_colors_scheme.get(),
+                "faction": self.gui_faction.get(),
+                "debug": self.gui_debug_window.get()
             },
             "parsing": {
-                "cl_path": self.path_var.get(),
-            },
-            "sharing": {
-                "server_address": self.server_address_entry.get(),
-                "server_port": int(self.server_port_entry.get()),
+                "path": self.parsing_path.get(),
             },
             "realtime": {
-                "overlay": self.overlay_enable_radio_var.get(),
-                "opacity": float(self.overlay_opacity_input.get()),
-                "size": self.overlay_size_var.get(),
-                "pos": {value: key for key, value in self.overlay_position_options.items()}
-                                                                                      [self.overlay_position_var.get()],
-                "overlay_bg_color": self.overlay_bg_color.get(),
-                "overlay_tr_color": self.overlay_tr_color.get(),
-                "overlay_tx_color": self.overlay_tx_color.get(),
-                "overlay_tx_size": int(self.overlay_text_size_entry.get()),
-                "overlay_when_gsf": self.overlay_when_gsf.get(),
-                "timeout": float(self.realtime_timeout.get()),
-                "events_overlay": self.realtime_event_overlay_var.get(),
-                "screenparsing": self.screenparsing_var.get(),
-                "screenparsing_overlay": self.screenparsing_overlay_var.get(),
-                "screenparsing_features": [key for key, value in self.screenparsing_variables.items() if
-                                           value.get() is True],
-                "screenparsing_overlay_geometry": self.screenparsing_overlay_geometry.get()
-
+                "overlay": self.realtime_overlay_enabled.get(),
+                "pos": "{}+{}".format(self.realtime_overlay_position_x.get(), self.realtime_overlay_position_x.get()),
+                "overlay_when_gsf": self.realtime_overlay_disable.get(),
+                "screenparsing": self.screen_enabled.get(),
+                "screenparsing_overlay": self.screen_overlay.get(),
+                "screenparsing_features": [key for key, value in self.screen_variables.items() if value.get() is True],
             }
         }
         variables.settings_obj.write_settings(dictionary)
         self.update_settings()
         self.main_window.file_select_frame.add_files()
-        variables.color_scheme.set_scheme(self.event_scheme.get())
+        variables.color_scheme.set_scheme(self.gui_event_colors_scheme.get())
+        self.after_id = None
+
+    def save_settings_delayed(self, *args):
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+        self.after_id = self.after(2000, self.save_settings)
 
     def discard_settings(self):
         """
         Discard the changes to the settings by reloading the settings
         from the settings_obj
-        :return: None
         """
         self.update_settings()
 
@@ -508,7 +331,6 @@ class SettingsFrame(ttk.Frame):
         """
         Write the default settings to the settings_obj found in the
         settings.defaults class and then update the settings shown
-        :return: None
         """
         variables.settings_obj.write_defaults()
         self.update_settings()
@@ -517,7 +339,6 @@ class SettingsFrame(ttk.Frame):
     def show_license():
         """
         Show that this software is available under GNU GPLv3
-        :return: None
         """
         tkinter.messagebox.showinfo("License",
                                     "This program is licensed under the General Public License Version 3, by GNU. See "

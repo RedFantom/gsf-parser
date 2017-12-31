@@ -62,14 +62,13 @@ class BootSplash(tk.Toplevel):
         self.update()
         try:
             directory = os.listdir(window.default_path)
-        except OSError:
-            tkinter.messagebox.showerror("Error",
-                                         "The CombatLogs folder found in the settings file is not valid. Please "
-                                         "choose another folder.")
+        except (OSError, TypeError):
+            tkinter.messagebox.showerror(
+                "Error", "The CombatLogs folder found in the settings file is not valid. Please choose another folder.")
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings_obj.write_settings({'parsing': {'cl_path' : folder}})
+            variables.settings_obj.write_settings({'parsing': {'path' : folder}})
             variables.settings_obj.read_settings()
-            os.chdir(variables.settings_obj["parsing"]["cl_path"])
+            os.chdir(variables.settings_obj["parsing"]["path"])
             directory = os.listdir(os.getcwd())
         files = []
         for file in directory:
@@ -93,25 +92,5 @@ class BootSplash(tk.Toplevel):
             self.label_var.set("Parsing the files...")
             self.progress_bar["value"] = variables.files_done
             self.update()
-        else:
-            return
-
-
-class ConnectionSplash(tk.Toplevel):
-    def __init__(self, window=variables.main_window):
-        tk.Toplevel.__init__(self, window)
-        self.window = window
-        self.FLAG = False
-        self.title("GSF Parser: Connecting...")
-        self.label = ttk.Label(self, text="Connecting to specified server...")
-        self.label.pack()
-        self.conn_bar = ttk.Progressbar(self, orient="horizontal", length=300, mode="indeterminate")
-        self.conn_bar.pack()
-        self.window.after(500, self.connect)
-
-    def connect(self):
-        if not self.FLAG:
-            self.update()
-            self.window.after(500, self.connect)
         else:
             return

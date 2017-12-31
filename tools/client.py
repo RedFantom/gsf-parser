@@ -209,7 +209,7 @@ class ClientConnection(object):
         elif message != "READY":
             self.unexpected()
             return
-        with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file_name, "r") as file_obj:
+        with open(variables.settings_obj["parsing"]["path"] + "/" + file_name, "r") as file_obj:
             lines = file_obj.readlines()
         if self.send("LEN=%s" % len(lines)) == -1: return
         if self.send(hashlib.sha512(lines)) == -1: return

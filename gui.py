@@ -57,7 +57,7 @@ class MainWindow(ThemedTk):
         self.set_variables()
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings_obj["parsing"]["cl_path"]
+        self.default_path = variables.settings_obj["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
         variables.client_obj = client.ClientConnection()
@@ -168,7 +168,7 @@ class MainWindow(ThemedTk):
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj["parsing"]["cl_path"]
+        variables.path = variables.settings_obj["parsing"]["path"]
 
     def get_scaling_factor(self):
         """

@@ -61,9 +61,9 @@ parse = []
 
 client_obj = None
 main_window = None
-cl_path = None
+path = None
 install_path = os.path.dirname(__file__)
-path = settings_obj["parsing"]["cl_path"]
+path = settings_obj["parsing"]["path"]
 
 match_timing = None
 match_timing_end = None

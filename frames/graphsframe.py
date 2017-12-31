@@ -91,10 +91,10 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -103,7 +103,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                     file_cube, match_timings, spawn_timings = parse.splitter(lines, parse.determinePlayer(lines))
                 if file_date not in matches_played_date:
@@ -130,11 +130,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -143,7 +143,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -183,11 +183,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -196,7 +196,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -236,11 +236,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -249,7 +249,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -289,11 +289,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             enem_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -302,7 +302,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -350,12 +350,12 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
             critcount_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -364,7 +364,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -406,11 +406,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -419,7 +419,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -459,11 +459,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             spawns_played_date = {}
             spawn_length_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -472,7 +472,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -524,11 +524,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             match_length_day = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -537,7 +537,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -588,11 +588,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings_obj["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             deaths_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings_obj["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -601,7 +601,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings_obj["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)

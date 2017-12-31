@@ -77,9 +77,9 @@ class SettingsImporter(tk.Toplevel):
         except configparser.NoOptionError:
             autoupdate = settings.Defaults.autoupdate
         try:
-            cl_path = config.get("parsing", "cl_path")
+            path = config.get("parsing", "path")
         except configparser.NoOptionError:
-            cl_path = settings.Defaults.cl_path
+            path = settings.Defaults.path
         try:
             if config.get("parsing", "auto_ident") == "True":
                 auto_ident = True
@@ -223,7 +223,7 @@ class SettingsImporter(tk.Toplevel):
                 "faction": faction
             },
             "parsing": {
-                "cl_path": cl_path,
+                "path": path,
                 "auto_ident": auto_ident
             },
             "sharing": {

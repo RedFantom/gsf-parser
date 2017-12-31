@@ -75,6 +75,7 @@ class RealTimeParser(Thread):
         self._character_data = character_data
         self._character_db = character_db
         self._realtime_db = {}
+        self.diff = None
 
         """
         File parsing
@@ -87,7 +88,8 @@ class RealTimeParser(Thread):
         self.hold, self.hold_list = 0, []
         self.player_name = ""
         self.is_match = False
-        self.start = None
+        self.start_time = None
+        self.lines = []
 
         """
         Screen parsing
@@ -162,32 +164,32 @@ class RealTimeParser(Thread):
         """
         Perform all the actions required for a single loop cycle
         """
-        # now = datetime.now()
+        now = datetime.now()
         # File parsing
         lines = self._stalker.get_new_lines()
         for line in lines:
             self.process_line(line)
         if not self.is_match:
+            self.diff = datetime.now() - now
             return
         # Screen parsing
         screenshot = self._mss.grab(self._monitor)
         image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
         self.process_screenshot(image)
         # Performance measurements
-        # diff = datetime.now() - now
+        self.diff = datetime.now() - now
         # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
 
     def process_line(self, line):
         """
         Parse a single line dictionary and update the data attributes of the instance accordingly
         """
-        print("[RealTimeParser] Parsing line: {}".format(line["line"].strip()))
         # Skip any and all SetLevel or Infection events
         ignorable = ("SetLevel", "Infection")
         if any(to_ignore in line["ability"] for to_ignore in ignorable):
             return
         # Handle logins
-        if line["source"] == line["destination"] and "@" in line["source"]:
+        if line["source"] == line["destination"] and "@" in line["source"] and "Login" in line["ability"]:
             self.player_name = line["source"][1:]  # Do not store @
             print("[RealTimeParser] Login: {}".format(self.player_name))
             if self.player_name != self._character_data[1]:
@@ -202,9 +204,10 @@ class RealTimeParser(Thread):
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")
-            self.start = None
+            self.start_time = None
             # No longer a match
             self.is_match = False
+            self.lines.clear()
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -213,14 +216,13 @@ class RealTimeParser(Thread):
                 return
             else:  # Valid match event
                 print("[RealTimeParser] Match start.")
-                self.start = line["time"]
+                self.start_time = line["time"]
                 self.is_match = True
                 # Call the new match callback
                 if callable(self.match_callback):
                     self.match_callback()
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
-            print("[RealTimeParser] Player ID change: {}".format(self.active_id))
             self.active_id = ""
             # Call the spawn callback
             if callable(self.spawn_callback):
@@ -247,7 +249,6 @@ class RealTimeParser(Thread):
             return
 
         # Parse the line
-        print("[RealTimeParser] Parsing GSF event.")
         if line["amount"] == "":
             line["amount"] = "0"
         line["amount"] = int(line["amount"].replace("*", ""))
@@ -265,8 +266,10 @@ class RealTimeParser(Thread):
             self.abilities[line["ability"]] += 1
         else:  # line["ability"] not in self.abilities:
             self.abilities[line["ability"]] = 1
-
-        self.event_callback(line, self.player_name, self.active_ids, self.start)
+        if callable(self.event_callback):
+            self.lines.append(line)
+            line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
+            self.event_callback(line_effect, self.player_name, self.active_ids, self.start_time)
 
     def process_screenshot(self, screenshot):
         pass

@@ -195,7 +195,7 @@ class Filters(tk.Toplevel):
         """
         # logs, matches or spawns
         results = []
-        files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
+        files = os.listdir(variables.settings_obj["parsing"]["path"])
         files_done = 0
         splash = splashscreens.SplashScreen(self, len(files))
         # Clear the widgets in the file frame
@@ -215,7 +215,7 @@ class Filters(tk.Toplevel):
             if not parse.check_gsf(file_name):
                 continue
             # Open the CombatLog
-            with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
+            with open(os.path.join(variables.settings_obj["parsing"]["path"], file_name)) as f:
                 lines = f.readlines()
             # Parse the CombatLog to get the data to filter against
             player_list = parse.determinePlayer(lines)
