@@ -114,7 +114,7 @@ class Filters(tk.Toplevel):
         self.ships_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
         self.ships_checkboxes = {}
         self.ships_intvars = {}
-        if variables.settings["gui"]["faction"] == "imperial":
+        if variables.settings["gui"]["faction"] == "empire":
             for name in abls.rep_ships.keys():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
@@ -435,7 +435,7 @@ class Filters(tk.Toplevel):
                 for ship, intvar in dictionary.items():
                     if intvar.get() == 1:
                         print("Required: ", ship)
-                        if variables.settings["gui"]["faction"] == "imperial":
+                        if variables.settings["gui"]["faction"] == "empire":
                             pass
                         elif variables.settings["gui"]["faction"] == "republic":
                             ships_list = [abls.rep_ships[name] for name in ships_list]

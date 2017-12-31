@@ -13,7 +13,6 @@ from tkinter import messagebox
 import os
 import sys
 import variables
-from tools import client
 import main
 import socket
 from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
@@ -60,11 +59,8 @@ class MainWindow(ThemedTk):
         self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
-        variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
-        if variables.settings["sharing"]["auto_upl"] or variables.settings["parsing"]["auto_ident"]:
-            variables.client_obj.init_conn()
-            print("[DEBUG] Connection initialized")
+        self.splash.label_var.set("Building widgets...")
         self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=self.width)
@@ -90,6 +86,7 @@ class MainWindow(ThemedTk):
         # Add the frames to the Notebook
         self.setup_notebook()
         # Update the files in the file_select frame
+        self.splash.label_var.set("Parsing files...")
         self.notebook.grid(column=0, row=0, padx=2, pady=2)
         self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
@@ -140,7 +137,6 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")

@@ -67,7 +67,7 @@ class BootSplash(tk.Toplevel):
             tkinter.messagebox.showerror(
                 "Error", "The CombatLogs folder found in the settings file is not valid. Please choose another folder.")
             folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings.write_settings({'parsing': {'path' : folder}})
+            variables.settings.write_settings({'parsing': {'path': folder}})
             variables.settings.read_settings()
             os.chdir(variables.settings["parsing"]["path"])
             directory = os.listdir(os.getcwd())

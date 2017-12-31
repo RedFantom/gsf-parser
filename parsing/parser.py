@@ -70,7 +70,7 @@ class Parser(object):
         """
         Return a dictionary of keyword arguments for a ScreenParser instance based on the settings for screen parsing
         """
-        feature_list = variables.settings["realtime"]["screenparsing_features"]
+        feature_list = variables.settings["realtime"]["screen_features"]
         arguments = {
             "rgb": False,
             "cooldowns": None,

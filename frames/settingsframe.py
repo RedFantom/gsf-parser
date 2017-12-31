@@ -8,12 +8,13 @@
 
 # UI imports
 import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox
-import tkinter.filedialog
+from tkinter import ttk
+from tkinter import filedialog
+from tkinter import messagebox
+# Other
 import sys
 import os
-import variables
+from variables import settings, colors
 from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
 from collections import OrderedDict
@@ -169,7 +170,7 @@ class SettingsFrame(ttk.Frame):
         """
         Opens a Toplevel to show the settings for the colors of the events view.
         """
-        color_toplevel = EventColors(variables.main_window)
+        color_toplevel = EventColors(self.main_window)
         color_toplevel.grid_widgets()
         color_toplevel.focus_set()
         self.wait_window(color_toplevel)
@@ -180,7 +181,7 @@ class SettingsFrame(ttk.Frame):
         Open a tkFileDialog to ask the user for the directory of the CombatLogs
         so the user does not have to enter the full path manually.
         """
-        directory = tkinter.filedialog.askdirectory(
+        directory = filedialog.askdirectory(
             initialdir=self.parsing_path.get(), mustexist=True, parent=self.main_window,
             title="GSF Parser: Choosing directory")
         if directory is None or directory == "" or not os.path.exists(directory):
@@ -263,21 +264,51 @@ class SettingsFrame(ttk.Frame):
         self.screen_frame.grid(row=7, column=0, **padding_frame, **sticky_default)
         # Screen parsing enabled
         self.screen_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
-        # Screen parsing overlay
-        self.screen_overlay_checkbox.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
         # Screen parsing features
         self.screen_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        set_row = 3
+        row = 3
         for feature in self.screen_checkboxes.values():
-            feature.grid(row=set_row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
-            set_row += 1
+            feature.grid(row=row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
+            row += 1
+        # Screen parsing overlay
+        self.screen_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
         Read the settings from the settings_obj in the variables
         module and update the settings shown in the GUI accordingly.
         """
-        pass
+        """
+        GUI settings
+        """
+        self.gui_check_updates.set(settings["misc"]["autoupdate"])
+        self.gui_event_colors_type.set(settings["gui"]["event_colors"])
+        self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
+        self.gui_faction.set(settings["gui"]["faction"].capitalize())
+        self.gui_debug_window.set(settings["gui"]["debug"])
+        """
+        Parsing Settings
+        """
+        self.parsing_path.set(settings["parsing"]["path"])
+        """
+        Real-time Settings
+        """
+        self.realtime_overlay_enabled.set(settings["realtime"]["overlay"])
+        self.realtime_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
+        # Overlay position
+        self.realtime_overlay_position_x.delete(0, tk.END)
+        self.realtime_overlay_position_y.delete(0, tk.END)
+        x, y = settings["realtime"]["overlay_position"].split("y")
+        self.realtime_overlay_position_x.insert(tk.END, x[1:])
+        self.realtime_overlay_position_y.insert(tk.END, y)
+        self.realtime_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
+        """
+        Screen Parsing settings
+        """
+        self.screen_enabled.set(settings["realtime"]["screenparsing"])
+        self.screen_overlay.set(settings["realtime"]["screen_overlay"])
+        for feature in self.screen_features:
+            self.screen_variables[feature].set(feature in settings["realtime"]["screen_features"])
 
     def save_settings(self, *args):
         """
@@ -285,10 +316,13 @@ class SettingsFrame(ttk.Frame):
         settings_obj in the variables module
         Some settings are checked before the writing occurs
         """
+        if self.check_settings() is False:
+            self.update_settings()
+            return
         print("[MainWindow] Saving settings")
         dictionary = {
             "misc": {
-                "version": variables.settings["misc"]["version"],
+                "version": settings["misc"]["version"],
                 "autoupdate": self.gui_check_updates.get()
             },
             "gui": {
@@ -302,17 +336,18 @@ class SettingsFrame(ttk.Frame):
             },
             "realtime": {
                 "overlay": self.realtime_overlay_enabled.get(),
-                "pos": "{}+{}".format(self.realtime_overlay_position_x.get(), self.realtime_overlay_position_x.get()),
+                "overlay_position": "x{}y{}".format(
+                    self.realtime_overlay_position_x.get(), self.realtime_overlay_position_y.get()),
                 "overlay_when_gsf": self.realtime_overlay_disable.get(),
+                "overlay_text": self.realtime_overlay_text_color.get(),
                 "screenparsing": self.screen_enabled.get(),
-                "screenparsing_overlay": self.screen_overlay.get(),
-                "screenparsing_features": [key for key, value in self.screen_variables.items() if value.get() is True],
+                "screen_overlay": self.screen_overlay.get(),
+                "screen_features": [key for key, value in self.screen_variables.items() if value.get() is True],
             }
         }
-        variables.settings.write_settings(dictionary)
+        settings.write_settings(dictionary)
         self.update_settings()
-        self.main_window.file_select_frame.add_files()
-        variables.colors.set_scheme(self.gui_event_colors_scheme.get())
+        colors.set_scheme(self.gui_event_colors_scheme.get())
         self.after_id = None
 
     def save_settings_delayed(self, *args):
@@ -320,26 +355,18 @@ class SettingsFrame(ttk.Frame):
             self.after_cancel(self.after_id)
         self.after_id = self.after(2000, self.save_settings)
 
-    def discard_settings(self):
+    def check_settings(self):
         """
-        Discard the changes to the settings by reloading the settings
-        from the settings_obj
+        Check if the settings entered by the user are valid.
         """
-        self.update_settings()
-
-    def default_settings(self):
-        """
-        Write the default settings to the settings_obj found in the
-        settings.defaults class and then update the settings shown
-        """
-        variables.settings.write_defaults()
-        self.update_settings()
-
-    @staticmethod
-    def show_license():
-        """
-        Show that this software is available under GNU GPLv3
-        """
-        tkinter.messagebox.showinfo("License",
-                                    "This program is licensed under the General Public License Version 3, by GNU. See "
-                                    "LICENSE in the installation directory for more details")
+        # Parsing path
+        if not os.path.exists(self.parsing_path.get()):
+            messagebox.showerror("Error", "The CombatLogs folder path entered is not valid.")
+            return False
+        # Overlay position
+        x = self.realtime_overlay_position_x.get()
+        y = self.realtime_overlay_position_y.get()
+        if not x.isdigit() or not y.isdigit():
+            messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
+            return False
+        return True

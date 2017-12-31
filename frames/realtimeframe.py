@@ -94,7 +94,7 @@ class RealtimeFrame(ttk.Frame):
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
             "screen_parsing_enabled": variables.settings["realtime"]["screenparsing"],
-            "screen_parsing_features": variables.settings["realtime"]["screenparsing_features"],
+            "screen_parsing_features": variables.settings["realtime"]["screen_features"],
             "data_queue": self.data_queue,
             "return_queue": self.return_queue
         }

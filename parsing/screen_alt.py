@@ -120,7 +120,7 @@ class ScreenParser(threading.Thread):
         self.features_list = [key for key, value in self.features.items() if value]
         write_debug_log("ScreenParser is opening the following database: %s" % self.pickle_name)
         self.screenoverlay = HitChanceOverlay(variables.main_window) if \
-            variables.settings["realtime"]["screenparsing_overlay"] else None
+            variables.settings["realtime"]["screen_overlay"] else None
         self.moving_overlay = True if \
             variables.settings["realtime"]["screenparsing_overlay_geometry"] else False
 
