@@ -436,7 +436,10 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship Health " in self._screen_parsing_features:
-            pass
+            health_hull = vision.get_ship_health_hull(screenshot)
+            (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
+                screenshot, self._coordinates["health"])
+            self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
 
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
