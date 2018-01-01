@@ -15,10 +15,10 @@ from widgets.time_view import TimeView
 # Parsing
 from parsing.realtime import RealTimeParser
 from queue import Queue
-import variables
-import time
-import psutil
-import os
+# Miscellaneous
+from variables import settings
+from tools.utilities import get_swtor_screen_mode
+import time, psutil, os, sys
 
 
 class RealtimeFrame(ttk.Frame):
@@ -36,6 +36,9 @@ class RealtimeFrame(ttk.Frame):
         self.exit_queue = None
         self.data_queue = None
         self.return_queue = None
+        self.overlay = None
+        self.overlay_after_id = None
+        self.overlay_string = None
         """
         Widget creation
         """
@@ -45,7 +48,7 @@ class RealtimeFrame(ttk.Frame):
         self.cpu_stringvar = tk.StringVar()
         self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar, justify=tk.LEFT)
         # Control widgets
-        servers = ("Choose Server", ) + tuple(self.window.characters_frame.servers.values())
+        servers = ("Choose Server",) + tuple(self.window.characters_frame.servers.values())
         self.server, self.character = tk.StringVar(), tk.StringVar()
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers, command=self.update_characters)
         self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose Character",))
@@ -85,16 +88,23 @@ class RealtimeFrame(ttk.Frame):
         if self.character_data is None:
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return
+        if (settings["realtime"]["overlay"] or
+                settings["realtime"]["screen_overlay"] or
+                settings["realtime"]["screenparsing"]):
+            if self.check_screen_mode() is False:
+                return
+
         # Setup attributes
         self.exit_queue, self.data_queue, self.return_queue = Queue(), Queue(), Queue()
-        args = (self.window.characters_frame.characters, self.character_data, self.exit_queue)
+        args = (self.window.characters_frame.characters, self.character_data, self.exit_queue,
+                self.window.builds_frame.ships_data, self.window.builds_frame.companions_data)
         kwargs = {
             "spawn_callback": self.spawn_callback,
             "match_callback": self.match_callback,
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
-            "screen_parsing_enabled": variables.settings["realtime"]["screenparsing"],
-            "screen_parsing_features": variables.settings["realtime"]["screen_features"],
+            "screen_parsing_enabled": settings["realtime"]["screenparsing"],
+            "screen_parsing_features": settings["realtime"]["screen_features"],
             "data_queue": self.data_queue,
             "return_queue": self.return_queue
         }
@@ -110,6 +120,7 @@ class RealtimeFrame(ttk.Frame):
         # Change Button state
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
+        self.open_overlay()
         # Start the parser
         self.parser.start()
 
@@ -117,7 +128,7 @@ class RealtimeFrame(ttk.Frame):
         """
         Stop the parsing process
         """
-        self.close_overlays()
+        self.close_overlay()
         self.parser.stop()
         self.parsing_control_button.config(text="Start Parsing", command=self.start_parsing)
         self.exit_queue, self.data_queue, self.return_queue = None, None, None
@@ -129,6 +140,7 @@ class RealtimeFrame(ttk.Frame):
             raise
         self.watching_stringvar.set("Watching no file...")
         self.parser = None
+        self.close_overlay()
 
     def file_callback(self, file_name):
         """
@@ -169,14 +181,80 @@ class RealtimeFrame(ttk.Frame):
     Overlay Handling
     """
 
-    def open_overlays(self):
-        pass
+    def open_overlay(self):
+        """
+        Open an overlay if the settings given by the user allow for it
+        """
+        if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
+            return
+        if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
+            from widgets.overlay_windows import WindowsOverlay as Overlay
+        else:  # Linux or non-experimental
+            from widgets import Overlay
+        # Generate arguments for Overlay.__init__
+        position = settings["realtime"]["overlay_position"]
+        x, y = position.split("y")
+        x, y = int(x[1:]), int(y)
+        self.overlay_string = tk.StringVar(self)
+        try:
+            self.overlay = Overlay((x, y), self.overlay_string, master=self.window, auto_init=True)
+        except Exception as e:
+            messagebox.showerror(
+                "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
+                         "message below to the developer. This error is fatal. The GSF Parser cannot continue."
+                         "\n\n{}.".format(e))
+            raise
+        self.update_overlay()
 
-    def update_overlays(self):
-        pass
+    def update_overlay(self):
+        """
+        Periodically called function to update the text shown in the Overlay
+        """
+        if self.parser is None or not isinstance(self.parser, RealTimeParser) or not self.parser.is_alive():
+            return
+        self.overlay.update_text(self.parser.overlay_string)
+        self.overlay_after_id = self.after(1000, self.update_overlay)
 
-    def close_overlays(self):
-        pass
+    def close_overlay(self):
+        """
+        Close the overlay
+        """
+        if self.overlay_after_id is not None:
+            self.after_cancel(self.overlay_after_id)
+        if self.overlay is not None:
+            self.overlay.destroy()
+        self.overlay = None
+        self.overlay_after_id = None
+
+    @staticmethod
+    def check_screen_mode():
+        """
+        Check if the screen mode of SWTOR is suitable for the Overlay and display a message if that's not the case
+        """
+        screen_mode = get_swtor_screen_mode()
+        if screen_mode is FileNotFoundError:
+            messagebox.showerror(
+                "Error", "In an attempt to determine the screen mode of SWTOR, the GSF parser could not locate the "
+                         "client_settings.ini file. Please check if SWTOR is correctly installed.")
+            return False
+        elif screen_mode is ValueError:
+            return True  # Safe-guard against false negatives
+        elif screen_mode == "Windowed":
+            messagebox.showerror(
+                "Error", "The GSF Parser determined the SWTOR screen mode as 'Windowed'. This means that Overlays "
+                         "might not display correctly and screen parsing will be unreliable at best.")
+            return True  # Still allowed to continue
+        elif screen_mode == "FullScreen (Windowed)":
+            # Perfect!
+            return True
+        elif screen_mode == "FullScreen":
+            messagebox.showerror(
+                "Error", "The GSF Parser determined the SWTOR screen mode as 'FullScreen'. This means that Overlays "
+                         "cannot be displayed and screen parsing cannot be started. Please change your screen mode "
+                         "to 'FullScreen (Windowed)'.")
+            return False
+        else:
+            raise ValueError("Unexpected screen mode value: {}".format(screen_mode))
 
     """
     Character handling
@@ -213,4 +291,3 @@ class RealtimeFrame(ttk.Frame):
         reverse_servers = {value: key for key, value in self.window.characters_frame.servers.items()}
         server = reverse_servers[self.server.get()]
         return server, self.character.get()
-

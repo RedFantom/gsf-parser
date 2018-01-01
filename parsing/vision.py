@@ -78,14 +78,14 @@ def get_tracking_degrees(distance, pixelsperdegree=10):
     return round(distance / pixelsperdegree, 2)
 
 
-def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):
+def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     """
     :param degrees: The amount of degrees for tracking penalty
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
     :return:
     """
-    return round(degrees * tracking_penalty - upgrade_c, 1)
+    return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
 
 
 def get_timer_status(source):

@@ -170,6 +170,21 @@ class Parser(object):
         return line_dict
 
     @staticmethod
+    def get_abilities_dict(lines: list):
+        """
+        Get the abilities dict for a list of lines
+        """
+        abilities = {}
+        for line in lines:
+            if not isinstance(line, dict):
+                line = Parser.line_to_dictionary(line)
+            if line["ability"] not in abilities:
+                abilities[line["ability"]] = 1
+            else:
+                abilities[line["ability"]] += 1
+        return abilities
+
+    @staticmethod
     def get_effects_ability(line_dict, lines, active_id):
         """
         Parse the lines after an event to determine what events are effects of the event specified

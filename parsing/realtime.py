@@ -20,7 +20,10 @@ from PIL import Image
 from datetime import datetime
 from parsing.guiparsing import GSFInterface
 from parsing import vision
-
+from tools.utilities import get_cursor_position
+from parsing.ships import Ship
+from parsing.shipstats import ShipStats
+from parsing.keys import keys
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -49,39 +52,6 @@ spawn_dictionary["target"] = target_dict
 spawn_dictionary["player_name"]
 spawn_dictionary["ship"]
 spawn_dictionary["ship_name"]
-
-
-The realtime screen parsing uses Queue objects to communicate with other parts of the program. This is required because
-the screen parsing takes place in a separate process for performance optimization and itself runs several threads to
-monitor mouse and keyboard activity. This only gets recorded if the user is in a match, for otherwise it might be
-possible to extract keylogs of different periods, and this would impose an extremely dangerous security issue. The Queue
-objects used by the ScreenParser object are the following:
-
-data_queue:         This Queue object receives any data from the realtime file parsing that is relevant for the
-                    Screen Parser object. This includes data about the file watched, the match detected, the spawn
-                    detected and other information. A list of expected data:
-                    - ("file", str new_file_name)           new CombatLog watched
-                    - ("match", True, datetime)             new match started
-                    - ("match", False, datetime)            match ended
-                    - ("spawn", datetime)                   new spawn
-exit_queue:         This Queue object is checked to see if the ScreenParser should stop running or not. Because this
-                    is running in a separate process, one cannot just simply call __exit__, all pending operations
-                    must first be completed. A list of expected data:
-                    - True                                  keep running
-                    - False                                 exit ASAP
-query_queue         This Queue object is for communication between the process and the realtime parsing thread in the
-                    main process so the main process can receive data and display it in the overlay. A list of
-                    expected data:
-                    - "power_mgmt"                          return int power_mgmt
-                    - "tracking"                            return int tracking degrees
-                    - "health"                              return (hull, shieldsf, shieldsr), all ints
-return_queue        The Queue in which the data requested from the query_queue is returned.
-_internal_queue:    This Queue object is for internal communication between the various Thread objects running in this
-                    Process object. A list of expected data:
-                    - ("keypress", *args)                   key pressed
-                    - ("mousepress", *args)                 mouse button pressed
-                    - ("mouserelease", *args)               mouse button released
-                    This is not yet a complete list.
 """
 
 
@@ -96,6 +66,8 @@ class RealTimeParser(Thread):
             character_db,
             character_data,
             exit_queue,
+            ships_db,
+            companions_db,
             spawn_callback=None,
             match_callback=None,
             file_callback=None,
@@ -130,7 +102,7 @@ class RealTimeParser(Thread):
         self.event_callback = event_callback
         # Settings
         self._screen_parsing_enabled = screen_parsing_enabled
-        self._screen_parsing_features = screen_parsing_features
+        self._screen_parsing_features = screen_parsing_features if screen_parsing_features is not None else []
         # Queues
         self._data_queue = data_queue
         self._return_queue = return_queue
@@ -140,6 +112,8 @@ class RealTimeParser(Thread):
         self._character_db = character_db
         self._realtime_db = {}
         self.diff = None
+        self.ships_db = ships_db
+        self.companions_db = companions_db
 
         """
         File parsing
@@ -150,11 +124,14 @@ class RealTimeParser(Thread):
         self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
         self.active_id, self.active_ids = "", []
         self.hold, self.hold_list = 0, []
-        self.player_name = ""
+        self.player_name = "Player Name"
         self.is_match = False
         self.start_match = None
         self.start_spawn = None
         self.lines = []
+        self.primary_weapon = False
+        self.secondary_weapon = False
+        self.scope_mode = False
 
         """
         Screen parsing
@@ -164,11 +141,14 @@ class RealTimeParser(Thread):
         self._ms_listener = None
         self.setup_screen_parsing()
         self.ship = None
+        self.ship_stats = None
         resolution = get_screen_resolution()
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
         self._interface = None
         self._coordinates = {}
-        self.screen_data = {"tracking": 0.0, "health": (None, None, None), "power_mgmt": 4}
+        self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
+        self._resolution = resolution
+        self._pixels_per_degree = None
 
         """
         Data processing
@@ -183,7 +163,7 @@ class RealTimeParser(Thread):
         if not self._screen_parsing_enabled:
             return
         self._mss = mss.mss()
-        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
+        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
         file_name = self._character_db[self._character_data]["GUI"]
         self._interface = GSFInterface(file_name)
@@ -191,6 +171,7 @@ class RealTimeParser(Thread):
             "power_mgmt": self._interface.get_ship_powermgmt_coordinates(),
             "health": self._interface.get_ship_health_coordinates()
         }
+        self._pixels_per_degree = self._interface.get_pixels_per_degree()
 
     def start_listeners(self):
         """
@@ -268,6 +249,10 @@ class RealTimeParser(Thread):
         self.diff = datetime.now() - now
         # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
 
+    """
+    FileParser
+    """
+
     def process_line(self, line):
         """
         Parse a single line dictionary and update the data attributes of the instance accordingly
@@ -289,6 +274,7 @@ class RealTimeParser(Thread):
                     "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
                         self._character_data[1], self.player_name
                     ))
+            self.process_login()
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")
@@ -316,6 +302,9 @@ class RealTimeParser(Thread):
             if callable(self._spawn_callback):
                 self._spawn_callback()
             self.start_spawn = line["time"]
+            self.ship = None
+            self.ship_stats = None
+            self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
         # Update player ID if possible and required
         if self.active_id == "" and line["source"] == line["destination"]:
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
@@ -360,12 +349,112 @@ class RealTimeParser(Thread):
             line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
             self.event_callback(line_effect, self.player_name, self.active_ids, self.start_match)
 
+        """
+        Special ability processing
+        """
+        if line["ability"] == "Scope Mode":
+            self.scope_mode = not self.scope_mode
+        elif line["ability"] == "Primary Weapon Swap":
+            self.primary_weapon = not self.primary_weapon
+        elif line["ability"] == "Secondary Weapon Swap":
+            self.secondary_weapon = not self.secondary_weapon
+        """
+        Ship processing
+        """
+        if self.ship is None:
+            abilities = Parser.get_abilities_dict(self.lines)
+            ship = Parser.get_ship_for_dict(abilities)
+            if len(ship) != 1:
+                return
+            ship_name = ship[0]
+            ship_object = self._realtime_db[self._character_data]["Ship Objects"][ship_name]
+            if ship_object is None:
+                messagebox.showinfo(
+                    "Info", "The GSF Parser has determined that a ship that is not configured for this character "
+                            "has been selected. Screen parsing results will be inaccurate.")
+            self.ship = ship_object if ship_object is not None else False
+            if self._screen_parsing_enabled is False:
+                return
+            args = (ship_object, self.ships_db, self.companions_db)
+            self.ship_stats = ShipStats(*args) if ship_object is not None else False
+        return
+
+    """
+    ScreenParser
+    """
+
     def process_screenshot(self, screenshot):
         """
         Analyze a screenshot and take the data to save it
         """
+        now = datetime.now()
+        spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
+        """
+        Tracking penalty
+        
+        Retrieves cursor coordinates and saves the following:
+        - Absolute cursor position
+        - Relative cursor position
+        - Tracking penalty percentage
+        """
         if "Tracking Penalty" in self._screen_parsing_features:
-            pass
+            # Absolute cursor position
+            mouse_coordinates = get_cursor_position()
+            spawn_dict["cursor_pos"][now] = mouse_coordinates
+            # Relative cursor position
+            distance = vision.get_distance_from_center(mouse_coordinates, self._resolution)
+            spawn_dict["distance"][now] = distance
+            # Tracking penalty
+            degrees = vision.get_tracking_degrees(distance, self._pixels_per_degree)
+            if self.ship_stats is not None:
+                constants = self.get_tracking_penalty()
+                penalty = vision.get_tracking_penalty(degrees, *constants)
+            else:
+                penalty = None
+            spawn_dict["tracking"][now] = penalty
+            # Set the data for the string building
+            unit = "°" if penalty is None else "%"
+            string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
+            self.screen_data["tracking"] = string
+        """
+        
+        """
+
+        # Finally, save data
+        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
+        self.save_data_dictionary()
+
+    def get_tracking_penalty(self):
+        """
+        Determine the correct weapon to determine the tracking penalty for and then retrieve that data
+        """
+        if self.ship_stats is None:
+            print("[RealTimeParser] get_tracking_penalty was called while ship_stats is None")
+            return 0, 0  # Fail silently
+        primaries = ["PrimaryWeapon", "PrimaryWeapon2"]
+        secondaries = ["SecondaryWeapon", "SecondaryWeapon2"]
+        if self.scope_mode is True:
+            weapon_key = secondaries[int(self.secondary_weapon)]
+        else:  # self.scope_mode is False
+            weapon_key = primaries[int(self.primary_weapon)]
+        firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
+        tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
+        if "Weapon_Tracking_Bonus" not in self.ship_stats[weapon_key]:
+            upgrade_constant = self.ship_stats[weapon_key]["Weapon_Tracking_Bonus"]
+        else:
+            upgrade_constant = 0
+        return tracking_penalty, upgrade_constant, firing_arc
+
+    """
+    TimerParser
+    """
+
+    def process_login(self):
+        """
+        TimerParser attempts for ten seconds to determine if there is a spawn timer available on the screen
+        """
+        if "Spawn Timer" not in self._screen_parsing_features:
+            return
 
     def run(self):
         """
@@ -395,17 +484,14 @@ class RealTimeParser(Thread):
     """
 
     def _on_kb_press(self, key):
-        if not self.is_match:
+        if not self.is_match or key not in keys:
             return
-        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]["keys"][datetime.now()] = key
-
-    def _on_kb_release(self, key):
-        if not self.is_match:
-            return
+        self.set_for_current_spawn("keys", datetime.now(), keys[key])
 
     def _on_ms_press(self, x, y, button, pressed):
         if not self.is_match:
             return
+        self.set_for_current_spawn("clicks", datetime.now(), button)
 
     """
     General functions
@@ -437,6 +523,7 @@ class RealTimeParser(Thread):
 
     def spawn_callback(self):
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {}
+        self.create_keys()
         self._spawn_callback()
 
     def create_keys(self):
@@ -453,3 +540,31 @@ class RealTimeParser(Thread):
             "ship": None,
             "ship_name": None
         }
+
+    def set_for_current_spawn(self, *args):
+        if len(args) == 2:
+            self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]] = args[1]
+        elif len(args) == 3:
+            self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]][args[1]] = args[2]
+        else:
+            raise ValueError()
+
+    """
+    String manipulation
+    """
+
+    @property
+    def overlay_string(self):
+        return ""
+
+    def get_tracking_string(self):
+        pass
+
+    def get_parsing_string(self):
+        pass
+
+    def get_timer_string(self):
+        pass
+
+    def get_health_string(self):
+        pass

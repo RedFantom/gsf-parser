@@ -337,17 +337,21 @@ class GUIParser(object):
 
 
 class GSFInterface(GUIParser):
-    def __init__(self, file_name, target_items={"FreeFlightQuickBar": (230, 70),
-                                                "FreeFlightShipStatus": (190, 180),
-                                                "FreeFlightPlayerStatusEffects": (245, 50),
-                                                "FreeFlightTargetStatusEffects": (280, 50),
-                                                "FreeFlightShipAmmo": (170, 90),
-                                                "FreeFlightTargetingComputer": (345, 260),
-                                                "FreeFlightPowerSettings": (80, 180),
-                                                "FreeFlightMissileLockIndicator": (90, 80),
-                                                "FreeFlightMiniMap": (325, 245),
-                                                "FreeFlightScorecard": (420, 120),
-                                                "FreeFlightCopilotBark": (245, 90)}):
+    def __init__(self, file_name, target_items=None):
+        if target_items is None:
+            target_items = {
+                "FreeFlightQuickBar": (230, 70),
+                "FreeFlightShipStatus": (190, 180),
+                "FreeFlightPlayerStatusEffects": (245, 50),
+                "FreeFlightTargetStatusEffects": (280, 50),
+                "FreeFlightShipAmmo": (170, 90),
+                "FreeFlightTargetingComputer": (345, 260),
+                "FreeFlightPowerSettings": (80, 180),
+                "FreeFlightMissileLockIndicator": (90, 80),
+                "FreeFlightMiniMap": (325, 245),
+                "FreeFlightScorecard": (420, 120),
+                "FreeFlightCopilotBark": (245, 90)
+            }
         GUIParser.__init__(self, file_name, target_items)
 
     def get_element_coordinates(self, element_name):
@@ -426,6 +430,10 @@ class GSFInterface(GUIParser):
 
     def get_target_buffs_coordinates(self):
         return self.get_box_coordinates("FreeFlightTargetStatusEffects")
+
+    def get_pixels_per_degree(self):
+        obj = self.get_element_object("Global")
+        return self.get_item_value(obj, "GlobalScale") * 10
 
     def get_score_coordinates(self):
         pass

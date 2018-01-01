@@ -15,7 +15,7 @@ import numpy
 from sys import platform
 import tkinter as tk
 from tkinter import messagebox, filedialog
-import mss
+from configparser import ConfigParser
 
 debug = False
 
@@ -88,16 +88,14 @@ def get_pointer_position_linux():
     return data["root_x"], data["root_y"]
 
 
-def get_cursor_position(screen):
+def get_cursor_position():
     """
     Calls the appropriate function to get the cursor position depending on the operating system and whether DEBUG mode
     is enabled or not. get_pointer_position_cv2() is not preferred because it's resource intensive.
     :param screen: cv2 array of screenshot
     :return:
     """
-    if debug:
-        return get_pointer_position_cv2(screen)
-    elif platform == "win32":
+    if platform == "win32":
         return get_pointer_position_win32()
     elif platform == "linux":
         return get_pointer_position_linux()
@@ -234,3 +232,29 @@ def get_screen_resolution():
     height = root.winfo_screenheight()
     root.destroy()
     return width, height
+
+
+def get_swtor_screen_mode():
+    """
+    Return the SWTOR Screen Mode as a String, or None if it cannot reliably be determined.
+    """
+    config_path = os.path.join(get_swtor_directory(), "swtor", "settings", "client_settings.ini")
+    if not os.path.exists(config_path):
+        return FileNotFoundError
+    config_parser = ConfigParser()
+    with open(config_path, "r") as fi:
+        config_parser.read_file(fi)
+    if "Renderer" not in config_parser.sections():
+        return ValueError
+    renderer_settings = config_parser["Renderer"]
+    if "FullScreen" not in renderer_settings:
+        return ValueError
+    full_screen = renderer_settings["FullScreen"]
+    if full_screen is False or full_screen == "false":
+        return "Windowed"
+    if "D3DFullScreen" not in renderer_settings:
+        return "FullScreen (Windowed)"
+    d3d_full_screen = renderer_settings["D3DFullScreen"]
+    if d3d_full_screen is True or d3d_full_screen == "true":
+        return "FullScreen"
+    return "FullScreen (Windowed)"

@@ -113,6 +113,7 @@ class Settings(object):
             "screenparsing": True,
             "screen_overlay": True,
             "screen_features": ["Tracking penalty", "Ship health", "Power management"],
+            "overlay_experimental": False
         }
     }
 

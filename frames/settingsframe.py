@@ -17,6 +17,7 @@ import os
 from variables import settings, colors
 from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
+from tools.utilities import get_screen_resolution
 from collections import OrderedDict
 
 
@@ -129,6 +130,11 @@ class SettingsFrame(ttk.Frame):
         self.realtime_overlay_disable_checkbox = ttk.Checkbutton(
             self.realtime_frame, text="Hide overlay when not in a GSF match", variable=self.realtime_overlay_disable,
             command=self.save_settings)
+        # Experimental overlay
+        self.realtime_overlay_experimental = tk.BooleanVar()
+        self.realtime_overlay_experimental_checkbox = ttk.Checkbutton(
+            self.realtime_frame, text="Enable experimental high-performance overlay",
+            variable=self.realtime_overlay_experimental)
 
         """
         Screen parsing settings
@@ -255,6 +261,8 @@ class SettingsFrame(ttk.Frame):
         self.realtime_overlay_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         # Disable overlay when not in match
         self.realtime_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
+        # Experimental Win32 Overlay
+        self.realtime_overlay_experimental_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
 
         """
         Screen parsing settings
@@ -310,6 +318,24 @@ class SettingsFrame(ttk.Frame):
         for feature in self.screen_features:
             self.screen_variables[feature].set(feature in settings["realtime"]["screen_features"])
 
+        """
+        Widget states
+        """
+        if get_screen_resolution() != (1920, 1080):
+            if "Spawn Timer" in self.screen_features:
+                self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
+                HoverInfo(
+                    self.screen_checkboxes["Spawn Timer"],
+                    text="This feature is only available for 1080p monitors as primary device. If you would like "
+                         "for your resolution to be supported, please send RedFantom an screenshot of the "
+                         "unaltered user interface shown before the start of a match.")
+        if sys.platform == "linux":
+            self.realtime_overlay_experimental.set(False)
+            self.realtime_overlay_experimental_checkbox.config(state=tk.DISABLED)
+            HoverInfo(self.realtime_overlay_experimental_checkbox,
+                      text="This feature is only available on Windows due to API differences.")
+        return
+
     def save_settings(self, *args):
         """
         Save the settings found in the widgets of the settings to the
@@ -340,6 +366,7 @@ class SettingsFrame(ttk.Frame):
                     self.realtime_overlay_position_x.get(), self.realtime_overlay_position_y.get()),
                 "overlay_when_gsf": self.realtime_overlay_disable.get(),
                 "overlay_text": self.realtime_overlay_text_color.get(),
+                "overlay_experimental": self.realtime_overlay_experimental.get(),
                 "screenparsing": self.screen_enabled.get(),
                 "screen_overlay": self.screen_overlay.get(),
                 "screen_features": [key for key, value in self.screen_variables.items() if value.get() is True],
