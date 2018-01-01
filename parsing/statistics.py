@@ -81,7 +81,7 @@ statistics = {
     'midRangeDamMulti': ("General", "Damage Mid-Range Multiplier", "%"),
     'pbRangeAccMulti': ("Accuracy", "Short-Range Accuracy Multiplier", "%"),
     'pbRangeDamMulti': ("General", "Damage Short-Range Multiplier", "%"),
-    'trackingAccuracyLoss': ("Accuracy", "Tracking Penalty", "%/°"),
+    'trackingAccuracyLoss': ("Accuracy", "Tracking penalty", "%/°"),
     'Cooldown': ('General', 'Cooldown', 's'),
     'Active': ('General', 'Active Ability', 'bool')
 }

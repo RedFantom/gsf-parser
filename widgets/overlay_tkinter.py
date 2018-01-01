@@ -15,7 +15,7 @@ class TkinterOverlay(Overlay, tk.Toplevel):
     A class that can display text on the screen through the default Tkinter Toplevel interface.
     """
 
-    def __init__(self, position, text_variable, wait_time=20, font=("default", 12, "bold"), master=None,
+    def __init__(self, position, text_variable, wait_time=20, font=("default", 11, "bold"), master=None,
                  color=(255, 255, 0), opacity=255, auto_init=True):
         tk.Toplevel.__init__(self, master)
         self._master = master
@@ -42,7 +42,7 @@ class TkinterOverlay(Overlay, tk.Toplevel):
         tk.Toplevel.config(self, background="darkblue")
         if sys.platform == "linux":
             print("[TkinterOverlay] Setting special Overlay attributes for Linux.")
-            self.wm_attributes("-alpha", 0.25)
+            self.wm_attributes("-alpha", 0.75)
         else:  # Windows
             print("[TkinterOverlay] Setting special Overlay attributes for Windows.")
             self.wm_attributes("-transparentcolor", "darkblue")
@@ -50,8 +50,6 @@ class TkinterOverlay(Overlay, tk.Toplevel):
 
     def update_geometry(self):
         size = self.text_label.winfo_reqwidth(), self.text_label.winfo_reqheight()
-        print("[TkinterOverlay] Setting Overlay size {} with text {}".
-              format(size, self._text_variable.get().replace("\n", "")))
         self.wm_geometry("{}x{}+{}+{}".format(*size, *self._position))
 
     def update_text(self, text):

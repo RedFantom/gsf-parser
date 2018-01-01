@@ -188,9 +188,6 @@ class ScreenParser(threading.Thread):
         health_cds = self.interface.get_ship_health_coordinates()
         name_cds = self.interface.get_target_name_coordinates()
         ship_type_cds = self.interface.get_target_shiptype_coordinates()
-        player_buff_cds = self.interface.get_ship_buffs_coordinates()
-        target_buff_cds = self.interface.get_target_buffs_coordinates()
-        score_cds = self.interface.get_score_coordinates()
         ammo_cds = self.interface.get_ammo_coordinates()
         distance_cds = self.interface.get_distance_coordinates()
 
@@ -198,61 +195,6 @@ class ScreenParser(threading.Thread):
         self._kb_listener.start()
 
         while True:
-            # If the exit_queue is not empty, get the value. If the value is False, exit the loop and start preparations
-            # for terminating the process entirely by saving all the data collected.
-            if not self.exit_queue.empty():
-                print("ScreenParser exit_queue is not empty")
-                if not self.exit_queue.get():
-                    print("ScreenParser loop break")
-                    break
-            write_debug_log("ScreenParser started a cycle")
-            # While data_queue is not empty, process the data in it
-            if not self.data_queue.empty():
-                data = self.data_queue.get()
-                write_debug_log("ScreenParser received the following data from Parser: %s" % str(data))
-                # (data[0], data[1], data[2])
-                if not isinstance(data, tuple):
-                    write_debug_log("ScreenParser encountered the following error: "
-                                    "Unexpected data received: " + str(data))
-                    raise ValueError("Unexpected data received: ", str(data))
-                # ("file", filename)
-                if data[0] == "file" and self.file is not data[1]:
-                    self.data_dictionary[self.file] = self._file_dict
-                    self.file = data[1]
-                    self._file_dict.clear()
-                # ("match", False, datetime)
-                elif data[0] == "match" and not data[1] and self.is_match:
-                    if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
-                        self.set_new_match()
-                    self._match_dict.clear()
-                    self.is_match = False
-                    self.match = None
-                    self.screenoverlay.running = False
-                    time.sleep(0.05)
-                # ("match", True, datetime)
-                elif data[0] == "match" and data[1] and not self.is_match:
-                    self._match = data[2]
-                    if not len(self._match_dict) == 0 or not len(self._spawn_dict) == 0:
-                        self.set_new_match()
-                    self.is_match = True
-                # ("spawn", datetime)
-                elif data[0] == "spawn":
-                    self.set_new_spawn()
-                    self._spawn = data[1]
-                else:
-                    write_debug_log("ScreenParser encountered the following error: "
-                                    "Unexpected data received: " + str(data))
-                    raise ValueError("Unexpected data received: ", str(data))
-            if not self.is_match:
-                write_debug_log("No match is active, so ScreenParser ends cycle")
-                time.sleep(1)
-                continue
-            write_debug_log("Start pulling vision functions data")
-            image = sct.grab(sct.monitors[0])
-            pil_screen = Image.frombytes("RGB", image.size, image.rgb)
-            screen = vision.pillow_to_numpy(pil_screen)
-            pointer_cds = get_cursor_position(screen)
-            current_time = datetime.now()
             if "powermgmt" in self.features_list:
                 power_mgmt = vision.get_power_management(screen, *power_mgmt_cds)
             else:

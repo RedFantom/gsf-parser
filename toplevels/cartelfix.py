@@ -25,6 +25,7 @@ class CartelFix(tk.Toplevel):
                 exit()
             else:
                 showinfo("Information", "This feature is currently not supported on Unix machines.")
+                raise ValueError()
         tk.Toplevel.__init__(self, master)
         self.label = tk.Label(self)
         self.railgun = 1

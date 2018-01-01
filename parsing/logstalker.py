@@ -37,8 +37,7 @@ class LogStalker(object):
             return
         self.file = recent
         print("[LogStalker] Watching new file: {}".format(self.file))
-        with open(os.path.join(self._folder, self.file)) as fi:
-            self._read_so_far = len(fi.readlines())
+        self._read_so_far = 0
         self._watching_callback(self.file)
 
     def get_new_lines(self):

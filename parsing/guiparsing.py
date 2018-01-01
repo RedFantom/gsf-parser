@@ -350,7 +350,8 @@ class GSFInterface(GUIParser):
                 "FreeFlightMissileLockIndicator": (90, 80),
                 "FreeFlightMiniMap": (325, 245),
                 "FreeFlightScorecard": (420, 120),
-                "FreeFlightCopilotBark": (245, 90)
+                "FreeFlightCopilotBark": (245, 90),
+                "Global": (0, 0)
             }
         GUIParser.__init__(self, file_name, target_items)
 

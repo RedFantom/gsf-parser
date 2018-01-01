@@ -93,8 +93,6 @@ def get_timer_status(source):
     Determines the state of the spawn countdown timer by performing
     template matching on the cv2 array of a screenshot to find a match
     for one of the timers in the folder.
-    :param screen: A cv2 array of the screenshot
-    :return: An int of how many seconds are left
     """
     folder = os.path.join(get_assets_directory(), "timers")
     image_similarity = {}
@@ -109,28 +107,6 @@ def get_timer_status(source):
     if len(image_similarity) == 0:
         return None
     return int(min(image_similarity.items(), key=operator.itemgetter(1))[0])
-
-
-def get_enemy_brackets(screen):
-    """
-    Determines the amount and places of the red brackets of the enemies on
-    the screen using template matching, at the default size.
-    :param screen: cv2 array of screenshot
-    :return: list of (x, y) tuples
-    """
-    pass
-
-
-def perform_ocr(pil_screen, coordinates):
-    """
-    Perform OCR on a screenshot to determine the ship type of the enemy player
-    currently targeted by the user.
-    :param pil_screen: PIL Image
-    :param coordinates: (x, y, x, y) box tuple
-    :return: string of ship type
-    """
-    pil_screen.crop(coordinates, Image.ANTIALIAS)
-    return pytesseract.image_to_string(pil_screen)
 
 
 def get_power_management(screen, weapon_cds, shield_cds, engine_cds):

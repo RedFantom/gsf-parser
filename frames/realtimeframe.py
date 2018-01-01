@@ -39,6 +39,7 @@ class RealtimeFrame(ttk.Frame):
         self.overlay = None
         self.overlay_after_id = None
         self.overlay_string = None
+        self.data_after_id = None
         """
         Widget creation
         """
@@ -121,6 +122,7 @@ class RealtimeFrame(ttk.Frame):
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
         self.open_overlay()
+        self.update_data_string()
         # Start the parser
         self.parser.start()
 
@@ -173,8 +175,7 @@ class RealtimeFrame(ttk.Frame):
         self.after(2000, self.update_cpu_usage)
         if self.parser is not None and self.parser.diff is not None:
             diff = self.parser.diff
-            diff = diff.seconds + diff.microseconds / 1000000
-            string += ", {:.03f}s".format(diff)
+            string += ", {:.03f}s".format(diff.total_seconds())
         self.cpu_stringvar.set(string)
 
     """
@@ -206,13 +207,26 @@ class RealtimeFrame(ttk.Frame):
             raise
         self.update_overlay()
 
+    def update_data_string(self):
+        if self.parser is None:
+            if self.data_after_id is not None:
+                self.after_cancel(self.data_after_id)
+                self.data_after_id = None
+            return
+        self.data_label.config(text=self.parser.overlay_string)
+        self.data_after_id = self.after(1000, self.update_data_string)
+
     def update_overlay(self):
         """
         Periodically called function to update the text shown in the Overlay
         """
-        if self.parser is None or not isinstance(self.parser, RealTimeParser) or not self.parser.is_alive():
+        if self.parser is None or not isinstance(self.parser, RealTimeParser):
+            print("[RealTimeFrame] Cancelling Overlay update.")
             return
-        self.overlay.update_text(self.parser.overlay_string)
+        string = self.parser.overlay_string
+        if string.endswith("\n"):
+            string = string[:-1]
+        self.overlay.update_text(string)
         self.overlay_after_id = self.after(1000, self.update_overlay)
 
     def close_overlay(self):

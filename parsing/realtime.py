@@ -10,6 +10,7 @@ from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread
 from tools.utilities import get_temp_directory, get_screen_resolution
+from variables import settings
 # File parsing
 import os
 import _pickle as pickle  # known as cPickle
@@ -21,9 +22,11 @@ from datetime import datetime
 from parsing.guiparsing import GSFInterface
 from parsing import vision
 from tools.utilities import get_cursor_position
-from parsing.ships import Ship
 from parsing.shipstats import ShipStats
 from parsing.keys import keys
+from parsing.ships import ships, Ship
+from parsing.abilities import rep_ships
+from time import sleep
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -119,7 +122,7 @@ class RealTimeParser(Thread):
         File parsing
         """
         # LogStalker
-        self._stalker = LogStalker(watching_callback=self._file_callback)
+        self._stalker = LogStalker(watching_callback=self.file_callback)
         # Data attributes
         self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
         self.active_id, self.active_ids = "", []
@@ -148,7 +151,7 @@ class RealTimeParser(Thread):
         self._coordinates = {}
         self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
         self._resolution = resolution
-        self._pixels_per_degree = None
+        self._pixels_per_degree = 10
 
         """
         Data processing
@@ -163,7 +166,7 @@ class RealTimeParser(Thread):
         if not self._screen_parsing_enabled:
             return
         self._mss = mss.mss()
-        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press)
+        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
         file_name = self._character_db[self._character_data]["GUI"]
         self._interface = GSFInterface(file_name)
@@ -247,6 +250,8 @@ class RealTimeParser(Thread):
             self.process_screenshot(image)
         # Performance measurements
         self.diff = datetime.now() - now
+        if self.diff.total_seconds() < 0.5:
+            sleep(0.5 - self.diff.total_seconds())
         # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
 
     """
@@ -262,7 +267,8 @@ class RealTimeParser(Thread):
         if any(to_ignore in line["ability"] for to_ignore in ignorable):
             return
         # Handle logins
-        if line["source"] == line["destination"] and "@" in line["source"] and "Login" in line["ability"]:
+        if line["source"] == line["destination"] and "@" in line["source"] and "Login" in line["ability"] and \
+                ":" not in line["source"]:
             self.player_name = line["source"][1:]  # Do not store @
             print("[RealTimeParser] Login: {}".format(self.player_name))
             if self.player_name != self._character_data[1]:
@@ -293,15 +299,13 @@ class RealTimeParser(Thread):
                 self.start_match = line["time"]
                 self.is_match = True
                 # Call the new match callback
-                if callable(self._match_callback):
-                    self._match_callback()
+                self.match_callback()
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
             self.active_id = ""
             # Call the spawn callback
-            if callable(self._spawn_callback):
-                self._spawn_callback()
             self.start_spawn = line["time"]
+            self.spawn_callback()
             self.ship = None
             self.ship_stats = None
             self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
@@ -366,17 +370,14 @@ class RealTimeParser(Thread):
             ship = Parser.get_ship_for_dict(abilities)
             if len(ship) != 1:
                 return
-            ship_name = ship[0]
-            ship_object = self._realtime_db[self._character_data]["Ship Objects"][ship_name]
-            if ship_object is None:
-                messagebox.showinfo(
-                    "Info", "The GSF Parser has determined that a ship that is not configured for this character "
-                            "has been selected. Screen parsing results will be inaccurate.")
-            self.ship = ship_object if ship_object is not None else False
+            ship = ship[0]
+            if self._character_db[self._character_data]["Faction"].lower() == "republic":
+                ship = rep_ships[ship]
             if self._screen_parsing_enabled is False:
                 return
-            args = (ship_object, self.ships_db, self.companions_db)
-            self.ship_stats = ShipStats(*args) if ship_object is not None else False
+            self.ship = self._character_db[self._character_data]["Ship Objects"][ship]
+            args = (self.ship, self.ships_db, self.companions_db)
+            self.ship_stats = ShipStats(*args)
         return
 
     """
@@ -388,6 +389,15 @@ class RealTimeParser(Thread):
         Analyze a screenshot and take the data to save it
         """
         now = datetime.now()
+        if self._stalker.file not in self._realtime_db:
+            print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
+            return
+        elif self.start_match not in self._realtime_db[self._stalker.file]:
+            print("[RealTimeParser] Processing screenshot while match is not in DB yet.")
+            return
+        elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
+            print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
+            return
         spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
         """
         Tracking penalty
@@ -397,7 +407,7 @@ class RealTimeParser(Thread):
         - Relative cursor position
         - Tracking penalty percentage
         """
-        if "Tracking Penalty" in self._screen_parsing_features:
+        if "Tracking penalty" in self._screen_parsing_features:
             # Absolute cursor position
             mouse_coordinates = get_cursor_position()
             spawn_dict["cursor_pos"][now] = mouse_coordinates
@@ -417,8 +427,16 @@ class RealTimeParser(Thread):
             string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
             self.screen_data["tracking"] = string
         """
-        
+        Power Management
         """
+        if "Power Management" in self._screen_parsing_features:
+            power_mgmt = vision.get_power_management(screenshot, *self._coordinates["power_mgmt"])
+            self.screen_data["power_mgmt"] = power_mgmt
+        """
+        Ship Health
+        """
+        if "Ship Health " in self._screen_parsing_features:
+            pass
 
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
@@ -486,12 +504,17 @@ class RealTimeParser(Thread):
     def _on_kb_press(self, key):
         if not self.is_match or key not in keys:
             return
-        self.set_for_current_spawn("keys", datetime.now(), keys[key])
+        self.set_for_current_spawn("keys", datetime.now(), (keys[key], True))
+
+    def _on_kb_release(self, key):
+        if not self.is_match or key not in keys:
+            return
+        self.set_for_current_spawn("keys", datetime.now(), (keys[key], False))
 
     def _on_ms_press(self, x, y, button, pressed):
         if not self.is_match:
             return
-        self.set_for_current_spawn("clicks", datetime.now(), button)
+        self.set_for_current_spawn("clicks", datetime.now(), (pressed, button))
 
     """
     General functions
@@ -519,12 +542,14 @@ class RealTimeParser(Thread):
 
     def match_callback(self):
         self._realtime_db[self._stalker.file][self.start_match] = {}
-        self._match_callback()
+        if callable(self._match_callback):
+            self._match_callback()
 
     def spawn_callback(self):
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {}
         self.create_keys()
-        self._spawn_callback()
+        if callable(self._spawn_callback):
+            self._spawn_callback()
 
     def create_keys(self):
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {
@@ -555,13 +580,32 @@ class RealTimeParser(Thread):
 
     @property
     def overlay_string(self):
-        return ""
+        if self.is_match is False and settings["realtime"]["overlay_when_gsf"]:
+            return ""
+        overlay_string = ""
+        tracking = self.get_tracking_string()
+        parsing = self.get_parsing_string()
+        power = self.get_power_mgmt_string()
+        for string in [parsing, tracking, power]:
+            overlay_string += string
+        return overlay_string
 
     def get_tracking_string(self):
-        pass
+        if "Tracking penalty" not in self._screen_parsing_features:
+            return ""
+        return "Tracking: {}\n".format(self.screen_data["tracking"])
 
     def get_parsing_string(self):
-        pass
+        string = "Damage Dealt: {}\n" \
+                 "Damage Taken: {}\n" \
+                 "Selfdamage: {}\n" \
+                 "Healing Recv: {}\n".format(
+            self.dmg_d, self.dmg_t, self.dmg_s, self._healing
+        )
+        return string
+
+    def get_power_mgmt_string(self):
+        return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
 
     def get_timer_string(self):
         pass

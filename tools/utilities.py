@@ -83,7 +83,7 @@ def get_pointer_position_linux():
     Gets the position of the targeting pointer with xlib
     :return:coordinates of the pointer
     """
-    from xlib import display
+    from Xlib import display
     data = display.Display().screen().root.query_pointer()._data
     return data["root_x"], data["root_y"]
 

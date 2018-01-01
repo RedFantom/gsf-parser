@@ -116,7 +116,7 @@ class StatsFrame(ttk.Frame):
         # Create widgets for screen parsing frame
         self.screen_label_var = tk.StringVar()
         self.screen_label = ttk.Label(self.timeline_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
-                                      wraplength=500)
+                                      wraplength=550)
         # Create widgets for events frame
         self.time_view = TimeView(self.events_frame, height=9)
         self.time_scroll = ttk.Scrollbar(self.events_frame, command=self.time_view.yview)
@@ -172,7 +172,6 @@ class StatsFrame(ttk.Frame):
             Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
-        self.time_line._scrollbar_vertical.grid_forget()
 
     def setup_enemy_treeview(self):
         """
@@ -264,7 +263,7 @@ class StatsFrame(ttk.Frame):
             for (args, kwargs) in data:
                 try:
                     self.time_line.create_marker(*args, **kwargs)
-                except ValueError:
+                except (ValueError, TypeError):
                     print("Marker creation failed: '{}', '{}', '{}', '{}'".format(
                         args[0], args[1], args[2], kwargs["background"])
                     )

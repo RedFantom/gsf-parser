@@ -233,7 +233,7 @@ class FileHandler(object):
     def get_formatted_stats_string(*values):
         return """
         Most used power management: \t{0}
-        Average tracking degrees: \t\t{1:.2f}
+        Average tracking degrees: \t{1}
         Average ship health: \t\t{2}
         """.format(*values)
 
@@ -250,11 +250,19 @@ class FileHandler(object):
         clicks = dictionary["clicks"]
         buttons = {Button.left: None, Button.right: None}
         results = {"primaries": [], "secondaries": []}
-        for time, (press, button) in sorted(clicks.items()):
-            if not isinstance(time, datetime) or not isinstance(press, str):
-                raise TypeError("Invalid types detected while parsing. time: {}, press: {}, button: {}".format(
-                    repr(time), repr(press), repr(button)))
-            press = "press" in press
+        primary, secondary = False, False
+        for time, data in sorted(clicks.items()):
+            if isinstance(data, tuple):
+                button, press = data
+            else:
+                button = data
+                if button == Button.left:
+                    primary = not primary
+                    press = primary
+                else:
+                    secondary = not secondary
+                    press = secondary
+            press = "press" in press if isinstance(press, str) else press
             category = "primaries" if button == Button.left else ("secondaries" if button == Button.right else None)
             if category is None:
                 continue
@@ -311,8 +319,13 @@ class FileHandler(object):
         if len(sub_dict) != 0:
             power_mode = 4
             previous = start_time
-            for time, (key, pressed) in sorted(sub_dict.items()):
-                pressed = "pressed" in pressed
+            for time, data in sorted(sub_dict.items()):
+                if isinstance(data, tuple):
+                    key, pressed = data
+                else:
+                    key = data
+                    pressed = True
+                pressed = "pressed" in pressed if isinstance(pressed, str) else pressed
                 if pressed is False or key not in FileHandler.keys:
                     continue
                 result = FileHandler.keys[key]
