@@ -8,19 +8,10 @@ import math
 import cv2
 from PIL import Image
 import numpy
-from tools.utilities import write_debug_log, get_pillow_screen, get_assets_directory
+from tools.utilities import write_debug_log, get_assets_directory
+from parsing.imgcompare import get_similarity
 import pytesseract
-
-
-def get_cv2_screen(testing=False):
-    """
-    Gets a screenshot in cv2 format
-    :return: cv2 screenshot array
-    """
-    if not testing:
-        return Image.open(os.path.join(get_assets_directory(), "vision", "testing.png"))
-    screen_pil = get_pillow_screen()
-    return pillow_to_numpy(screen_pil)
+import operator
 
 
 def get_pointer_middle(coordinates, size=(44, 44)):
@@ -87,77 +78,35 @@ def get_tracking_degrees(distance, pixelsperdegree=10):
     return round(distance / pixelsperdegree, 2)
 
 
-def get_tracking_penalty(degrees, tracking_penalty, upgrade_c=0):
+def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     """
     :param degrees: The amount of degrees for tracking penalty
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
     :return:
     """
-    return round(degrees * tracking_penalty - upgrade_c, 1)
+    return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
 
 
-def get_timer_status_cv2(screen):
+def get_timer_status(source):
     """
     Determines the state of the spawn countdown timer by performing
     template matching on the cv2 array of a screenshot to find a match
-    for one of the timers in the folder.    :param screen: A cv2 array of the screenshot
-    :return: An int of how many seconds are left
+    for one of the timers in the folder.
     """
-    folder = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/") + "/assets/timers"
+    folder = os.path.join(get_assets_directory(), "timers")
+    image_similarity = {}
     for img in os.listdir(folder):
-        pass
-
-
-def get_timer_status_ocr(screen):
-    """
-    Determines the state of the spawn countdown timer by performing
-    OCR on the characters found in a certain section of the screen, that
-    is found by performing template matching.
-    :param screen: cv2 array of the screenshot
-    :return:
-    """
-    if not isinstance(screen, Image):
-        screen_pil = numpy_to_pillow(screen)
-        screen_cv2 = screen
-    else:
-        screen_pil = screen
-        screen_cv2 = pillow_to_numpy(screen)
-    pass
-
-
-def get_enemy_brackets(screen):
-    """
-    Determines the amount and places of the red brackets of the enemies on
-    the screen using template matching, at the default size.
-    :param screen: cv2 array of screenshot
-    :return: list of (x, y) tuples
-    """
-    pass
-
-
-def get_targeting_computer_pos(screen):
-    """
-    Determines the position of the targeting computer on the screen using
-    template matching.
-    :param screen: cv2 array of screenshot
-    :return: (x, y) tuple
-    """
-    pass
-
-
-def perform_ocr(pil_screen, coordinates):
-    """
-    Perform OCR on a screenshot to determine the ship type of the enemy player
-    currently targeted by the user.
-    :param pil_screen: PIL Image
-    :param coordinates: (x, y, x, y) box tuple
-    :return: string of ship type
-    """
-    if not isinstance(pil_screen, Image):
-        raise ValueError("Parameter is not Image object")
-    pil_screen.crop(coordinates, Image.ANTIALIAS)
-    return pytesseract.image_to_string(pil_screen)
+        if not img.endswith(".jpg"):
+            continue
+        image_path = os.path.join(folder, img)
+        image = Image.open(image_path)
+        similarity = get_similarity(source, image)
+        if similarity < 15.0:
+            image_similarity[img.replace(".jpg", "")] = similarity
+    if len(image_similarity) == 0:
+        return None
+    return int(min(image_similarity.items(), key=operator.itemgetter(1))[0])
 
 
 def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
@@ -174,26 +123,23 @@ def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
              3: power to engines
              4: power to all
     """
-    power_mgmt = 4
     try:
         weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
         engine_rgb = screen[shield_cds[0]][shield_cds[1]]
         shield_rgb = screen[engine_cds[0]][engine_cds[1]]
     except IndexError:
         return None
-    weapon_power = list((value > 50) for value in weapon_rgb)
-    engine_power = list((value > 50) for value in engine_rgb)
-    shield_power = list((value > 50) for value in shield_rgb)
+    weapon_power = list((value > 25) for value in weapon_rgb)
+    engine_power = list((value > 25) for value in engine_rgb)
+    shield_power = list((value > 25) for value in shield_rgb)
     if True in weapon_power:
         power_mgmt = 1
-    if True in engine_power:
-        if power_mgmt != 4:
-            pass
+    elif True in engine_power:
         power_mgmt = 3
-    if True in shield_power:
-        if power_mgmt != 4:
-            pass
+    elif True in shield_power:
         power_mgmt = 2
+    else:
+        power_mgmt = 4
     return power_mgmt
 
 
@@ -214,7 +160,7 @@ def get_ship_health_hull(screen):
     pass
 
 
-def get_ship_health_shields(screen, cds):
+def get_ship_health_shields(image, cds):
     """
     Uses the PIL library to determine the color of the ship icon in the UI
     to make an approximation of the ship shield health.
@@ -226,13 +172,12 @@ def get_ship_health_shields(screen, cds):
     :param screen: cv2 array of screenshot or pillow object
     :return: int with percentage
     """
-
-    x, y = cds
+    front_one, front_two, back_one, back_two = cds
 
     colors = {
         "blue": (2, 95, 133),
         "green": (0, 166, 0),
-        "yellow": (133, 159, 0),
+        "yellow": (132, 157, 0),
         "orange": (165, 94, 0),
         "red": (164, 1, 1),
         "none": (0, 0, 0)
@@ -245,35 +190,26 @@ def get_ship_health_shields(screen, cds):
         "red": 12.5,
         "none": 0.0
     }
-    f_one = get_xy_tuple((x - 16, y))
-    f_two = get_xy_tuple((x - 31, y))
-    b_one = get_xy_tuple((x - 16, y + 55))
-    b_two = get_xy_tuple((x - 31, y + 55))
-    try:
-        f_one_rgb = screen[f_one[0]][f_one[1]]
-        f_two_rgb = screen[f_two[0]][f_two[1]]
-        b_one_rgb = screen[b_one[0]][b_one[1]]
-        b_two_rgb = screen[b_two[0]][b_two[1]]
-    except IndexError:
-        return None, None
+    f_one_rgb = image.getpixel((front_one[0], front_one[1]))
+    f_two_rgb = image.getpixel((front_two[0], front_two[1]))
+    b_one_rgb = image.getpixel((back_one[0], back_one[1]))
+    b_two_rgb = image.getpixel((back_two[0], back_two[1]))
     shields_rgb = (f_one_rgb, f_two_rgb, b_one_rgb, b_two_rgb)
     color_shields = []
 
-    for number, rgb in enumerate(shields_rgb):
-        for key, value in colors.items():
+    for shield_index, rgb_code in enumerate(shields_rgb):
+        for color_name, color_rgb_tuple in colors.items():
             valid = True
-            for index, color in enumerate(value):
-                if not color - 20 < rgb[index] < color + 20:
+            for index, color in enumerate(color_rgb_tuple):
+                if not color - 25 <= rgb_code[index] <= color + 25:
                     valid = False
-            if valid:
-                color_shields.append(key)
-                write_debug_log("Appended: " + key)
+                    break
+            if valid is True:
+                color_shields.append(color_name)
                 break
-    if len(color_shields) != 4:
-        write_debug_log(("[DEBUG] Output for the error below: " + str((f_one, f_two, b_one, b_two))))
-        write_debug_log(("[DEBUG] Output for the error below: " + str(shields_rgb)))
+    try:
+        f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
+        b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
+    except IndexError:
         return None, None
-    f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
-    b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
-    write_debug_log(("[DEBUG] Shield health determined: " + str(f) + "  " + str(b)))
     return f, b

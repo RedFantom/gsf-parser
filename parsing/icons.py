@@ -105,6 +105,9 @@ icons = {
     "Sensors Jammed": "spvp_sensorshadows",
     "Plasma Warheads": "spvp_damageovertime",  # Rocket Pods DoT
     "Plasma Burn": "spvp_plasmarailgun",  # Plasma Railgun DoT
+    "Scope Mode": "spvp_cloakdisruption",  # Gunship Scope Mode
+    "Invulnerable": "spvp_aoedefensiveboost",  # Tutorial Effect
+    "Tutorial": "spvp_hardreset",  # Tutorial Effect
     # Default
     "default": "republic.png"
 }

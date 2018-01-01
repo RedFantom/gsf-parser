@@ -1,14 +1,10 @@
 # A new parsing engine built by RedFantom based on principles from parse.py and realtime.py
 # Is capable of parsing files as well as realtime parsing
-import re
 import os
 from datetime import datetime
 from tkinter.ttk import Frame
 from queue import Queue
 # Own modules
-from parsing.screen import ScreenParser, FileHandler
-from parsing.stalking_alt import LogStalker
-from parsing.screen import ScreenParser
 from parsing import abilities, effects, durations
 # Variables
 import variables
@@ -18,7 +14,7 @@ class Parser(object):
     """
     A Parsing engine that can sequentially parse CombatLog lines and supports staticmethods for parsing individual
     spawns and matches to keep some backwards compatibility with the functions found in parse.py. Replaces the Parsing
-    engine found in realtime.py.
+    engine found in realtime_alt.py.
 
     Capabilities:
     - Determine player name and IDs
@@ -37,8 +33,7 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
-    def __init__(self, file_name, events_view=None, line_queue=None, character_data=None, real_time=False,
-                 screen_parsing=False):
+    def __init__(self, file_name, events_view=None, line_queue=None, character_data=None):
         """
         :param events_view: An EventsView widget with .timeline and .eventslist attributes
         :param line_queue: Queue object (or object with .put()) to pass lines parsed to
@@ -53,17 +48,10 @@ class Parser(object):
             raise ValueError("line_queue argument is not a Queue")
         if not isinstance(character_data, dict):
             raise ValueError("character_data argument is not a dict")
-        # Attributes required for ScreenParser
-        self.sp_data_queue = None if not screen_parsing else Queue()
-        self.sp_exit_queue = None if not screen_parsing else Queue()
-        self.sp_query_queue = None if not screen_parsing else Queue()
-        self.sp_return_queue = None if not screen_parsing else Queue()
         # Create attributes
         self.events_view = events_view
         self.line_queue = line_queue
         self.character_data = character_data
-        self.log_stalker = Parser.setup_log_stalker() if real_time is True else None
-        self.screen_parser = self.setup_screen_parser() if screen_parsing is True else None
 
         # Settings for this object
         self.file_name = file_name
@@ -77,32 +65,12 @@ class Parser(object):
         """
         pass
 
-    def process_line(self, line):
-        pass
-
-    def setup_screen_parser(self):
-        """
-        Sets up a ScreenParser object with the correct arguments and keyword arguments
-        """
-        args = (self.sp_data_queue, self.sp_exit_queue, self.sp_query_queue, self.sp_return_queue)
-        kwargs = Parser.get_screen_parser_kwargs()
-        self.screen_parser = ScreenParser(*args, **kwargs)
-        return self.screen_parser
-
-    @staticmethod
-    def setup_log_stalker():
-        """
-        Sets up a LogStalker
-        """
-        log_stalker = LogStalker()
-        return log_stalker
-
     @staticmethod
     def get_screen_parser_kwargs():
         """
         Return a dictionary of keyword arguments for a ScreenParser instance based on the settings for screen parsing
         """
-        feature_list = variables.settings_obj["realtime"]["screenparsing_features"]
+        feature_list = variables.settings["realtime"]["screen_features"]
         arguments = {
             "rgb": False,
             "cooldowns": None,
@@ -126,23 +94,32 @@ class Parser(object):
         """
         if isinstance(line, dict):
             return line
-        line_pattern = r'\[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \[(.*?)\] \((.*?)\)'
-        pattern = re.compile(line_pattern)
-        group = pattern.match(line) if isinstance(line, str) else pattern.match(line.decode('cp1252'))
-        if not hasattr(group, "groups"):
-            return None
-        group_tuple = group.groups()
-        colnames = ('time', 'source', 'target', 'ability', 'effect', 'amount')
-        log = dict(list(zip(colnames, group_tuple)))
-        if not log['amount'] == '':
-            log['amount'] = log['amount'].split(None, 1)[0]
-        log["time"] = datetime.strptime(log["time"], "%H:%M:%S.%f")
-        log["target"] = log["target"] if log["target"].strip() != "" else "System"
-        log["destination"] = log["target"]
-        log["ability"] = log["ability"].split("{", 1)[0].strip()
-        log["line"] = line
+
+        # Split the line into elements
+        def remove_brackets(elem):
+            return elem.replace("[", "").replace("]", "").replace("(", "").replace(")", "").strip()
+        elements = [remove_brackets(elem) for elem in line.split("]")]
+        """
+        Valid GSF CombatLog event:
+        [time] [source] [target] [ability] [effect] (amount)
+        """
+        if len(elements) != 6:
+            raise ValueError("Invalid SWTOR event: {}".format(line))
+        log = {
+            "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
+            "source": elements[1],
+            "target": elements[2], "destination": elements[2],
+            "ability": elements[3].split("{", 1)[0].strip(),
+            "effect": elements[4],
+            "amount": elements[5],
+            "line": line
+        }
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
+        if log["ability"].strip() == "":
+            log["ability"] = "Scope Mode"
+        if log["amount"].strip() != "":
+            log["amount"] = log["amount"].split(" ")[0]
         return log
 
     @staticmethod
@@ -193,6 +170,21 @@ class Parser(object):
         return line_dict
 
     @staticmethod
+    def get_abilities_dict(lines: list):
+        """
+        Get the abilities dict for a list of lines
+        """
+        abilities = {}
+        for line in lines:
+            if not isinstance(line, dict):
+                line = Parser.line_to_dictionary(line)
+            if line["ability"] not in abilities:
+                abilities[line["ability"]] = 1
+            else:
+                abilities[line["ability"]] += 1
+        return abilities
+
+    @staticmethod
     def get_effects_ability(line_dict, lines, active_id):
         """
         Parse the lines after an event to determine what events are effects of the event specified
@@ -226,7 +218,7 @@ class Parser(object):
                     "allied": durations.durations[ability][0] if effect != "Missile Lock Immunity" else True,
                     "count": 1,
                     "duration": 0,
-                    "damage": int(event["amount"].replace("*", "")) if event["amount"] != "" else 0,
+                    "damage": int(event["amount"].replace("*", "")) if isinstance(event["amount"], str) and event["amount"] != "" else "",
                     "dot": (event["time"] - line_dict["time"]).total_seconds() if ability_duration[2] is True else None
                 }
             else:
@@ -257,7 +249,7 @@ class Parser(object):
         if index == 0:
             return None
         # The requirements for being eligible are quite strict
-        for prev_line in lines[index-5:index-1]:
+        for prev_line in lines[max(index-5, 0):index-1]:
             # The source of the previous event must be equal
             source_is_equal = prev_line["source"] == line_dict["source"]
             ability_is_equal = prev_line["ability"] == line_dict["ability"]
@@ -271,7 +263,7 @@ class Parser(object):
         return True
 
     @staticmethod
-    def get_event_color(line_dict, active_id, colors=variables.color_scheme):
+    def get_event_color(line_dict, active_id, colors=variables.colors):
         """
         Return the correct text color for a certain event dictionary
         :param line_dict: line dictionary
@@ -371,7 +363,7 @@ class Parser(object):
         Split a CombatLog into matches and spawns with a file name and an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
-        combatlogs_path = variables.settings_obj["parsing"]["cl_path"]
+        combatlogs_path = variables.settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
         if not os.path.exists(file_name):
             raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
@@ -471,7 +463,7 @@ class Parser(object):
         Get a list of player ID numbers for a certain list of lines
         """
         if not isinstance(lines[0], dict):
-            raise ValueError("Not a valid list of line dictionaries.")
+            lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
             # print("Processing line: {}".format(line.replace("\n", "")))
@@ -540,7 +532,7 @@ class Parser(object):
         """
         Get a boolean of whether there are GSF matches in a file
         """
-        combatlogs_path = variables.settings_obj["parsing"]["cl_path"]
+        combatlogs_path = variables.settings["parsing"]["path"]
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
             return None

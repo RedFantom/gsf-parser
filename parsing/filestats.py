@@ -41,7 +41,7 @@ def file_statistics(filename, file_cube):
                 lines.append(line)
     player_list = parse.determinePlayer(lines)
     _, match_timings, spawn_timings = parse.splitter(lines, player_list)
-    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], filename), "r") as fi:
+    with open(os.path.join(variables.settings["parsing"]["path"], filename), "r") as fi:
         name = parse.determinePlayerName(fi.readlines())
     (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \

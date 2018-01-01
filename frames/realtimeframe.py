@@ -8,312 +8,300 @@
 
 # UI imports
 import tkinter as tk
-import tkinter.ttk as ttk
-import time
+from tkinter import ttk
+from tkinter import messagebox
+# Custom widgets
+from widgets.time_view import TimeView
+# Parsing
+from parsing.realtime import RealTimeParser
 from queue import Queue
-import variables
-from parsing import stalking_alt, realtime, lineops
-from toplevels.realtimeoverlay import RealtimeOverlay
-from tools.utilities import write_debug_log
-from parsing.screen import ScreenParser
-from tkinter import messagebox as mb
+# Miscellaneous
+from variables import settings
+from tools.utilities import get_swtor_screen_mode
+import time, psutil, os, sys
 
 
 class RealtimeFrame(ttk.Frame):
     """
-    A frame that contains all buttons and widgets involved in real-time parsing
-    Callbacks for the buttons control the parsing and a listbox displays the events
-    that have been recorded in the real-time parsing process
-
-    --------------------------------------------------------------------------
-    | ________________  ________________  ________________  ________________ |
-    | |Start parsing |  |Start upload  |  |Server dropd  |  |Faction dropd | |
-    |                                                                        |
-    | ________________  ________________  Stastics string                    |
-    | | parsing bar  |  |uploading bar |  Stastics string                    |
-    | ______________________________________________________________________ |
-    | | event                                                          |/\|| |
-    | | event                                                          ||||| |
-    | | event                                                          |  || |
-    | |________________________________________________________________|\/|| |
-    | Watching string                                                        |
-    --------------------------------------------------------------------------
+    A Frame that contains all the necessary widgets to control a RealTimeParser
     """
-
-    def __init__(self, root_frame, main_window):
-        ttk.Frame.__init__(self, root_frame)
-        self.window = variables.main_window
+    def __init__(self, master, window):
+        ttk.Frame.__init__(self, master)
+        """
+        Attributes 
+        """
+        self.window = window
+        self.after_id = None
         self.parser = None
-        self.overlay = None
-        self.main_window = main_window
-        self.listbox = tk.Listbox(self, width=105, height=15)
-        self.scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.listbox.yview)
-        self.listbox.config(yscrollcommand=self.scrollbar.set, font=("Consolas", 10))
-        self.statistics_list_label_one = ttk.Label(self, justify=tk.LEFT,
-                                                   text="Damage dealt:\nDamage taken:\n" + \
-                                                        "Selfdamage:\nHealing received:\nSpawns:")
-        self.statistics_list_label_two = ttk.Label(self, justify=tk.LEFT, text="Abilities:")
-        self.statistics_label_one_text = tk.StringVar()
-        self.statistics_label_one = ttk.Label(self, textvariable=self.statistics_label_one_text,
-                                              justify=tk.LEFT)
-        self.start_parsing_button = ttk.Button(self, text="Start real-time parsing", command=self.start_parsing,
-                                               width=25)
-        self.server = tk.StringVar()
-        self.character = tk.StringVar()
-        self.character_dropdown = ttk.OptionMenu(self, self.character, "Select a character",
-                                                 command=self.load_character)
-        self.server_dropdown = ttk.OptionMenu(self, self.server,
-                                              "Select a server",
-                                              "The Bastion",
-                                              "Begeren Colony",
-                                              "The Harbinger",
-                                              "The Shadowlands",
-                                              "Jung Ma",
-                                              "The Ebon Hawk",
-                                              "Prophecy of the Five",
-                                              "Jedi Covenant",
-                                              "T3-M4",
-                                              "Darth Nihilus",
-                                              "The Tomb of Freedon Nadd",
-                                              "Jar'kai Sword",
-                                              "The Progenitor",
-                                              "Vanjervalis Chain",
-                                              "Battle Meditation",
-                                              "Mantle of the Force",
-                                              "The Red Eclipse",
-                                              command=self.update_characters)
-        self.parsing = False
-        self.parse = []
-        self.parsing_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
-        self.uploading_bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate")
-        self.watching_stringvar = tk.StringVar()
-        self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
-        self.watching_stringvar.set("Watching no CombatLog...")
-
-        # Create all objects
         self.exit_queue = None
         self.data_queue = None
-        self.query_queue = None
         self.return_queue = None
-        self.screenparser = None
-        self.stalker_obj = None
-        self.stalking_exit_queue = None
-        self.character_tuple = None
-
-    def start_parsing(self):
-        if not self.character_tuple:
-            mb.showinfo("Requirement", "You have to select a character before starting this process.")
-            return
-        if not self.parsing:
-            # self.main_window.file_select_frame.add_files()
-            # self.start_parsing_button.config(relief=tk.SUNKEN)
-            self.window.notebook.tab(2, state=tk.DISABLED)
-            self.window.notebook.tab(3, state=tk.DISABLED)
-            self.window.notebook.tab(8, state=tk.DISABLED)
-            self.parsing = True
-            self.main_window.after(100, self.insert)
-            if variables.settings_obj["realtime"]["screenparsing"]:
-                self.data_queue = Queue()
-                self.exit_queue = Queue()
-                self.query_queue = Queue()
-                self.return_queue = Queue()
-                self.return_queue.put(0)
-                features = variables.settings_obj["realtime"]["screenparsing_features"]
-                if "Enemy name and ship type" in features:
-                    name = True
-                else:
-                    name = False
-                if "Tracking penalty" in features:
-                    tracking = True
-                else:
-                    tracking = False
-                if "Ship health" in features:
-                    health = True
-                else:
-                    health = False
-                if "Power management" in features:
-                    powermgmt = True
-                else:
-                    powermgmt = False
-                self.screenparser = ScreenParser(self.data_queue, self.exit_queue, self.query_queue, self.return_queue,
-                                                 self.window.characters_frame.character_data, name=False,
-                                                 tracking=tracking, health=health, powermgmt=powermgmt, ttk=False,
-                                                 distance=False, ammo=False)
-                self.screenparser.start()
-            else:
-                self.screenparser = None
-                self.data_queue = None
-            self.parser = realtime.Parser(self.spawn_callback, self.match_callback, self.new_match_callback,
-                                          lineops.pretty_event, screen=variables.settings_obj["realtime"]["screenparsing"],
-                                          screenoverlay=variables.settings_obj["realtime"]["screenparsing_overlay"],
-                                          data_queue=self.data_queue)
-            self.stalker_obj = stalking_alt.LogStalker(callback=self.callback,
-                                                       folder=variables.settings_obj["parsing"]["cl_path"],
-                                                       watching_stringvar=self.watching_stringvar,
-                                                       newfilecallback=self.parser.new_file, )
-            variables.realtime_flag = True
-            if variables.settings_obj["realtime"]["overlay"] and not variables.settings_obj["realtime"]["overlay_when_gsf"]:
-                self.overlay = RealtimeOverlay(self.main_window)
-            self.parsing_bar.start(3)
-            self.start_parsing_button.configure(text="Stop real-time parsing")
-            self.stalker_obj.start()
-            self.stalking_exit_queue = self.stalker_obj.exit_queue
-        elif self.parsing:
-            self.window.notebook.tab(2, state=tk.NORMAL)
-            self.window.notebook.tab(3, state=tk.NORMAL)
-            self.window.notebook.tab(8, state=tk.NORMAL)
-            write_debug_log("Stopping real-time parsing")
-            if self.screenparser:
-                self.exit_queue.put(False)
-            write_debug_log("Put False in exit_queue of Parser")
-            print("Joining threads")
-            if variables.settings_obj["realtime"]["screenparsing"]:
-                print("Joining ScreenParser thread")
-                self.screenparser.join()
-                print("Screenparser thread joined")
-                if variables.settings_obj["realtime"]["screenparsing_overlay"]:
-                    self.screenparser.screenoverlay.destroy()
-            self.stalking_exit_queue.put(False)
-            print("Joining LogStalker thread")
-            self.stalker_obj.join()
-            print("LogStalker thread joined")
-            print("Threads joined")
-            self.parsing = False
-            write_debug_log("Real-time parsing joining threads")
-            if variables.settings_obj["realtime"]["overlay"] and self.overlay:
-                self.overlay.destroy()
-            self.overlay = None
-            self.parsing_bar.stop()
-            self.start_parsing_button.configure(text="Start real-time parsing")
-            self.watching_stringvar.set("Watching no CombatLog...")
-            write_debug_log("Finished stopping parsing...")
+        self.overlay = None
+        self.overlay_after_id = None
+        self.overlay_string = None
+        self.data_after_id = None
+        """
+        Widget creation
+        """
+        # Watching Label
+        self.watching_stringvar = tk.StringVar(self, value="Watching no file...")
+        self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
+        self.cpu_stringvar = tk.StringVar()
+        self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar, justify=tk.LEFT)
+        # Control widgets
+        servers = ("Choose Server",) + tuple(self.window.characters_frame.servers.values())
+        self.server, self.character = tk.StringVar(), tk.StringVar()
+        self.server_dropdown = ttk.OptionMenu(self, self.server, *servers, command=self.update_characters)
+        self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose Character",))
+        self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
+        # Data widgets
+        self.data = tk.StringVar()
+        self.data_label = ttk.Label(self, textvariable=self.data)
+        self.time_view = TimeView(self, height=6, width=1.5)
+        self.time_scroll = ttk.Scrollbar(self, command=self.time_view.yview)
+        self.time_view.config(yscrollcommand=self.time_scroll.set)
+        # Start monitoring CPU usage
+        self.process = psutil.Process(os.getpid())
+        self.after(2000, self.update_cpu_usage)
 
     def grid_widgets(self):
-        self.start_parsing_button.grid(column=0, row=1, padx=5, pady=5)
-        self.server_dropdown.config(width=15)
-        self.character_dropdown.config(width=15)
-        self.server_dropdown.grid(column=2, row=1, padx=5, pady=5, sticky="nswe")
-        self.character_dropdown.grid(column=3, row=1, padx=5, pady=5, sticky="nswe")
-        self.parsing_bar.grid(column=0, columnspan=1, row=2, padx=5, pady=10, sticky="nswe")
-        self.statistics_label_one.grid(column=3, row=2, padx=5, pady=5, sticky="nw")
-        self.statistics_list_label_one.grid(column=2, row=2, padx=5, pady=5, sticky="nw")
-        self.listbox.grid(column=0, row=3, columnspan=4, padx=5, pady=5, sticky="nswe")
-        self.scrollbar.grid(column=5, row=3, sticky="nswe")
-        self.statistics_label_one_text.set("")
-        self.statistics_label_one_text.set("")
-        self.watching_label.grid(column=0, row=4, columnspan=2, sticky="w")
+        """
+        Put all widgets into place
+        """
+        self.server_dropdown.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
+        self.character_dropdown.grid(row=1, column=0, sticky="nswe", padx=5, pady=(0, 5))
+        self.parsing_control_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
-    def update_stats(self, dmg_done, dmg_taken, self_dmg, heals, abilities, enemies, spawns):
-        damage_done = 0
-        damage_taken = 0
-        selfdamage = 0
-        healing = 0
-        for dmg in dmg_done:
-            damage_done += dmg
-        for dmg in dmg_taken:
-            damage_taken += dmg
-        for dmg in self_dmg:
-            selfdamage += dmg
-        for heal in heals:
-            healing += heal
-        self.statistics_label_one_text.set(str(damage_done) + "\n" +
-                                           str(damage_taken) + "\n" +
-                                           str(selfdamage) + "\n" +
-                                           str(healing) + "\n" +
-                                           str(spawns))
-        if self.overlay:
-            if variables.settings_obj["realtime"]["size"] == "big":
-                self.overlay.stats_var.set(str(damage_done) + "\n" +
-                                           str(damage_taken) + "\n" +
-                                           str(healing) + "\n" +
-                                           str(selfdamage) + "\n" +
-                                           str(enemies) + "\n" +
-                                           str(spawns))
-            elif variables.settings_obj["realtime"]["size"] == "small":
-                self.overlay.stats_var.set(str(damage_done) + "\n" +
-                                           str(damage_taken) + "\n" +
-                                           str(healing) + "\n" +
-                                           str(selfdamage) + "\n")
-            else:
-                raise ValueError("Not a valid overlay size found.")
+        self.data_label.grid(row=0, column=1, rowspan=3, columnspan=2, sticky="nswe", padx=5, pady=5)
+        self.time_view.grid(row=3, column=0, columnspan=3, sticky="nswe", padx=5, pady=5)
 
-    def callback(self, lines):
-        if not self.parsing:
+        self.watching_label.grid(row=4, column=0, columnspan=2, sticky="nw", padx=5, pady=5)
+        self.cpu_label.grid(row=4, column=2, sticky="nw", padx=5, pady=5)
+
+    """
+    Parsing Functions
+    """
+
+    def start_parsing(self):
+        """
+        Check if parsing can be started, and if so, start the parsing process
+        """
+        if self.character_data is None:
+            messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return
-        for line in lines:
-            # self.listbox.see(tk.END)
-            process = realtime.Parser.line_to_dictionary(line)
-            self.parser.parse(process)
-            dmg_done = self.parser.spawn_dmg_done
-            dmg_taken = self.parser.spawn_dmg_taken
-            selfdamage = self.parser.spawn_selfdmg
-            healing = self.parser.spawn_healing_rcvd
-            abilities = self.parser.tmp_abilities
-            enemies = self.parser.recent_enemies
-            spawns = self.parser.active_ids
-            self.update_stats(dmg_done, dmg_taken, selfdamage, healing, abilities,
-                              len(enemies), len(spawns))
-        for obj in self.parse:
-            obj.close()
+        if (settings["realtime"]["overlay"] or
+                settings["realtime"]["screen_overlay"] or
+                settings["realtime"]["screenparsing"]):
+            if self.check_screen_mode() is False:
+                return
+
+        # Setup attributes
+        self.exit_queue, self.data_queue, self.return_queue = Queue(), Queue(), Queue()
+        args = (self.window.characters_frame.characters, self.character_data, self.exit_queue,
+                self.window.builds_frame.ships_data, self.window.builds_frame.companions_data)
+        kwargs = {
+            "spawn_callback": self.spawn_callback,
+            "match_callback": self.match_callback,
+            "file_callback": self.file_callback,
+            "event_callback": self.event_callback,
+            "screen_parsing_enabled": settings["realtime"]["screenparsing"],
+            "screen_parsing_features": settings["realtime"]["screen_features"],
+            "data_queue": self.data_queue,
+            "return_queue": self.return_queue
+        }
+        try:
+            self.parser = RealTimeParser(*args, **kwargs)
+        except Exception as e:
+            messagebox.showerror(
+                "Error",
+                "An error occurred during the initialization of the RealTimeParser. Please report the error given "
+                "below, as well as, if possible, the full stack-trace to the developer.\n\n{}".format(e)
+            )
+            raise
+        # Change Button state
+        self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
+        self.watching_stringvar.set("Waiting for a CombatLog...")
+        self.open_overlay()
+        self.update_data_string()
+        # Start the parser
+        self.parser.start()
+
+    def stop_parsing(self):
+        """
+        Stop the parsing process
+        """
+        self.close_overlay()
+        self.parser.stop()
+        self.parsing_control_button.config(text="Start Parsing", command=self.start_parsing)
+        self.exit_queue, self.data_queue, self.return_queue = None, None, None
+        time.sleep(1)
+        try:
+            self.parser.join()
+        except Exception as e:
+            messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
+            raise
+        self.watching_stringvar.set("Watching no file...")
+        self.parser = None
+        self.close_overlay()
+
+    def file_callback(self, file_name):
+        """
+        Callback for the RealTimeParser's LogStalker to set the file name in the watching label
+        """
+        print("[RealTimeParser] New file {}".format(file_name))
+        self.watching_stringvar.set("Watching: {}".format(file_name))
+
+    def match_callback(self):
+        """
+        Callback for the RealTimeParser to clear the TimeView
+        """
+        self.time_view.delete_all()
+
+    def spawn_callback(self):
+        """
+        Callback for the RealTimeParser to clear the TimeView
+        """
+        self.time_view.delete_all()
+
+    def event_callback(self, event, player_name, active_ids, start_time):
+        """
+        Callback for the RealTimeParser to insert an event into the TimeView
+        """
+        self.time_view.insert_event(event, player_name, active_ids, start_time)
+        self.time_view.yview_moveto(1.0)
+
+    def update_cpu_usage(self):
+        string = "CPU usage: {}%".format(self.process.cpu_percent())
+        self.after(2000, self.update_cpu_usage)
+        if self.parser is not None and self.parser.diff is not None:
+            diff = self.parser.diff
+            string += ", {:.03f}s".format(diff.total_seconds())
+        self.cpu_stringvar.set(string)
+
+    """
+    Overlay Handling
+    """
+
+    def open_overlay(self):
+        """
+        Open an overlay if the settings given by the user allow for it
+        """
+        if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
+            return
+        if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
+            from widgets.overlay_windows import WindowsOverlay as Overlay
+        else:  # Linux or non-experimental
+            from widgets import Overlay
+        # Generate arguments for Overlay.__init__
+        position = settings["realtime"]["overlay_position"]
+        x, y = position.split("y")
+        x, y = int(x[1:]), int(y)
+        self.overlay_string = tk.StringVar(self)
+        try:
+            self.overlay = Overlay((x, y), self.overlay_string, master=self.window, auto_init=True)
+        except Exception as e:
+            messagebox.showerror(
+                "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
+                         "message below to the developer. This error is fatal. The GSF Parser cannot continue."
+                         "\n\n{}.".format(e))
+            raise
+        self.update_overlay()
+
+    def update_data_string(self):
+        if self.parser is None:
+            if self.data_after_id is not None:
+                self.after_cancel(self.data_after_id)
+                self.data_after_id = None
+            return
+        self.data_label.config(text=self.parser.overlay_string)
+        self.data_after_id = self.after(1000, self.update_data_string)
+
+    def update_overlay(self):
+        """
+        Periodically called function to update the text shown in the Overlay
+        """
+        if self.parser is None or not isinstance(self.parser, RealTimeParser):
+            print("[RealTimeFrame] Cancelling Overlay update.")
+            return
+        string = self.parser.overlay_string
+        if string.endswith("\n"):
+            string = string[:-1]
+        self.overlay.update_text(string)
+        self.overlay_after_id = self.after(1000, self.update_overlay)
+
+    def close_overlay(self):
+        """
+        Close the overlay
+        """
+        if self.overlay_after_id is not None:
+            self.after_cancel(self.overlay_after_id)
+        if self.overlay is not None:
+            self.overlay.destroy()
+        self.overlay = None
+        self.overlay_after_id = None
 
     @staticmethod
-    def spawn_callback(dd, dt, hr, sd):
-        variables.insert_queue.put("SPAWN ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
-                                                                                           str(sum(hr)), str(sum(sd))))
-
-    def match_callback(self, dd, dt, hr, sd):
-        variables.insert_queue.put("MATCH ENDED: DD = %s   DT = %s   HR = %s   SD = %s" % (str(sum(dd)), str(sum(dt)),
-                                                                                           str(sum(hr)), str(sum(sd))))
-        if variables.settings_obj["realtime"]["overlay_when_gsf"] and self.overlay:
-            self.overlay.destroy()
-            self.overlay = None
-
-    def new_match_callback(self):
-        self.listbox.delete(0, tk.END)
-        self.parser.rt_timing = None
-        if variables.settings_obj["realtime"]["overlay_when_gsf"] and not self.overlay:
-            self.overlay = RealtimeOverlay(self.main_window)
-
-    def insert(self):
-        while variables.insert_queue.qsize():
-            try:
-                items = variables.insert_queue.get()
-                if isinstance(items, tuple):
-                    self.listbox.insert(tk.END, items[0])
-                    self.listbox.itemconfig(tk.END, bg=items[1], fg=items[2])
-                else:
-                    self.listbox.insert(tk.END, items)
-                    self.listbox.itemconfig(tk.END, bg="black", fg="white")
-                time.sleep(0.1)
-            except:
-                print("[DEBUG] Error adding line to listbox")
-        if self.parsing:
-            self.main_window.after(500, self.insert)
-            self.listbox.yview(tk.END)
+    def check_screen_mode():
+        """
+        Check if the screen mode of SWTOR is suitable for the Overlay and display a message if that's not the case
+        """
+        screen_mode = get_swtor_screen_mode()
+        if screen_mode is FileNotFoundError:
+            messagebox.showerror(
+                "Error", "In an attempt to determine the screen mode of SWTOR, the GSF parser could not locate the "
+                         "client_settings.ini file. Please check if SWTOR is correctly installed.")
+            return False
+        elif screen_mode is ValueError:
+            return True  # Safe-guard against false negatives
+        elif screen_mode == "Windowed":
+            messagebox.showerror(
+                "Error", "The GSF Parser determined the SWTOR screen mode as 'Windowed'. This means that Overlays "
+                         "might not display correctly and screen parsing will be unreliable at best.")
+            return True  # Still allowed to continue
+        elif screen_mode == "FullScreen (Windowed)":
+            # Perfect!
+            return True
+        elif screen_mode == "FullScreen":
+            messagebox.showerror(
+                "Error", "The GSF Parser determined the SWTOR screen mode as 'FullScreen'. This means that Overlays "
+                         "cannot be displayed and screen parsing cannot be started. Please change your screen mode "
+                         "to 'FullScreen (Windowed)'.")
+            return False
         else:
-            return
+            raise ValueError("Unexpected screen mode value: {}".format(screen_mode))
 
-    def load_character(self, *args):
-        print("Loading character {0}".format((self.server.get(), self.character.get())))
-        server = self.window.characters_frame.reverse_servers[self.server.get()]
-        self.character_tuple = (server, self.character.get())
-        self.ships = self.window.characters_frame.characters[(server, self.character.get())]["Ship Objects"]
-        self.window.characters_frame.character_data = self.window.characters_frame.characters[self.character_tuple]
+    """
+    Character handling
+    """
 
     def update_characters(self, *args):
+        """
+        Update the characters shown in the character dropdown
+        """
+        if len(args) != 1:
+            return
+        server = args[0]
         self.character_dropdown["menu"].delete(0, tk.END)
-        characters = ["Select a character"]
+        characters = ["Choose Character"]
+        if server not in self.window.characters_frame.servers.values():
+            return
         for data in self.window.characters_frame.characters:
-            server = self.window.characters_frame.servers[data[0]]
-            if server != self.server.get():
+            character_server = self.window.characters_frame.servers[data[0]]
+            if character_server != server:
                 continue
             characters.append(data[1])
         for character in characters:
-            self.character_dropdown["menu"].add_command(label=character,
-                                                        command=lambda var=self.character, val=character:
-                                                        self.set_character(var, val))
-        return
+            self.character_dropdown["menu"].add_command(
+                label=character, command=lambda value=character: self.character.set(value)
+            )
 
-    def set_character(self, var, val):
-        var.set(val)
-        self.load_character()
+    @property
+    def character_data(self):
+        """
+        Return Character Data tuple for selected character or None
+        """
+        if "Choose" in self.server.get() or "Choose" in self.character.get():
+            return None
+        reverse_servers = {value: key for key, value in self.window.characters_frame.servers.items()}
+        server = reverse_servers[self.server.get()]
+        return server, self.character.get()

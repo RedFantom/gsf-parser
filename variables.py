@@ -3,54 +3,13 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
-# abilities is a matrix of dictionaries
-# damagetaken is a matrix of numbers
-# damagedealt is a matrix of numbers
-# selfdamage is a matrix of numbers
-# healingreceived is a matrix of numbers
-# enemies is a cube of strings
-# criticalcount is matrix of numbers
-# criticalluck is a matrix of numbers
-# hitcount is matrix of numbers
-# enemydamaged is a dictionary
-# enemydamaget is a dictionary
-# match_timings is a list of datetimes
-# spawn_timings is a matrix of datetimes
 import os
-import queue
-from tools import settings
+from tools.settings import Settings, ColorSchemes
 
-settings_obj = settings.Settings()
-color_scheme = settings.ColorSchemes()
-
-realtime_flag = False
+settings = Settings()
+colors = ColorSchemes()
 
 files_done = 0
-abilities = None
-damagetaken = None
-damagedealt = None
-selfdamage = None
-healingreceived = None
-enemies = None
-criticalcount = None
-criticalluck = None
-hitcount = None
-enemydamaged = None
-enemydamaget = None
-match_timings = None
-spawn_timings = None
-enemies_names = None
-deaths = None
-
-file_cube = None
-player_numbers = {}
-player_name = None
-rt_name = None
-
-file_name = None
-user_name = None
-statisticsfile = False
 
 user_path = None
 privacy = None
@@ -59,21 +18,9 @@ server_port = None
 auto_upload = None
 parse = []
 
-client_obj = None
 main_window = None
-cl_path = None
 install_path = os.path.dirname(__file__)
-path = settings_obj["parsing"]["cl_path"]
-
-match_timing = None
-match_timing_end = None
-spawn_timing = None
-spawn_timing_end = None
-spawn_index = None
-spawn = None
-rt_timing = None
-
-insert_queue = queue.Queue()
+path = settings["parsing"]["path"]
 
 screen_w = 0
 screen_h = 0

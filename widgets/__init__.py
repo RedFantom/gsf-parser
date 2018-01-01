@@ -8,3 +8,4 @@ from .componentslistframe import *
 from .componentwidgets import *
 from .scaleentry import ScaleEntry
 from ttkwidgets import Calendar
+from .overlay_tkinter import TkinterOverlay as Overlay

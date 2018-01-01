@@ -114,12 +114,12 @@ class Filters(tk.Toplevel):
         self.ships_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
         self.ships_checkboxes = {}
         self.ships_intvars = {}
-        if variables.settings_obj["gui"]["faction"] == "imperial":
+        if variables.settings["gui"]["faction"] == "empire":
             for name in abls.rep_ships.keys():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
                                                               variable=self.ships_intvars[name], width=12)
-        elif variables.settings_obj["gui"]["faction"] == "republic":
+        elif variables.settings["gui"]["faction"] == "republic":
             for name in abls.rep_ships.values():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
@@ -195,7 +195,7 @@ class Filters(tk.Toplevel):
         """
         # logs, matches or spawns
         results = []
-        files = os.listdir(variables.settings_obj["parsing"]["cl_path"])
+        files = os.listdir(variables.settings["parsing"]["path"])
         files_done = 0
         splash = splashscreens.SplashScreen(self, len(files))
         # Clear the widgets in the file frame
@@ -215,7 +215,7 @@ class Filters(tk.Toplevel):
             if not parse.check_gsf(file_name):
                 continue
             # Open the CombatLog
-            with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name)) as f:
+            with open(os.path.join(variables.settings["parsing"]["path"], file_name)) as f:
                 lines = f.readlines()
             # Parse the CombatLog to get the data to filter against
             player_list = parse.determinePlayer(lines)
@@ -325,7 +325,7 @@ class Filters(tk.Toplevel):
             for file_name in results:
                 datetime_obj = parse.parse_file_name(file_name)
                 if datetime_obj:
-                    string = datetime_obj.strftime("%Y-%m-%d   %H:%M" if variables.settings_obj["gui"]["date_format"]
+                    string = datetime_obj.strftime("%Y-%m-%d   %H:%M" if variables.settings["gui"]["date_format"]
                                                                          is "ymd" else "%Y-%d-%m   %H:%M")
                 else:
                     string = file_name
@@ -435,9 +435,9 @@ class Filters(tk.Toplevel):
                 for ship, intvar in dictionary.items():
                     if intvar.get() == 1:
                         print("Required: ", ship)
-                        if variables.settings_obj["gui"]["faction"] == "imperial":
+                        if variables.settings["gui"]["faction"] == "empire":
                             pass
-                        elif variables.settings_obj["gui"]["faction"] == "republic":
+                        elif variables.settings["gui"]["faction"] == "republic":
                             ships_list = [abls.rep_ships[name] for name in ships_list]
                         else:
                             raise ValueError("faction found not valid")

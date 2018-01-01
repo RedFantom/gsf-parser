@@ -36,7 +36,7 @@ class Defaults(object):
     # Version to display in settings tab
     version = "v3.3.4"
     # Path to get the CombatLogs from
-    cl_path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
+    path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
     # Automatically send and retrieve names and hashes of ID numbers from the remote server
     auto_ident = str(False)
     # Address and port of the remote server
@@ -81,7 +81,7 @@ class Defaults(object):
     events_overlay = False
     screenparsing = True
     screenparsing_overlay = True
-    screenparsing_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
+    screen_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
                               "Power management"]
     autoupdate = True
 
@@ -96,43 +96,24 @@ class Settings(object):
             "temp_dir": ""
         },
         "gui": {
-            "color": "#2f77d0",
-            "logo_color": "Green",
-            "event_colors": "advanced",
+            "event_colors": True,
             "event_scheme": "pastel",
-            "date_format": "ymd",
-            "faction": "imperial",
+            "faction": "empire",
             "debug": False
         },
         "parsing": {
-            "cl_path": os.path.realpath(
+            "path": os.path.realpath(
                 os.path.join(os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs")),
-            "auto_ident": False
-        },
-        "sharing": {
-            "server_address": "parser.thrantasquadron.tk",
-            "server_port": 83,
-            "auto_upl": False
         },
         "realtime": {
             "overlay": True,
-            "opacity": 1.0,
-            "size": "big",
-            "pos": "UT",
-            "overlay_bg_color": "White",
-            "overlay_tr_color": "White",
-            "overlay_tx_color": "Yellow",
-            "overlay_tx_font": "Calibri",
-            "overlay_tx_size": 12,
+            "overlay_text": "Yellow",
+            "overlay_position": "x0y0",
             "overlay_when_gsf": True,
-            "timeout": 0.2,
-            "events_overlay": False,
             "screenparsing": True,
-            "screenparsing_overlay": True,
-            "screenparsing_features": ["Enemy name and ship type", "Tracking penalty", "Ship health",
-                                       "Power management"],
-            "screenparsing_overlay_geometry": False
-
+            "screen_overlay": True,
+            "screen_features": ["Tracking penalty", "Ship health", "Power management"],
+            "overlay_experimental": False
         }
     }
 
@@ -207,6 +188,8 @@ class Settings(object):
             return item in self._data
 
         def __setitem__(self, key, value):
+            if isinstance(value, str) and not os.path.exists(value):
+                value = value.lower()
             self._data[key] = value
 
 
@@ -257,7 +240,8 @@ class ColorSchemes(object):
             return ['#ffffff', '#000000']
 
     def set_scheme(self, name, custom_file=(os.path.join(utilities.get_temp_directory(), "events_colors.ini"))):
-        if name == "default":
+        name = name.lower()
+        if name == "bright":
             self.current_scheme = self.default_colors
         elif name == "pastel":
             self.current_scheme = self.pastel_colors

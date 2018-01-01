@@ -1,318 +1,617 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
+# Written by RedFantom, Wing Commander of Thranta Squadron,
 # Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
-
-# Written by Daethyra, edited by RedFantom
-from decimal import Decimal
-import datetime
-import re
-from tkinter.messagebox import showerror
-from parsing.stalking import LogStalker
-import variables
+# UI imports
+from tkinter import messagebox
+# Own modules
 from parsing.parser import Parser
-from tools.utilities import write_debug_log
+from parsing.logstalker import LogStalker
+from threading import Thread
+from tools.utilities import get_temp_directory, get_screen_resolution
+from variables import settings
+# File parsing
+import os
+import _pickle as pickle  # known as cPickle
+# Screen parsing
+import mss
+import pynput
+from PIL import Image
+from datetime import datetime
+from parsing.guiparsing import GSFInterface
+from parsing import vision
+from tools.utilities import get_cursor_position
+from parsing.shipstats import ShipStats
+from parsing.keys import keys
+from parsing.ships import ships, Ship
+from parsing.abilities import rep_ships
+from time import sleep
+
+"""
+These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
+dictionary contains all the data acquired by screen parsing and is stored with the following structure:
+
+Dictionary structure:
+data_dictionary[filename] = file_dictionary
+file_dictionary[datetime_obj] = match_dictionary
+match_dictionary[datetime_obj] = spawn_dictionary
+spawn_dictionary["power_mgmt"] = power_mgmt_dict
+    power_mgmt_dict[datetime_obj] = integer
+spawn_dictionary["cursor_pos"] = cursor_pos_dict
+    cursor_pos_dict[datetime_obj] = (x, y)
+spawn_dictionary["tracking"] = tracking_dict
+    tracking_dict[datetime_obj] = percentage
+spawn_dictionary["clicks"] = clicks_dict
+    clicks_dict[datetime_obj] = (left, right)
+spawn_dictionary["keys"] = keys_dict
+    keys_dict[datetime_obj] = keyname
+spawn_dictionary["health"] = health_dict
+    health_dict[datetime_obj] = (hull, shieldsf, shieldsr), all ints
+spawn_dictionary["distance"] = distance_dict
+    distance_dict[datetime_obj] = distance, int
+spawn_dictionary["target"] = target_dict
+    target_dict[datetime_obj] = (type, name)
+spawn_dictionary["player_name"]
+spawn_dictionary["ship"]
+spawn_dictionary["ship_name"]
+"""
 
 
-class Parser(object):
-    """Parse a SWTOR combat log file. Each instance is a different
-    file. The parser is designed for GSF battles
-
-    For each statistic (damage done, taken and self damage, healing
-    recieved, abilities used, critical luck) there is a list where
-    each element is the respective amount done per match.
-    (=> length of list = # of matches)
-
-    The element of this lists are themself a list where the elemnts represent
-    the spawns. The only elements not to be a list are abilites and crit luck,
-    which are a tuple and a dictionary respectivly.
-    (=> length of list = # of spawns)
-
-    The abilities dictionary has as key the name of the ability and
-    as value a ?list/dictionary? containig the respective amount for each statistic.
-    This dictionary is then stored in the list abilities for each match.
-
-    The crit luck tuple contains the absolute amount of critical hit,
-    and the relative amount #critcal hit / #hit.
-    There is no specific crit luck information per spawn. This is
-    calculated only per match.
-
-    To clarify which list is what, here is a short reference:
-    :var: spawn_* is the list updated live
-    :var: tmp_* is the list of the live match, containig infos per spawn
-    :var: * is the list of the parse, containing infos per match
-
-    Usage Example:
-
-    >>> # put the path in config.ini
-    >>> config = read_config()
-    >>> stalker = LogStalker(config['path'], callback=callback)
-    >>> stalker.loop()
-
-    To access the parse data you need to modify the callback function under the 'HERE' comment
-    Example:
-
-    >>> def callback(...):
-    ...     [...]
-    ...     for line in lines:
-    ...         process = line_to_dictionary(line)
-    ...         parser.parse(process)
-    ...         # HERE
-    ...         damage_done = parser.tmp_dmg_done
+class RealTimeParser(Thread):
+    """
+    Class to parse Galactic StarFighter in real-time. Manages LogStalker instance to gather all data
+    and save it to a data dictionary, in realtime.db.
     """
 
-    DEBUG = False
+    def __init__(
+            self,
+            character_db,
+            character_data,
+            exit_queue,
+            ships_db,
+            companions_db,
+            spawn_callback=None,
+            match_callback=None,
+            file_callback=None,
+            event_callback=None,
+            screen_parsing_enabled=False,
+            screen_parsing_features=None,
+            data_queue=None,
+            return_queue=None
+    ):
+        """
+        :param character_db: Character database
+        :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
+        :param match_callback: Callback called with match_timing when a new match has been detected
+        :param file_callback: Callback called with file_timing when a new file has been detected
+        :param event_callback: Callback called with line_dict when a new event has been detected
+        :param screen_parsing_enabled: boolean that enables screen parsing features
+        :param screen_parsing_features: list of screen parsing features
+        :param data_queue: Queue to communicate queries for data with
+        :param return_queue: Queue to answer queries for data with
+        :param exit_queue: Queue to make the RealTimeParser stop activities
+        :param character_data: Character tuple with the character name and server to retrieve data with
+        """
+        Thread.__init__(self)
 
-    def __init__(self, spawn_callback, match_callback, new_match_callback, insert, screen=False, screenoverlay=False,
-                 ship=None, data_queue=None):
-        if not screen and screenoverlay:
-            showerror("Error", "Screen parsing disabled but screen parsing overlay enabled.")
-            raise ValueError("screenoverlay True but screen False")
-        if screen and not ship:
-            # showerror("Error", "Screen parsing enabled but no ship object acquired.")
-            # raise ValueError("screen True but ship None")
-            pass
+        """
+        Attributes
+        """
+        # Callbacks
+        self._spawn_callback = spawn_callback
+        self._match_callback = match_callback
+        self._file_callback = file_callback
+        self.event_callback = event_callback
+        # Settings
+        self._screen_parsing_enabled = screen_parsing_enabled
+        self._screen_parsing_features = screen_parsing_features if screen_parsing_features is not None else []
+        # Queues
+        self._data_queue = data_queue
+        self._return_queue = return_queue
+        self._exit_queue = exit_queue
+        # Data
+        self._character_data = character_data
+        self._character_db = character_db
+        self._realtime_db = {}
+        self.diff = None
+        self.ships_db = ships_db
+        self.companions_db = companions_db
 
-        self.data_queue = data_queue
-        if data_queue:
-            self.screenparser = True
-        else:
-            self.screenparser = False
-        self.player_name = ''
-        self.crit_nr = 0
+        """
+        File parsing
+        """
+        # LogStalker
+        self._stalker = LogStalker(watching_callback=self.file_callback)
+        # Data attributes
+        self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
+        self.active_id, self.active_ids = "", []
+        self.hold, self.hold_list = 0, []
+        self.player_name = "Player Name"
         self.is_match = False
+        self.start_match = None
+        self.start_spawn = None
+        self.lines = []
+        self.primary_weapon = False
+        self.secondary_weapon = False
+        self.scope_mode = False
 
-        self.spawn_callback = spawn_callback  # Function to call when a new spawn is detected
-        self.match_callback = match_callback  # Function to call when the end of a match is detected
-        self.new_match_callback = new_match_callback  # Function to call when a new match is detected
-        self.insert = insert  # Function to call when a new line is parsed to insert it into the events box of the UI
+        """
+        Screen parsing
+        """
+        self._mss = None
+        self._kb_listener = None
+        self._ms_listener = None
+        self.setup_screen_parsing()
+        self.ship = None
+        self.ship_stats = None
+        resolution = get_screen_resolution()
+        self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
+        self._interface = None
+        self._coordinates = {}
+        self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
+        self._resolution = resolution
+        self._pixels_per_degree = 10
 
-        self.abilities, self.dmg_done, self.dmg_taken = [], [], []
-        self.healing_rcvd, self.self_dmg, self.crit_luck = [], [], []
-        self.recent_enemies = {}
+        """
+        Data processing
+        """
+        self._file_name = os.path.join(get_temp_directory(), "realtime.db")
+        self.read_data_dictionary()
 
-        self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd = [], [], []
-        self.tmp_selfdmg = []
-        self.tmp_abilities = {}
+    def setup_screen_parsing(self):
+        """
+        If it is enabled, set up the attribute objects with the correct parameters for use in the loop.
+        """
+        if not self._screen_parsing_enabled:
+            return
+        self._mss = mss.mss()
+        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
+        self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
+        file_name = self._character_db[self._character_data]["GUI"]
+        self._interface = GSFInterface(file_name)
+        self._coordinates = {
+            "power_mgmt": self._interface.get_ship_powermgmt_coordinates(),
+            "health": self._interface.get_ship_health_coordinates()
+        }
+        self._pixels_per_degree = self._interface.get_pixels_per_degree()
 
-        self.spawn_dmg_done, self.spawn_dmg_taken = [], []
-        self.spawn_healing_rcvd, self.spawn_selfdmg = [], []
+    def start_listeners(self):
+        """
+        Start the keyboard and mouse listeners
+        """
+        if not self._screen_parsing_enabled or "Mouse and Keyboard" not in self._screen_parsing_features:
+            return
+        print("[RealTimeParser] Mouse and Keyboard parsing enabled.")
+        self._kb_listener.start()
+        self._ms_listener.start()
 
-        self.active_id = ''
-        self.active_ids = []
+    def stop_listeners(self):
+        """
+        Stop the keyboard and mouse listeners
+        """
+        if not self._screen_parsing_enabled:
+            return
+        self._kb_listener.stop()
+        self._ms_listener.stop()
 
-        self.hold = 0
-        self.hold_list = []
+    """
+    Data dictionary interaction
+    """
 
-        self.spawns = 0  # The amount of spawns so far
+    def save_data_dictionary(self):
+        """
+        Save the data dictionary from memory to pickle
+        """
+        with open(self._file_name, "wb") as fo:
+            pickle.dump(self._realtime_db, fo)
+
+    def read_data_dictionary(self, create_new_database=False):
+        """
+        Read the data dictionary with backwards compatibility
+        """
+        if not os.path.exists(self._file_name) or create_new_database is True:
+            messagebox.showinfo("Info", "The GSF Parser is creating a new real-time parsing database.")
+            self.save_data_dictionary()
+        try:
+            with open(self._file_name, "rb") as fi:
+                self._realtime_db = pickle.load(fi)
+        except OSError:  # Inaccessible
+            messagebox.showerror(
+                "Error", "An OS Error occurred while trying to read the real-time parsing database. This likely means "
+                         "that either it does not exist, or your user account does not have permission to access it.")
+            self.read_data_dictionary(create_new_database=True)
+        except EOFError:  # Corrupted
+            messagebox.showerror(
+                "Error", "The real-time parsing database has been corrupted, and cannot be restored. The GSF Parser "
+                         "will create a new database, discarding all your old real-time parsing data.")
+            self.read_data_dictionary(create_new_database=True)
+
+    """
+    Parsing processes
+    """
+
+    def update(self):
+        """
+        Perform all the actions required for a single loop cycle
+        """
+        now = datetime.now()
+        # File parsing
+        lines = self._stalker.get_new_lines()
+        for line in lines:
+            self.process_line(line)
+        if not self.is_match:
+            self.diff = datetime.now() - now
+            return
+        # Screen parsing
+        if self._screen_parsing_enabled:
+            screenshot = self._mss.grab(self._monitor)
+            image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+            self.process_screenshot(image)
+        # Performance measurements
+        self.diff = datetime.now() - now
+        if self.diff.total_seconds() < 0.5:
+            sleep(0.5 - self.diff.total_seconds())
+        # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
+
+    """
+    FileParser
+    """
+
+    def process_line(self, line):
+        """
+        Parse a single line dictionary and update the data attributes of the instance accordingly
+        """
+        # Skip any and all SetLevel or Infection events
+        ignorable = ("SetLevel", "Infection")
+        if any(to_ignore in line["ability"] for to_ignore in ignorable):
+            return
+        # Handle logins
+        if line["source"] == line["destination"] and "@" in line["source"] and "Login" in line["ability"] and \
+                ":" not in line["source"]:
+            self.player_name = line["source"][1:]  # Do not store @
+            print("[RealTimeParser] Login: {}".format(self.player_name))
+            if self.player_name != self._character_data[1]:
+                messagebox.showerror(
+                    "Error",
+                    "Another character name than the one provided was detected. The GSF Parser cannot continue."
+                )
+                raise ValueError(
+                    "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
+                        self._character_data[1], self.player_name
+                    ))
+            self.process_login()
+        # First check if this is still a match event
+        if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
+            print("[RealTimeParser] Match end.")
+            self.start_match = None
+            # No longer a match
+            self.is_match = False
+            self.lines.clear()
+            return
+        # Handle out-of-match events
+        if not self.is_match:
+            # Check if this event is still not in-match
+            if "@" in line["source"] or "@" in line["destination"]:
+                return
+            else:  # Valid match event
+                print("[RealTimeParser] Match start.")
+                self.start_match = line["time"]
+                self.is_match = True
+                # Call the new match callback
+                self.match_callback()
+        # Handle changes of player ID (new spawns)
+        if line["source"] != self.active_id and line["destination"] != self.active_id:
+            self.active_id = ""
+            # Call the spawn callback
+            self.start_spawn = line["time"]
+            self.spawn_callback()
+            self.ship = None
+            self.ship_stats = None
+            self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
+        # Update player ID if possible and required
+        if self.active_id == "" and line["source"] == line["destination"]:
+            print("[RealTimeParser] New player ID: {}".format(line["source"]))
+            self.active_id = line["source"]
+            self.active_ids.append(line["source"])
+            # Parse the lines that are on hold
+            if self.hold != 0:
+                self.hold = 0  # For recursive calls, this must be zero to prevent an infinite loop
+                for line_dict in reversed(self.hold_list):
+                    self.process_line(line_dict)
+                self.hold_list.clear()
+
+        # self.is_match must be True to get to this point
+
+        # If no active ID is set, then this line must be put on hold
+        if self.active_id == "":
+            print("[RealTimeParser] Holding line.")
+            self.hold_list.append(line)
+            self.hold += 1
+            return
+
+        # Parse the line
+        if line["amount"] == "":
+            line["amount"] = "0"
+        line["amount"] = int(line["amount"].replace("*", ""))
+        if "Heal" in line["effect"]:
+            self._healing += line["amount"]
+        elif "Damage" in line["effect"]:
+            if "Selfdamage" in line["ability"]:
+                self.dmg_s += line["amount"]
+            elif line["source"] in self.active_ids:
+                self.dmg_d += line["amount"]
+            else:
+                self.dmg_t += line["amount"]
+
+        if line["ability"] in self.abilities:
+            self.abilities[line["ability"]] += 1
+        else:  # line["ability"] not in self.abilities:
+            self.abilities[line["ability"]] = 1
+        if callable(self.event_callback):
+            self.lines.append(line)
+            line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
+            self.event_callback(line_effect, self.player_name, self.active_ids, self.start_match)
+
+        """
+        Special ability processing
+        """
+        if line["ability"] == "Scope Mode":
+            self.scope_mode = not self.scope_mode
+        elif line["ability"] == "Primary Weapon Swap":
+            self.primary_weapon = not self.primary_weapon
+        elif line["ability"] == "Secondary Weapon Swap":
+            self.secondary_weapon = not self.secondary_weapon
+        """
+        Ship processing
+        """
+        if self.ship is None:
+            abilities = Parser.get_abilities_dict(self.lines)
+            ship = Parser.get_ship_for_dict(abilities)
+            if len(ship) != 1:
+                return
+            ship = ship[0]
+            if self._character_db[self._character_data]["Faction"].lower() == "republic":
+                ship = rep_ships[ship]
+            if self._screen_parsing_enabled is False:
+                return
+            self.ship = self._character_db[self._character_data]["Ship Objects"][ship]
+            args = (self.ship, self.ships_db, self.companions_db)
+            self.ship_stats = ShipStats(*args)
+        return
+
+    """
+    ScreenParser
+    """
+
+    def process_screenshot(self, screenshot):
+        """
+        Analyze a screenshot and take the data to save it
+        """
+        now = datetime.now()
+        if self._stalker.file not in self._realtime_db:
+            print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
+            return
+        elif self.start_match not in self._realtime_db[self._stalker.file]:
+            print("[RealTimeParser] Processing screenshot while match is not in DB yet.")
+            return
+        elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
+            print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
+            return
+        spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
+        """
+        Tracking penalty
+        
+        Retrieves cursor coordinates and saves the following:
+        - Absolute cursor position
+        - Relative cursor position
+        - Tracking penalty percentage
+        """
+        if "Tracking penalty" in self._screen_parsing_features:
+            # Absolute cursor position
+            mouse_coordinates = get_cursor_position()
+            spawn_dict["cursor_pos"][now] = mouse_coordinates
+            # Relative cursor position
+            distance = vision.get_distance_from_center(mouse_coordinates, self._resolution)
+            spawn_dict["distance"][now] = distance
+            # Tracking penalty
+            degrees = vision.get_tracking_degrees(distance, self._pixels_per_degree)
+            if self.ship_stats is not None:
+                constants = self.get_tracking_penalty()
+                penalty = vision.get_tracking_penalty(degrees, *constants)
+            else:
+                penalty = None
+            spawn_dict["tracking"][now] = penalty
+            # Set the data for the string building
+            unit = "°" if penalty is None else "%"
+            string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
+            self.screen_data["tracking"] = string
+        """
+        Power Management
+        """
+        if "Power Management" in self._screen_parsing_features:
+            power_mgmt = vision.get_power_management(screenshot, *self._coordinates["power_mgmt"])
+            self.screen_data["power_mgmt"] = power_mgmt
+        """
+        Ship Health
+        """
+        if "Ship Health " in self._screen_parsing_features:
+            health_hull = vision.get_ship_health_hull(screenshot)
+            (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
+                screenshot, self._coordinates["health"])
+            self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+
+        # Finally, save data
+        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
+        self.save_data_dictionary()
+
+    def get_tracking_penalty(self):
+        """
+        Determine the correct weapon to determine the tracking penalty for and then retrieve that data
+        """
+        if self.ship_stats is None:
+            print("[RealTimeParser] get_tracking_penalty was called while ship_stats is None")
+            return 0, 0  # Fail silently
+        primaries = ["PrimaryWeapon", "PrimaryWeapon2"]
+        secondaries = ["SecondaryWeapon", "SecondaryWeapon2"]
+        if self.scope_mode is True:
+            weapon_key = secondaries[int(self.secondary_weapon)]
+        else:  # self.scope_mode is False
+            weapon_key = primaries[int(self.primary_weapon)]
+        firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
+        tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
+        if "Weapon_Tracking_Bonus" not in self.ship_stats[weapon_key]:
+            upgrade_constant = self.ship_stats[weapon_key]["Weapon_Tracking_Bonus"]
+        else:
+            upgrade_constant = 0
+        return tracking_penalty, upgrade_constant, firing_arc
+
+    """
+    TimerParser
+    """
+
+    def process_login(self):
+        """
+        TimerParser attempts for ten seconds to determine if there is a spawn timer available on the screen
+        """
+        if "Spawn Timer" not in self._screen_parsing_features:
+            return
+
+    def run(self):
+        """
+        Run the loop and exit if necessary and perform error-handling for everything
+        """
+        self.start_listeners()
+        while True:
+            if not self._exit_queue.empty():
+                break
+            try:
+                self.update()
+            except Exception as e:
+                # Errors are not often handled well in Threads
+                print("RealTimeParser encountered an error: ", e)
+                messagebox.showerror(
+                    "Error",
+                    "The real-time parsing back-end encountered an error while performing operations. Please report "
+                    "this to the developer with the debug message below and, if possible, the full strack-trace. "
+                    "\n\n{}".format(e)
+                )
+                raise
+        # Perform closing actions
+        self.stop_listeners()
+
+    """
+    Input listener callbacks
+    """
+
+    def _on_kb_press(self, key):
+        if not self.is_match or key not in keys:
+            return
+        self.set_for_current_spawn("keys", datetime.now(), (keys[key], True))
+
+    def _on_kb_release(self, key):
+        if not self.is_match or key not in keys:
+            return
+        self.set_for_current_spawn("keys", datetime.now(), (keys[key], False))
+
+    def _on_ms_press(self, x, y, button, pressed):
+        if not self.is_match:
+            return
+        self.set_for_current_spawn("clicks", datetime.now(), (pressed, button))
+
+    """
+    General functions
+    """
 
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
-        self.close()
-
-    def __del__(self):
-        self.close()
-
-    def parse(self, line, recursion=False):
-        write_debug_log("Parser.parse function called with line: %s" % line)
-        self.dprint("[DEBUG] line", line)
-        if not line:
-            print("[DEBUG] Line is of NoneType")
-            # Should be return for #20?
-            return
-
-        if "SetLevel" in line:
-            return
-
-        # This block is for keeping track of recent enemies, but it causes RuntimeErrors
-        # time_now = datetime.datetime.now()
-        # for enemy, time in self.recent_enemies.iteritems():
-        #    # Remove enemies that weren't registered in last ten seconds
-        #    if (time_now - time).seconds >= 10:
-        #        del self.recent_enemies[enemy]
-
-        # If first line of the file, save the player name
-        if self.player_name == '' and '@' in line['source']:
-            self.player_name = line['source'][1:]
-            variables.rt_name = self.player_name
-            print((self.player_name))
-        # Sometimes multiple log-ins are stored in one log
-        # Then the player_name must be changed if it is a self-targeted ability
-        if line['source'] == line['destination'] and "@" not in line['source'] and ":" not in line['source'] and \
-                not bool(re.search(r'\d', line['source'])):
-            if line['source'][1:] != self.player_name:
-                self.player_name = line['source'][1:]
-                variables.rt_name = self.player_name
-                print((self.player_name))
-
-        if not self.is_match and ('@' in line['source'] or '@' in line['destination']):
-            self.dprint("[DEBUG] out of match, skip")
-            return
-
-        # if the active id is neither source nor destination, the player id has changed
-        # meaning a new spawn.
-        if self.active_id not in line['source'] and self.active_id not in line['destination']:
-            print(("[NEW SPAWN]", sum(self.spawn_dmg_done), sum(self.spawn_dmg_taken), sum(self.spawn_healing_rcvd),
-                   sum(self.spawn_selfdmg)))
-            # Call the new spawn callback
-            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
-            self.data_queue.put(("spawn", time))
-            self.spawn_callback(self.spawn_dmg_done, self.spawn_dmg_taken, self.spawn_healing_rcvd, self.spawn_selfdmg)
-            self.spawns += 1
-            self.active_id = ''
-            self.dprint("[DEBUG] resetting active id")
-            self.dprint("[DEBUG] updating tmp_* and resetting spawn_*", self.spawn_dmg_done, sum(self.spawn_dmg_done))
-            self.tmp_dmg_done.append(sum(self.spawn_dmg_done))
-            self.tmp_dmg_taken.append(sum(self.spawn_dmg_taken))
-            self.tmp_healing_rcvd.append(sum(self.spawn_healing_rcvd))
-            self.tmp_selfdmg.append(sum(self.spawn_selfdmg))
-            self.spawn_dmg_done, self.spawn_dmg_taken = [], []
-            self.spawn_healing_rcvd, self.spawn_selfdmg = [], []
-            self.dprint("[DEBUG] tmp_* updated", self.tmp_dmg_done)
-
-        # if a self targeted ability update the active player id
-        if line['source'] == line['destination']:
-            self.dprint("[DEBUG] setting active id")
-            self.active_id = line['source']
-            if self.active_id not in self.active_ids:
-                self.active_ids.append(self.active_id)
-
-        self.dprint("[DEBUG] active id \'", self.active_id, "\'")
-
-        # Insert the line (or the pretty version of it) into the events box of real-time parsing
-        self.insert(line, variables.rt_timing, self.active_id)
-
-        # if the active player id is emtpy, it is impossible to determine if
-        # player is target or source, thus put this line on hold and return.
-        # elif there is and active id and lines on hold, parse them again.
-        if self.active_id is '':
-            self.hold += 1
-            self.hold_list.append(line)
-            self.dprint("[DEBUG] hold", self.hold, self.hold_list)
-            return
-        elif self.active_id is not '' and self.hold > 0 and not recursion:
-            self.dprint("[DEBUG] catching up")
-            for elem in self.hold_list:
-                self.parse(elem, recursion=True)
-                self.hold_list = self.hold_list[1:]
-            self.hold = 0
-            self.dprint("[DEBUG] caught up")
-            return
-
-        self.dprint("[DEBUG] hold", self.hold)
-
-        # start of a match
-        if not self.is_match and '@' not in line['source']:
-            self.is_match = True
-            # Call the callback for a new match
-            self.new_match_callback()
-            time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
-            variables.rt_timing = time
-            if self.screenparser:
-                write_debug_log("Parser announcing new match to ScreenParser")
-                self.data_queue.put(("match", True, time))
-
-        if self.is_match:
-            if '@' in line['source']:
-                if "Safe Login" not in line['ability']:
-                    self.dprint("[DEBUG] Line with '@' but no end of match detected")
-                    return
-                self.dprint("[DEBUG] end of match, resetting")
-                # Call the end of match callback
-                self.match_callback(self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
-                self.dprint("[DEBUG]", self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd, self.tmp_selfdmg)
-                print(("[END OF MATCH]", sum(self.tmp_dmg_done), sum(self.tmp_dmg_taken), sum(self.tmp_healing_rcvd),
-                       sum(self.tmp_selfdmg)))
-                self.is_match = False
-                self.dmg_done.append(self.tmp_dmg_done)
-                self.dmg_taken.append(self.tmp_dmg_taken)
-                self.healing_rcvd.append(self.tmp_healing_rcvd)
-                self.self_dmg.append(self.tmp_selfdmg)
-                self.abilities.append(self.tmp_abilities)
-
-                try:
-                    crits = Decimal(float(self.crit_nr) / len(self.tmp_dmg_done))
-                except ZeroDivisionError:
-                    crits = 0
-                crits = round(crits * 100, 1)
-                self.crit_luck.append((self.crit_nr, crits))
-
-                self.crit_nr = 0
-                self.tmp_dmg_done, self.tmp_dmg_taken, self.tmp_healing_rcvd = [], [], []
-                self.tmp_selfdmg = []
-                self.tmp_abilities = {}
-                self.active_id = ''
-                self.spawns = 1
-                self.active_ids = []
-                # self.recent_enemies.clear()
-                if self.screenparser:
-                    write_debug_log("Parser announcing end of match to ScreenParser")
-                    time = datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
-                    self.data_queue.put(("match", False, time))
-                return
-
-            # Start parsing
-            if 'Heal' in line['effect']:
-                self.spawn_healing_rcvd.append(int(line['amount'].replace('*', '')))
-                self.dprint("[DEBUG] heal", self.spawn_healing_rcvd)
-
-            elif 'Damage' in line['effect']:
-                if not line['amount'] is '':
-                    if 'Selfdamage' in line['ability']:
-                        self.spawn_selfdmg.append(int(line['amount'].replace('*', '')))
-                        self.dprint("[DEBUG] self damage", self.spawn_selfdmg)
-
-                    elif line['source'] in self.active_id:
-                        if '*' in line['amount']:
-                            self.crit_nr += 1
-
-                        if line['amount'] is not '0':
-                            self.spawn_dmg_done.append(int(line['amount'].replace('*', '')))
-                            self.dprint("[DEBUG] damage done", self.spawn_dmg_done)
-                    else:
-                        self.spawn_dmg_taken.append(int(line['amount'].replace('*', '')))
-                        self.dprint("[DEBUG] damage taken", self.spawn_dmg_taken)
-                        # self.recent_enemies[line['destination']] = \
-                        #    datetime.datetime.strptime(line['time'][:-4], "%H:%M:%S")
-
-            if line['ability'] in self.tmp_abilities:
-                self.tmp_abilities[line['ability']] += 1
-            else:
-                self.tmp_abilities[line['ability']] = 1
+    def __exit__(self):
+        self._exit_queue.put(True)
 
     def close(self):
+        self.__exit__()
+
+    def stop(self):
+        self.__exit__()
+
+    """
+    Callbacks
+    """
+
+    def file_callback(self, *args):
+        self._realtime_db[self._stalker.file] = {}
+        self._file_callback(*args)
+
+    def match_callback(self):
+        self._realtime_db[self._stalker.file][self.start_match] = {}
+        if callable(self._match_callback):
+            self._match_callback()
+
+    def spawn_callback(self):
+        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {}
+        self.create_keys()
+        if callable(self._spawn_callback):
+            self._spawn_callback()
+
+    def create_keys(self):
+        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {
+            "keys": {},
+            "clicks": {},
+            "target": {},
+            "distance": {},
+            "health": {},
+            "tracking": {},
+            "cursor_pos": {},
+            "power_mgmt": {},
+            "player_name": None,
+            "ship": None,
+            "ship_name": None
+        }
+
+    def set_for_current_spawn(self, *args):
+        if len(args) == 2:
+            self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]] = args[1]
+        elif len(args) == 3:
+            self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]][args[1]] = args[2]
+        else:
+            raise ValueError()
+
+    """
+    String manipulation
+    """
+
+    @property
+    def overlay_string(self):
+        if self.is_match is False and settings["realtime"]["overlay_when_gsf"]:
+            return ""
+        overlay_string = ""
+        tracking = self.get_tracking_string()
+        parsing = self.get_parsing_string()
+        power = self.get_power_mgmt_string()
+        for string in [parsing, tracking, power]:
+            overlay_string += string
+        return overlay_string
+
+    def get_tracking_string(self):
+        if "Tracking penalty" not in self._screen_parsing_features:
+            return ""
+        return "Tracking: {}\n".format(self.screen_data["tracking"])
+
+    def get_parsing_string(self):
+        string = "Damage Dealt: {}\n" \
+                 "Damage Taken: {}\n" \
+                 "Selfdamage: {}\n" \
+                 "Healing Recv: {}\n".format(
+            self.dmg_d, self.dmg_t, self.dmg_s, self._healing
+        )
+        return string
+
+    def get_power_mgmt_string(self):
+        return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
+
+    def get_timer_string(self):
         pass
 
-    def dprint(self, *args):
-        if self.DEBUG:
-            print(args)
-
-    def new_file(self, filename):
-        if self.screenparser:
-            self.data_queue.put(("file", filename))
-
-
-# ===================================================================
-# --- Utility Tools
-# ===================================================================
-def read_config():
-    """
-    Reads the config file and determines all the configuration
-    variables.
-
-    :return: dictionary containing all the needed information
-    """
-    values = {}
-    with open('config.ini', 'r') as config:
-        for line in config:
-            if line is '' or line.startswith(';'):
-                continue
-            elif 'PATH' in line:
-                elements = re.split("=", line)
-                path = elements[1]
-                # path = line.split(None, 2)[2]
-                values['path'] = path
-        return values
+    def get_health_string(self):
+        pass

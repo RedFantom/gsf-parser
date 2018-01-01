@@ -6,6 +6,7 @@
 
 categories = ["Hull_and_Shields", "Engine", "Maneuverability", "Weapons", "Sensors"]
 weapon_categories = ["General", "Accuracy", "Range", "Missile", "Railgun"]
+actives = ["Shields", "Engine"]
 
 statistics = {
     'Booster_Acceleration': ("Engine", "Boost Acceleration", "m/s^2"),
@@ -80,6 +81,8 @@ statistics = {
     'midRangeDamMulti': ("General", "Damage Mid-Range Multiplier", "%"),
     'pbRangeAccMulti': ("Accuracy", "Short-Range Accuracy Multiplier", "%"),
     'pbRangeDamMulti': ("General", "Damage Short-Range Multiplier", "%"),
-    'trackingAccuracyLoss': ("Accuracy", "Tracking Penalty", "%/°"),
+    'trackingAccuracyLoss': ("Accuracy", "Tracking penalty", "%/°"),
+    'Cooldown': ('General', 'Cooldown', 's'),
+    'Active': ('General', 'Active Ability', 'bool')
 }
 

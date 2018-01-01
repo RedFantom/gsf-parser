@@ -4,7 +4,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 
-from os.path import dirname, join, basename
+from os.path import dirname, join, basename, exists
 from os import rmdir
 import sys
 import shutil
@@ -12,15 +12,13 @@ import platform
 from tkinter import messagebox, filedialog
 from tools.utilities import get_temp_directory
 
-debug = True
-
 
 def new_window():
     import gui
     try:
         main_window = gui.MainWindow()
     except Exception as e:
-        if debug is True:
+        if exists("development"):
             raise
         save = messagebox.askyesno("Error", "The GSF Parser window failed to correctly initialize. Please report this "
                                             "error along with the debug output below.\n\n{}: {}\n\nWould you like to "
@@ -44,7 +42,10 @@ def new_window():
             except OSError:
                 messagebox.showerror("Error", "Could not automatically delete the temporary files.")
         raise
-    main_window.mainloop()
+    try:
+        main_window.mainloop()
+    except KeyboardInterrupt:
+        exit(0)
 
 
 def setup_tkinter():

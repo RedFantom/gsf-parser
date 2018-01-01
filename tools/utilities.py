@@ -15,7 +15,7 @@ import numpy
 from sys import platform
 import tkinter as tk
 from tkinter import messagebox, filedialog
-import mss
+from configparser import ConfigParser
 
 debug = False
 
@@ -83,21 +83,19 @@ def get_pointer_position_linux():
     Gets the position of the targeting pointer with xlib
     :return:coordinates of the pointer
     """
-    from xlib import display
+    from Xlib import display
     data = display.Display().screen().root.query_pointer()._data
     return data["root_x"], data["root_y"]
 
 
-def get_cursor_position(screen):
+def get_cursor_position():
     """
     Calls the appropriate function to get the cursor position depending on the operating system and whether DEBUG mode
     is enabled or not. get_pointer_position_cv2() is not preferred because it's resource intensive.
     :param screen: cv2 array of screenshot
     :return:
     """
-    if debug:
-        return get_pointer_position_cv2(screen)
-    elif platform == "win32":
+    if platform == "win32":
         return get_pointer_position_win32()
     elif platform == "linux":
         return get_pointer_position_linux()
@@ -105,17 +103,6 @@ def get_cursor_position(screen):
         raise ValueError("This function does not support macOS")
     else:
         raise ValueError("Unknown platform detected")
-
-
-def get_pillow_screen():
-    """
-    Returns the appropriate Image object
-    :return: Image object
-    """
-    sct = mss.mss()
-    sct.enum_display_monitors()
-    sct.get_pixels(sct.monitors[0])
-    return Image.frombytes("RGB", (sct.width, sct.height), sct.image)
 
 
 def write_debug_log(line):
@@ -172,8 +159,8 @@ def get_swtor_directory_win32():
 
 def get_swtor_directory_linux():
     import variables
-    if "temp_dir" not in variables.settings_obj["misc"] or variables.settings_obj["misc"]["temp_dir"] is None or \
-            not os.path.exists(variables.settings_obj["misc"]["temp_dir"]):
+    if "temp_dir" not in variables.settings["misc"] or variables.settings["misc"]["temp_dir"] is None or \
+            not os.path.exists(variables.settings["misc"]["temp_dir"]):
         messagebox.showinfo(
             "Info",
             "It appears that you are running SWTOR on Linux. The GSF Parser will now attempt to automatically "
@@ -208,9 +195,9 @@ def get_swtor_directory_linux():
             raise ValueError("Temporary SWTOR directory does not exist")
         if temp_dir is None:
             raise ValueError()
-        variables.settings_obj["misc"]["temp_dir"] = temp_dir
-        variables.settings_obj.write_settings({"misc": {"temp_dir": temp_dir}})
-    return variables.settings_obj["misc"]["temp_dir"]
+        variables.settings["misc"]["temp_dir"] = temp_dir
+        variables.settings.write_settings({"misc": {"temp_dir": temp_dir}})
+    return variables.settings["misc"]["temp_dir"]
 
 
 def get_swtor_directory():
@@ -245,3 +232,29 @@ def get_screen_resolution():
     height = root.winfo_screenheight()
     root.destroy()
     return width, height
+
+
+def get_swtor_screen_mode():
+    """
+    Return the SWTOR Screen Mode as a String, or None if it cannot reliably be determined.
+    """
+    config_path = os.path.join(get_swtor_directory(), "swtor", "settings", "client_settings.ini")
+    if not os.path.exists(config_path):
+        return FileNotFoundError
+    config_parser = ConfigParser()
+    with open(config_path, "r") as fi:
+        config_parser.read_file(fi)
+    if "Renderer" not in config_parser.sections():
+        return ValueError
+    renderer_settings = config_parser["Renderer"]
+    if "FullScreen" not in renderer_settings:
+        return ValueError
+    full_screen = renderer_settings["FullScreen"]
+    if full_screen is False or full_screen == "false":
+        return "Windowed"
+    if "D3DFullScreen" not in renderer_settings:
+        return "FullScreen (Windowed)"
+    d3d_full_screen = renderer_settings["D3DFullScreen"]
+    if d3d_full_screen is True or d3d_full_screen == "true":
+        return "FullScreen"
+    return "FullScreen (Windowed)"

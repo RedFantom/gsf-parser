@@ -7,7 +7,7 @@ from pprint import pformat
 
 if __name__ == '__main__':
     settings = Settings()
-    log_path = settings["parsing"]["cl_path"]
+    log_path = settings["parsing"]["path"]
     files = os.listdir(log_path)
     current_dir = os.getcwd()
     os.chdir(log_path)

@@ -187,6 +187,7 @@ class BuildsFrame(ttk.Frame):
             self.crew_select_frame.category_variables[category].set(name)
             self.crew_select_frame.set_crew_member(crew_member)
         self.ship_select_frame.ship_buttons[ship].config(state=tk.DISABLED)
+        self.ship_name = ship
         self.grid_widgets()
 
     def set_component(self, category, component):

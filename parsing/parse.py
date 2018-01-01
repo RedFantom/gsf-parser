@@ -9,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from .abilities import *
 import os
-from variables import settings_obj
+from variables import settings
 from parsing.parser import Parser
 
 
@@ -22,7 +22,7 @@ def parse_file_name(string):
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
-    file_name = os.path.join(settings_obj["parsing"]["cl_path"], os.path.basename(file_name))
+    file_name = os.path.join(settings["parsing"]["path"], os.path.basename(file_name))
     with open(file_name, "r") as file_obj:
         try:
             for line in file_obj:

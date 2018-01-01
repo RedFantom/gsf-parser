@@ -32,7 +32,7 @@ class SettingsImporter(tk.Toplevel):
     def export_settings_file():
         file_name = filedialog.asksaveasfilename(filetypes=[("Settings file", ".ini")])
         with open(file_name, "w") as file_obj:
-            variables.settings_obj.conf.write(file_obj)
+            variables.settings.conf.write(file_obj)
 
     @staticmethod
     def import_settings_file():
@@ -77,9 +77,9 @@ class SettingsImporter(tk.Toplevel):
         except configparser.NoOptionError:
             autoupdate = settings.Defaults.autoupdate
         try:
-            cl_path = config.get("parsing", "cl_path")
+            path = config.get("parsing", "path")
         except configparser.NoOptionError:
-            cl_path = settings.Defaults.cl_path
+            path = settings.Defaults.path
         try:
             if config.get("parsing", "auto_ident") == "True":
                 auto_ident = True
@@ -120,7 +120,7 @@ class SettingsImporter(tk.Toplevel):
         except configparser.NoOptionError:
             size = settings.Defaults.size
         try:
-            pos = config.get("realtime", "pos")
+            pos = config.get("realtime", "overlay_position")
         except configparser.NoOptionError:
             pos = settings.Defaults.pos
         try:
@@ -132,7 +132,7 @@ class SettingsImporter(tk.Toplevel):
         except configparser.NoOptionError:
             overlay_tr_color = settings.Defaults.overlay_tr_color
         try:
-            overlay_tx_color = config.get("realtime", "overlay_tx_color")
+            overlay_tx_color = config.get("realtime", "overlay_text")
         except configparser.NoOptionError:
             overlay_tx_color = settings.Defaults.overlay_tx_color
         try:
@@ -197,19 +197,19 @@ class SettingsImporter(tk.Toplevel):
         except configparser.NoOptionError:
             screenparsing = settings.Defaults.screenparsing
         try:
-            if config.get("realtime", "screenparsing_overlay") == "True":
+            if config.get("realtime", "screen_overlay") == "True":
                 screenparsing_overlay = True
-            elif config.get("realtime", "screenparsing_overlay") == "False":
+            elif config.get("realtime", "screen_overlay") == "False":
                 screenparsing_overlay = False
             else:
                 screenparsing_overlay = settings.Defaults.screenparsing_overlay
         except configparser.NoOptionError:
             screenparsing_overlay = settings.Defaults.screenparsing_overlay
         try:
-            screenparsing_features = config.get("realtime", "screenparsing_features")
+            screen_features = config.get("realtime", "screen_features")
         except configparser.NoOptionError:
-            screenparsing_features = settings.Defaults.screenparsing_features
-        variables.settings_obj.write_settings({
+            screen_features = settings.Defaults.screen_features
+        variables.settings.write_settings({
             "misc": {
                 "version": version,
                 "autoupdate": autoupdate
@@ -223,7 +223,7 @@ class SettingsImporter(tk.Toplevel):
                 "faction": faction
             },
             "parsing": {
-                "cl_path": cl_path,
+                "path": path,
                 "auto_ident": auto_ident
             },
             "sharing": {
@@ -234,17 +234,17 @@ class SettingsImporter(tk.Toplevel):
                 "overlay": overlay,
                 "opacity": opacity,
                 "size": size,
-                "pos": pos,
+                "overlay_position": pos,
                 "overlay_bg_color": overlay_bg_color,
                 "overlay_tr_color": overlay_tr_color,
-                "overlay_tx_color": overlay_tr_color,
+                "overlay_text": overlay_tr_color,
                 "overlay_tx_font": overlay_tx_font,
                 "overlay_tx_size": overlay_tx_size,
                 "overlay_when_gsf": overlay_when_gsf,
                 "timeout": timeout,
                 "events_overlay": events_overlay,
                 "screenparsing": screenparsing,
-                "screenparsing_overlay": screenparsing_overlay,
-                "screenparsing_features": screenparsing_features
+                "screen_overlay": screenparsing_overlay,
+                "screen_features": screen_features
             }
         })

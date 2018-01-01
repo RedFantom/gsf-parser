@@ -39,7 +39,7 @@ def spawn_statistics(file_name, spawn, spawn_timing):
     (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
      criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
 
-    with open(os.path.join(variables.settings_obj["parsing"]["cl_path"], file_name), "r") as fi:
+    with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as fi:
         name = parse.determinePlayerName(fi.readlines())
     killsassists = 0
     for enemy in enemies:

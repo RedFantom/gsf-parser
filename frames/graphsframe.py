@@ -91,10 +91,10 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -103,7 +103,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                     file_cube, match_timings, spawn_timings = parse.splitter(lines, parse.determinePlayer(lines))
                 if file_date not in matches_played_date:
@@ -115,7 +115,7 @@ class GraphsFrame(ttk.Frame):
             self.axes.set_ylim(ymin=0, ymax=matches_played_date[
                                                 max(matches_played_date, key=matches_played_date.get)] + 2)
             self.axes.bar(list(matches_played_date.keys()), list(matches_played_date.values()),
-                          color=variables.settings_obj["gui"]["color"])
+                          color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Matches played")
             self.axes.set_ylabel("Amount of matches")
@@ -130,11 +130,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -143,7 +143,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -168,7 +168,7 @@ class GraphsFrame(ttk.Frame):
             avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
             self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average damage dealt per match")
             self.axes.set_ylabel("Amount of damage")
@@ -183,11 +183,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -196,7 +196,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -221,7 +221,7 @@ class GraphsFrame(ttk.Frame):
             avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
             self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average damage taken per match")
             self.axes.set_ylabel("Amount of damage")
@@ -236,11 +236,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             damage_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -249,7 +249,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -274,7 +274,7 @@ class GraphsFrame(ttk.Frame):
             avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
             self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average healing received per match")
             self.axes.set_ylabel("Amount of healing")
@@ -289,11 +289,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             enem_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -302,7 +302,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -335,7 +335,7 @@ class GraphsFrame(ttk.Frame):
             avg_dmg_date = OrderedDict(sorted(list(avg_enem_date.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
             self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average enemies damage dealt to per match")
             self.axes.set_ylabel("Amount of enemies")
@@ -350,12 +350,12 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
             critcount_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -364,7 +364,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -391,7 +391,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = OrderedDict(sorted(list(avg_crit_luck.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
             self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average percentage critical hits per day")
             self.axes.set_ylabel("Percentage critical hits")
@@ -406,11 +406,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             hitcount_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -419,7 +419,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -444,7 +444,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = OrderedDict(sorted(list(avg_hit_match.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
             self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average hitcount per match per day")
             self.axes.set_ylabel("Amount of hits")
@@ -459,11 +459,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             spawns_played_date = {}
             spawn_length_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -472,7 +472,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -509,7 +509,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = OrderedDict(sorted(list(avg_spawn_min.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
             self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Length of average spawn per day")
             self.axes.set_ylabel("Spawn length in minutes")
@@ -524,11 +524,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             match_length_day = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -537,7 +537,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -573,7 +573,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = OrderedDict(sorted(list(avg_match_min.items()), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
             self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Length of average match per day")
             self.axes.set_ylabel("Match length in minutes")
@@ -588,11 +588,11 @@ class GraphsFrame(ttk.Frame):
             datetimes = []
             files_done = 0
             self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings_obj["parsing"]["cl_path"])),
+                                              len(os.listdir(variables.settings["parsing"]["path"])),
                                               title="Calculating graph...")
             matches_played_date = {}
             deaths_per_date = {}
-            for file in os.listdir(variables.settings_obj["parsing"]["cl_path"]):
+            for file in os.listdir(variables.settings["parsing"]["path"]):
                 if not file.endswith(".txt"):
                     continue
                 try:
@@ -601,7 +601,7 @@ class GraphsFrame(ttk.Frame):
                     continue
                 datetimes.append(file_date)
                 files_dates[file] = file_date
-                with open(variables.settings_obj["parsing"]["cl_path"] + "/" + file, "r") as file_obj:
+                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
                     lines = file_obj.readlines()
                 player = parse.determinePlayer(lines)
                 file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
@@ -625,7 +625,7 @@ class GraphsFrame(ttk.Frame):
             avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
             self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
             self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings_obj["gui"]["color"])
+                           color=variables.settings["gui"]["color"])
             self.axes.xaxis_date()
             self.axes.set_title("Average amount of deaths per match per day")
             self.axes.set_ylabel("Amount of deaths")

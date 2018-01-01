@@ -6,7 +6,7 @@
 import tkinter as tk
 from tkinter import ttk
 # Own modules
-from parsing.screen import FileHandler
+from parsing.filehandler import FileHandler
 
 
 class DatabaseExplorer(tk.Toplevel):
@@ -33,7 +33,7 @@ class DatabaseExplorer(tk.Toplevel):
     def update_tree(self, *args):
         self.tree.delete(*self.tree.get_children(""))
         self.data = FileHandler.get_data_dictionary()
-        for file, data_file in self.data.items():
+        for file, data_file in sorted(self.data.items()):
             if file == "" or file is None:
                 continue
             self.tree.insert("", tk.END, iid=file, text=file)

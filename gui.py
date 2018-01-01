@@ -13,8 +13,8 @@ from tkinter import messagebox
 import os
 import sys
 import variables
-from tools import client
 import main
+import socket
 from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
 from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
@@ -56,14 +56,11 @@ class MainWindow(ThemedTk):
         self.set_variables()
         self.update_style(start=True)
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings_obj["parsing"]["cl_path"]
+        self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
-        variables.client_obj = client.ClientConnection()
         self.splash = BootSplash(self)
-        if variables.settings_obj["sharing"]["auto_upl"] or variables.settings_obj["parsing"]["auto_ident"]:
-            variables.client_obj.init_conn()
-            print("[DEBUG] Connection initialized")
+        self.splash.label_var.set("Building widgets...")
         self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
         self.notebook = ttk.Notebook(self, height=420, width=self.width)
@@ -75,11 +72,11 @@ class MainWindow(ThemedTk):
         self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
         self.ship_frame = shipframe.ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
+        self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
         self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
-        self.characters_frame = charactersframe.CharactersFrame(self.notebook)
         self.builds_frame = buildframe.BuildsFrame(self.notebook)
         self.toolsframe = toolsframe.ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
@@ -89,6 +86,7 @@ class MainWindow(ThemedTk):
         # Add the frames to the Notebook
         self.setup_notebook()
         # Update the files in the file_select frame
+        self.splash.label_var.set("Parsing files...")
         self.notebook.grid(column=0, row=0, padx=2, pady=2)
         self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
@@ -139,7 +137,6 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.share_tab_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
@@ -163,11 +160,11 @@ class MainWindow(ThemedTk):
         """
         Set program global variables in the shared variables module
         """
-        variables.color_scheme.set_scheme(variables.settings_obj["gui"]["event_scheme"])
+        variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
         variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings_obj["parsing"]["cl_path"]
+        variables.path = variables.settings["parsing"]["path"]
 
     def get_scaling_factor(self):
         """
@@ -194,7 +191,7 @@ class MainWindow(ThemedTk):
         """
         Open a DebugWindow instance if that setting is set to True
         """
-        if variables.settings_obj["gui"]["debug"] is True:
+        if variables.settings["gui"]["debug"] is True:
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         return
 
@@ -210,7 +207,7 @@ class MainWindow(ThemedTk):
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
         try:
-            self.style.configure('.', foreground=variables.settings_obj["gui"]["color"])
+            self.style.configure('.', foreground=variables.settings["gui"]["color"])
         except KeyError:
             self.style.configure('.', foreground='#2f77d0')
         if not start:
@@ -221,7 +218,7 @@ class MainWindow(ThemedTk):
         """
         Changes the window's icon
         """
-        color = variables.settings_obj["gui"]["logo_color"].lower()
+        color = variables.settings["gui"]["logo_color"].lower()
         icon_path = os.path.join(get_assets_directory(), "logos", "icon_{}.ico".format(color))
         icon = PhotoImage(Image.open(icon_path))
         self.tk.call("wm", "iconphoto", self._w, icon)
@@ -253,13 +250,12 @@ class MainWindow(ThemedTk):
         Function to check for GSF Parser updates by checking tags and opening a window if an update is available
         :return: None
         """
-        print("Rate limit: ", Github().rate_limiting)
-        if not variables.settings_obj["misc"]["autoupdate"]:
+        if not variables.settings["misc"]["autoupdate"]:
             return
         try:
             user = Github().get_user("RedFantom")
             repo = user.get_repo("GSF-Parser")
-            current = Version(variables.settings_obj["misc"]["version"].replace("v", ""))
+            current = Version(variables.settings["misc"]["version"].replace("v", ""))
             for item in repo.get_tags():
                 try:
                     if Version(item.name.replace("v", "")) > current:
@@ -273,11 +269,11 @@ class MainWindow(ThemedTk):
                 except ValueError as e:
                     print(e)
                     continue
-        except GithubException:
+        except (GithubException, socket.timeout, socket.error):
             pass
 
     def destroy(self):
-        if self.strategies_frame.settings:
+        if self.strategies_frame.settings is not None:
             if self.strategies_frame.settings.server:
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
                 return False
@@ -285,5 +281,8 @@ class MainWindow(ThemedTk):
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while connected to a Strategy Server.")
                 return False
             self.strategies_frame.settings.destroy()
+        if self.realtime_frame.parser is not None:
+            if self.realtime_frame.parser.is_alive():
+                self.realtime_frame.stop_parsing()
         ThemedTk.destroy(self)
         return True

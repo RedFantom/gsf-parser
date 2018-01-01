@@ -70,74 +70,74 @@ def pretty_event(line_dict, start_of_match, active_id):
         else:
             string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] == active_id:
-            if variables.settings_obj["gui"]["event_colors"] == "basic":
+            if variables.settings["gui"]["event_colors"] == "basic":
                 if line_dict['source'] == active_id:
-                    bg_color = variables.color_scheme['selfdmg'][0]
-                    fg_color = variables.color_scheme['selfdmg'][1]
+                    bg_color = variables.colors['selfdmg'][0]
+                    fg_color = variables.colors['selfdmg'][1]
                 else:
-                    bg_color = variables.color_scheme['dmgt_pri'][0]
-                    fg_color = variables.color_scheme['dmgt_pri'][1]
+                    bg_color = variables.colors['dmgt_pri'][0]
+                    fg_color = variables.colors['dmgt_pri'][1]
             else:
                 if line_dict['source'] == active_id:
-                    bg_color = variables.color_scheme['selfdmg'][0]
-                    fg_color = variables.color_scheme['selfdmg'][1]
+                    bg_color = variables.colors['selfdmg'][0]
+                    fg_color = variables.colors['selfdmg'][1]
                 else:
                     if ability in abilities.primaries:
-                        bg_color = variables.color_scheme['dmgt_pri'][0]
-                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                        bg_color = variables.colors['dmgt_pri'][0]
+                        fg_color = variables.colors['dmgt_pri'][1]
                     elif ability in abilities.secondaries:
-                        bg_color = variables.color_scheme['dmgt_sec'][0]
-                        fg_color = variables.color_scheme['dmgt_sec'][1]
+                        bg_color = variables.colors['dmgt_sec'][0]
+                        fg_color = variables.colors['dmgt_sec'][1]
                     else:
-                        bg_color = variables.color_scheme['dmgt_pri'][0]
-                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                        bg_color = variables.colors['dmgt_pri'][0]
+                        fg_color = variables.colors['dmgt_pri'][1]
         else:
             if ability in abilities.primaries:
-                bg_color = variables.color_scheme['dmgd_pri'][0]
-                fg_color = variables.color_scheme['dmgd_pri'][1]
+                bg_color = variables.colors['dmgd_pri'][0]
+                fg_color = variables.colors['dmgd_pri'][1]
             elif ability in abilities.secondaries:
-                bg_color = variables.color_scheme['dmgd_sec'][0]
-                fg_color = variables.color_scheme['dmgd_sec'][1]
+                bg_color = variables.colors['dmgd_sec'][0]
+                fg_color = variables.colors['dmgd_sec'][1]
             else:
-                bg_color = variables.color_scheme['dmgd_pri'][0]
-                fg_color = variables.color_scheme['dmgd_pri'][1]
+                bg_color = variables.colors['dmgd_pri'][0]
+                fg_color = variables.colors['dmgd_pri'][1]
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
         if line_dict['source'] == active_id:
-            bg_color = variables.color_scheme['selfheal'][0]
-            fg_color = variables.color_scheme['selfheal'][1]
+            bg_color = variables.colors['selfheal'][0]
+            fg_color = variables.colors['selfheal'][1]
         else:
-            bg_color = variables.color_scheme['healing'][0]
-            fg_color = variables.color_scheme['healing'][1]
+            bg_color = variables.colors['healing'][0]
+            fg_color = variables.colors['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-        if variables.settings_obj["gui"]["event_colors"] == "advanced":
+        if variables.settings["gui"]["event_colors"] == "advanced":
             for engine in abilities.engines:
                 if engine in string:
-                    bg_color = variables.color_scheme['engine'][0]
-                    fg_color = variables.color_scheme['engine'][1]
+                    bg_color = variables.colors['engine'][0]
+                    fg_color = variables.colors['engine'][1]
                     break
             for shield in abilities.shields:
                 if shield in string:
-                    bg_color = variables.color_scheme['shield'][0]
-                    fg_color = variables.color_scheme['shield'][1]
+                    bg_color = variables.colors['shield'][0]
+                    fg_color = variables.colors['shield'][1]
                     break
             for system in abilities.systems:
                 if system in string:
-                    bg_color = variables.color_scheme['system'][0]
-                    fg_color = variables.color_scheme['system'][1]
+                    bg_color = variables.colors['system'][0]
+                    fg_color = variables.colors['system'][1]
                     break
             if not bg_color:
-                bg_color = variables.color_scheme['other'][0]
-                fg_color = variables.color_scheme['other'][1]
-        elif variables.settings_obj["gui"]["event_colors"] == "basic":
-            bg_color = variables.color_scheme['other'][0]
-            fg_color = variables.color_scheme['other'][1]
+                bg_color = variables.colors['other'][0]
+                fg_color = variables.colors['other'][1]
+        elif variables.settings["gui"]["event_colors"] == "basic":
+            bg_color = variables.colors['other'][0]
+            fg_color = variables.colors['other'][1]
     else:
         return
     if not bg_color:
-        bg_color = variables.color_scheme['default'][0]
-        fg_color = variables.color_scheme['default'][1]
+        bg_color = variables.colors['default'][0]
+        fg_color = variables.colors['default'][1]
     variables.insert_queue.put((string, bg_color, fg_color))
 
 
@@ -209,74 +209,74 @@ def print_event(line_dict, start_of_match, player):
         else:
             string += "Damage  " + line_dict['amount'].replace("\n", "")
         if line_dict['destination'] in player:
-            if variables.settings_obj["gui"]["event_colors"] == "basic":
+            if variables.settings["gui"]["event_colors"] == "basic":
                 if line_dict['source'] in player:
-                    bg_color = variables.color_scheme['selfdmg'][0]
-                    fg_color = variables.color_scheme['selfdmg'][1]
+                    bg_color = variables.colors['selfdmg'][0]
+                    fg_color = variables.colors['selfdmg'][1]
                 else:
-                    bg_color = variables.color_scheme['dmgt_pri'][0]
-                    fg_color = variables.color_scheme['dmgt_pri'][1]
+                    bg_color = variables.colors['dmgt_pri'][0]
+                    fg_color = variables.colors['dmgt_pri'][1]
             else:
                 if line_dict['source'] in player:
-                    bg_color = variables.color_scheme['selfdmg'][0]
-                    fg_color = variables.color_scheme['selfdmg'][1]
+                    bg_color = variables.colors['selfdmg'][0]
+                    fg_color = variables.colors['selfdmg'][1]
                 else:
                     if ability in abilities.primaries:
-                        bg_color = variables.color_scheme['dmgt_pri'][0]
-                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                        bg_color = variables.colors['dmgt_pri'][0]
+                        fg_color = variables.colors['dmgt_pri'][1]
                     elif ability in abilities.secondaries:
-                        bg_color = variables.color_scheme['dmgt_sec'][0]
-                        fg_color = variables.color_scheme['dmgt_sec'][1]
+                        bg_color = variables.colors['dmgt_sec'][0]
+                        fg_color = variables.colors['dmgt_sec'][1]
                     else:
-                        bg_color = variables.color_scheme['dmgt_pri'][0]
-                        fg_color = variables.color_scheme['dmgt_pri'][1]
+                        bg_color = variables.colors['dmgt_pri'][0]
+                        fg_color = variables.colors['dmgt_pri'][1]
         else:
             if ability in abilities.primaries:
-                bg_color = variables.color_scheme['dmgd_pri'][0]
-                fg_color = variables.color_scheme['dmgd_pri'][1]
+                bg_color = variables.colors['dmgd_pri'][0]
+                fg_color = variables.colors['dmgd_pri'][1]
             elif ability in abilities.secondaries:
-                bg_color = variables.color_scheme['dmgd_sec'][0]
-                fg_color = variables.color_scheme['dmgd_sec'][1]
+                bg_color = variables.colors['dmgd_sec'][0]
+                fg_color = variables.colors['dmgd_sec'][1]
             else:
-                bg_color = variables.color_scheme['dmgd_pri'][0]
-                fg_color = variables.color_scheme['dmgd_pri'][1]
+                bg_color = variables.colors['dmgd_pri'][0]
+                fg_color = variables.colors['dmgd_pri'][1]
     elif "Heal" in line_dict['effect']:
         string += "Heal    " + line_dict['amount'].replace("\n", "")
         if line_dict['source'] in player:
-            bg_color = variables.color_scheme['selfheal'][0]
-            fg_color = variables.color_scheme['selfheal'][1]
+            bg_color = variables.colors['selfheal'][0]
+            fg_color = variables.colors['selfheal'][1]
         else:
-            bg_color = variables.color_scheme['healing'][0]
-            fg_color = variables.color_scheme['healing'][1]
+            bg_color = variables.colors['healing'][0]
+            fg_color = variables.colors['healing'][1]
     elif "AbilityActivate" in line_dict['effect']:
         string += "AbilityActivate"
-        if variables.settings_obj["gui"]["event_colors"] == "advanced":
+        if variables.settings["gui"]["event_colors"] == "advanced":
             for engine in abilities.engines:
                 if engine in string:
-                    bg_color = variables.color_scheme['engine'][0]
-                    fg_color = variables.color_scheme['engine'][1]
+                    bg_color = variables.colors['engine'][0]
+                    fg_color = variables.colors['engine'][1]
                     break
             for shield in abilities.shields:
                 if shield in string:
-                    bg_color = variables.color_scheme['shield'][0]
-                    fg_color = variables.color_scheme['shield'][1]
+                    bg_color = variables.colors['shield'][0]
+                    fg_color = variables.colors['shield'][1]
                     break
             for system in abilities.systems:
                 if system in string:
-                    bg_color = variables.color_scheme['system'][0]
-                    fg_color = variables.color_scheme['system'][1]
+                    bg_color = variables.colors['system'][0]
+                    fg_color = variables.colors['system'][1]
                     break
             if not bg_color:
-                bg_color = variables.color_scheme['other'][0]
-                fg_color = variables.color_scheme['other'][1]
-        elif variables.settings_obj["gui"]["event_colors"] == "basic":
-            bg_color = variables.color_scheme['other'][0]
-            fg_color = variables.color_scheme['other'][1]
+                bg_color = variables.colors['other'][0]
+                fg_color = variables.colors['other'][1]
+        elif variables.settings["gui"]["event_colors"] == "basic":
+            bg_color = variables.colors['other'][0]
+            fg_color = variables.colors['other'][1]
     else:
         return
     if not bg_color:
-        bg_color = variables.color_scheme['default'][0]
-        fg_color = variables.color_scheme['default'][1]
+        bg_color = variables.colors['default'][0]
+        fg_color = variables.colors['default'][1]
     return string, bg_color, fg_color
 
 

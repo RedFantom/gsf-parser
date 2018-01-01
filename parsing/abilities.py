@@ -99,6 +99,8 @@ systems = ["Railgun Sentry Drone", "Interdiction Sentry Drone", "Missile Sentry 
 shields = ["Charged Plating", "Overcharged Shield", "Shield Projector", "Repair Drone",
            "Fortress Shield", "Feedback Shield",
            "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
+copilots = ["Lockdown", "Slicer's Loop", "Servo Jammer", "Wingman", "Lingering Effect", "Hydro Spanner", "Nullify",
+            "Concentrated Fire", "In Your Sights", "Running Interference", "Suppression", "Bypass"]
 
 """
 These lists were made with the help of Yellowbird
@@ -124,7 +126,7 @@ decimusAbilities = [
     "Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad Laser Cannon",
     "Cluster Missiles", "Concussion Missile", "Proton Torpedo",
     "Shield Power Converter", "Power Dive", "Interdiction Drive",
-    "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone",
+    "Ion Mine", "Concussion Mine", "Interdiction Sentry Drone", "EMP Field",
     "Overcharged Shield", "Directional Shield", "Charged Plating"
 ]
 jurgoranAbilities = [
@@ -193,7 +195,7 @@ excluded_abilities = [
     "Bypass", "Running Interference", "Suppression", "Nullify", "Hull Cutter",
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
     "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct",
-    "Tutorial", "Melting Hull", "Contamination"
+    "Tutorial", "Melting Hull", "Contamination", "Scope Mode", "Launch Projectile"
 ]
 
 # All ships with their Imperial Faction names available in GSF

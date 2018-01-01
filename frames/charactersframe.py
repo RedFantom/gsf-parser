@@ -208,11 +208,13 @@ class CharactersFrame(ttk.Frame):
         Update the Treeview self.characters_list with all the characters found in the character database
         :return:
         """
+        if not isinstance(self.characters, CharacterDatabase):
+            raise TypeError("Invalid character database type")
+
         self.characters_list.delete(*self.characters_list.get_children())
 
         for character, data in sorted(self.characters.items()):
-            print(character)
-            if data["Server"] not in self.servers:
+            if data["Server"] not in self.servers or character[0] not in self.servers:
                 messagebox.showinfo(
                     "United Forces Notification",
                     "Since the United Forces update of SWTOR, the server names have changed and thus the character "
@@ -371,7 +373,7 @@ class CharactersFrame(ttk.Frame):
         except (OSError, EOFError):
             self.new_database()
         if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != variables.settings_obj["misc"]["patch_level"]:
+                self.characters.version != variables.settings["misc"]["patch_level"]:
             mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
                                       "Parser database has been updated, and your character database must be updated "
                                       "as well to match the data. Currently, this process is destructive, and "
