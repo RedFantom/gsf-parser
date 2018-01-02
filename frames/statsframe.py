@@ -134,8 +134,8 @@ class StatsFrame(ttk.Frame):
         # categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
         # categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
         categories["abilities"] = {"text": "Abilities", "foreground": "#17a3ff", "font": ("default", 11)}
-        categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
-        categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
+        # categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
+        # categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
@@ -168,8 +168,8 @@ class StatsFrame(ttk.Frame):
                                          "at that moment. Please note that the markers in this category do not "
                                          "indicate shots.")
         text = "Each of the power categories shows a darker marker if more power was left in the power pool."
-        for category in ["wpower", "epower"]:
-            Balloon(labels[category], text=text)
+        # for category in ["wpower", "epower"]:
+        #     Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
 
@@ -224,6 +224,7 @@ class StatsFrame(ttk.Frame):
         self.time_scroll.grid(column=1, row=0, sticky="ns", pady=5)
         self.time_line.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
         self.screen_label.grid(column=1, row=2, padx=5, pady=5, sticky="w")
+        self.time_line._scrollbar_vertical.grid_forget()
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         if column == "Ability":
