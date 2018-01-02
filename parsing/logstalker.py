@@ -45,10 +45,19 @@ class LogStalker(object):
         Read the new lines in the file and return them as a list.
         """
         self.update_file()
-        with open(os.path.join(self._folder, self.file)) as fi:
+        with open(os.path.join(self._folder, self.file), "rb") as fi:
             lines = fi.readlines()[self._read_so_far:]
         self._read_so_far += len(lines)
-        dictionaries = [Parser.line_to_dictionary(line) for line in lines]
+        dictionaries = []
+        for line in lines:
+            try:
+                line = line.decode()
+            except UnicodeDecodeError:
+                continue
+            line = Parser.line_to_dictionary(line)
+            if line is None:
+                continue
+            dictionaries.append(line)
         if None in dictionaries:
             raise ValueError()
         return dictionaries

@@ -8,10 +8,18 @@ import math
 import cv2
 from PIL import Image
 import numpy
-from tools.utilities import write_debug_log, get_assets_directory
-from parsing.imgcompare import get_similarity
-import pytesseract
+from tools.utilities import get_assets_directory
+from parsing.imgcompare import get_similarity, get_similarity_pixels, get_brightest_pixel
 import operator
+
+colors = {
+    "blue": (2, 95, 133),
+    "green": (0, 166, 0),
+    "yellow": (132, 157, 0),
+    "orange": (165, 94, 0),
+    "red": (164, 1, 1),
+    "none": (0, 0, 0)
+}
 
 
 def get_pointer_middle(coordinates, size=(44, 44)):
@@ -143,73 +151,54 @@ def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
     return power_mgmt
 
 
-def get_ship_health_hull(screen):
+def get_ship_health_hull(image, coordinates):
     """
     Uses the PIL library to determine the color of the ship icon in the UI
     to make an approximation of the ship hull health.
-
-    Red:            01%-20%
-    Orange:         21%-40%
-    Yellow:         41%-60%
-    Green:          61%-80%
-    Bright green:   81%-100%
-
-    :param screen: cv2 array of screenshot or pillow object
-    :return: int with percentage
     """
-    pass
+    x, y = coordinates
+    image = image.crop((*coordinates, x + 20, y + 20))
+    rgb = get_brightest_pixel(image)
+    health = {
+        "red": 25,
+        "orange": 50,
+        "yellow": 75,
+        "green": 100
+    }
+    for name, pair in colors.items():
+        if get_similarity_pixels(rgb, pair) >= 80:
+            if name not in health:
+                return None
+            return health[name]
+    return None
 
 
-def get_ship_health_shields(image, cds):
+def get_ship_health_shields(image, coordinates):
     """
     Uses the PIL library to determine the color of the ship icon in the UI
     to make an approximation of the ship shield health.
 
     Two elements, each with their own color. Each color represents 10%
     Red, orange, yellow, green, bright green and blue when power to shields
-    is enabled to make for total of 110% shield power.
-
-    :param screen: cv2 array of screenshot or pillow object
-    :return: int with percentage
+    is enabled to make for total of 112.5% shield power.
     """
-    front_one, front_two, back_one, back_two = cds
-
-    colors = {
-        "blue": (2, 95, 133),
-        "green": (0, 166, 0),
-        "yellow": (132, 157, 0),
-        "orange": (165, 94, 0),
-        "red": (164, 1, 1),
-        "none": (0, 0, 0)
-    }
-    colors_health = {
+    elements = ["f1", "f2", "r1", "r2"]
+    generator = zip(elements, coordinates)
+    results = {key: None for key in elements}
+    health = {
         "blue": 62.5,
         "green": 50.0,
         "yellow": 37.5,
         "orange": 25.0,
         "red": 12.5,
-        "none": 0.0
+        "none": 0.0,
+        None: 0.0
     }
-    f_one_rgb = image.getpixel((front_one[0], front_one[1]))
-    f_two_rgb = image.getpixel((front_two[0], front_two[1]))
-    b_one_rgb = image.getpixel((back_one[0], back_one[1]))
-    b_two_rgb = image.getpixel((back_two[0], back_two[1]))
-    shields_rgb = (f_one_rgb, f_two_rgb, b_one_rgb, b_two_rgb)
-    color_shields = []
 
-    for shield_index, rgb_code in enumerate(shields_rgb):
-        for color_name, color_rgb_tuple in colors.items():
-            valid = True
-            for index, color in enumerate(color_rgb_tuple):
-                if not color - 25 <= rgb_code[index] <= color + 25:
-                    valid = False
-                    break
-            if valid is True:
-                color_shields.append(color_name)
-                break
-    try:
-        f = colors_health[color_shields[0]] + colors_health[color_shields[1]]
-        b = colors_health[color_shields[2]] + colors_health[color_shields[3]]
-    except IndexError:
-        return None, None
-    return f, b
+    for element, coord in generator:
+        rgb = image.getpixel(coord)
+        for name, color in colors.items():
+            if get_similarity_pixels(color, rgb) >= 80:
+                results[element] = name
+    return (health[results["f1"]] + health[results["f2"]],
+            health[results["r1"]] + health[results["r2"]])

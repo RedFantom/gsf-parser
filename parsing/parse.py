@@ -23,17 +23,13 @@ def parse_file_name(string):
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):
     file_name = os.path.join(settings["parsing"]["path"], os.path.basename(file_name))
-    with open(file_name, "r") as file_obj:
-        try:
-            for line in file_obj:
-                if "@" not in line:
-                    file_obj.close()
-                    return True
-                else:
-                    continue
-        except UnicodeDecodeError:
-            print(file_name)
-            return False
+    with open(file_name, "rb") as file_obj:
+        for line in file_obj:
+            if b"@" not in line:
+                file_obj.close()
+                return True
+            else:
+                continue
     return False
 
 

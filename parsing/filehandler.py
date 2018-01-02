@@ -294,6 +294,8 @@ class FileHandler(object):
         """
         Return health markers for TimeLine
         """
+        if "health" not in screen_dict:
+            return {}
         sub_dict = screen_dict["health"]
         categories = ["hull", "shields_f", "shields_r"]
         health = {key: (None, None) for key in categories}

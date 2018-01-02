@@ -104,7 +104,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         if len(elements) != 6:
-            raise ValueError("Invalid SWTOR event: {}".format(line))
+            return None
         log = {
             "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
             "source": elements[1],
@@ -195,6 +195,7 @@ class Parser(object):
         """
         eligibility = Parser.get_effects_eligible(line_dict, lines, active_id)
         if eligibility is False or eligibility is None:
+            print("[Parser] Line with ability {} is not eligible for events".format(line_dict["ability"]))
             return eligibility
         ability = line_dict["ability"]
         ability_effects = {}
@@ -208,6 +209,7 @@ class Parser(object):
                 time_diff = (event["time"] - ability_effects[effect]["start"]["time"]).total_seconds()
                 ability_effects[effect]["duration"] = time_diff
             if effect not in effects_list or line_dict["source"] != event["source"]:
+                print("[Parser] Ignoring effect '{}' for ability '{}'".format(effect, ability))
                 continue
             if event["ability"] != ability:
                 continue
