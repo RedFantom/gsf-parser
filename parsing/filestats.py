@@ -41,8 +41,14 @@ def file_statistics(filename, file_cube):
                 lines.append(line)
     player_list = parse.determinePlayer(lines)
     _, match_timings, spawn_timings = parse.splitter(lines, player_list)
-    with open(os.path.join(variables.settings["parsing"]["path"], filename), "r") as fi:
-        name = parse.determinePlayerName(fi.readlines())
+    with open(os.path.join(variables.settings["parsing"]["path"], filename), "rb") as fi:
+        lines = []
+        for line in fi.readlines():
+            try:
+                lines.append(line.decode())
+            except UnicodeDecodeError:
+                continue
+        name = parse.determinePlayerName(lines)
     (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
      hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
         parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
@@ -81,6 +87,8 @@ def file_statistics(filename, file_cube):
         for spawn in match:
             ships_possible = parse.parse_spawn(spawn, player_list)[9]
             if len(ships_possible) == 1:
+                if ships_possible[0] not in total_shipsdict:
+                    total_shipsdict[ships_possible[0]] = 0
                 total_shipsdict[ships_possible[0]] += 1
             else:
                 uncounted += 1

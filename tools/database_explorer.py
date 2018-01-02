@@ -33,7 +33,7 @@ class DatabaseExplorer(tk.Toplevel):
     def update_tree(self, *args):
         self.tree.delete(*self.tree.get_children(""))
         self.data = FileHandler.get_data_dictionary()
-        for file, data_file in sorted(self.data.items()):
+        for file, data_file in self.data.items():
             if file == "" or file is None:
                 continue
             self.tree.insert("", tk.END, iid=file, text=file)
@@ -55,6 +55,9 @@ class DatabaseExplorer(tk.Toplevel):
                         self.tree.insert("{}+{}+{}".format(file, match_string, spawn_string), tk.END,
                                          iid="{}+{}+{}+{}".format(file, match_string, spawn_string, data_type),
                                          text=data_type)
+                        if special_data is None:
+                            print("[DatabaseExplorer] special_data is None for", data_type)
+                            continue
                         for moment in sorted(special_data.keys()):
                             if moment is None:
                                 continue

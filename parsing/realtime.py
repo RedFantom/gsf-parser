@@ -435,7 +435,7 @@ class RealTimeParser(Thread):
         """
         Ship Health
         """
-        if "Ship Health " in self._screen_parsing_features:
+        if "Ship health" in self._screen_parsing_features:
             health_hull = vision.get_ship_health_hull(screenshot)
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])

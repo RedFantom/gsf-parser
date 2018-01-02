@@ -172,12 +172,13 @@ class FileFrame(ttk.Frame):
         else:
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
-            try:
-                lines = f.readlines()
-            except UnicodeDecodeError:
-                print(file_string, file_name)
-                return
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
+            lines = []
+            for line in f.readlines():
+                try:
+                    lines.append(line.decode())
+                except UnicodeDecodeError:
+                    continue
         player_list = parse.determinePlayer(lines)
         try:
             file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
@@ -305,8 +306,13 @@ class FileFrame(ttk.Frame):
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
-            lines = f.readlines()
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
+            lines = []
+            for line in f.readlines():
+                try:
+                    lines.append(line.decode())
+                except UnicodeDecodeError:
+                    continue
         player_list = parse.determinePlayer(lines)
         file_cube, _, _ = parse.splitter(lines, player_list)
         results = filestats.file_statistics(file_name, file_cube)
@@ -334,8 +340,13 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index = elements[0], int(elements[1])
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
-            lines = f.readlines()
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
+            lines = []
+            for line in f.readlines():
+                try:
+                    lines.append(line.decode())
+                except UnicodeDecodeError:
+                    continue
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, _ = parse.splitter(lines, player_list)
         match = file_cube[match_index]
@@ -353,8 +364,13 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as f:
-            lines = f.readlines()
+        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
+            lines = []
+            for line in f.readlines():
+                try:
+                    lines.append(line.decode())
+                except UnicodeDecodeError:
+                    continue
         player_list = parse.determinePlayer(lines)
         file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
         match = file_cube[match_index]

@@ -39,8 +39,14 @@ def spawn_statistics(file_name, spawn, spawn_timing):
     (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
      criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
 
-    with open(os.path.join(variables.settings["parsing"]["path"], file_name), "r") as fi:
-        name = parse.determinePlayerName(fi.readlines())
+    with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as fi:
+        lines = []
+        for line in fi.readlines():
+            try:
+                lines.append(line.decode())
+            except UnicodeDecodeError:
+                continue
+        name = parse.determinePlayerName(lines)
     killsassists = 0
     for enemy in enemies:
         if enemydamaget[enemy] > 0:
