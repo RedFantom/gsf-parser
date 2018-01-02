@@ -22,3 +22,11 @@ def get_similarity(template, to_match):
                for color_one, color_two in zip(pair_one, pair_two) if not pair_two == (255, 255, 255))
     ncomponents = template.size[0] * template.size[1] * 3
     return (diff / 255.0 * 100) / ncomponents
+
+
+def get_similarity_pixels(rgb1, rgb2):
+    return sum(abs(one - two) for one, two in zip(rgb1, rgb2)) / 255.0
+
+
+def get_brightest_pixel(image):
+    return max(image.getdata(), key=lambda pair: sum(pair))
