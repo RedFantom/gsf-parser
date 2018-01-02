@@ -104,7 +104,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         if len(elements) != 6:
-            raise ValueError("Invalid SWTOR event: {}".format(line))
+            return None
         log = {
             "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
             "source": elements[1],

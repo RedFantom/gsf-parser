@@ -458,6 +458,9 @@ class RealTimeParser(Thread):
             weapon_key = secondaries[int(self.secondary_weapon)]
         else:  # self.scope_mode is False
             weapon_key = primaries[int(self.primary_weapon)]
+        if weapon_key not in self.ship_stats:
+            print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(weapon_key, self.ship))
+            return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
         tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
         if "Weapon_Tracking_Bonus" not in self.ship_stats[weapon_key]:
