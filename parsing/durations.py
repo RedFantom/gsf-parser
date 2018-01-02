@@ -21,7 +21,8 @@ durations = {
     "Melting Hull": (False, 4, True),
     "Plasma Burn": (False, 6, True),
     "Plasma Warheads": (False, 10, True),
-    "Cluster Missiles": (False, 15, True)
+    "Cluster Missiles": (False, 15, True),
+    "Concussion Missile": (False, 15, False)
 }
 
 special_cases = ["EMP Missile", "EMP Field", "Plasma Warheads"]
