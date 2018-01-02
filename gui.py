@@ -218,8 +218,7 @@ class MainWindow(ThemedTk):
         """
         Changes the window's icon
         """
-        color = variables.settings["gui"]["logo_color"].lower()
-        icon_path = os.path.join(get_assets_directory(), "logos", "icon_{}.ico".format(color))
+        icon_path = os.path.join(get_assets_directory(), "logos", "icon_green.ico")
         icon = PhotoImage(Image.open(icon_path))
         self.tk.call("wm", "iconphoto", self._w, icon)
 

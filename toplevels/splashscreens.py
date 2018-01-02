@@ -43,8 +43,7 @@ class BootSplash(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
         self.logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(utilities.get_assets_directory(),
-                                    "logos", "logo_" + variables.settings["gui"]["logo_color"].lower() + ".png")))
+            Image.open(os.path.join(utilities.get_assets_directory(), "logos", "logo_green.png")))
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         self.window = window
