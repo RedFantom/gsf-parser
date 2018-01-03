@@ -382,7 +382,7 @@ class FileFrame(ttk.Frame):
         results = spawnstats.spawn_statistics(file_name, spawn, spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
-        string = FileHandler.get_spawn_stats(*arguments)
+        string = FileHandler.get_features_string(*arguments)
         self.main_window.middle_frame.screen_label_var.set(string)
         self.main_window.middle_frame.update_timeline(
             file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube
