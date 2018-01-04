@@ -28,6 +28,8 @@ components = ["Heavy Laser Cannon", "Laser Cannon", "Light Laser Cannon", "Quad 
               "Fortress Shield", "Feedback Shield",
               "Directional Shield", "Distortion Field", "Quick-Charge Shield"]
 
+component_types = ["primaries", "secondaries", "engines", "shields", "systems"]
+
 # The ID numbers of abilities and their English names
 # For future support of multiple Combatlog languages
 # Automatically generated, some abilities may be missing
@@ -299,3 +301,6 @@ sorted_ships["Mailoc"] = "Redeemer"
 sorted_ships["Demolisher"] = "Strongarm"
 sorted_ships["Ocula"] = "Skybolt"
 sorted_ships["Gladiator"] = "Enforcer"
+
+ships_dual_secondaries = ["Mangler", "Jurgoran", "Dustmaker", "Quell"]
+ships_dual_primaries = ["Rycer"]

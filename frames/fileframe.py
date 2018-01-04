@@ -416,8 +416,8 @@ class FileFrame(ttk.Frame):
         :param enemydamaget: dictionary
         :return: None
         """
-        damage_d = str(enemydamaged[enemy])
-        damage_t = str(enemydamaget[enemy])
+        damage_d = str(enemydamaged[enemy]) if enemy in enemydamaged else 0
+        damage_t = str(enemydamaget[enemy]) if enemy in enemydamaget else 0
         kwargs = {"text": "Enemy" if enemy == "" else enemy, "values": (damage_d, damage_t)}
         self.main_window.middle_frame.enemies_treeview.insert("", tk.END, **kwargs)
 

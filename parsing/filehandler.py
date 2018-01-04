@@ -332,7 +332,7 @@ class FileHandler(object):
         health = {key: (None, None) for key in categories}
         results = {key: [] for key in categories}
         for time, (hull, shields_f, shields_r) in sorted(sub_dict.items()):
-            new_values = {key: (time, locals()[key]) for key in categories}
+            new_values = {key: (time, locals()[key] if key in locals() else 0) for key in categories}
             for category in categories:
                 if health[category][1] != new_values[category][1]:
                     start = health[category][0]

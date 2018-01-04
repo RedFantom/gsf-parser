@@ -264,10 +264,11 @@ class StatsFrame(ttk.Frame):
             for (args, kwargs) in data:
                 try:
                     self.time_line.create_marker(*args, **kwargs)
-                except (ValueError, TypeError):
-                    print("Marker creation failed: '{}', '{}', '{}', '{}'".format(
-                        args[0], args[1], args[2], kwargs["background"])
+                except (ValueError, TypeError) as e:
+                    print("[TimeLine] Marker creation failed: '{}', '{}', '{}', '{}': {}".format(
+                        args[0], args[1], args[2], kwargs["background"], repr(e))
                     )
                     continue
-                print("Creating marker: '{}', '{}', '{}', '{}'".format(args[0], args[1], args[2], kwargs["background"]))
+                print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
+                    args[0], args[1], args[2], kwargs["background"]))
         return

@@ -2,12 +2,8 @@
 # Is capable of parsing files as well as realtime parsing
 import os
 from datetime import datetime
-from tkinter.ttk import Frame
-from queue import Queue
-# Own modules
 from parsing import abilities, effects, durations
-# Variables
-import variables
+from variables import settings, colors
 
 
 class Parser(object):
@@ -33,58 +29,6 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
-    def __init__(self, file_name, events_view=None, line_queue=None, character_data=None):
-        """
-        :param events_view: An EventsView widget with .timeline and .eventslist attributes
-        :param line_queue: Queue object (or object with .put()) to pass lines parsed to
-        :param character_data: Character dictionary with "Ship Objects" keys
-        :param file_name: The name of the log being parsed (e.g. to collect data from FileHandler)
-        :param mode: The mode the new Parser is started in
-        """
-        # Perform type checks
-        if not isinstance(events_view, Frame):
-            raise ValueError("events_view argument is not a ttk.Frame")
-        if not isinstance(line_queue, Queue):
-            raise ValueError("line_queue argument is not a Queue")
-        if not isinstance(character_data, dict):
-            raise ValueError("character_data argument is not a dict")
-        # Create attributes
-        self.events_view = events_view
-        self.line_queue = line_queue
-        self.character_data = character_data
-
-        # Settings for this object
-        self.file_name = file_name
-
-        # Initiate the data processing
-        self.process_file()
-
-    def process_file(self):
-        """
-        Split the file into matches and spawns
-        """
-        pass
-
-    @staticmethod
-    def get_screen_parser_kwargs():
-        """
-        Return a dictionary of keyword arguments for a ScreenParser instance based on the settings for screen parsing
-        """
-        feature_list = variables.settings["realtime"]["screen_features"]
-        arguments = {
-            "rgb": False,
-            "cooldowns": None,
-            "powermgmt": "Power management" in feature_list,
-            "health": "Ship health" in feature_list,
-            "name": "Enemy name and ship type" in feature_list,
-            "ttk": "Time to kill" in feature_list,
-            "tracking": "Tracking penalty" in feature_list,
-            "ammo": "Ammunition" in feature_list,
-            "distance": "Distance to target" in feature_list,
-            "cursor": "Mouse pointer location and state" in feature_list
-        }
-        return arguments
-
     @staticmethod
     def line_to_dictionary(line):
         """
@@ -98,6 +42,7 @@ class Parser(object):
         # Split the line into elements
         def remove_brackets(elem):
             return elem.replace("[", "").replace("]", "").replace("(", "").replace(")", "").strip()
+
         elements = [remove_brackets(elem) for elem in line.split("]")]
         """
         Valid GSF CombatLog event:
@@ -220,7 +165,8 @@ class Parser(object):
                     "allied": durations.durations[ability][0] if effect != "Missile Lock Immunity" else True,
                     "count": 1,
                     "duration": 0,
-                    "damage": int(event["amount"].replace("*", "")) if isinstance(event["amount"], str) and event["amount"] != "" else "",
+                    "damage": int(event["amount"].replace("*", "")) if isinstance(event["amount"], str) and event[
+                        "amount"] != "" else "",
                     "dot": (event["time"] - line_dict["time"]).total_seconds() if ability_duration[2] is True else None
                 }
             else:
@@ -251,7 +197,7 @@ class Parser(object):
         if index == 0:
             return None
         # The requirements for being eligible are quite strict
-        for prev_line in lines[max(index-5, 0):index-1]:
+        for prev_line in lines[max(index - 5, 0):index - 1]:
             # The source of the previous event must be equal
             source_is_equal = prev_line["source"] == line_dict["source"]
             ability_is_equal = prev_line["ability"] == line_dict["ability"]
@@ -265,7 +211,7 @@ class Parser(object):
         return True
 
     @staticmethod
-    def get_event_color(line_dict, active_id, colors=variables.colors):
+    def get_event_color(line_dict, active_id, colors=colors):
         """
         Return the correct text color for a certain event dictionary
         :param line_dict: line dictionary
@@ -360,104 +306,18 @@ class Parser(object):
     """
 
     @staticmethod
-    def log_splitter_file(file_name, player_id_list=None):
+    def split_combatlog_file(file_name, player_id_list=None):
         """
         Split a CombatLog into matches and spawns with a file name and an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
-        combatlogs_path = variables.settings["parsing"]["path"]
+        combatlogs_path = settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
         if not os.path.exists(file_name):
             raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
         # Execute the splitting
-        with open(file_name, "r") as fi:
-            lines = fi.readlines()
-        return Parser.log_splitter_lines(lines, player_id_list)
-
-    @staticmethod
-    def log_splitter_lines(lines, player_id_list=None):
-        """
-        Split the lines of a CombatLog into matches and spawns
-        """
-        player_id_list = player_id_list if player_id_list is not None else Parser.get_player_id_list(lines)
-        if len(player_id_list) == 0:
-            raise ValueError("Emtpy player id list received!")
-        # Check if the lines received are not 0
-        if len(lines) == 0:
-            raise ValueError("Empty list of lines received")
-
-        # Create variables to store data in
-        file_cube = []
-        match_matrix = []
-        spawn_list = []
-        is_match = False
-        match_index = -1
-        active_id = None
-        spawn_timings_matrix = []
-        match_timings_list = []
-        line_dict = None
-
-        # Loop through the lines and sort them
-        for line in lines:
-
-            # Get the line dictionary for the line
-            line_dict = Parser.line_to_dictionary(line)
-
-            # Perform general checks to determine whether this line is a special case and should be skipped, bug #47
-            if "SetLevel" in line or "Infection" in line:  # Check for level-up and Rakghoul infection events
-                continue
-
-            # If '@' is in the source or target, then this is not a GSF ability
-            if '@' in line_dict["source"] or '@' in line_dict["target"]:
-                # If this is a match, then this is the end of it
-                if is_match is True:
-                    match_timings_list.append(line_dict["time"])  # The new line dictionary already has a datetime
-                    # Save the spawns
-                    file_cube.append(match_matrix)
-                    match_matrix.clear()
-                is_match = False
-                continue
-
-            # Process match
-            if is_match is False:
-                # Open a new match
-                is_match = True
-                match_index += 1
-                # Add the time to the list and matrix
-                match_timings_list.append(line_dict["time"])
-                spawn_timings_matrix.append(list())
-                # The spawn is processed after this
-
-            # Process spawn
-            if line_dict["source"] != active_id and line_dict["target"] != active_id:
-                # Match is already running, new spawn
-                if line_dict["source"] not in player_id_list and line_dict["target"] not in player_id_list:
-                    raise ValueError("Event found with ID that was not in the player_id_list: {}\n{}".format(
-                        player_id_list, line_dict
-                    ))
-                # Save the spawn if it is not empty
-                if len(spawn_list) != 0:
-                    match_matrix.append(spawn_list)
-                    spawn_list.clear()
-                # Add the new spawn time to the spawn timings matrix
-                spawn_timings_matrix[match_index].append(line_dict["time"])
-                # Determine the new active_id
-                active_id = line_dict["source"] if line_dict["source"] in player_id_list else line_dict["target"]
-
-            # Add the line to the current spawn
-            spawn_list.append(line_dict)
-
-        # The log may end in a GSF event
-        if is_match is True:
-            # Save the data
-            match_matrix.append(spawn_list) if len(spawn_list) != 0 else None
-            file_cube.append(match_matrix) if len(match_matrix) != 0 else None
-            # The timing of the end of the match was the time of the last line
-            match_timings_list.append(line_dict)
-
-        # Return a cube of lines with only GSF line dictionaries, a list of timings (start and end) of matches and the
-        # spawn timings matrix which contains the start times of the spawns per match
-        return file_cube, match_timings_list, spawn_timings_matrix
+        lines = Parser.read_file(file_name)
+        return Parser.split_combatlog(lines, player_id_list)
 
     @staticmethod
     def get_player_id_list(lines):
@@ -534,7 +394,7 @@ class Parser(object):
         """
         Get a boolean of whether there are GSF matches in a file
         """
-        combatlogs_path = variables.settings["parsing"]["path"]
+        combatlogs_path = settings["parsing"]["path"]
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
             return None
@@ -552,6 +412,285 @@ class Parser(object):
         Get datetime object for a filename
         """
         try:
-            return datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
+            return datetime.strptime(file_name[:-4], "combat_%Y-%m-%d_%H_%M_%S_%f")
         except ValueError:
             return None
+
+    @staticmethod
+    def split_combatlog(lines: list, player_list: list):
+        """
+        Split a CombatLog containing GSF matches into a file cube (with
+        indexing [match][spawn][event]) and provide the same interface
+        as the legacy parse.splitter function.
+        """
+        # Check if arguments are valid
+        if len(lines) == 0:
+            raise ValueError("Empty file")
+        if isinstance(lines[0], str):
+            print("[Parser] Unoptimized call with str lines")
+        if len(player_list) == 0:
+            raise ValueError("Empty player list")
+
+        # Data variables
+        file_cube = []
+        match = []
+        spawn = []
+        spawn_timings = []
+        spawn_timings_temp = []  # Holds spawn timings for a single match while splitting
+        match_timings = []
+        is_match = False
+        current_id = None
+
+        # Loop over all the lines in the file and split
+        for line in lines:
+            # See print at checking argument
+            if not isinstance(line, dict):
+                line = Parser.line_to_dictionary(line)
+            # Skip over SetLevel and Infection abilities, see issue #47
+            if "SetLevel" in line["line"] or "Infection" in line["line"]:
+                continue
+            # Get the required data from the line
+            time, source, target = line["time"], line["source"], line["target"]
+            # Handle non-match lines
+            if "@" in source or "@" in target:
+                # If there was no match, then skip data manipulation
+                if is_match is False:
+                    continue
+                # There was a match, so save data
+                match.append(spawn)
+                file_cube.append(match)
+                # Clear temporary data
+                match.clear()
+                spawn.clear()
+                # Set is_match to False again
+                is_match = False
+                current_id = None
+                # Save the time this match ended
+                match_timings.append(time)
+                spawn_timings.append(spawn_timings_temp)
+                # Done, continue with the next line
+                continue
+            # Neither source nor target contains '@', so this is a match event
+            # Please note that isdigit() is not used because System events have an empty source
+
+            # Process new matches
+            if is_match is False:
+                is_match = True
+                # Save this as the start of a match and a spawn
+                match_timings.append(time)
+                spawn_timings_temp.append(time)
+            # Process a change of ID
+            if source != current_id and target != current_id:
+                # New spawn
+                match.append(spawn)
+                spawn.clear()
+                spawn_timings_temp.append(time)
+                # Set the new ID
+                if source in player_list:
+                    current_id = source
+                elif target in player_list:
+                    current_id = target
+                else:
+                    raise ValueError("Neither source nor target contained a valid player ID")
+            # Add this line to the spawn list and continue
+            spawn.append(line)
+
+        # Handle EOF before match ended
+        if is_match is True:
+            match.append(spawn)
+            match_timings.append(time)  # time cannot be undefined if is_match is True
+            spawn_timings.append(spawn_timings_temp)
+        # Return the results
+        return file_cube, match_timings, spawn_timings
+
+    @staticmethod
+    def read_file(file_name: str):
+        """
+        Read a file with the given filename in a safe and error handled
+        manner. All attempts at reading GSF CombatLogs should use this
+        function.
+        """
+        # If the file does not exist in CWD, then attempt to find it in
+        # the CombatLogs folder
+        if not os.path.exists(file_name):
+            file_name = os.path.join(settings["parsing"]["path"], os.path.basename(file_name))
+        if not os.path.exists(file_name):
+            raise FileNotFoundError("File '{}' not found in absolute path, cwd or CombatLogs folder".format(file_name))
+        # Attempt to read the file as bytes
+        try:
+            with open(file_name, "rb") as fi:
+                lines = fi.readlines()
+        except OSError:
+            raise PermissionError("Could not read from file '{}'".format(file_name))
+        result = []
+        # Convert each line into str (utf-8) separately
+        for line in lines:
+            try:
+                result.append(line.decode())
+            except UnicodeDecodeError:  # Mostly occurs on Unix systems
+                print("[Parser] {} contained an invalid UTF-8 line".format(file_name))
+                continue
+        return result
+
+    @staticmethod
+    def parse_spawn(spawn: list, player_list: list):
+        """
+        Parse a spawn list of lines and return various statistics for
+        this spawn with the same interface as parse.parse_spawn()
+        """
+        if not isinstance(spawn[0], dict):
+            print("[Parser] Unoptimized parsing of spawn")
+        # Data variables
+        abilities_dict = {}
+        dmg_d, dmg_t, dmg_s, healing = 0, 0, 0, 0
+        enemies = []
+        enemy_dmg_d, enemy_dmg_t = {}, {}
+        hitcount, critcount = 0, 0
+        # Parse the spawn
+        for event in spawn:
+            # See arg check
+            if not isinstance(event, dict):
+                event = Parser.line_to_dictionary(event)
+            # Get the data into locals
+            time, source, target = event["time"], event["source"], event["target"]
+            ability, effect, amount_str = event["ability"], event["effect"], event["amount"]
+            # Process amount, as it is still a str with possibly a "*" for crits in it
+            if amount_str == "":
+                amount = 0
+            else:
+                amount = int(amount_str.replace("*", ""))
+            # If source is empty, then rename source to ability
+            if source == "":
+                source = ability
+            # Count ability usage. Note that self-targeted Damage abilities are skipped
+            if source in player_list and "AbilityActivate" in effect and not (source == target and "Damage" in effect):
+                if ability not in abilities_dict:
+                    abilities_dict[ability] = 0
+                abilities_dict[ability] += 1
+            # Process enemy ID
+            for id in [source, target]:
+                if id in player_list or id in enemies:
+                    continue
+                enemies.append(id)
+            # Process damage
+            if "Damage" in effect:
+                # Self damage
+                if source == target:
+                    dmg_s += amount
+                # Damage dealt
+                elif source in player_list:
+                    dmg_d += amount
+                    # Process hit
+                    hitcount += 1
+                    critcount += 1 if "*" in amount_str else 0
+                    # Process enemy
+                    if target not in enemy_dmg_t:
+                        enemy_dmg_t[target] = 0
+                    enemy_dmg_t[target] += amount
+                    # Also add to the other dictionary
+                    if target not in enemy_dmg_d:
+                        enemy_dmg_d[source] = 0
+                # Damage taken
+                else:
+                    dmg_t += amount
+                    # Process enemy
+                    if source not in enemy_dmg_d:
+                        enemy_dmg_d[source] = 0
+                    enemy_dmg_d[source] += amount
+                    # Also add to the other dicionary
+                    if source not in enemy_dmg_t:
+                        enemy_dmg_t[source] = 0
+            # Process healing
+            elif "Healing" in effect:  # Damage and Healing are not in the same effect
+                # Healing given is not supported currently, see #25
+                if target not in player_list:
+                    continue
+                healing += amount
+            # Other types of events are not currently supported
+            continue
+        # Determine the ship used
+        ships_list = abilities.ships.copy()
+        # This list keeps track of the secondary weapons. If there are two, it might
+        # be possible to eliminate more ships after parsing all abilities
+        primaries, secondaries = [], []
+        # Check all abilities
+        for ability in abilities_dict.keys():
+            # Some abilities are excluded from the ship parsing
+            if ability in abilities.excluded_abilities:
+                continue
+            # If this is a secondary, then add the ability to the secondaries list
+            if ability in abilities.secondaries:
+                secondaries.append(ability)
+            if ability in abilities.primaries:
+                primaries.append(ability)
+            # Parse for each ship
+            ships_list_copy = ships_list.copy()
+            # Loop over the ships
+            for ship in ships_list_copy:
+                # Check if this ship can use the ability
+                if ability not in abilities.ships_abilities[ship]:
+                    ships_list.remove(ship)
+                # If no ships are left, then something must have gone wrong with the excluded abilities,
+                # or the abilities for each ship are not up-to-date with the current version of GSF
+                if len(ships_list) == 0:
+                    raise ValueError("No ships possible for this spawn. Last ability was:", ability)
+        # Remove duplicates from secondaries list
+        primaries, secondaries = set(primaries), set(secondaries)
+        # Remove all ships that do not fit primaries and secondaries requirements
+        for category in ["primaries", "secondaries"]:
+            if len(ships_list) == 1:
+                break
+            if len(locals()[category]) != 2:
+                continue
+            # Dual primaries or secondaries
+            ships_list_copy = ships_list.copy()
+            for ship in ships_list_copy:
+                if ship not in getattr(abilities, "ships_dual_{}".format(category)):
+                    ships_list.remove(ship)
+        # Calculate critical luck
+        crit_luck = critcount / hitcount if hitcount != 0 else 0  # ZeroDivisionError
+        # Return the expected variables
+        return (abilities_dict, dmg_t, dmg_d, healing, dmg_s, enemies, critcount,
+                crit_luck, hitcount, ships_list, enemy_dmg_d, enemy_dmg_t)
+
+    @staticmethod
+    def parse_match(match: list, player_list: list):
+        """
+        Parse a match list of spawn event lists by using the
+        Parser.parse_spawn function.
+        """
+        abilities_dict = {}
+        dmg_d, dmg_t, dmg_s, healing = 0, 0, 0, 0
+        enemies = []
+        enemy_dmg_d, enemy_dmg_t = {}, {}
+        critcount, hitcount = 0, 0
+        ships = {ship: 0 for ship in abilities.ships}
+        uncounted = 0
+        for spawn in match:
+            results = Parser.parse_spawn(spawn, player_list)
+            # Damage and healing
+            dmg_d += results[2]
+            dmg_t += results[1]
+            dmg_s += results[4]
+            healing += results[3]
+            hitcount += results[8]
+            critcount += results[6]
+            # Abilities
+            for ability, amount in results[0].items():
+                if ability not in abilities_dict:
+                    abilities_dict[ability] = 0
+                abilities_dict[ability] += amount
+            # Enemies
+            enemies.extend(results[5])
+            enemy_dmg_d.update(results[10])
+            enemy_dmg_t.update(results[11])
+            # Ships
+            if len(results[9]) > 1:
+                uncounted += 1
+            else:
+                ships[results[9][0]] += 1
+        # Crit luck
+        crit_luck = critcount / hitcount if hitcount != 0 else 0
+        # Return
+        return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
+                crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted)
