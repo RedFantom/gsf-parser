@@ -152,6 +152,9 @@ class BuildsFrame(ttk.Frame):
         self.character = self.ship_select_frame.character_tuple
         for widget in self.components_lists_frame.interior.winfo_children():
             widget.grid_forget()
+            if isinstance(widget, ToggledFrame):
+                if widget.show.get():
+                    widget.toggle()
         for type in self.working:
             if type not in self.ship.data:
                 print("type not in self.ship.data: {0}".format(type))

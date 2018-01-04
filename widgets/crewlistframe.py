@@ -142,3 +142,6 @@ class CrewListFrame(ttk.Frame):
         for button in self.copilot_buttons.values():
             button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
+        for frame in self.category_frames.values():
+            if frame.show.get():
+                frame.toggle()
