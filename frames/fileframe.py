@@ -144,8 +144,7 @@ class FileFrame(ttk.Frame):
             if parse.check_gsf(file):
                 try:
                     file_time = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
-                    file_string = file_time.strftime("%Y-%m-%d   %H:%M" if variables.settings["gui"]["date_format"]
-                                                     == "ymd" else "%Y-%d-%m   %H:%M")
+                    file_string = file_time.strftime("%Y-%m-%d   %H:%M")
                 except ValueError:
                     file_string = file
                 self.file_string_dict[file_string] = file

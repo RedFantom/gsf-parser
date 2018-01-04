@@ -28,7 +28,7 @@ def new_window():
             if filename is None:
                 raise ValueError("Invalid filename provided")
             with open(filename, "w") as fo:
-                fo.write(e)
+                fo.write(str(e))
         clear = messagebox.askyesno(
             "Question",
             "The GSF Parser can automatically delete all your temporary data. This may solve your issue if it is "
