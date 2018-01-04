@@ -3,7 +3,7 @@
 # For license see LICENSE
 # General imports
 import os
-from datetime import datetime
+import sys
 import shelve
 # UI imports
 import tkinter.ttk as ttk
@@ -16,8 +16,6 @@ from server.sharing_client import SharingClient
 from variables import settings
 from parsing import parse, fileops
 from tools.utilities import get_temp_directory
-from toplevels.splashscreens import SplashScreen
-from widgets.readonly_entry import ReadonlyEntry
 from widgets import VerticalScrollFrame
 from server.sharing_data import *
 
@@ -127,13 +125,15 @@ class SharingFrame(ttk.Frame):
         return self.sharing_db[file_name]
 
 
-class ManualFrame(VerticalScrollFrame):
+class ManualFrame(ttk.Frame):
     """
     Frame that contains widgets to allow manual data retrieval from a SharingServer
     """
 
     def __init__(self, master):
-        VerticalScrollFrame.__init__(self, master, canvasheight=350, canvaswidth=290)
+        # VerticalScrollFrame.__init__(self, master, canvasheight=350, canvaswidth=290)
+        ttk.Frame.__init__(self, master)
+        self.interior = self
         self.header_label = ttk.Label(self.interior, text="Manual Data Retrieval", font=("Calibri", 12),
                                       justify=tk.LEFT)
         self.description_label = ttk.Label(
@@ -145,6 +145,7 @@ class ManualFrame(VerticalScrollFrame):
         )
         # Get name
         self.get_name_frame = GetNameFrame(self.interior)
+        self.unbind("<MouseWheel>")
 
     def grid_widgets(self):
         """
@@ -162,16 +163,19 @@ class GetNameFrame(ttk.Frame):
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        self.header_label = ttk.Label(self, text="Get name for ID number", font=("Calibri", 11), width=40)
+        self.header_label = ttk.Label(
+            self, text="Name for ID number", font=("Calibri", 11), width=40 if sys.platform != "linux" else 34)
         self.server = tk.StringVar()
         self.after_task = None
         self.server_dropdown = AutocompleteCombobox(self, textvariable=self.server, completevalues=servers_list)
         self.faction = tk.StringVar()
         self.faction_dropdown = AutocompleteCombobox(self, textvariable=self.faction, completevalues=factions_list)
         self.id = tk.StringVar()
-        self.id_entry = ttk.Entry(self, textvariable=self.id, width=20)
+        self.id_entry = ttk.Entry(self, textvariable=self.id, width=20 if sys.platform != "linux" else 15)
         self.id_entry.bind("<Return>", self.get_name)
-        self.result_entry = ReadonlyEntry(self)
+        self.result_entry = ttk.Entry(self, width=20 if sys.platform != "linux" else 15)
+        self.result_entry.insert(tk.END, "Result...")
+        self.result_entry.config(state="readonly")
         self.grid_widgets()
 
     def get_name(self, *args):
@@ -182,6 +186,11 @@ class GetNameFrame(ttk.Frame):
             messagebox.showinfo("Info", "Entered data is not valid. Please check your server and faction values.")
             return
         result = client.get_name_id(servers_dict[server], factions_dict[faction], self.id_entry.get())
+        # Insert into the result box
+        self.result_entry.config(state=tk.NORMAL)
+        self.result_entry.delete(0, tk.END)
+        self.result_entry.insert(tk.END, result)
+        self.result_entry.config(state="readonly")
 
     def id_entry_callback(self, event):
         pass

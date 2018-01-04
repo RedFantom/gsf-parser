@@ -8,23 +8,11 @@ File with all basic data structures for easy access by the SharingFrame, Sharing
 """
 
 servers_list = [
-    "The Bastion",
-    "Begeren Colony",
-    "The Harbinger",
-    "The Shadowlands",
-    "Jung Ma",
-    "The Ebon Hawk",
-    "Prophecy of the Five",
-    "Jedi Covenant",
-    "T3-M4",
-    "Darth Nihilus",
-    "The Tomb of Freedon Nadd",
-    "Jar'kai Sword",
-    "The Progenitor",
-    "Vanjervalis Chain",
-    "Battle Meditation",
-    "Mantle of the Force",
-    "The Red Eclipse"
+    "Darth Malgus",
+    "Tulak Hord",
+    "The Leviathan",
+    "Star Forge",
+    "Satele Shan"
 ]
 
 factions_list = [
@@ -32,32 +20,19 @@ factions_list = [
     "The Republic"
 ]
 
-servers_dict = {
-    "The Bastion": "BAS",
-    "Begeren Colony": "BEG",
-    "The Harbinger": "HAR",
-    "The Shadowlands": "SHA",
-    "Jung Ma": "JUN",
-    "The Ebon Hawk": "EBH",
-    "Prophecy of the Five": "PRF",
-    "Jedi Covenant": "JCV",
-    "T3-M4": "T3M",
-    "Darth Nihilus": "NIH",
-    "The Tomb of Freedon Nadd": "TFN",
-    "Jar'kai Sword": "JKS",
-    "The Progenitor": "PRG",
-    "Vanjervalis Chain": "VCH",
-    "Battle Meditation": "BMD",
-    "Mantle of the Force": "MFR",
-    "The Red Eclipse": "TRE"
+servers = {
+    # US servers
+    "SF": "Star Forge",
+    "SA": "Satele Shan",
+    # European servers
+    "TH": "Tulak Hord",
+    "DM": "Darth Malgus",
+    "TL": "The Leviathan"
 }
 
-servers_code_list = servers = [
-    "BAS", "BEG", "HAR", "SHA", "JUN",
-    "EBH", "PRF", "JCV", "T3M", "NIH",
-    "TFN", "JKS", "PRG", "VCH", "BMD",
-    "MFR", "TRE"
-]
+servers_dict = {value: key for key, value in servers.items()}
+
+servers_code_list = ["SF", "SA", "TH", "DM", "TL"]
 
 factions_dict = {
     "The Empire": "IMP",

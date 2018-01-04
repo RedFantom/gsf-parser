@@ -23,6 +23,7 @@ from collections import OrderedDict
 from tkinter import messagebox as mb
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
+from server.sharing_data import servers
 
 
 class CharactersFrame(ttk.Frame):
@@ -57,16 +58,7 @@ class CharactersFrame(ttk.Frame):
         self.window = variables.main_window
         self.directory = utilities.get_temp_directory()
         # Lists of servers and abbreviations
-        self.servers = {
-            # US servers
-            "SF": "Star Forge",
-            "SA": "Satele Shan",
-            # European servers
-            "TH": "Tulak Hord",
-            "DM": "Darth Malgus",
-            "TL": "The Leviathan"
-        }
-
+        self.servers = servers
         # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
         self.characters = {}
