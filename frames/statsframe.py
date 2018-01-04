@@ -183,7 +183,7 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.column("#0", width=120, anchor="w")
         self.enemies_treeview.column("Damage dealt", width=80, anchor="e")
         self.enemies_treeview.column("Damage taken", width=80, anchor="e")
-        command = lambda: self.treeview_sort_column(self.enemies_treeview, "Enemy name/ID", False, "str")
+        command = lambda: self.treeview_sort_column(self.enemies_treeview, "#0", False, "str")
         self.enemies_treeview.heading("#0", text="Enemy name/ID", command=command)
         command = lambda: self.treeview_sort_column(self.enemies_treeview, "Damage dealt", False, "int")
         self.enemies_treeview.heading("Damage dealt", text="Damage dealt", command=command)
@@ -227,8 +227,19 @@ class StatsFrame(ttk.Frame):
         self.time_line._scrollbar_vertical.grid_forget()
 
     def treeview_sort_column(self, treeview, column, reverse, type):
-        if column == "Ability":
-            column = "#0"
+        """
+        Callback for a Column Header to sort the data found in a column
+        """
+        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
+        if column == "#0":
+            # Sorting column #0 works a little differently
+            children = treeview.get_children("")
+            data = {treeview.item(iid)["text"]: treeview.item(iid) for iid in children}
+            treeview.delete(*children)
+            iterator = sorted(data.items()) if reverse is False else reversed(sorted(data.items()))
+            for _, kwargs in iterator:
+                treeview.insert("", tk.END, **kwargs)
+            return
         l = [(treeview.set(k, column), k) for k in treeview.get_children('')]
         if type == "int":
             l.sort(key=lambda t: int(t[0]), reverse=reverse)
@@ -238,7 +249,6 @@ class StatsFrame(ttk.Frame):
             raise NotImplementedError
         for index, (val, k) in enumerate(l):
             treeview.move(k, '', index)
-        treeview.heading(column, command=lambda: self.treeview_sort_column(treeview, column, not reverse, type))
 
     def update_timeline(self, file, match, spawn, match_timings, spawn_timings, file_cube):
         """
