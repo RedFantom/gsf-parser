@@ -15,10 +15,8 @@ import textwrap
 
 
 class ComponentListFrame(ttk.Frame):
-    def __init__(self, parent, category, data_list, callback):
+    def __init__(self, parent, category, data_list, callback, toggle_callback):
         ttk.Frame.__init__(self, parent)
-        # if not callable(callback):
-        #     raise ValueError("Callback passed is not callable")
         self.names = {
             "PrimaryWeapon": "Primary Weapon",
             "PrimaryWeapon2": "Primary Weapon",
@@ -37,7 +35,7 @@ class ComponentListFrame(ttk.Frame):
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=26)
+        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=26, callback=toggle_callback)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}
@@ -64,19 +62,13 @@ class ComponentListFrame(ttk.Frame):
             except IOError:
                 self.icons[component_dictionary["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
             name = textwrap.fill(component_dictionary["Name"], 20)
-            self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(self.frame,
-                                                                         image=self.icons[component_dictionary["Name"]],
-                                                                         text=name,
-                                                                         command=lambda
-                                                                             name=component_dictionary["Name"]:
-                                                                         self.set_component(name),
-                                                                         compound=tk.LEFT, width=16,
-                                                                         variable=self.variable,
-                                                                         value=data_list.index(
-                                                                             component_dictionary))
-            self.hover_infos[component_dictionary["Name"]] = HoverInfo(self.buttons[component_dictionary["Name"]],
-                                                                       text=str(component_dictionary["Name"]) + "\n\n" +
-                                                                            str(component_dictionary["Description"]))
+            self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(
+                self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=16,
+                command=lambda name=component_dictionary["Name"]: self.set_component(name), variable=self.variable,
+                value=data_list.index(component_dictionary))
+            self.hover_infos[component_dictionary["Name"]] = HoverInfo(
+                self.buttons[component_dictionary["Name"]],
+                text=str(component_dictionary["Name"]) + "\n\n" + str(component_dictionary["Description"]))
         self.data = data_list
 
     def set_component(self, component):

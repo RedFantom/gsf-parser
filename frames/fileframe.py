@@ -106,7 +106,6 @@ class FileFrame(ttk.Frame):
         :return: None
         """
         self.file_tree.delete(*self.file_tree.get_children())
-        number = 0
         self.clear_data_widgets()
         self.main_window.ship_frame.ship_label_var.set("")
         try:
@@ -122,8 +121,6 @@ class FileFrame(ttk.Frame):
             variables.settings.read_settings()
         combatlogs_folder = variables.settings["parsing"]["path"]
         file_list = os.listdir(combatlogs_folder)
-        if not self.ascending:
-            file_list = list(reversed(file_list))
         if not silent:
             splash_screen = SplashScreen(self.main_window, len(file_list), title="Loading files")
         else:
@@ -134,7 +131,10 @@ class FileFrame(ttk.Frame):
                                                       "will speed up some processes "
                                                       "significantly.".format(len(file_list)))
         self.file_tree.insert("", tk.END, iid="all", text="All CombatLogs")
-        for file in file_list:
+        file_list = list(reversed(sorted(file_list)) if not self.ascending else sorted(file_list))
+        if self.main_window.splash.winfo_exists():
+            self.main_window.splash.update_maximum(len(file_list))
+        for number, file in enumerate(file_list):
             if not file.endswith(".txt"):
                 continue
             if " " in file:
@@ -153,7 +153,8 @@ class FileFrame(ttk.Frame):
                     splash_screen.update_progress(number)
                     splash_screen.update()
                 self.insert_file(file_string)
-                variables.main_window.update()
+                if self.main_window.splash.winfo_exists():
+                    self.main_window.splash.update_progress(number)
         if splash_screen is not None:
             splash_screen.destroy()
         return
