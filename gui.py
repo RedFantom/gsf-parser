@@ -71,7 +71,7 @@ class MainWindow(ThemedTk):
         self.notebook = ttk.Notebook(self, height=420, width=self.width)
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
-        self.sharing_frame = sharingframe.SharingFrame(self.notebook)
+        self.sharing_frame = sharingframe.SharingFrame(self.notebook, self)
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.file_select_frame = fileframe.FileFrame(self.file_tab_frame, self)
         self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
