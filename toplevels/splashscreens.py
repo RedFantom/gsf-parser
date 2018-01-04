@@ -7,13 +7,10 @@
 # UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox
-import tkinter.filedialog
 # Others
 import os
 from PIL import Image, ImageTk
 # Own modules
-import variables
 from tools import utilities
 
 
@@ -21,11 +18,11 @@ class SplashScreen(tk.Toplevel):
     def __init__(self, window, amount, title="GSF Parser"):
         tk.Toplevel.__init__(self, window)
         self.window = window
+        self.update()
         self.grab_set()
         self.title(title)
         self.label = ttk.Label(self, text="Working...")
         self.label.pack()
-
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=300, mode="determinate")
         self.progress_bar.pack()
         self.progress_bar["maximum"] = amount
