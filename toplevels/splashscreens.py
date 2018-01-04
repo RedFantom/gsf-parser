@@ -34,8 +34,6 @@ class SplashScreen(tk.Toplevel):
 
     def update_progress(self, number):
         self.progress_bar["value"] = number
-        self.update()
-        self.window.update()
 
 
 class BootSplash(tk.Toplevel):
@@ -51,39 +49,22 @@ class BootSplash(tk.Toplevel):
         self.label_var.set("Building widgets...")
         self.label = ttk.Label(self, textvariable=self.label_var)
         self.label.pack()
-        self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=462, mode="determinate")
+        self.amount = tk.IntVar()
+        self.progress_bar = ttk.Progressbar(
+            self, orient="horizontal", length=462, mode="determinate", variable=self.amount)
         self.progress_bar.pack()
         screen_res = utilities.get_screen_resolution()
         self.update()
         req_size = (self.winfo_width(), self.winfo_height())
-        self.update()
         self.wm_geometry("+{0}+{1}".format(int((screen_res[0] - req_size[0]) / 2),
                                            int((screen_res[1] - req_size[1]) / 2)))
-        self.update()
-        try:
-            directory = os.listdir(window.default_path)
-        except (OSError, TypeError):
-            tkinter.messagebox.showerror(
-                "Error", "The CombatLogs folder found in the settings file is not valid. Please choose another folder.")
-            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings.write_settings({'parsing': {'path': folder}})
-            variables.settings.read_settings()
-            os.chdir(variables.settings["parsing"]["path"])
-            directory = os.listdir(os.getcwd())
-        files = []
-        for file in directory:
-            if file.endswith(".txt"):
-                files.append(file)
-        variables.files_done = 0
-        self.amount_files = len(files)
-        self.progress_bar["maximum"] = self.amount_files
         self.progress_bar["value"] = 0
         self.update()
-        self.done = False
 
-    def update_progress(self):
-        if variables.files_done == self.amount_files:
-            return
+    def update_progress(self, amount):
         self.label_var.set("Parsing the files...")
-        self.progress_bar["value"] = variables.files_done
-        self.update()
+        self.amount.set(amount)
+        self.progress_bar.update_idletasks()
+
+    def update_maximum(self, maximum):
+        self.progress_bar.config(maximum=maximum)
