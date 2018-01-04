@@ -76,23 +76,17 @@ class CrewListFrame(ttk.Frame):
                 continue
             elif crole == "":
                 raise ValueError("Invalid role detected.")
-            self.category_frames[crole] = ToggledFrame(self, text=crole)
+            self.category_frames[crole] = ToggledFrame(self, text=crole, callback=self.toggle_callback)
             self.category_variables[crole] = tk.StringVar()
             for member_dict in category:
                 icon_name = member_dict["Icon"].lower().replace("Crew", "crew")
                 self.member_icons[member_dict["Name"]] = \
                     photo(img.open(path.join(self.icons_path, icon_name + ".jpg")))
-                self.member_buttons[member_dict["Name"]] = \
-                    ttk.Radiobutton(self.category_frames[crole].sub_frame,
-                                    text=member_dict["Name"],
-                                    compound=tk.LEFT,
-                                    image=self.member_icons[member_dict["Name"]],
-                                    command=lambda i=(faction, crole,
-                                                      member_dict["Name"]):
-                                    self.set_crew_member(i),
-                                    width=16,
-                                    variable=self.category_variables[crole],
-                                    value=member_dict["Name"])
+                self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(
+                    self.category_frames[crole].sub_frame, text=member_dict["Name"], compound=tk.LEFT, width=16,
+                    image=self.member_icons[member_dict["Name"]], variable=self.category_variables[crole],
+                    value=member_dict["Name"],
+                    command=lambda i=(faction, crole, member_dict["Name"]): self.set_crew_member(i))
                 if member_dict["IsDefaultCompanion"]:
                     self.copilots[crole] = member_dict["Name"]
         self.update_copilots()
@@ -113,17 +107,10 @@ class CrewListFrame(ttk.Frame):
         for category, name in self.copilots.items():
             self.copilot_icons[name] = \
                 photo(img.open(path.join(self.icons_path, self.copilot_dicts[name]["Icon"].lower() + ".jpg")))
-            self.copilot_buttons[name] = \
-                ttk.Radiobutton(self.category_frames["CoPilot"].sub_frame,
-                                text=name,
-                                compound=tk.LEFT,
-                                image=self.member_icons[name],
-                                command=lambda faction=self.faction, name=name:
-                                self.set_crew_member((faction, "CoPilot", name)),
-                                width=16,
-                                variable=self.copilot_variable,
-                                value=name)
-            # , value=self.copilots.index(name))
+            self.copilot_buttons[name] = ttk.Radiobutton(
+                self.category_frames["CoPilot"].sub_frame, width=16, variable=self.copilot_variable, value=name,
+                text=name, compound=tk.LEFT, image=self.member_icons[name],
+                command=lambda faction=self.faction, name=name: self.set_crew_member((faction, "CoPilot", name)))
             index += 1
         self.grid_widgets()
 
@@ -145,3 +132,16 @@ class CrewListFrame(ttk.Frame):
         for frame in self.category_frames.values():
             if frame.show.get():
                 frame.toggle()
+
+    def toggle_callback(self, frame, open):
+        """
+        Callback for the ToggledFrames so only one of them is openat a time.
+        """
+        if open is False:
+            return
+        iterator = list(self.category_frames.values())
+        iterator.remove(frame)
+        # Close the open ToggledFrames
+        for toggled_frame in iterator:
+            if bool(toggled_frame.show.get()) is True:
+                toggled_frame.close()

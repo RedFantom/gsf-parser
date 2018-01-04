@@ -81,8 +81,10 @@ class BuildsFrame(ttk.Frame):
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
             self.components_lists[category] = \
-                ComponentListFrame(self.components_lists_frame.interior, category,
-                                   self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component)
+                ComponentListFrame(
+                    self.components_lists_frame.interior, category,
+                    self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component,
+                    self.toggle_callback)
         self.component_frame = ttk.Frame(self)
         self.current_component = MajorComponentWidget(self.component_frame,
                                                       self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
@@ -159,9 +161,9 @@ class BuildsFrame(ttk.Frame):
             if type not in self.ship.data:
                 print("type not in self.ship.data: {0}".format(type))
                 continue
-            self.components_lists[type] = \
-                ComponentListFrame(self.components_lists_frame.interior, type,
-                                   self.ship.data[type], self.set_component)
+            self.components_lists[type] = ComponentListFrame(
+                self.components_lists_frame.interior, type, self.ship.data[type], self.set_component,
+                self.toggle_callback)
             try:
                 if self.ship[type] is None:
                     continue
@@ -314,3 +316,14 @@ class BuildsFrame(ttk.Frame):
                 button[1].config(state=tk.DISABLED)
                 continue
             button.config(state=tk.DISABLED)
+
+    def toggle_callback(self, frame, open):
+        if open is False:
+            return
+        for component_list_frame in self.components_lists.values():
+            if component_list_frame.toggled_frame is frame:
+                continue
+            if bool(component_list_frame.toggled_frame.show.get()) is True:
+                print("[BuildFrame] Closing open frame for", component_list_frame.category)
+                component_list_frame.toggled_frame.close()
+        return
