@@ -21,6 +21,21 @@ from widgets import VerticalScrollFrame
 from server.sharing_data import *
 
 
+def get_connectected_client():
+    client = SharingClient()
+    try:
+        client.connect()
+    except ConnectionRefusedError:
+        messagebox.showerror("Error", "The remote server refused the connection.")
+        return None
+    except Exception as e:
+        messagebox.showerror("Error", "An unidentified error occurred while connecting to the remote server:\n\n"
+                                      "{}".format(repr(e)))
+        return None
+    client.start()
+    return client
+
+
 class SharingFrame(ttk.Frame):
     """
     A Frame to contain widgets to allow uploading of CombatLogs to the server
@@ -69,27 +84,15 @@ class SharingFrame(ttk.Frame):
         """
         Function for the sync_button to call when pressed. Connects to the server.
         """
+        # Connect to the server
+        client = get_connectected_client()
+        if client is None:
+            return
         character_data = self.window.characters_frame.characters
-        character_names = {}
-        names = []
-        for name, server in character_data.keys():
-            if name in names:
-                if name in character_names:
-                    del character_names[name]
-                continue
-            character_names[name] = server
-            names.append(name)
+        character_names = self.get_player_names(character_data)
         skipped = []
         completed = []
         self.synchronize_button.config(text="Cancel", command=self.cancel_synchronize)
-        # Connect to the server
-        client = SharingClient()
-        try:
-            client.connect()
-            client.start()
-        except Exception as e:
-            messagebox.showerror("Error", "An error occurred while connecting to the server.\n\n{}".format(repr(e)))
-            return
         # Loop over files selected for sharing
         for file_name in self.file_tree.get_checked():
             if self.cancel_sync is True:
@@ -108,17 +111,36 @@ class SharingFrame(ttk.Frame):
             server = character_names[player_name]
             self.sharing_db[file_name] = 0
             # Actually start synchronizing
-            for player_id in id_list:
-                print("[SharingFrame] Sharing ID '{}' for name '{}'".format(player_id, player_name))
-                legacy_name = character_data[(server, player_name)]["Legacy"]
-                faction = character_data[(server, player_name)]["Faction"]
-                print("[SharingFrame] Sending data: {}, {}, {}".format(player_id, legacy_name, server))
-                client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
-                self.sharing_db[file_name] += 1
+            self.send_player_id_list(id_list, character_data, server, player_name, file_name, client)
             completed.append(file_name)
         client.close()
         self.cancel_sync = False
         self.synchronize_button.config(state=tk.NORMAL, text="Synchronize", command=self.synchronize)
+
+    @staticmethod
+    def get_player_names(character_data):
+        character_names = {}
+        names = []
+        for name, server in character_data.keys():
+            if name in names:
+                if name in character_names:
+                    del character_names[name]
+                continue
+            character_names[name] = server
+            names.append(name)
+        return names
+
+    def send_player_id_list(self, id_list, character_data, server, player_name, file_name, client):
+        for player_id in id_list:
+            print("[SharingFrame] Sharing ID '{}' for name '{}'".format(player_id, player_name))
+            legacy_name = character_data[(server, player_name)]["Legacy"]
+            faction = character_data[(server, player_name)]["Faction"]
+            print("[SharingFrame] Sending data: {}, {}, {}".format(player_id, legacy_name, server))
+            client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
+            self.sharing_db[file_name] += 1
+
+    @staticmethod
+    def show_confirmation_dialog(skipped, completed):
         # Build information string
         string = "The following files were skipped because the server of the character could not be determined:\n"
         for skipped_file in skipped:
@@ -248,9 +270,9 @@ class GetNameFrame(ttk.Frame):
         self.grid_widgets()
 
     def get_name(self, *args):
-        client = SharingClient()
-        client.connect()
-        client.start()
+        client = get_connected_client()
+        if client is None:
+            return
         server = self.server.get()
         faction = self.faction.get()
         if server not in servers_list or faction not in factions_list:

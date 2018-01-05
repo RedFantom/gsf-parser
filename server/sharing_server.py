@@ -131,3 +131,6 @@ class SharingServer(threading.Thread):
             fo.writelines(lines)
         return
 
+    def stop(self):
+        self.exit_queue.put(True)
+
