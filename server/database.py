@@ -63,8 +63,6 @@ class DatabaseHandler(threading.Thread):
         """
         if not self.exit:
             self.exit = True
-        self.cursor.close()
-        self.database.close()
         self.log("Database closed.")
         print("[DEBUG] Database object has cleaned up.")
         self.log("Database thread closed.")
@@ -132,7 +130,8 @@ class DatabaseHandler(threading.Thread):
                 self.log("Command/Query done, moving on")
             else:
                 time.sleep(0.1)
-        self.close()
+        self.cursor.close()
+        self.database.close()
 
     def query_handler(self, query):
         """
