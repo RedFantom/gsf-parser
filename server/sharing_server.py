@@ -51,11 +51,14 @@ class SharingServer(threading.Thread):
         is located in the temporary directory of the GSF Parser.
         """
         self._socket.listen(self._max_clients)
+        print("Server listening for clients now.")
         self.database.start()
+        print("Database connection initialized.")
 
         while True:
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
+                print("SharingServer stopping activities...")
                 SharingServer.write_log("Sharing server is exiting loop")
                 break
             # The select.select function is used so the Server can immediately continue with its operations if there are
@@ -63,15 +66,18 @@ class SharingServer(threading.Thread):
             # a rather high performance penalty, so the select function is used.
             if self._socket in select([self._socket], [], [], 0)[0]:
                 SharingServer.write_log("server ready to accept")
+                print("SharingServer accepting new client.")
                 connection, address = self._socket.accept()
                 # Check if the IP is banned
                 if address[0] not in self.banned:
                     # The ClientHandler is created and then added to the list of active ClientHandlers
                     self.client_handlers.append(SharingClientHandler(connection, address, self.server_queue))
+                    print("Client accepted: {}.".format(address[0]))
                 else:
                     # If the IP is banned, then a message is sent
                     connection.send(b"ban")
                     connection.close()
+                    print("Client banned.")
             # Check if the Server should exit its loop for the second time in this loop
             if not self.exit_queue.empty() and self.exit_queue.get():
                 break
@@ -89,6 +95,7 @@ class SharingServer(threading.Thread):
         # The loop is broken because an exit was requested. All ClientHandlers are requested to close their
         # their functionality (and sockets)
         SharingServer.write_log("Server closing ClientHandlers")
+        print("SharingServer closing ClientHandlers.")
         for client_handler in self.client_handlers:
             client_handler.close()
             SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
@@ -97,6 +104,7 @@ class SharingServer(threading.Thread):
         SharingServer.write_log("Sharing server is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self._socket.close()
+        print("SharingServer closed.")
 
     def do_action_for_server_queue(self):
         """
