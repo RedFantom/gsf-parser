@@ -30,7 +30,10 @@ class SharingServer(threading.Thread):
         self.server_queue = Queue()
         self.banned = []
         self.client_handlers = []
-        self.database = DatabaseHandler()
+
+    @property
+    def database(self):
+        return self._database
 
     def setup_socket(self):
         """
@@ -89,7 +92,6 @@ class SharingServer(threading.Thread):
         for client_handler in self.client_handlers:
             client_handler.close()
             SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        self.database.close()
         while self.database.is_alive():
             pass
         SharingServer.write_log("Sharing server is returning from run()")
@@ -133,4 +135,13 @@ class SharingServer(threading.Thread):
 
     def stop(self):
         self.exit_queue.put(True)
+        while self.is_alive():
+            pass
+        self.database.close()
+        while self.database.is_alive():
+            pass
+        return
+
+    def __exit__(self):
+        self.stop()
 

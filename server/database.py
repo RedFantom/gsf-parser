@@ -27,14 +27,14 @@ class DatabaseHandler(threading.Thread):
         "TL": "EU"
     }
 
-    def __init__(self, db_name="parser.db", logfile="database_%s.log" % time.strftime("%Y-%m-%d_%H-%M-%S")):
+    def __init__(self, db_name="parser.db", logfile="database_%s.log" % time.strftime("%Y-%m-%d")):
         """
         Sets up all required variables for the thread to run correctly
         """
         threading.Thread.__init__(self)
         self.db_done = False
         self.exit = False
-        self.log_file = open(logfile, "w")
+        self.log_file = open(logfile, "a")
         self.db_queue = Queue.Queue()
         self.db_name = db_name
         self.database = None
