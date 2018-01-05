@@ -468,7 +468,7 @@ class Parser(object):
         player_list = []
         for line in lines:
             # print("Processing line: {}".format(line.replace("\n", "")))
-            if "@" in line:
+            if "@" in line["line"]:
                 continue
             dictionary = Parser.line_to_dictionary(line)
             if dictionary["source"] == dictionary["target"] and dictionary["source"] not in player_list:

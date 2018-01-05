@@ -85,6 +85,7 @@ insert_main_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server,
 # Query to insert a new alt into the database
 # % (alt_character_name, main_character_name, three-letter shortcode for server, three-letter shortcode for faction)
 insert_alt_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('%s', '%s', '%s', '%s', 0);"""
+insert_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('%s', '%s', '%s', '%s', %s);"""
 # This is a list of test queries for the database
 list_of_tests = [alt_first_command, insert_main_character % ("Yellowbird", "Yellowbird", "DM", "IMP"),
                  insert_main_character % ("Pyril", "Pyril", "DM", "IMP"),
@@ -221,5 +222,5 @@ get_dmg_by_victim = """SELECT damage FROM Bombers WHERE victim == '%s';"""
 ### MULTIPLE DB QUERIES ###
 # Query to get the name of the character belonging to a certain IDhash
 # % (hash_of_id, server_shortcode)
-get_altname_by_id = """SELECT altname FROM Alt WHERE altname IN (SELECT char FROM Id WHERE IDhash == '%s' AND server == '%s');"""
+get_altname_by_id = """SELECT altname FROM Alt WHERE altname IN (SELECT char FROM Id WHERE IDhash == '{}' AND server == '{}');"""
 get_mainname_by_id = """SELECT belongsto FROM Combatlog WHERE loghash IN (SELECT combatlog FROM Id WHERE IDhash == '%s' AND server == '%s');"""

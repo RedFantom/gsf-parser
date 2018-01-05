@@ -84,6 +84,7 @@ class SharingFrame(ttk.Frame):
         """
         Function for the sync_button to call when pressed. Connects to the server.
         """
+        print("[SharingFrame] Starting synchronization")
         # Connect to the server
         client = get_connected_client()
         if client is None:
@@ -94,41 +95,54 @@ class SharingFrame(ttk.Frame):
         completed = []
         self.synchronize_button.config(text="Cancel", command=self.cancel_synchronize)
         # Loop over files selected for sharing
-        for file_name in self.file_tree.get_checked():
-            if self.cancel_sync is True:
+        file_list = self.file_tree.get_checked()
+        self.progress_bar["maximum"] = len(file_list)
+        for file_name in file_list:
+            self.progress_bar["value"] += 1
+            if self.cancel_sync is True or not client.is_alive():
                 break
             print("[SharingFrame] Synchronizing file '{}'".format(file_name))
             lines = self.read_file(file_name)
             id_list = Parser.get_player_id_list(lines)
             synchronized = self.get_amount_synchronized(file_name, id_list)
             if synchronized == "Complete":
+                print("[SharingFrame] Already synchronized:", file_name)
                 continue
             player_name = Parser.get_player_name(lines)
             # Skip files with ambiguous server
             if player_name not in character_names:
                 skipped.append(file_name)
+                print("[SharingFrame] Skipping file:", file_name)
                 continue
             server = character_names[player_name]
             self.sharing_db[file_name] = 0
             # Actually start synchronizing
-            self.send_player_id_list(id_list, character_data, server, player_name, file_name, client)
+            print("[ShareFrame] Sending player ID list")
+            result = self.send_player_id_list(id_list, character_data, server, player_name, file_name, client)
+            if result is False:
+                messagebox.showerror("Error", "Failed to send ID numbers.")
+                break
             completed.append(file_name)
         client.close()
+        print("[SharingFrame] Synchronization completed.")
         self.cancel_sync = False
         self.synchronize_button.config(state=tk.NORMAL, text="Synchronize", command=self.synchronize)
+        self.update_tree()
+        self.progress_bar["value"] = 0
 
     @staticmethod
     def get_player_names(character_data):
         character_names = {}
         names = []
-        for name, server in character_data.keys():
+        for server, name in character_data.keys():
+            print("Found character:", server, name)
             if name in names:
                 if name in character_names:
                     del character_names[name]
                 continue
             character_names[name] = server
             names.append(name)
-        return names
+        return character_names
 
     def send_player_id_list(self, id_list, character_data, server, player_name, file_name, client):
         for player_id in id_list:
@@ -136,8 +150,11 @@ class SharingFrame(ttk.Frame):
             legacy_name = character_data[(server, player_name)]["Legacy"]
             faction = character_data[(server, player_name)]["Faction"]
             print("[SharingFrame] Sending data: {}, {}, {}".format(player_id, legacy_name, server))
-            client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
+            result = client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
+            if result is False:
+                return False
             self.sharing_db[file_name] += 1
+        return True
 
     @staticmethod
     def show_confirmation_dialog(skipped, completed):
@@ -168,6 +185,7 @@ class SharingFrame(ttk.Frame):
         """
         Fills the tree with filenames
         """
+        self.file_tree.delete(*self.file_tree.get_children(""))
         valid_gsf_combatlogs = sorted(fileops.get_valid_gsf_combatlogs())
         for item in valid_gsf_combatlogs:
             file_string = Parser.parse_filename(item)
@@ -270,6 +288,10 @@ class GetNameFrame(ttk.Frame):
         self.grid_widgets()
 
     def get_name(self, *args):
+        self.result_entry.delete(0, tk.END)
+        self.result_entry.insert(tk.END, "Processing...")
+        self.result_entry.update_idletasks()
+        self.id_entry.unbind("<Return>")
         client = get_connected_client()
         if client is None:
             return
@@ -279,12 +301,29 @@ class GetNameFrame(ttk.Frame):
             messagebox.showinfo("Info", "Entered data is not valid. Please check your server and faction values.")
             return
         result = client.get_name_id(servers_dict[server], factions_dict[faction], self.id_entry.get())
+        print("[SharingFrame] Result:", result)
         client.close()
         # Insert into the result box
         self.result_entry.config(state=tk.NORMAL)
         self.result_entry.delete(0, tk.END)
+        if isinstance(result, bytes):
+            result = result.decode()
+        elif result is None:
+            result = "ID number not found."
+        elif result is False:
+            result = "An error occurred."
+        elif "none" in result:
+            result = "ID number not found."
+        elif "result" in result:
+            result = result.split("_")[1]
+        print("[SharingFrame] Received name:", result)
         self.result_entry.insert(tk.END, result)
+        self.result_entry.update()
         self.result_entry.config(state="readonly")
+        self.id_entry.bind("<Return>", self.get_name)
+        while client.is_alive():
+            pass
+        print("[SharingFrame] Client closed.")
 
     def grid_widgets(self):
         self.header_label.grid(row=1, column=1, sticky="w", pady=5)

@@ -9,8 +9,9 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
+from time import sleep
 # Own modules
-from tools.admin import is_user_admin
+from tools.admin import is_user_admin, run_as_admin
 from .sharing_clienthandler import SharingClientHandler
 from server.database import DatabaseHandler
 
@@ -41,8 +42,9 @@ class SharingServer(threading.Thread):
         :raises: RuntimeError if executed as non-admin
         """
         if not is_user_admin():
-            raise RuntimeError("SharingServer can only bind to the address if executed with admin rights")
+            run_as_admin()
         self._socket.bind(self._address)
+        print("SharingServer bound to addres:", self._address)
 
     def run(self):
         """
@@ -50,11 +52,12 @@ class SharingServer(threading.Thread):
         Allows for maximum of eighth people to be logged in at the same time. The Server logs to its own log file, which
         is located in the temporary directory of the GSF Parser.
         """
+        self.setup_socket()
         self._socket.listen(self._max_clients)
-        print("Server listening for clients now.")
+        print("[SharingServer] Server listening for clients now.")
         self.database.start()
-        print("Database connection initialized.")
-
+        print("[SharingServer] Database connection initialized.")
+        result = False
         while True:
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
@@ -66,32 +69,39 @@ class SharingServer(threading.Thread):
             # a rather high performance penalty, so the select function is used.
             if self._socket in select([self._socket], [], [], 0)[0]:
                 SharingServer.write_log("server ready to accept")
-                print("SharingServer accepting new client.")
+                print("[SharingServer] Accepting new client.")
                 connection, address = self._socket.accept()
                 # Check if the IP is banned
                 if address[0] not in self.banned:
                     # The ClientHandler is created and then added to the list of active ClientHandlers
-                    self.client_handlers.append(SharingClientHandler(connection, address, self.server_queue))
-                    print("Client accepted: {}.".format(address[0]))
+                    self.client_handlers.append(
+                        SharingClientHandler(address, connection, self.database, self.server_queue))
+                    print("[SharingServer] Client accepted: {}.".format(address[0]))
                 else:
                     # If the IP is banned, then a message is sent
                     connection.send(b"ban")
                     connection.close()
                     print("Client banned.")
             # Check if the Server should exit its loop for the second time in this loop
-            if not self.exit_queue.empty() and self.exit_queue.get():
+            if not self.exit_queue.empty() and self.exit_queue.get() is True:
                 break
             # Call the update() function on each of the active ClientHandlers to update their state
             # This is a rather long part of the loop. If there are performance issues, the update() function should
             # be checked for problems first, unless the problem in loop code is apparent.
             for client_handler in self.client_handlers:
-                client_handler.update()
+                if client_handler.active is False:
+                    print("Inactive ClientHandler:", repr(client_handler))
+                    continue
+                if result is True:
+                    print("[SharingServer] Updating")
+                result = client_handler.update()
+                if result is True:
+                    print("[SharingServer] Client handler completed task.")
             # The server_queue contains commands from ClientHandlers, and these should *all* be handled before
             # continuing.
             while not self.server_queue.empty():
                 self.do_action_for_server_queue()
             # This is the end of a cycle
-
         # The loop is broken because an exit was requested. All ClientHandlers are requested to close their
         # their functionality (and sockets)
         SharingServer.write_log("Server closing ClientHandlers")
@@ -108,8 +118,11 @@ class SharingServer(threading.Thread):
         """
         Function to execute when one of the ClientHandlers needs something done
         """
+        print("[SharingServer] Performing action for server Queue.")
         command, handler = self.server_queue.get()
         if command == "exit":
+            print("[SharingServer] [{}] Removing ClientHandler".format(
+                datetime.now().strftime("%H:%M:%S.%f")), handler.address)
             self.client_handlers.remove(handler)
         elif command == "ban":
             self.banned.append(handler.address[0])

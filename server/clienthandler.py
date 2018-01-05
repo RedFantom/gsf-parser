@@ -27,7 +27,7 @@ class ClientHandler(object):
             raise ValueError("invalid address tuple passed as argument: {}".format(address))
         if not isinstance(server_queue, Queue):
             raise ValueError("server_queue argument is not a queue.Queue")
-        if not isinstance(log_file, str) or not path.exists(path.dirname(log_file)):
+        if not isinstance(log_file, str):
             raise ValueError("invalid log_file name passed as argument: {}".format(log_file))
         self.socket = sock
         self.address = address

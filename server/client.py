@@ -37,9 +37,10 @@ class Client(threading.Thread):
         """
         while True:
             if not self.exit_queue.empty():
-                if self.exit_queue.get():
-                    break
+                break
             self.update()
+        self.send("exit")
+        self.socket.close()
 
     def update(self):
         """
@@ -52,7 +53,7 @@ class Client(threading.Thread):
         Function that can be overriden by a child class to perform additional functionality, such as sending a
         logout message.
         """
-        self.socket.close()
+        self.exit_queue.put(True)
 
     def send(self, string):
         """
@@ -60,28 +61,36 @@ class Client(threading.Thread):
         """
         if not isinstance(string, str):
             string = string.decode()
-        self.socket.send((string + "+").encode())
+        return self.socket.send((string + "+").encode())
 
     def receive(self):
         """
         Function to receive and separate messages received from the ClientHandler
         """
-        self.socket.setblocking(0)
+        print("Starting receive")
+        self.socket.setblocking(False)
         total = b""
+        wait = False
         while True:
             try:
-                message = self.socket.recv(16)
+                message = self.socket.recv(32)
+                total += message
+                print(total)
+                wait = message[-1] != 43
                 if message == b"":
-                    self.close()
                     break
-                print("ClientHandler received message: ", message)
             except socket.error:
-                break
-            elements = message.split(b"+")
-            total += elements[0]
-            if len(elements) >= 2:
-                self.message_queue.put(total)
-                for item in elements[1:-1]:
-                    self.message_queue.put(item)
-                total = elements[-1]
+                if wait is True:
+                    continue
+                else:
+                    break
+        print("[Client] received message: ", total, wait)
+        elements = total.split(b"+")
+        for elem in elements:
+            try:
+                if elem.decode() == "":
+                    continue
+            except UnicodeDecodeError:
+                pass
+            self.message_queue.put(elem)
         return

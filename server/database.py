@@ -33,9 +33,9 @@ class DatabaseHandler(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.db_done = False
-        self.exit = False
         self.log_file = open(logfile, "a")
         self.db_queue = Queue.Queue()
+        self.exit_queue = Queue.Queue()
         self.db_name = db_name
         self.database = None
         self.cursor = None
@@ -61,8 +61,7 @@ class DatabaseHandler(threading.Thread):
         Close the databases and wrap up
         :return:
         """
-        if not self.exit:
-            self.exit = True
+        self.exit_queue.put(True)
         self.log("Database closed.")
         print("[DEBUG] Database object has cleaned up.")
         self.log("Database thread closed.")
@@ -98,35 +97,47 @@ class DatabaseHandler(threading.Thread):
             self.cursor = self.database.cursor()
             self.setup()
             self.db_done = True
-        while not self.exit:
+        print("[DatabaseHandler] DatabaseHandler starting activities.")
+        while self.exit_queue.empty():
             if self.db_queue.qsize() > 0:
+                print("[DatabaseHandler] Received a command in the Queue.")
                 # return_queue is a Queue object, to_exec is a string (query or command),
                 # query is a boolean which is True if to_exec is a query
                 return_queue, to_exec, query = self.db_queue.get()
                 self.log("The following command was received: %s" % to_exec)
                 self.log("The command is a query: %s" % query)
                 if query:
+                    print("[DatabaseHandler] Received command is a query.")
                     data = self.query_handler(to_exec)
                     self.log("The following data was returned by the query: %s" % data)
                     if data == -1:
+                        print("[DatabaseHandler] Encountered an error while executing the query.")
                         return_queue.put((False, to_exec, query))
                         self.log("The data == -1, thus an error occurred. Returning that in the queue.")
                     else:
                         new_data = []
                         for item in data:
                             new_data.append(str(item[0]))
+                        if len(new_data) == 0:
+                            return_queue.put(None)
                         self.log("Generated data from this list: %s" % new_data)
+                        print("[DatabaseHandler] Data retrieved from database:", new_data)
                         return_queue.put(new_data)
                         self.log("Request completed successfully.")
+                        print("[DatabaseHandler] Query completed.")
                 else:
+                    print("[DatabaseHandler] Executing command.")
                     return_code = self.command_handler(to_exec)
                     self.log("The return code of the command_handler for this command was: %s" % return_code)
+                    print("[DatabaseHandler] Result:", return_code)
                     if return_code == -1:
                         return_queue.put((False, to_exec, query))
                         self.log("Command execution failure.")
+                        print("[DatabaseHandler] Command execution failed.")
                     else:
                         return_queue.put((True, to_exec, query))
                         self.log("Command completed successfully.")
+                        print("[DatabaseHandler] Command executed successfully.")
                 self.log("Command/Query done, moving on")
             else:
                 time.sleep(0.1)
