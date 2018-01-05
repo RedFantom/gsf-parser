@@ -4,13 +4,11 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE
 from queue import Queue
-from os import path
 import socket
 # Own modules
 from .clienthandler import ClientHandler
 from .database import DatabaseHandler
 from .queries import *
-from tools.utilities import get_temp_directory
 
 
 class SharingClientHandler(ClientHandler):
@@ -28,7 +26,7 @@ class SharingClientHandler(ClientHandler):
         """
         if not isinstance(database, DatabaseHandler):
             raise ValueError("database is not a DatabaseHandler object")
-        log_file = path.join(get_temp_directory(), "sharing_clienthandler_{}.log".format(address[0]))
+        log_file = "sharing_clienthandler_{}.log".format(address[0])
         ClientHandler.__init__(self, socket, address, server_queue, log_file, debug=False)
         self.database = database
         self.message_queue = Queue()
