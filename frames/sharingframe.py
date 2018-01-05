@@ -14,7 +14,8 @@ from ttkwidgets.autocomplete import AutocompleteCombobox
 # Own modules
 from server.sharing_client import SharingClient
 from variables import settings
-from parsing import parse, fileops
+from parsing import fileops
+from parsing.parser import Parser
 from tools.utilities import get_temp_directory
 from widgets import VerticalScrollFrame
 from server.sharing_data import *
@@ -28,11 +29,13 @@ class SharingFrame(ttk.Frame):
     GSF Server is not done yet, this Frame is still empty.
     """
 
-    def __init__(self, root_frame):
+    def __init__(self, root_frame, window):
         """
         :param root_frame: The MainWindow.notebook
         """
         ttk.Frame.__init__(self, root_frame)
+        self.window = window
+        self.cancel_sync = False
         # Open the sharing database
         sharing_db_path = os.path.join(get_temp_directory(), "share.db")
         self.sharing_db = shelve.open(sharing_db_path)
@@ -66,7 +69,68 @@ class SharingFrame(ttk.Frame):
         """
         Function for the sync_button to call when pressed. Connects to the server.
         """
-        pass
+        character_data = self.window.characters_frame.characters
+        character_names = {}
+        names = []
+        for name, server in character_data.keys():
+            if name in names:
+                if name in character_names:
+                    del character_names[name]
+                continue
+            character_names[name] = server
+            names.append(name)
+        skipped = []
+        completed = []
+        self.synchronize_button.config(text="Cancel", command=self.cancel_synchronize)
+        # Connect to the server
+        client = SharingClient()
+        try:
+            client.connect()
+            client.start()
+        except Exception as e:
+            messagebox.showerror("Error", "An error occurred while connecting to the server.\n\n{}".format(repr(e)))
+            return
+        # Loop over files selected for sharing
+        for file_name in self.file_tree.get_checked():
+            if self.cancel_sync is True:
+                break
+            print("[SharingFrame] Synchronizing file '{}'".format(file_name))
+            lines = self.read_file(file_name)
+            id_list = Parser.get_player_id_list(lines)
+            synchronized = self.get_amount_synchronized(file_name, id_list)
+            if synchronized == "Complete":
+                continue
+            player_name = Parser.get_player_name(lines)
+            # Skip files with ambiguous server
+            if player_name not in character_names:
+                skipped.append(file_name)
+                continue
+            server = character_names[player_name]
+            self.sharing_db[file_name] = 0
+            # Actually start synchronizing
+            for player_id in id_list:
+                print("[SharingFrame] Sharing ID '{}' for name '{}'".format(player_id, player_name))
+                legacy_name = character_data[(server, player_name)]["Legacy"]
+                faction = character_data[(server, player_name)]["Faction"]
+                print("[SharingFrame] Sending data: {}, {}, {}".format(player_id, legacy_name, server))
+                client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
+                self.sharing_db[file_name] += 1
+            completed.append(file_name)
+        client.close()
+        self.cancel_sync = False
+        self.synchronize_button.config(state=tk.NORMAL, text="Synchronize", command=self.synchronize)
+        # Build information string
+        string = "The following files were skipped because the server of the character could not be determined:\n"
+        for skipped_file in skipped:
+            string += skipped_file + "\n"
+        string += "The following files were successfully synchronized:\n"
+        for completed_file in completed:
+            string += completed_file + "\n"
+        messagebox.showinfo("Info", string)
+
+    def cancel_synchronize(self):
+        self.cancel_sync = True
+        self.synchronize_button.config(state=tk.DISABLED)
 
     def grid_widgets(self):
         """
@@ -84,24 +148,29 @@ class SharingFrame(ttk.Frame):
         """
         valid_gsf_combatlogs = sorted(fileops.get_valid_gsf_combatlogs())
         for item in valid_gsf_combatlogs:
-            file_string = fileops.get_file_string(item)
+            file_string = Parser.parse_filename(item)
             if file_string is None:
                 # Creating a nice file string failed, probably a custom filename
                 continue
             # Get the right values from the CombatLog to show in the tree
-            path = os.path.join(settings["parsing"]["path"], item)
-            with open(path, "rb") as fi:
-                lines = []
-                for line in fi:
-                    try:
-                        lines.append(line.decode())
-                    except UnicodeDecodeError:
-                        continue
-            player_name = parse.determinePlayerName(lines)
-            player_ids = parse.determinePlayer(lines)
+            lines = self.read_file(item)
+            player_name = Parser.get_player_name(lines)
+            player_ids = Parser.get_player_id_list(lines)
             synchronized = self.get_amount_synchronized(item, player_ids)
             self.file_tree.insert("", tk.END, text=file_string, iid=item,
                                   values=(player_name, len(player_ids), synchronized))
+
+    @staticmethod
+    def read_file(file_name):
+        path = os.path.join(settings["parsing"]["path"], file_name)
+        with open(path, "rb") as fi:
+            lines = []
+            for line in fi:
+                try:
+                    lines.append(line.decode())
+                except UnicodeDecodeError:
+                    continue
+        return lines
 
     def __exit__(self):
         self.save_database()
@@ -180,20 +249,20 @@ class GetNameFrame(ttk.Frame):
 
     def get_name(self, *args):
         client = SharingClient()
+        client.connect()
+        client.start()
         server = self.server.get()
         faction = self.faction.get()
         if server not in servers_list or faction not in factions_list:
             messagebox.showinfo("Info", "Entered data is not valid. Please check your server and faction values.")
             return
         result = client.get_name_id(servers_dict[server], factions_dict[faction], self.id_entry.get())
+        client.close()
         # Insert into the result box
         self.result_entry.config(state=tk.NORMAL)
         self.result_entry.delete(0, tk.END)
         self.result_entry.insert(tk.END, result)
         self.result_entry.config(state="readonly")
-
-    def id_entry_callback(self, event):
-        pass
 
     def grid_widgets(self):
         self.header_label.grid(row=1, column=1, sticky="w", pady=5)

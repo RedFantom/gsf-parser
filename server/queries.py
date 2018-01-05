@@ -78,7 +78,7 @@ create_tb_alt = """CREATE TABLE IF NOT EXISTS Alt(
                    FOREIGN KEY(server) REFERENCES Server(servername));"""
 # This should be the first query to be executed to get the index number right
 # RedFantom spelled with small letter F to match the name as written in the CombatLogs
-alt_first_command = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('Redfantom', 'Redfantom', 'TRE', 'IMP', 1);"""
+alt_first_command = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('Redfantom', 'Redfantom', 'DM', 'IMP', 1);"""
 # Query to insert a new main character into the database
 # % (main_character_name, main_character_name, three-letter shortcode for server, three-letter shortcode for faction)
 insert_main_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('%s', '%s', '%s', '%s', 1);"""
@@ -86,9 +86,9 @@ insert_main_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server,
 # % (alt_character_name, main_character_name, three-letter shortcode for server, three-letter shortcode for faction)
 insert_alt_character = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('%s', '%s', '%s', '%s', 0);"""
 # This is a list of test queries for the database
-list_of_tests = [alt_first_command, insert_main_character % ("Yellowbird", "Yellowbird", "TRE", "IMP"),
-                 insert_main_character % ("Pyril", "Pyril", "TRE", "IMP"),
-                 insert_alt_character % ("Eighty-three", "Redfantom", "TRE", "REP")]
+list_of_tests = [alt_first_command, insert_main_character % ("Yellowbird", "Yellowbird", "DM", "IMP"),
+                 insert_main_character % ("Pyril", "Pyril", "DM", "IMP"),
+                 insert_alt_character % ("Eighty-three", "Redfantom", "DM", "REP")]
 # Query to get all alt names belonging to a certain character
 # % (maincharacter_name)
 get_all_alts = """SELECT altname FROM Alt WHERE belongsto == '%s';"""
@@ -116,7 +116,7 @@ create_tb_combatlogs = """CREATE TABLE IF NOT EXISTS Combatlog(
                           """
 # This should be the first query to be executed to get the index number right
 # % (hash_of_combatlog_txt, 0 {start of unixtime), list_of_lines_from_combatlog_txt)
-combatlog_first_command = """INSERT OR IGNORE INTO Combatlog(loghash, logdate, log, serv) VALUES ('%s', 0, '%s', 'TRE');"""
+combatlog_first_command = """INSERT OR IGNORE INTO Combatlog(loghash, logdate, log, serv) VALUES ('%s', 0, '%s', 'DM');"""
 # Query to insert a new combatlog into the table
 # % (hash_of_the_log_file, unixtime_of_the_log_file, string_of_list_of_lines_of_the_log_file, player_name_in_the_log_file)
 insert_combatlog = """INSERT OR IGNORE INTO Combatlog(loghash, logdate, log, serv) VALUES ('%s', %s, '%s');"""

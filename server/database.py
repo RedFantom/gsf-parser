@@ -19,22 +19,22 @@ class DatabaseHandler(threading.Thread):
     (to be implemented in the GSF Parser and PROTOCOL)
     """
 
-    servers = {"BAS": "USW", "BEG": "USW", "HAR": "USW", "SHA": "USE", "JUN": "USE", "EBH": "USE", "PRF": "USE",
-               "JCV": "USE",
-               "PRG": "EUR", "VCH": "EUR", "BMD": "EUR", "MFR": "EUR", "TRE": "EUR"}
+    servers = {
+        "SF": "US",
+        "SA": "US",
+        "TH": "EU",
+        "DM": "EU",
+        "TL": "EU"
+    }
 
-    def __init__(self, db_name="parser.db", shelf_name="builds.db", logfile="database_%s.log" %
-                                                                            time.strftime("%Y-%m-%d_%H-%M-%S")):
+    def __init__(self, db_name="parser.db", logfile="database_%s.log" % time.strftime("%Y-%m-%d_%H-%M-%S")):
         """
         Sets up all required variables for the thread to run correctly
-        :param db_name:
-        :param shelf_name:
-        :param logfile:
         """
         threading.Thread.__init__(self)
         self.db_done = False
         self.exit = False
-        self.log_file = open(logfile, "w", 0)
+        self.log_file = open(logfile, "w")
         self.db_queue = Queue.Queue()
         self.db_name = db_name
         self.database = None

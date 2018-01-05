@@ -39,7 +39,6 @@ class Parser(object):
         :param line_queue: Queue object (or object with .put()) to pass lines parsed to
         :param character_data: Character dictionary with "Ship Objects" keys
         :param file_name: The name of the log being parsed (e.g. to collect data from FileHandler)
-        :param mode: The mode the new Parser is started in
         """
         # Perform type checks
         if not isinstance(events_view, Frame):
@@ -472,7 +471,7 @@ class Parser(object):
             if "@" in line:
                 continue
             dictionary = Parser.line_to_dictionary(line)
-            if dictionary["source"] == dictionary["target"]:
+            if dictionary["source"] == dictionary["target"] and dictionary["source"] not in player_list:
                 player_list.append(dictionary["source"])
         return player_list
 
@@ -482,11 +481,13 @@ class Parser(object):
         Get the character name for a set of lines
         """
         for line in lines:
-            if "@" not in line or ":" in line:
+            if "@" not in line:
                 continue
             dictionary = Parser.line_to_dictionary(line)
+            if ":" in dictionary["source"]:
+                continue
             if dictionary["source"] == dictionary["target"]:
-                return dictionary["source"]
+                return dictionary["source"].replace("@", "")
         return None
 
     @staticmethod
