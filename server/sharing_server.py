@@ -99,8 +99,6 @@ class SharingServer(threading.Thread):
         for client_handler in self.client_handlers:
             client_handler.close()
             SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        while self.database.is_alive():
-            pass
         SharingServer.write_log("Sharing server is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self._socket.close()

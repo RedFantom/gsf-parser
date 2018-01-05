@@ -301,7 +301,7 @@ class SettingsToplevel(SnapToplevel):
             # The program should re-run as admin, possibly with UAC elevation
             confirmation = messagebox.askyesno("Question", "Starting a server requires administrative privileges, "
                                                            "would you like to restart the GSF Parser as an "
-                                                           "administrator.")
+                                                           "administrator?")
             if not confirmation:
                 return
             self.destroy()
@@ -309,9 +309,9 @@ class SettingsToplevel(SnapToplevel):
             try:
                 # Re-run as an administrator
                 run_as_admin()
-            except:
+            except Exception as e:
                 # If an error occurs, it is highly likely that the user has denied UAC elevation
-                pass
+                print(repr(e))
             exit()
         # Try to start the server
         try:

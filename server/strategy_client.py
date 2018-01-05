@@ -44,18 +44,19 @@ class StrategyClient(Client):
         Function to connect to the specified server or provide error handling when that fails
         """
         try:
+            self.socket.settimeout(4)
             self.socket.connect((self.address, self.port))
         except socket.timeout:
             messagebox.showerror("Error", "The connection to the target server timed out.")
             self.login_failed()
-            return
+            return False
         except ConnectionRefusedError:
             messagebox.showerror("Error", "The server refused the connection. Perhaps the server does not have "
                                           "correct firewall or port forwarding settings.")
             self.login_failed()
-            return
+            return False
         # If connected, then login
-        self.login()
+        return self.login()
 
     def login(self):
         """
@@ -68,7 +69,7 @@ class StrategyClient(Client):
         except socket.timeout:
             messagebox.showerror("Error", "The connection to the target server timed out.")
             self.login_failed()
-            return
+            return False
         message = message.decode()
         if "login" in message:
             self.logged_in = True
@@ -76,9 +77,12 @@ class StrategyClient(Client):
         elif "invalidname" in message:
             messagebox.showerror("Error", "You chose an invalid username. Perhaps it is already in use?")
             self.login_failed()
+            return False
         else:
             print("Login failed because message is {}".format(message))
             self.login_failed()
+            return False
+        return True
 
     def send_strategy(self, strategy):
         """

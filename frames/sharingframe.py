@@ -21,7 +21,7 @@ from widgets import VerticalScrollFrame
 from server.sharing_data import *
 
 
-def get_connectected_client():
+def get_connected_client():
     client = SharingClient()
     try:
         client.connect()
@@ -85,7 +85,7 @@ class SharingFrame(ttk.Frame):
         Function for the sync_button to call when pressed. Connects to the server.
         """
         # Connect to the server
-        client = get_connectected_client()
+        client = get_connected_client()
         if client is None:
             return
         character_data = self.window.characters_frame.characters
