@@ -11,7 +11,6 @@ from datetime import datetime
 from select import select
 # Own modules
 from tools.admin import is_user_admin
-from tools.utilities import get_temp_directory
 from .sharing_clienthandler import SharingClientHandler
 from server.database import DatabaseHandler
 
@@ -115,7 +114,7 @@ class SharingServer(threading.Thread):
         Write a line to the log file, but also check if the log file is not too bit and truncate if required
         """
         line = line.strip() + "\n"
-        file_name = os.path.join(get_temp_directory(), "sharing_server.log")
+        file_name = "sharing_server.log"
         if not os.path.exists(file_name):
             with open(file_name, "w") as fo:
                 fo.write("")
