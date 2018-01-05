@@ -51,9 +51,9 @@ if __name__ == '__main__':
     """
     address = "" if isinstance(args.a, list) and args.a[0] == "all" else \
         (args.a if args.a == DEFAULT_ADDRESS else args.a[0])
-    port = args.p[0] if args.p != DEFAULT_PORT else DEFAULT_PORT
-    clients = args.c[0] if isinstance(args.c, list) else args.c
-    time = args.t[0] if isinstance(args.t, list) else args.t
+    port = int(args.p[0] if args.p != DEFAULT_PORT else DEFAULT_PORT)
+    clients = int(args.c[0] if isinstance(args.c, list) else args.c)
+    time = int(args.t[0] if isinstance(args.t, list) else args.t)
 
     """
     Start the server
@@ -63,8 +63,11 @@ if __name__ == '__main__':
 
     if time > 0:
         start_time = datetime.now()
-        while divmod((datetime.now() - start_time).total_seconds(), 60)[0] < time:
-            pass
+        try:
+            while divmod((datetime.now() - start_time).total_seconds(), 60)[0] < time:
+                pass
+        except KeyboardInterrupt:
+            print("[Server] Actions interrupted by user.")
         server.stop()
     exit()
 
