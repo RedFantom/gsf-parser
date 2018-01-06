@@ -41,3 +41,34 @@ class CharacterDatabase(dict):
         self.clear()
         self.update(updated)
 
+    def get_player_servers(self):
+        """
+        Get a dictionary of name: server
+        """
+        character_names = {}
+        names = []
+        for server, name in self.keys():
+            if name in names:
+                if name in character_names:
+                    del character_names[name]
+                continue
+            print("[CharacterDatabase] Found character:", server, name)
+            character_names[name] = server
+            names.append(name)
+        return character_names
+
+    def get_player_legacies(self):
+        """
+        Get a dictionary name: legacy
+        """
+        character_legacies = {}
+        names = []
+        for server, name in self.keys():
+            legacy = self[(server, name)]["Legacy"]
+            if name in names:
+                if name in character_legacies:
+                    del character_legacies[name]
+                continue
+            character_legacies[name] = legacy
+            names.append(name)
+        return character_legacies

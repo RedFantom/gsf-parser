@@ -491,15 +491,17 @@ class Parser(object):
         return None
 
     @staticmethod
-    def get_enemies_list(spawn, player_list):
+    def get_enemy_id_list(lines: list, player_list: list):
         """
         Get the list of enemies for a certain list of lines that describe a spawn
         """
         enemies = []
-        for line in spawn:
+        for line in lines:
             dictionary = Parser.line_to_dictionary(line)
             source = dictionary["source"]
             target = dictionary["target"]
+            if "@" in source or "@" in target:
+                continue
             if source not in player_list and source not in enemies:
                 enemies.append(source)
                 # Performance optimization
@@ -513,7 +515,7 @@ class Parser(object):
         """
         Get the amount of enemies for a certain list of lines that describe a spawn
         """
-        return len(Parser.get_enemies_list(spawn, player_list))
+        return len(Parser.get_enemy_id_list(spawn, player_list))
 
     @staticmethod
     def get_ship_for_dict(abilities_dict):
