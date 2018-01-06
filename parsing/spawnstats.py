@@ -40,7 +40,7 @@ def spawn_statistics(file_name, spawn, spawn_timing):
         deaths="-",
         minutes=minutes,
         seconds=seconds,
-        dps=dmg_d / delta.total_seconds()
+        dps=dmg_d / delta.total_seconds() if delta.total_seconds() != 0 else 0
     )
     # Build the components list
     components = {key: "" for key in abilities.component_types}

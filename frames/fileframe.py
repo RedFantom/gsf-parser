@@ -15,10 +15,10 @@ import tkinter.filedialog
 import operator
 import os
 from datetime import datetime
-from pynput.mouse import Button
 # Own modules
 import variables
-from parsing import parse, abilities, folderstats, filestats, matchstats, spawnstats
+from parsing import abilities, folderstats, filestats, matchstats, spawnstats
+from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from collections import OrderedDict
@@ -135,26 +135,19 @@ class FileFrame(ttk.Frame):
         if self.main_window.splash.winfo_exists():
             self.main_window.splash.update_maximum(len(file_list))
         for number, file in enumerate(file_list):
-            if not file.endswith(".txt"):
+            if not Parser.get_gsf_in_file(file):
                 continue
-            if " " in file:
-                tkinter.messagebox.showinfo("Notice", "The following CombatLog {0} has a white space in the name. For "
-                                                      "technical reasons, this is not currently "
-                                                      "supported.".format(file))
-            if parse.check_gsf(file):
-                try:
-                    file_time = datetime.strptime(file[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
-                    file_string = file_time.strftime("%Y-%m-%d   %H:%M")
-                except ValueError:
-                    file_string = file
-                self.file_string_dict[file_string] = file
-                number += 1
-                if splash_screen is not None:
-                    splash_screen.update_progress(number)
-                    splash_screen.update()
-                self.insert_file(file_string)
-                if self.main_window.splash.winfo_exists():
-                    self.main_window.splash.update_progress(number)
+            file_string = Parser.parse_filename(file)
+            if file_string is None:
+                continue
+            self.file_string_dict[file_string] = file
+            number += 1
+            if splash_screen is not None:
+                splash_screen.update_progress(number)
+                splash_screen.update()
+            self.insert_file(file_string)
+            if self.main_window.splash.winfo_exists():
+                self.main_window.splash.update_progress(number)
         if splash_screen is not None:
             splash_screen.destroy()
         return
@@ -172,19 +165,13 @@ class FileFrame(ttk.Frame):
         else:
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
-            lines = []
-            for line in f.readlines():
-                try:
-                    lines.append(line.decode())
-                except UnicodeDecodeError:
-                    continue
-        player_list = parse.determinePlayer(lines)
-        try:
-            file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
-        except ValueError:
-            print("A file failed parsing: {}".format(file_name))
-            return
+        lines = Parser.read_file(file_name)
+        player_list = Parser.get_player_id_list(lines)
+        if len(player_list) == 0:
+            raise ValueError("Empty player list for file {}".format(file_name))
+        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
+        if len(match_timings) / 2 != len(file_cube):
+            raise ValueError("Invalid results for {}\n{}\n{}".format(file_name, file_cube, match_timings))
         match_index = 0
         for match in match_timings[::2]:
             self.file_tree.insert(file_name, tk.END, iid=(file_name, match_index), text=match.strftime("%H:%M"))
@@ -306,15 +293,9 @@ class FileFrame(ttk.Frame):
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
-            lines = []
-            for line in f.readlines():
-                try:
-                    lines.append(line.decode())
-                except UnicodeDecodeError:
-                    continue
-        player_list = parse.determinePlayer(lines)
-        file_cube, _, _ = parse.splitter(lines, player_list)
+        lines = Parser.read_file(file_name)
+        player_list = Parser.get_player_id_list(lines)
+        file_cube, _, _ = Parser.split_combatlog(lines, player_list)
         results = filestats.file_statistics(file_name, file_cube)
         self.update_widgets(*results)
 
@@ -340,15 +321,9 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index = elements[0], int(elements[1])
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
-            lines = []
-            for line in f.readlines():
-                try:
-                    lines.append(line.decode())
-                except UnicodeDecodeError:
-                    continue
-        player_list = parse.determinePlayer(lines)
-        file_cube, match_timings, _ = parse.splitter(lines, player_list)
+        lines = Parser.read_file(file_name)
+        player_list = Parser.get_player_id_list(lines)
+        file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
         match = file_cube[match_index]
         results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index])
         self.update_widgets(*results)
@@ -364,21 +339,11 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
-        with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as f:
-            lines = []
-            for line in f.readlines():
-                try:
-                    lines.append(line.decode())
-                except UnicodeDecodeError:
-                    continue
-        player_list = parse.determinePlayer(lines)
-        file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
+        lines = Parser.read_file(file_name)
+        player_list = Parser.get_player_id_list(lines)
+        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
         match = file_cube[match_index]
-        try:
-            spawn = match[spawn_index]
-        except IndexError:
-            print("A file failed parsing: {}".format(file_name))
-            return
+        spawn = match[spawn_index]
         results = spawnstats.spawn_statistics(file_name, spawn, spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
@@ -431,10 +396,9 @@ class FileFrame(ttk.Frame):
         if len(elements) is not 3:
             tkinter.messagebox.showinfo("Requirement", "Please select a spawn to view the events of.")
             return
-        with open(os.path.join(variables.settings["parsing"]["path"], elements[0])) as f:
-            lines = f.readlines()
-        player_list = parse.determinePlayer(lines)
-        file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
+        lines = Parser.read_file(elements[0])
+        player_list = Parser.get_player_id_list(lines)
+        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
         match_index, spawn_index = int(elements[1]), int(elements[2])
         return (file_cube[match_index][spawn_index], player_list, spawn_timings[match_index][spawn_index],
                 match_timings[match_index])

@@ -44,6 +44,6 @@ def match_statistics(file_name, match, match_timing):
         deaths=len(match) - 1,
         minutes=minutes,
         seconds=seconds,
-        dps=dmg_d / delta.total_seconds()
+        dps=dmg_d / delta.total_seconds() if delta.total_seconds() != 0 else 0
     )
     return abilities_dict, stat_string, ships, enemies, enemy_dmg_d, enemy_dmg_t, uncounted

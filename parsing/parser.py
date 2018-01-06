@@ -328,7 +328,6 @@ class Parser(object):
             lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
-            # print("Processing line: {}".format(line.replace("\n", "")))
             if "@" in line["line"]:
                 continue
             dictionary = Parser.line_to_dictionary(line)
@@ -402,10 +401,9 @@ class Parser(object):
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
             return None
-        with open(abs_path, "r") as fi:
-            lines = fi.readlines()
+        lines = Parser.read_file(file_name)
         for line in lines:
-            if "@" in line:
+            if "@" in line["line"]:
                 continue
             return True
         return False
@@ -416,7 +414,7 @@ class Parser(object):
         Get datetime object for a filename
         """
         try:
-            return datetime.strptime(file_name[:-4], "combat_%Y-%m-%d_%H_%M_%S_%f")
+            return datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
         except ValueError:
             return None
 
@@ -431,7 +429,7 @@ class Parser(object):
         if len(lines) == 0:
             raise ValueError("Empty file")
         if isinstance(lines[0], str):
-            print("[Parser] Unoptimized call with str lines")
+            raise NotImplementedError()
         if len(player_list) == 0:
             raise ValueError("Empty player list")
 
@@ -461,8 +459,8 @@ class Parser(object):
                 if is_match is False:
                     continue
                 # There was a match, so save data
-                match.append(spawn)
-                file_cube.append(match)
+                match.append(spawn.copy())
+                file_cube.append(match.copy())
                 # Clear temporary data
                 match.clear()
                 spawn.clear()
@@ -471,7 +469,8 @@ class Parser(object):
                 current_id = None
                 # Save the time this match ended
                 match_timings.append(time)
-                spawn_timings.append(spawn_timings_temp)
+                spawn_timings.append(spawn_timings_temp.copy())
+                spawn_timings_temp.clear()
                 # Done, continue with the next line
                 continue
             # Neither source nor target contains '@', so this is a match event
@@ -486,9 +485,10 @@ class Parser(object):
             # Process a change of ID
             if source != current_id and target != current_id:
                 # New spawn
-                match.append(spawn)
-                spawn.clear()
-                spawn_timings_temp.append(time)
+                if current_id is not None:
+                    match.append(spawn.copy())
+                    spawn.clear()
+                    spawn_timings_temp.append(time)
                 # Set the new ID
                 if source in player_list:
                     current_id = source
@@ -500,8 +500,9 @@ class Parser(object):
             spawn.append(line)
 
         # Handle EOF before match ended
-        if is_match is True:
-            match.append(spawn)
+        if is_match is True and len(spawn) != 0:
+            match.append(spawn.copy())
+            file_cube.append(match.copy())
             match_timings.append(time)  # time cannot be undefined if is_match is True
             spawn_timings.append(spawn_timings_temp)
         # Return the results
@@ -528,13 +529,13 @@ class Parser(object):
             raise PermissionError("Could not read from file '{}'".format(file_name))
         result = []
         # Convert each line into str (utf-8) separately
-        for line in lines:
+        for index, line in enumerate(lines):
             try:
                 result.append(line.decode())
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
-                print("[Parser] {} contained an invalid UTF-8 line".format(file_name))
+                print("[Parser] {} contained an invalid UTF-8 character line {}".format(file_name, index+1))
                 continue
-        return result
+        return [Parser.line_to_dictionary(line) for line in result]
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
@@ -698,3 +699,103 @@ class Parser(object):
         # Return
         return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
                 crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted)
+
+    @staticmethod
+    def parse_file(file_cube: list, player_list: list):
+        """
+        Parse a file providing sums instead of lists and matrices like
+        parse.parse_file()
+        """
+        abilities_dict = {}
+        dmg_d, dmg_t, dmg_s, healing = 0, 0, 0, 0
+        enemies = []
+        enemy_dmg_d, enemy_dmg_t = {}, {}
+        critcount, hitcount = 0, 0
+        ships = {ship: 0 for ship in abilities.ships}
+        uncounted = 0
+        for match in file_cube:
+            results = Parser.parse_match(match, player_list)
+            # Damage and healing
+            dmg_d += results[1]
+            dmg_t += results[2]
+            dmg_s += results[3]
+            healing += results[4]
+            hitcount += results[5]
+            critcount += results[6]
+            # Abilities
+            for ability, amount in results[0].items():
+                if ability not in abilities_dict:
+                    abilities_dict[ability] = 0
+                abilities_dict[ability] += amount
+            # Enemies
+            enemies.extend(results[8])
+            enemy_dmg_d.update(results[9])
+            enemy_dmg_t.update(results[10])
+            # Ships
+            uncounted += results[12]
+            for ship, amount in results[11].items():
+                ships[ship] += amount
+        # Crit luck
+        crit_luck = critcount / hitcount if hitcount != 0 else 0
+        # Return
+        return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
+                crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted)
+
+    @staticmethod
+    def parse_folder():
+        """
+        Return a nice tuple of parsed statistics with the parse_file
+        helper function.
+        """
+        abilities_dict = {}
+        dmg_d, dmg_t, dmg_s, healing = 0, 0, 0, 0
+        enemies = []
+        enemy_dmg_d, enemy_dmg_t = {}, {}
+        critcount, hitcount = 0, 0
+        ships = {ship: 0 for ship in abilities.ships}
+        uncounted = 0
+        deaths = 0
+        time = 0
+        file_list = os.listdir(settings["parsing"]["path"])
+        for file in file_list:
+            if not Parser.get_gsf_in_file(file):
+                continue
+            lines = Parser.read_file(file)
+            player_ids = Parser.get_player_id_list(lines)
+            file_cube, match_timings, _ = Parser.split_combatlog(lines, player_ids)
+            results = Parser.parse_file(file_cube, player_ids)
+            # Damage and healing
+            dmg_d += results[1]
+            dmg_t += results[2]
+            dmg_s += results[3]
+            healing += results[4]
+            hitcount += results[5]
+            critcount += results[6]
+            deaths += sum([len(match) for match in file_cube])
+            # Abilities
+            for ability, amount in results[0].items():
+                if ability not in abilities_dict:
+                    abilities_dict[ability] = 0
+                abilities_dict[ability] += amount
+            # Enemies
+            enemies.extend(results[8])
+            enemy_dmg_d.update(results[9])
+            enemy_dmg_t.update(results[10])
+            # Ships
+            uncounted += results[12]
+            for ship, amount in results[11].items():
+                ships[ship] += amount
+
+            start = None
+            for timing in match_timings:
+                if start is not None:
+                    time += (timing - start).total_seconds()
+                    start = None
+                    continue
+                start = timing
+        # Crit luck
+        crit_luck = critcount / hitcount if hitcount != 0 else 0
+        # Return
+        return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount,
+                critcount, crit_luck, enemies, enemy_dmg_d, enemy_dmg_t,
+                ships, uncounted, deaths, time)

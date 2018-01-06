@@ -76,7 +76,7 @@ class MainWindow(ThemedTk):
         self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
         self.ship_frame = shipframe.ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
-        self.characters_frame = charactersframe.CharactersFrame(self.notebook)
+        self.characters_frame = charactersframe.CharactersFrame(self.notebook, self)
         self.sharing_frame = sharingframe.SharingFrame(self.notebook, self)
         self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)

@@ -17,7 +17,7 @@ from PIL import Image, ImageTk
 from tools.utilities import get_assets_directory
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from toplevels.addcharacter import AddCharacter
-import variables
+from variables import settings
 from parsing import abilities
 from collections import OrderedDict
 from tkinter import messagebox as mb
@@ -49,13 +49,13 @@ class CharactersFrame(ttk.Frame):
         "JKS": "TH"
     }
 
-    def __init__(self, parent):
+    def __init__(self, parent, main_window):
         """
         Initializes the class instance and sets up all instance variables
         :param parent: tkinter parent
         """
         ttk.Frame.__init__(self, parent)
-        self.window = variables.main_window
+        self.window = main_window
         self.directory = utilities.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = servers
@@ -365,7 +365,7 @@ class CharactersFrame(ttk.Frame):
         except (OSError, EOFError):
             self.new_database()
         if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != variables.settings["misc"]["patch_level"]:
+                self.characters.version != settings["misc"]["patch_level"]:
             mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
                                       "Parser database has been updated, and your character database must be updated "
                                       "as well to match the data. Currently, this process is destructive, and "
