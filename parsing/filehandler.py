@@ -10,14 +10,12 @@ from tools.utilities import get_temp_directory
 from parsing.parser import Parser
 from parsing.vision import get_tracking_degrees, get_distance_from_center
 from parsing import abilities
-from parsing.keys import keys
+from parsing.shipstats import ShipStats
 # General imports
 from pynput.mouse import Button
-from pynput.keyboard import Key
 import pickle as pickle
 import os
 from datetime import datetime
-import operator
 
 
 class FileHandler(object):
@@ -205,13 +203,18 @@ class FileHandler(object):
         The args and kwargs are passed onto the create_marker function
         for the TimeLine widget.
         """
+        if "ship" in screen_dict and screen_dict["ship"] is not None:
+            stats = ShipStats(screen_dict["ship"], None, None)
+        else:
+            stats = None
         results = {}
         start_time = Parser.line_to_dictionary(spawn_list[-1])["time"]
         results.update(FileHandler.get_weapon_markers(screen_dict, spawn_list))
         results.update(FileHandler.get_health_markers(screen_dict, start_time))
-        results.update(FileHandler.get_tracking_markers(screen_dict))
+        results.update(FileHandler.get_tracking_markers(screen_dict, stats))
         results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
-        results.update(FileHandler.get_ability_markers(spawn_list, None))
+        results.update(FileHandler.get_ability_markers(spawn_list, stats))
+        results.update(FileHandler.get_engine_boost_markers(screen_dict, start_time))
         return results
 
     @staticmethod
@@ -345,20 +348,21 @@ class FileHandler(object):
 
     @staticmethod
     def get_power_mgmt_markers(screen_dict, start_time):
+        """
+        Build a dictionary of markers for the power management state.
+        Can work in either of two ways:
+        - Mouse and Keyboard parsing (keyboard input)
+        - Power Management parsing (screenshots)
+        """
         categories = ["power_mgmt"]
         power_mgmt = (None, None)
         results = {key: [] for key in categories}
         sub_dict = screen_dict["keys"]
+        # Keyboard input parsing
         if len(sub_dict) != 0:
             power_mode = 4
             previous = start_time
-            for time, data in sorted(sub_dict.items()):
-                if isinstance(data, tuple):
-                    key, pressed = data
-                else:
-                    key = data
-                    pressed = True
-                pressed = "pressed" in pressed if isinstance(pressed, str) else pressed
+            for time, (key, pressed) in FileHandler.screen_dict_keys_generator(screen_dict):
                 if pressed is False or key not in FileHandler.keys:
                     continue
                 result = FileHandler.keys[key]
@@ -372,6 +376,7 @@ class FileHandler(object):
                 kwargs = {"background": FileHandler.power_mgmt_colors[power_mode]}
                 power_mode = mode
                 results["power_mgmt"].append((args, kwargs))
+        # Screen parsing
         else:
             sub_dict = screen_dict["power_mgmt"]
             for time, value in sorted(sub_dict.items()):
@@ -386,9 +391,18 @@ class FileHandler(object):
         return results
 
     @staticmethod
-    def get_tracking_markers(screen_dict, max_firing_arc=40):
+    def get_tracking_markers(screen_dict, ship_stats):
         sub = screen_dict["cursor_pos"]
         results = {"tracking": []}
+        # Read build data if possible
+        if ship_stats is not None and "PrimaryWeapon" in ship_stats:
+            if "Weapon_Firing_Arc" in ship_stats["PrimaryWeapon"]:
+                max_firing_arc = ship_stats["PrimaryWeapon"]["Weapon_Firing_Arc"] * 2
+            else:
+                max_firing_arc = 40
+        else:
+            max_firing_arc = 40
+
         for key, value in sorted(sub.items()):
             degrees = get_tracking_degrees(get_distance_from_center(value))
             degrees = max(min(degrees, max_firing_arc), 1)
@@ -403,7 +417,7 @@ class FileHandler(object):
         return results
 
     @staticmethod
-    def get_ability_markers(spawn_list, ship_statistics):
+    def get_ability_markers(spawn_list, ship_stats):
         """
         Parse a spawn list of lines and take the Engine, Shield, Systems and CoPilot ability activations and create
         markers for them to be put in the TimeLine.
@@ -412,6 +426,7 @@ class FileHandler(object):
         categories = ["engines", "shields", "copilot", "systems"]
         player_id_list = Parser.get_player_id_list(spawn_list)
         results = {key: [] for key in categories}
+        # Activation markers
         for line in spawn_list:
             if not isinstance(line, dict):
                 line = Parser.line_to_dictionary(line)
@@ -433,6 +448,30 @@ class FileHandler(object):
             args = ("abilities", start, start + 1/60)
             kwargs = {"background": FileHandler.colors[category]}
             results[category].append((args, kwargs))
+        return results
+
+    @staticmethod
+    def get_engine_boost_markers(screen_dict, start_time):
+        """
+        Build a marker dictionary for engine boosting (indicated by the
+        Space key). Only available with Mouse and Keyboard feature.
+        """
+        if "keys" not in screen_dict or len(screen_dict["keys"]) == 0:
+            return dict()
+        # Feature was enabled, so start building markers
+        start = None
+        results = {"boosting": []}
+        for time, (key, pressed) in FileHandler.screen_dict_keys_generator(screen_dict):
+            # Use default boost key
+            if key != "space":
+                continue
+            if pressed is True:
+                start = time
+                continue
+            # pressed is False
+            args = ("boosting", start, time)
+            kwargs = {"background": FileHandler.colors["engines"]}
+            results["boosting"].append((args, kwargs))
         return results
 
     @staticmethod
@@ -461,3 +500,15 @@ class FileHandler(object):
     @staticmethod
     def color_html_to_tuple(html):
         return tuple(int(html.replace("#", "")[i:i + 2], 16) for i in (0, 2, 4))
+
+    @staticmethod
+    def screen_dict_keys_generator(screen_dict):
+        for time, data in sorted(screen_dict["keys"].items()):
+            if isinstance(data, tuple):
+                key, pressed = data
+            else:
+                key = data
+                pressed = True
+            pressed = "pressed" in pressed if isinstance(pressed, str) else pressed
+            yield time, (key, pressed)
+

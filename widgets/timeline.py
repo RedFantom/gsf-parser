@@ -514,7 +514,7 @@ class TimeLine(ttk.Frame):
         Delete a marker from the timeline based on its iid
         """
         if iid == tk.ALL:
-            print("Deleting all markers.")
+            print("[TimeLine] Deleting all markers.")
             for iid in self.markers.copy().keys():
                 self.delete_marker(iid)
             return

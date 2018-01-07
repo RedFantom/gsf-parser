@@ -14,7 +14,6 @@ import tkinter.filedialog
 # General imports
 import operator
 import os
-from datetime import datetime
 # Own modules
 import variables
 from parsing import abilities, folderstats, filestats, matchstats, spawnstats
@@ -265,7 +264,7 @@ class FileFrame(ttk.Frame):
         elements = selection.split(" ")
         if selection == "all":
             # Whole folder
-            print("Whole folder selected")
+            print("[FileFrame] Whole folder selected")
             self.parse_folder()
         elif len(elements) is 1:
             # Single file

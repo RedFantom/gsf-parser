@@ -378,6 +378,7 @@ class RealTimeParser(Thread):
             self.ship = self._character_db[self._character_data]["Ship Objects"][ship]
             args = (self.ship, self.ships_db, self.companions_db)
             self.ship_stats = ShipStats(*args)
+            self.set_for_current_spawn("ship", self.ship)
         return
 
     """
@@ -436,7 +437,7 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            health_hull = vision.get_ship_health_hull(screenshot)
+            health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
@@ -611,6 +612,8 @@ class RealTimeParser(Thread):
         return string
 
     def get_power_mgmt_string(self):
+        if "Power Management" not in self._screen_parsing_features:
+            return ""
         return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
 
     def get_timer_string(self):

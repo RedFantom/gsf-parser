@@ -5,6 +5,9 @@
 # For license see LICENSE
 from parsing.ships import component_types_list, Ship, Component, component_types
 from pprint import pprint
+from tools.utilities import get_assets_directory
+import os
+import _pickle as pickle
 reverse_component_types = {value: key for key, value in component_types.items()}
 
 
@@ -24,6 +27,12 @@ class ShipStats(object):
             raise ValueError("ShipStats can only be initialized with a Ship object")
         self.stats = {}
         self.ship = ship
+        if ships_data is None:
+            with open(os.path.join(get_assets_directory(), "ships.db"), "rb") as fi:
+                ships_data = pickle.load(fi)
+        if companions_data is None:
+            with open(os.path.join(get_assets_directory(), "companions.db", "rb")) as fi:
+                companions_data = pickle.load(fi)
         self.ships_data = ships_data.copy()
         self.companions_data = companions_data.copy()
         self.calculate_ship_statistics()
