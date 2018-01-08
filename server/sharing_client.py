@@ -39,11 +39,11 @@ class SharingClient(Client):
             return None
         return False
 
-    def get_name_id(self, server, faction, id):
+    def get_name_id(self, server, id):
         """
         Get a mainname from the server
         """
-        self.send("getname_{}_{}_{}".format(server, faction, id))
+        self.send("getname_{}_{}".format(server, id))
         message = self.get_message()
         if message is False:
             return False

@@ -94,11 +94,11 @@ class SharingClientHandler(ClientHandler):
             self.store_name(server, faction, mainname, altname, id_number)
         elif instruction == "getname":
             # "getname", server, faction, id_number
-            if len(elements) != 4:
+            if len(elements) != 3:
                 self.close_error("wrong number of command arguments received")
                 return
-            _, server, faction, id_number = elements
-            self.get_name(server, faction, id_number)
+            _, server, id_number = elements
+            self.get_name(server, id_number)
         elif instruction == "exit":
             self.close()
             return
@@ -144,7 +144,7 @@ class SharingClientHandler(ClientHandler):
         """
         if self.state == 1:
             # Generate a query and put it in the queue
-            server, faction, id_number = args
+            server, id_number = args
             query = get_altname_by_id.format(id_number, server)
             self.database.put_command_in_queue(self.database_queue, query, query=True)
             self.waiting_for_database = True
@@ -154,7 +154,7 @@ class SharingClientHandler(ClientHandler):
         elif self.state == 2:
             # Return the data to the user
             # Results is supposed to be a list with a single name [altname]
-            server, faction, id_number, results = args
+            server, id_number, results = args
             if results is None:
                 self.send("none")
                 print("[ClientHandler] No match found.")

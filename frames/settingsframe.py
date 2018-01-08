@@ -310,8 +310,7 @@ class SettingsFrame(ttk.Frame):
         GUI settings
         """
         self.gui_check_updates.set(settings["misc"]["autoupdate"])
-        mode = settings["gui"]["event_colors"]
-        self.gui_event_colors_type.set(True if mode == "advanced" else False)
+        self.gui_event_colors_type.set(settings["gui"]["event_colors"])
         self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
         self.gui_faction.set(settings["gui"]["faction"].capitalize())
         self.gui_debug_window.set(settings["gui"]["debug"])
