@@ -25,9 +25,8 @@ want to create a setup file, you'll need Inno Setup to build the setup script. Y
 `/release`, it will do everything automatically when you run it.
 
 ## Copyright and License
-Written by RedFantom, Wing Commander of Thranta Squadron, Daethyra,
-Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta
-Squadron. Source is available on the [GitHub repo](https://github.com/RedFantom/GSF-Parser).
+Built by RedFantom with contributions of Daethyra (Naiii) and Sprigellania (Zarainia).
+Source is available on the [GitHub repo](https://github.com/RedFantom/GSF-Parser).
 
 The creators of this software do not own Star Wars or any related trademarks. All
 trademarks are property of their respective owners.
@@ -35,7 +34,7 @@ trademarks are property of their respective owners.
 ### GNU GPLv3
 
     GSF Parser: A parser for SWTOR:GSF
-    Copyright (C) 2016-2017  RedFantom, Daethyra and Sprigellania
+    Copyright (C) 2016-2018 RedFantom
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
