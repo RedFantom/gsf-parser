@@ -30,10 +30,11 @@ class Parser(object):
     LINE_EFFECT = "effect"
 
     @staticmethod
-    def line_to_dictionary(line):
+    def line_to_dictionary(line, enemies=None):
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
+        :param enemies: Dictionary with enemies, optional
         :return: dictionary for line, or None if failed
         """
         if isinstance(line, dict):
@@ -65,6 +66,12 @@ class Parser(object):
             log["ability"] = "Scope Mode"
         if log["amount"].strip() != "":
             log["amount"] = log["amount"].split(" ")[0]
+        if enemies is not None:
+            if log["source"] in enemies:
+                log["source"] = enemies[log["source"]]
+            if log["target"] in enemies:
+                log["target"] = enemies[log["target"]]
+        log["destination"] = log["target"]
         return log
 
     @staticmethod
@@ -511,7 +518,7 @@ class Parser(object):
         return file_cube, match_timings, spawn_timings
 
     @staticmethod
-    def read_file(file_name: str):
+    def read_file(file_name: str, sharing_db=None):
         """
         Read a file with the given filename in a safe and error handled
         manner. All attempts at reading GSF CombatLogs should use this
@@ -529,18 +536,20 @@ class Parser(object):
                 lines = fi.readlines()
         except OSError:
             raise PermissionError("Could not read from file '{}'".format(file_name))
-        result = []
         unicode = False
+        lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
             try:
-                result.append(line.decode())
+                line = line.decode()
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
                 unicode = True
                 continue
+            lines_decoded.append(line)
         if unicode is True:
             print("[Parser] A file contains invalid UTF-8 characters:", file_name)
-        return [Parser.line_to_dictionary(line) for line in result]
+        enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
+        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
@@ -565,10 +574,7 @@ class Parser(object):
             time, source, target = event["time"], event["source"], event["target"]
             ability, effect, amount_str = event["ability"], event["effect"], event["amount"]
             # Process amount, as it is still a str with possibly a "*" for crits in it
-            if amount_str == "":
-                amount = 0
-            else:
-                amount = int(amount_str.replace("*", ""))
+            amount = int(amount_str.replace("*", "")) if amount_str != "" else 0
             # If source is empty, then rename source to ability
             if source == "":
                 source = ability

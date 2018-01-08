@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 from tkinter import messagebox
 from datetime import datetime
 import socket
@@ -39,11 +40,11 @@ class SharingClient(Client):
             return None
         return False
 
-    def get_name_id(self, server, faction, id):
+    def get_name_id(self, server, id):
         """
         Get a mainname from the server
         """
-        self.send("getname_{}_{}_{}".format(server, faction, id))
+        self.send("getname_{}_{}".format(server, id))
         message = self.get_message()
         if message is False:
             return False

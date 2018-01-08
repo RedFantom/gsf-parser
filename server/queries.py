@@ -1,7 +1,7 @@
 # Written by RedFantom based on a database model by Pyril
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2017 by RedFantom, Sprigellania and Daethyra
 # All additions are under the copyright of their respective authors
-# For license see LICENSE
+# For license see LICENSE.md
 """
 This file contains all queries needed for the server program to work
 correctly with the database. All queries are triple-quoted strings with

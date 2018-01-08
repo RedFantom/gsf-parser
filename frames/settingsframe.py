@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -310,8 +309,7 @@ class SettingsFrame(ttk.Frame):
         GUI settings
         """
         self.gui_check_updates.set(settings["misc"]["autoupdate"])
-        mode = settings["gui"]["event_colors"]
-        self.gui_event_colors_type.set(True if mode == "advanced" else False)
+        self.gui_event_colors_type.set(settings["gui"]["event_colors"])
         self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
         self.gui_faction.set(settings["gui"]["faction"].capitalize())
         self.gui_debug_window.set(settings["gui"]["debug"])

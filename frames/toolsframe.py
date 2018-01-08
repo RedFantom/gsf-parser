@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -73,18 +72,6 @@ class ToolsFrame(ttk.Frame):
                                                              *tuple(get_gui_profiles()))
         self.cartelfix_button = ttk.Button(self.interior_frame.interior, text="Open CartelFix",
                                            command=self.open_cartel_fix)
-        """
-        GSF Parser v1.4.1
-        """
-        self.separator_two = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.old_parser_heading_label = ttk.Label(self.interior_frame.interior, text="GSF Parser v1.4.1",
-                                                  font=("Calibri", 12))
-        self.old_parser_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="This old version of the GSF Parser has the ability to open statistics files, which are now "
-                 "deprecated. This old version is provided for your convenience.")
-        self.old_parser_button = ttk.Button(self.interior_frame.interior, text="Start GSF Parser v1.4.1",
-                                            command=self.open_old_parser)
         """
         Simulator
         """
@@ -252,11 +239,6 @@ class ToolsFrame(ttk.Frame):
     def open_database_explorer():
         DatabaseExplorer(variables.main_window)
 
-    @staticmethod
-    def open_old_parser():
-        variables.main_window.destroy()
-        from archive import gui
-
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=10, sticky="w")
         self.interior_frame.grid(row=1, column=0, columnspan=10, sticky="nswe", pady=5, padx=5)
@@ -268,10 +250,6 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_second_dropdown.grid(row=5, column=3, columnspan=2, sticky="we")
         self.cartelfix_gui_profile_dropdown.grid(row=5, column=5, sticky="we")
         self.cartelfix_button.grid(row=5, column=6, columnspan=4, sticky="we")
-        self.separator_two.grid(row=6, column=0, columnspan=10, sticky="we", pady=5)
-        self.old_parser_heading_label.grid(row=7, columnspan=10, sticky="w")
-        self.old_parser_description_label.grid(row=8, columnspan=10, sticky="w")
-        self.old_parser_button.grid(row=9, columnspan=2, sticky="we")
         self.separator_three.grid(row=10, columnspan=10, sticky="we", pady=5)
         self.simulator_heading_label.grid(row=11, columnspan=10, sticky="w")
         self.simulator_description_label.grid(row=12, columnspan=10, sticky="w")

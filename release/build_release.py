@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import os
 import sys
 import pip
@@ -161,7 +160,7 @@ if __name__ == '__main__':
     copytree("../archive", os.path.join(build_dir, "archive"))
     copytree("../assets", os.path.join(build_dir, "assets"))
     copyfile("../README.md", os.path.join(build_dir, "README.md"))
-    copyfile("../LICENSE", os.path.join(build_dir, "LICENSE"))
+    copyfile("../LICENSE.md", os.path.join(build_dir, "LICENSE.md"))
     printw("Done.\n")
     # Build Setup File
     if target == "s" or target == "b":

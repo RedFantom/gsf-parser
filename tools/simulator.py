@@ -1,82 +1,14 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
-
+﻿"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 from datetime import datetime
 import time
-import random
 import os
 import threading
 from queue import Queue
-
-"""
-Small tool to simulate the creation of a log file
-"""
-
-
-def flusher():
-    """
-    Tester function
-
-    flushes to file after every write
-
-    :return:
-    """
-    count = 0
-    with open("OnGoing2.log", "a") as fo:
-        while count < 10:
-            fo.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-                     " [dest] [abi] [eff] ()\n")
-            print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-                   " [dest] [abi] [eff] ()"))
-            fo.flush()
-            sleep_time = random.randrange(0, 10)
-            time.sleep(sleep_time)
-            count += 1
-
-
-def unbuffered():
-    """
-    Tester function
-
-    uses an unbuffered file stream to update the file while created
-
-    :return:
-    """
-    count = 0
-    with open("OnGoing2.log", "a", 0) as fo:
-        while count < 10:
-            fo.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(
-                count) + "]" + " [dest] [abi] [eff] ()\n")
-            print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(
-                count) + "]" + " [dest] [abi] [eff] ()"))
-            fo.flush()
-            sleep_time = random.randrange(0, 10)
-            time.sleep(sleep_time)
-            count += 1
-
-
-def open_close():
-    """
-    Tester function
-
-    file is opened and closed for every write
-
-    :return:
-    """
-    count = 0
-    while count < 10:
-        f = open("OnGoing2.log", "a")
-        f.write("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-                " [dest] [abi] [eff] ()\n")
-        print(("[" + datetime.now().time().isoformat() + "] [This is line " + str(count) + "]" +
-               " [dest] [abi] [eff] ()"))
-        sleep_time = random.randrange(0, 10)
-        time.sleep(sleep_time)
-        count += 1
-        f.close()
 
 
 class Simulator(threading.Thread):
@@ -117,6 +49,5 @@ class Simulator(threading.Thread):
 
                 fo.write(line)
                 fo.flush()
-                print(line.strip())
                 time.sleep(delta_sec)
 

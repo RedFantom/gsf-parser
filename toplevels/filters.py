@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-#
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
@@ -12,12 +11,11 @@ import os
 # Own modules
 import widgets
 import variables
-import parsing.parse as parse
+from parsing.parser import Parser
 from widgets.verticalscrollframe import VerticalScrollFrame
 from widgets import ScaleEntry
 from . import splashscreens
 from parsing import abilities as abls
-from parsing.parse import parse_file_name
 
 
 class Filters(tk.Toplevel):
@@ -30,10 +28,7 @@ class Filters(tk.Toplevel):
     def __init__(self, window=None):
         tk.Toplevel.__init__(self, window)
         self.wm_geometry("670x400")
-        if window:
-            self.window = window
-        else:
-            self.window = variables.main_window
+        self.window = window if window is not None else variables.main_window
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=670, canvasheight=355)
 
         self.wm_resizable(False, False)
@@ -210,35 +205,32 @@ class Filters(tk.Toplevel):
             files_done += 1
             splash.update_progress(files_done)
             # If the file does not end with .txt, it's not a CombatLog
-            if not file_name.endswith(".txt"):
-                continue
-            if not parse.check_gsf(file_name):
+            if not file_name.endswith(".txt") or not Parser.get_gsf_in_file(file_name):
                 continue
             # Open the CombatLog
-            with open(os.path.join(variables.settings["parsing"]["path"], file_name)) as f:
-                lines = f.readlines()
+            lines = Parser.read_file(file_name)
             # Parse the CombatLog to get the data to filter against
-            player_list = parse.determinePlayer(lines)
-            file_cube, match_timings, spawn_timings = parse.splitter(lines, player_list)
-            (abilities, damagetaken, damagedealt,
-             selfdamage, healingreceived, enemies,
-             criticalcount, criticalluck, hitcount,
-             enemydamaged, enemydamaget, match_timings,
-             spawn_timings) = parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
-            # Calculate the averages
-            damagetaken = self.file_number(damagetaken)
-            damagedealt = self.file_number(damagedealt)
-            selfdamage = self.file_number(selfdamage)
-            healingreceived = self.file_number(healingreceived)
-
+            player_list = Parser.get_player_id_list(lines)
+            file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
+            """
+            (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
+                crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted)
+            """
+            (abilities, damagedealt, damagetaken, selfdamage, healing, _, _, _, _,
+             enemy_dmg_d, enemy_dmg_t, _, _) = Parser.parse_file(file_cube, player_list)
+            matches = len(file_cube)
+            damagedealt, damagetaken, selfdamage, healing = (
+                damagedealt / matches,
+                damagetaken / matches,
+                selfdamage / matches,
+                healing / matches
+            )
             # If Ship filters are enabled, check file against ship filters
             if self.filter_type_vars["Ships"].get() is True:
                 print("Ships filters are enabled")
                 if not self.check_ships_file(self.ships_intvars, abilities):
                     print("Continuing in file {0} because of Ships".format(file_name))
                     continue
-            # If the file got this far, then get the abilities dictionary
-            abilities = self.file_dictionary(abilities)
 
             # If the Components filters are enabled, check against Components filters
             if self.filter_type_vars["Components"].get() is True:
@@ -254,7 +246,7 @@ class Filters(tk.Toplevel):
 
             if self.filter_type_vars["Date"].get() is True:
                 print("Date filters are enabled")
-                date = parse_file_name(file_name)
+                date = Parser.parse_file(file_name)
                 if not date:
                     print("Continuing in file {0} because the filename could not be parsed".format(file_name))
                     continue
@@ -265,46 +257,16 @@ class Filters(tk.Toplevel):
                     print("Continuing in file {0} because of the end date".format(file_name))
                     continue
 
+            enemies = sum(True if dmg > 0 else False for dmg in enemy_dmg_d.values())
+            killassists = sum(True if dmg > 0 else False for dmg in enemy_dmg_t.values())
+
             if self.filter_type_vars["Statistics"].get() is True:
-                if self.statistics_scales_max["damagedealt"].value is not 0:
-                    if not self.statistics_scales_max["damagedealt"].value >= damagedealt:
-                        print("Continuing in file {0} because of damagedealt max".format(file_name))
-                        continue
-                    if not self.statistics_scales_min["damagedealt"].value <= damagedealt:
-                        print("Continuing in file {0} because of damagedealt min".format(file_name))
-                        continue
-                if self.statistics_scales_max["damagetaken"].value is not 0:
-                    if not self.statistics_scales_max["damagetaken"].value >= damagetaken:
-                        print("Continuing in file {0} because of damagetaken max".format(file_name))
-                        continue
-                    if not self.statistics_scales_min["damagetaken"].value <= damagetaken:
-                        print("Continuing in file {0} because of damagetaken min".format(file_name))
-                        continue
-                if self.statistics_scales_max["selfdamage"].value is not 0:
-                    if not self.statistics_scales_max["selfdamage"].value >= selfdamage:
-                        print("Continuing in file {0} because of selfdamage max".format(file_name))
-                        continue
-                    if not self.statistics_scales_min["selfdamage"].value <= selfdamage:
-                        print("Continuing in file {0} because of selfdamage min".format(file_name))
-                        continue
-                if self.statistics_scales_max["healing"].value is not 0:
-                    if not self.statistics_scales_max["healing"].value >= healingreceived:
-                        print("Continuing in file {0} because of healing max".format(file_name))
-                        continue
-                    if not self.statistics_scales_min["healing"].value <= healingreceived:
-                        print("Continuing in file {0} because of healing min".format(file_name))
-                        continue
-                if self.statistics_scales_max["enemies"].value is not 0:
-                    if not self.statistics_scales_max["enemies"].value >= len(enemydamaget):
-                        print("Continuing in file {0} because of enemies max".format(file_name))
-                        continue
-                    if not self.statistics_scales_min["enemies"].value <= len(enemydamaget):
-                        print("Continuing in file {0} because of enemies min".format(file_name))
-                        continue
-                if self.statistics_scales_max["killassists"].value is not 0:
-                    if not self.statistics_scales_max["killassists"].value >= len(enemydamaged):
-                        continue
-                    if not self.statistics_scales_min["killassists"].value <= len(enemydamaged):
+                for (scale_type, scale_max), (_, scale_min) in \
+                        zip(self.statistics_scales_max.items(), self.statistics_scales_min.items()):
+                    value = locals()[scale_type]
+                    min, max = scale_min.value, scale_max.value
+                    condition = min <= value <= max if max > min else min <= value
+                    if condition is False:
                         continue
 
             results.append(file_name)
@@ -321,20 +283,13 @@ class Filters(tk.Toplevel):
             tkinter.messagebox.showinfo("Search results",
                                         "With the filters you specified, no results were found.")
             return
-        else:
-            for file_name in results:
-                datetime_obj = parse.parse_file_name(file_name)
-                if datetime_obj:
-                    string = datetime_obj.strftime("%Y-%m-%d   %H:%M" if variables.settings["gui"]["date_format"]
-                                                                         is "ymd" else "%Y-%d-%m   %H:%M")
-                else:
-                    string = file_name
-                print("Setting file string {0} to match file_name {1}".format(string, file_name))
-                self.window.file_select_frame.file_string_dict[string] = file_name
-                try:
-                    self.window.file_select_frame.insert_file(string)
-                except tk.TclError as e:
-                    print(e)
+
+        for file_name in results:
+            datetime_obj = Parser.parse_filename(file_name)
+            string = datetime_obj.strftime("%Y-%m-%d   %H:%M") if datetime_obj is not None else file_name
+            print("Setting file string {0} to match file_name {1}".format(string, file_name))
+            self.window.file_select_frame.file_string_dict[string] = file_name
+            self.window.file_select_frame.insert_file(string)
         self.destroy()
 
     def grid_widgets(self):
@@ -408,16 +363,6 @@ class Filters(tk.Toplevel):
         return return_value
 
     @staticmethod
-    def file_number(matrix):
-        return_value = 0
-        for list in matrix:
-            return_value += sum(list)
-        try:
-            return return_value / len(matrix)
-        except ZeroDivisionError:
-            return 0
-
-    @staticmethod
     def check_components(dictionary, abilities):
         for component, intvar in dictionary.items():
             if intvar.get() is 0:
@@ -430,7 +375,7 @@ class Filters(tk.Toplevel):
     def check_ships_file(dictionary, abilities):
         for list in abilities:
             for dict in list:
-                ships_list = parse.determineShip(dict)
+                ships_list = Parser.get_ship_for_dict(dict)
                 print(ships_list)
                 for ship, intvar in dictionary.items():
                     if intvar.get() == 1:

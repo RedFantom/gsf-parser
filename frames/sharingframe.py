@@ -1,6 +1,6 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
-# For license see LICENSE
+# For license see LICENSE.md
 # General imports
 import os
 import shelve
@@ -133,7 +133,7 @@ class SharingFrame(ttk.Frame):
             id_list = Parser.get_player_id_list(lines)
             enemy_ids = Parser.get_enemy_id_list(lines, id_list)
             synchronized = self.get_amount_synchronized(file_name, id_list, enemy_ids)
-            if synchronized == "Complete":
+            if synchronized == ("Complete", "Complete"):
                 print("[SharingFrame] Already synchronized:", file_name)
                 continue
             player_name = Parser.get_player_name(lines)
@@ -150,6 +150,7 @@ class SharingFrame(ttk.Frame):
             if result is False:
                 messagebox.showerror("Error", "Failed to send ID numbers.")
                 break
+            self.retrieve_enemy_id_list(enemy_ids, server, file_name, client)
             completed.append(file_name)
         client.close()
         print("[SharingFrame] Synchronization completed.")
@@ -167,7 +168,16 @@ class SharingFrame(ttk.Frame):
             result = client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
             if result is False:
                 return False
-            self.sharing_db[file_name] += 1
+            self.sharing_db[file_name]["player_sync"] += 1
+        return True
+
+    def retrieve_enemy_id_list(self, enemy_id_list, server, file_name, client):
+        for enemy_id in enemy_id_list:
+            result = client.get_name_id(server, enemy_id)
+            if result is None or result == "none":
+                continue
+            self.sharing_db[file_name]["enemies"][enemy_id] = result
+            self.sharing_db[file_name]["enemy_sync"] += 1
         return True
 
     @staticmethod
