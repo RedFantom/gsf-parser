@@ -572,10 +572,7 @@ class Parser(object):
             time, source, target = event["time"], event["source"], event["target"]
             ability, effect, amount_str = event["ability"], event["effect"], event["amount"]
             # Process amount, as it is still a str with possibly a "*" for crits in it
-            if amount_str == "":
-                amount = 0
-            else:
-                amount = int(amount_str.replace("*", ""))
+            amount = int(amount_str.replace("*", "")) if amount_str != "" else 0
             # If source is empty, then rename source to ability
             if source == "":
                 source = ability
