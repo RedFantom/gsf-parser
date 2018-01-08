@@ -1,6 +1,6 @@
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
-# For license see LICENSE
+# For license see LICENSE.md
 # General imports
 import os
 import shelve

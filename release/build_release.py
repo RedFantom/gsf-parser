@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 Author: RedFantom
 Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
-License: GNU GPLv3 as in LICENSE
+License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 import os
@@ -162,7 +160,7 @@ if __name__ == '__main__':
     copytree("../archive", os.path.join(build_dir, "archive"))
     copytree("../assets", os.path.join(build_dir, "assets"))
     copyfile("../README.md", os.path.join(build_dir, "README.md"))
-    copyfile("../LICENSE", os.path.join(build_dir, "LICENSE"))
+    copyfile("../LICENSE.md", os.path.join(build_dir, "LICENSE.md"))
     printw("Done.\n")
     # Build Setup File
     if target == "s" or target == "b":

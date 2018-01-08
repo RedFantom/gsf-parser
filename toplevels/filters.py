@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-#
 """
 Author: RedFantom
 Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
-License: GNU GPLv3 as in LICENSE
+License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
