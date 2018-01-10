@@ -70,14 +70,16 @@ get_all_servers = """SELECT * FROM Server;"""
 # faction is a three-letter shortcode for the faction of the character
 # primealt is an integer that is 1 when the alt is specified as a main character and
 #   0 when this is not the case and the character is an alt of another main character
-create_tb_alt = """CREATE TABLE IF NOT EXISTS Alt(
-                   altname TEXT,
-                   belongsto TEXT,
-                   server TEXT,
-                   faction TEXT,
-                   primealt INTEGER,
-                   PRIMARY KEY(altname, belongsto, server, faction),
-                   FOREIGN KEY(server) REFERENCES Server(servername));"""
+create_tb_alt = """
+    CREATE TABLE IF NOT EXISTS Alt(
+    altname TEXT,
+    belongsto TEXT,
+    server TEXT,
+    faction TEXT,
+    primealt INTEGER,
+    PRIMARY KEY(altname, belongsto, server, faction),
+    FOREIGN KEY(server) REFERENCES Server(servername));
+"""
 # This should be the first query to be executed to get the index number right
 # RedFantom spelled with small letter F to match the name as written in the CombatLogs
 alt_first_command = """INSERT OR IGNORE INTO Alt(altname, belongsto, server, faction, primealt) VALUES ('Redfantom', 'Redfantom', 'DM', 'IMP', 1);"""
@@ -110,13 +112,14 @@ insert_alt_ifnotexist = """INSERT OR IGNORE INTO Alt(altname, belongsto, server,
 # log is a string made of a list of lines of the log ("['line', 'line', 'line', ...]")
 # serv is a three-letter shortcode for the name of the server
 # alt is the name of the character named in the combatlog
-create_tb_combatlogs = """CREATE TABLE IF NOT EXISTS Combatlog(
-                          loghash TEXT PRIMARY KEY,
-                          logdate INTEGER,
-                          log TEXT,
-                          serv TEXT,
-                          FOREIGN KEY(serv) REFERENCES Server(servername));
-                          """
+create_tb_combatlogs = """
+    CREATE TABLE IF NOT EXISTS Combatlog(
+    loghash TEXT PRIMARY KEY,
+    logdate INTEGER,
+    log TEXT,
+    serv TEXT,
+    FOREIGN KEY(serv) REFERENCES Server(servername));
+"""
 # This should be the first query to be executed to get the index number right
 # % (hash_of_combatlog_txt, 0 {start of unixtime), list_of_lines_from_combatlog_txt)
 combatlog_first_command = """INSERT OR IGNORE INTO Combatlog(loghash, logdate, log, serv) VALUES ('%s', 0, '%s', 'DM');"""
@@ -151,16 +154,17 @@ get_loghashes_by_server = """SELECT loghash FROM Combatlog WHERE serv == '%s';""
 # IDhash is a hash of an ID number
 # server is a three-letter shortcode for a server
 # combatlog is the combatlog in Combatlog that contains the ID
-create_tb_id = """CREATE TABLE IF NOT EXISTS Id(
-                  IDhash TEXT,
-                  server TEXT,
-                  char TEXT NOT NULL,
-                  combatlog TEXT,
-                  PRIMARY KEY (IDhash, server),
-                  FOREIGN KEY(server) REFERENCES Server(servername),
-                  FOREIGN KEY(char) REFERENCES Alt(altname),
-                  FOREIGN KEY(combatlog) REFERENCES Combatlog(loghash));
-                  """
+create_tb_id = """
+    CREATE TABLE IF NOT EXISTS Id(
+    IDhash TEXT,
+    server TEXT,
+    char TEXT NOT NULL,
+    combatlog TEXT,
+    PRIMARY KEY (IDhash, server),
+    FOREIGN KEY(server) REFERENCES Server(servername),
+    FOREIGN KEY(char) REFERENCES Alt(altname),
+    FOREIGN KEY(combatlog) REFERENCES Combatlog(loghash));
+"""
 # Query to insert an ID with a server
 # % (string_of_id_hash, three-letter_shortcode_for_server, name of the character)
 insert_id_name = """INSERT OR IGNORE INTO Id(IDhash, server, char) VALUES ('%s', '%s', '%s');"""
@@ -174,13 +178,14 @@ update_combatlog = """UPDATE Id SET combatlog = %s WHERE Idhash == '%s' AND serv
 # killer is an ID hash
 # victim is an ID hash
 # server is a server shortcode
-create_tb_killedby = """CREATE TABLE IF NOT EXISTS KilledBy(
-                        killer TEXT,
-                        victim TEXT,
-                        server TEXT,
-                        PRIMARY KEY(killer, victim, server),
-                        FOREIGN KEY(server) REFERENCES Server(servername));
-                        """
+create_tb_killedby = """
+    CREATE TABLE IF NOT EXISTS KilledBy(
+    killer TEXT,
+    victim TEXT,
+    server TEXT,
+    PRIMARY KEY(killer, victim, server),
+    FOREIGN KEY(server) REFERENCES Server(servername));
+"""
 # Query to get the killer of a certain ID hash
 # % (server_shortcode, victim_id_hash)
 get_killer = """SELECT killer FROM KilledBy WHERE victim == '%s' AND server == '%s';"""
@@ -202,15 +207,16 @@ get_kills_by_server = """SELECT killer, victim FROM KilledBy WHERE server == '%s
 # timing is a string of the time in the combatlog (three decimals)
 # server is a server shortcode
 # damage is the damage string (* for criticals)
-create_tb_bombers = """CREATE TABLE IF NOT EXISTS Bombers(
-                       bomber TEXT,
-                       victim TEXT,
-                       datetime TEXT,
-                       server TEXT,
-                       damage TEXT,
-                       PRIMARY KEY(bomber, victim, server, datetime),
-                       FOREIGN KEY(server) REFERENCES Server(servername));
-                       """
+create_tb_bombers = """
+    CREATE TABLE IF NOT EXISTS Bombers(
+    bomber TEXT,
+    victim TEXT,
+    datetime TEXT,
+    server TEXT,
+    damage TEXT,
+    PRIMARY KEY(bomber, victim, server, datetime),
+    FOREIGN KEY(server) REFERENCES Server(servername));
+"""
 # Query to insert a new bomb occurrence in the table
 # % (bomber, victim, timing, server, damage)
 insert_bomb = """INSERT OR IGNORE INTO Bombers(bomber, victim, timing, server, damage) VALUES ('%s', '%s', '%s', '%s', '%s');"""
