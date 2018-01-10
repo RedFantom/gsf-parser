@@ -18,6 +18,7 @@ from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
 from tools.utilities import get_screen_resolution
 from collections import OrderedDict
+from parsing.vision import timer_boxes
 
 
 class SettingsFrame(ttk.Frame):
@@ -164,7 +165,9 @@ class SettingsFrame(ttk.Frame):
             command=self.save_settings)
         # Screen parsing features
         self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
-        self.screen_features = ["Tracking penalty", "Ship health", "Power management", "Mouse and Keyboard"]
+        self.screen_features = [
+            "Tracking penalty", "Ship health", "Power management", "Mouse and Keyboard", "Spawn Timer"
+        ]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
         for feature in self.screen_features:
@@ -343,14 +346,13 @@ class SettingsFrame(ttk.Frame):
         """
         Widget states
         """
-        if get_screen_resolution() != (1920, 1080):
-            if "Spawn Timer" in self.screen_features:
-                self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-                HoverInfo(
-                    self.screen_checkboxes["Spawn Timer"],
-                    text="This feature is only available for 1080p monitors as primary device. If you would like "
-                         "for your resolution to be supported, please send RedFantom an screenshot of the "
-                         "unaltered user interface shown before the start of a match.")
+        if get_screen_resolution() not in timer_boxes:
+            self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
+            HoverInfo(
+                self.screen_checkboxes["Spawn Timer"],
+                text="Your monitor resolution is not supported by this feature. If you would like "
+                     "for your resolution to be supported, please send RedFantom a screenshot of the "
+                     "unaltered user interface shown before the start of a match.")
         if sys.platform == "linux":
             self.realtime_overlay_experimental.set(False)
             self.realtime_overlay_experimental_checkbox.config(state=tk.DISABLED)

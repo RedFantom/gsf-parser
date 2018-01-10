@@ -22,6 +22,10 @@ colors = {
     "none": (0, 0, 0)
 }
 
+timer_boxes = {
+    (1920, 1080): (1466, 835, 1536, 875),
+}
+
 
 def get_pointer_middle(coordinates, size=(44, 44)):
     """
@@ -52,14 +56,6 @@ def numpy_to_pillow(array):
 def get_xy_tuple(xy):
     (x, y) = xy
     return int(x), int(y)
-
-
-'''
-The following functions were written with the help of Close-shave, who provided
-the formula for calculating the tracking penalty:
-max(0, (([cursor_x] - [centerscreen_x])^2 + ([cursor_y] - [centerscreen_y])^2)^0.5 / [circumference_length] * \
-    [tracking_penalty]) - [upgrade_constant]
-'''
 
 
 def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
@@ -97,7 +93,7 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
 
 
-def get_timer_status(source):
+def get_timer_status(source, treshold=15.0):
     """
     Determines the state of the spawn countdown timer by performing
     template matching on the cv2 array of a screenshot to find a match
@@ -111,7 +107,7 @@ def get_timer_status(source):
         image_path = os.path.join(folder, img)
         image = Image.open(image_path)
         similarity = get_similarity(source, image)
-        if similarity < 15.0:
+        if similarity < treshold:
             image_similarity[img.replace(".jpg", "")] = similarity
     if len(image_similarity) == 0:
         return None

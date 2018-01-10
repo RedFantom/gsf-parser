@@ -19,7 +19,7 @@ import _pickle as pickle  # known as cPickle
 import mss
 import pynput
 from PIL import Image
-from datetime import datetime
+from datetime import datetime, timedelta
 from parsing.guiparsing import GSFInterface
 from parsing import vision
 from tools.utilities import get_cursor_position
@@ -65,6 +65,8 @@ class RealTimeParser(Thread):
     instance to gather all data and save it to a data dictionary, in
     realtime.db.
     """
+
+    TIMER_MARGIN = 10
 
     def __init__(
             self,
@@ -154,6 +156,8 @@ class RealTimeParser(Thread):
         self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
         self._resolution = resolution
         self._pixels_per_degree = 10
+        self._waiting_for_timer = False
+        self._spawn_time = None
 
         """
         Data processing
@@ -242,14 +246,15 @@ class RealTimeParser(Thread):
         lines = self._stalker.get_new_lines()
         for line in lines:
             self.process_line(line)
-        if not self.is_match:
+        if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
             return
         # Screen parsing
         if self._screen_parsing_enabled:
             screenshot = self._mss.grab(self._monitor)
+            screenshot_time = datetime.now()
             image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-            self.process_screenshot(image)
+            self.process_screenshot(image, screenshot_time)
         # Performance measurements
         self.diff = datetime.now() - now
         if self.diff.total_seconds() < 0.5:
@@ -274,6 +279,18 @@ class RealTimeParser(Thread):
                 ":" not in line["source"]:
             self.player_name = line["source"][1:]  # Do not store @
             print("[RealTimeParser] Login: {}".format(self.player_name))
+            # Spawn Timer
+            if (self._screen_parsing_enabled and "Spawn Timer" in self._screen_parsing_features and
+                    self._waiting_for_timer is False and self.is_match is False):
+                # Only activates if the Spawn Timer screen parsing
+                # feature is enabled and there is no match active.
+                # If a match is active, then this probably marks the end
+                # of a match instead of the start of one.
+                self._waiting_for_timer = datetime.now()
+
+            # Perform error handling. Using real-time parsing with a
+            # different character name is not possible for screen parsing
+            # To be consistent, it is never allowed.
             if self.player_name != self._character_data[1]:
                 messagebox.showerror(
                     "Error",
@@ -291,6 +308,8 @@ class RealTimeParser(Thread):
             # No longer a match
             self.is_match = False
             self.lines.clear()
+            # Spawn timer
+            self._spawn_time = None  # if-statement is slower than just calling this always
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -388,7 +407,7 @@ class RealTimeParser(Thread):
     ScreenParser
     """
 
-    def process_screenshot(self, screenshot):
+    def process_screenshot(self, screenshot, screenshot_time):
         """
         Analyze a screenshot and take the data to save it
         """
@@ -403,6 +422,44 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
             return
         spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
+
+        """
+        TimerParser
+        
+        Attempts to parse a screenshot that is expected to show the 
+        GSF pre-match interface with a spawn timer.
+        """
+        if ("Spawn Timer" in self._screen_parsing_features and self._waiting_for_timer and not self.is_match and
+                self._spawn_time is None):
+            print("[TimerParser] Spawn timer parsing activating.")
+            # Only activates after a login event was detected and no
+            # match is active and no time was already determined.
+
+            # self._waiting_for_timer is a datetime instance, or False.
+            if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
+                # If a certain time has passed, give up on finding the timer
+                print("[TimerParser] Last timer parsing attempt.")
+                self._waiting_for_timer = False
+            # Check if the resolution is supported
+            if self._resolution not in vision.timer_boxes:
+                messagebox.showerror("Error", "Spawn Timer parsing is enabled for an unsupported resolution.")
+                raise ValueError("Unsupported resolution for spawn timer parsing.")
+            # Now crop the screenshot, see vision.timer_boxes for details
+            source = screenshot.crop(vision.timer_boxes[self._resolution])
+            # Attempt to determine the spawn timer status
+            status = vision.get_timer_status(source)
+            # Now status is a string of format "%M:%S" or None
+            if status is None:
+                print("[TimerParser] Failed to detect a valid timer value.")
+            else:
+                print("[TimerParser] Successfully determined timer status as:", status)
+                # Spawn timer was successfully determined. Now parse the string
+                minutes, seconds = (int(elem) for elem in status.split(":"))
+                delta = timedelta(minutes=minutes, seconds=seconds)
+                # Now delta contains the amount of time left until the spawn starts
+                self._spawn_time = screenshot_time + delta
+            # End of TimerParser
+
         """
         Tracking penalty
         
@@ -474,18 +531,6 @@ class RealTimeParser(Thread):
         else:
             upgrade_constant = 0
         return tracking_penalty, upgrade_constant, firing_arc
-
-    """
-    TimerParser
-    """
-
-    def process_login(self):
-        """
-        TimerParser attempts for ten seconds to determine if there is
-        a spawn timer available on the screen
-        """
-        if "Spawn Timer" not in self._screen_parsing_features:
-            return
 
     def run(self):
         """
@@ -624,7 +669,11 @@ class RealTimeParser(Thread):
         return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
 
     def get_timer_string(self):
-        pass
+        if self._spawn_time is None:
+            return ""
+        return "Spawn in {:02d}s".format(
+            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
+        )
 
     def get_health_string(self):
         pass
