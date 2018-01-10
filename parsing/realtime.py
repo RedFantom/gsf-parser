@@ -61,8 +61,9 @@ spawn_dictionary["ship_name"]
 
 class RealTimeParser(Thread):
     """
-    Class to parse Galactic StarFighter in real-time. Manages LogStalker instance to gather all data
-    and save it to a data dictionary, in realtime.db.
+    Class to parse Galactic StarFighter in real-time. Manages LogStalker
+    instance to gather all data and save it to a data dictionary, in
+    realtime.db.
     """
 
     def __init__(
@@ -261,7 +262,8 @@ class RealTimeParser(Thread):
 
     def process_line(self, line):
         """
-        Parse a single line dictionary and update the data attributes of the instance accordingly
+        Parse a single line dictionary and update the data attributes
+        of the instance accordingly
         """
         # Skip any and all SetLevel or Infection events
         ignorable = ("SetLevel", "Infection")
@@ -449,7 +451,9 @@ class RealTimeParser(Thread):
 
     def get_tracking_penalty(self):
         """
-        Determine the correct weapon to determine the tracking penalty for and then retrieve that data
+        Determine the correct weapon to determine the tracking penalty
+        for and then retrieve that data from the ship statistics object
+        stored in the self.ship_stats attribute.
         """
         if self.ship_stats is None:
             print("[RealTimeParser] get_tracking_penalty was called while ship_stats is None")
@@ -477,14 +481,16 @@ class RealTimeParser(Thread):
 
     def process_login(self):
         """
-        TimerParser attempts for ten seconds to determine if there is a spawn timer available on the screen
+        TimerParser attempts for ten seconds to determine if there is
+        a spawn timer available on the screen
         """
         if "Spawn Timer" not in self._screen_parsing_features:
             return
 
     def run(self):
         """
-        Run the loop and exit if necessary and perform error-handling for everything
+        Run the loop and exit if necessary and perform error-handling
+        for everything
         """
         self.start_listeners()
         while True:
