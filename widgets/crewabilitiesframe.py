@@ -1,4 +1,4 @@
-    """
+"""
 Author: RedFantom
 Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
