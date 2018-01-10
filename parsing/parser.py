@@ -502,7 +502,9 @@ class Parser(object):
                 elif target in player_list:
                     current_id = target
                 else:
-                    raise ValueError("Neither source nor target contained a valid player ID")
+                    print("[Parser] parse_spawn found a line in which neither source or target provide a valid player "
+                          "ID:", line["line"].replace("\n", ""))
+                    # raise ValueError("Neither source nor target contained a valid player ID in line:", line["line"])
             # Add this line to the spawn list and continue
             spawn.append(line)
 
@@ -534,20 +536,20 @@ class Parser(object):
                 lines = fi.readlines()
         except OSError:
             raise PermissionError("Could not read from file '{}'".format(file_name))
+        unicode = False
         lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
             try:
                 line = line.decode()
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
-                print("[Parser] {} contained an invalid UTF-8 character line {}".format(file_name, index+1))
+                unicode = True
                 continue
             lines_decoded.append(line)
+        if unicode is True:
+            print("[Parser] A file contains invalid UTF-8 characters:", file_name)
         enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
-        results = []
-        for line in lines_decoded:
-            results.append(Parser.line_to_dictionary(line, enemies))
-        return [Parser.line_to_dictionary(line) for line in results]
+        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
