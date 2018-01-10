@@ -32,61 +32,6 @@ def eval(value):
         return literal
 
 
-# Class with default settings for in the settings file
-class Defaults(object):
-    # Version to display in settings tab
-    version = "v4.0.1"
-    # Path to get the CombatLogs from
-    path = (os.path.expanduser("~") + "\\Documents\\Star Wars - The Old Republic\\CombatLogs").replace("\\", "/")
-    # Automatically send and retrieve names and hashes of ID numbers from the remote server
-    auto_ident = str(False)
-    # Address and port of the remote server
-    server_address = "parser.thrantasquadron.tk"
-    server_port = str(83)
-    # Automatically upload CombatLogs as they are parsed to the remote server
-    auto_upl = str(False)
-    # Enable the overlay
-    overlay = str(True)
-    # Set the overlay opacity, or transparency
-    opacity = str(1.0)
-    # Set the overlay size
-    size = "big"
-    # Set the corner the overlay will be displayed in
-    pos = "TR"
-    # Set the text color of the parser
-    color = "#236ab2"
-    # Set the logo color
-    logo_color = "Green"
-    # Overlay background color
-    overlay_bg_color = "White"
-    # Overlay color that is displayed as transparent
-    overlay_tr_color = "White"
-    # Overlay text color
-    overlay_tx_color = "Yellow"
-    # Overlay text font
-    overlay_tx_font = "Calibri"
-    # Overlay text size
-    overlay_tx_size = "12"
-    # Only display overlay when a GSF match is running
-    overlay_when_gsf = str(False)
-    # Set the timeout for reading from file for realtime
-    timeout = 0.2
-    # Event color options
-    event_colors = "basic"
-    # Event color scheme
-    event_scheme = "default"
-    # The date format for in the files Listbox
-    date_format = "ymd"
-
-    faction = "imperial"
-    events_overlay = False
-    screenparsing = True
-    screenparsing_overlay = True
-    screen_features = ["Enemy name and ship type", "Tracking penalty", "Ship health",
-                              "Power management"]
-    autoupdate = True
-
-
 # Class that loads, stores and saves settings
 class Settings(object):
     defaults = {

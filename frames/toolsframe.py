@@ -14,7 +14,6 @@ from widgets import VerticalScrollFrame
 # Tools
 from parsing.guiparsing import GSFInterface, get_gui_profiles
 from tools.utilities import get_assets_directory
-from toplevels.importer import SettingsImporter
 from tools.database_explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix
 from tools import simulator
@@ -29,11 +28,9 @@ class ToolsFrame(ttk.Frame):
 
     Tool available:
     - CartelFix
-    - GSF Parser v1.4.1
     - Simulator
     - Splitter
     - SettingsImporter
-    - DatabaseExplorer
     """
 
     def __init__(self, master):
@@ -103,18 +100,6 @@ class ToolsFrame(ttk.Frame):
         self.splitting_button = ttk.Button(self.interior_frame.interior, text="Start splitter",
                                            command=self.start_splitter)
         """
-        SettingsImporter
-        """
-        self.separator_five = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.importer_heading_label = ttk.Label(self.interior_frame.interior, text="Settings importer",
-                                                font=("Calibri", 12))
-        self.importer_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="Using this small utility you can import your GSF Parser settings from another file, so you can "
-                 "exchange settings with other people. It also provides an option to export your current settings.")
-        self.importer_button = ttk.Button(self.interior_frame.interior, text="Start importer",
-                                          command=self.start_importer)
-        """
         DatabaseExplorer
         """
         self.separator_six = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
@@ -148,13 +133,6 @@ class ToolsFrame(ttk.Frame):
         This is a stand-alone tool, so simply importing will start this tool.
         """
         from tools import splitting
-
-    @staticmethod
-    def start_importer():
-        """
-        SettingsImporter is DEPRECATED with the new Settings class
-        """
-        SettingsImporter(variables.main_window)
 
     def set_simulator_file(self):
         """
@@ -260,10 +238,6 @@ class ToolsFrame(ttk.Frame):
         self.splitting_heading_label.grid(row=15, column=0, columnspan=10, sticky="w")
         self.splitting_description_label.grid(row=16, column=0, columnspan=10, sticky="w")
         self.splitting_button.grid(row=17, column=0, columnspan=2, sticky="we")
-        self.separator_five.grid(row=18, column=0, columnspan=10, sticky="we", pady=5)
-        self.importer_heading_label.grid(row=19, column=0, columnspan=10, sticky="w")
-        self.importer_description_label.grid(row=20, column=0, columnspan=10, sticky="w")
-        self.importer_button.grid(row=21, column=0, sticky="we", columnspan=2)
         self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
         self.database_explorer_heading_label.grid(row=23, column=0, columnspan=10, sticky="w")
         self.database_explorer_description_label.grid(row=24, column=0, columnspan=10, sticky="w")
