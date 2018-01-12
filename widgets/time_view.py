@@ -15,7 +15,7 @@ import os
 # Own modules
 from parsing.parser import Parser
 from parsing.icons import icons
-from parsing.effects import all_effects
+from data.effects import all_effects
 from tools.utilities import get_assets_directory
 import variables
 
