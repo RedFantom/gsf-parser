@@ -14,7 +14,7 @@ import random
 
 """
 The contents of this file are based on this excellent StackOverflow answer:
-https://stackoverflow.com/questions/21840133/how-to-display-text-on-the-screen-without-a-window-using-python
+https://stackoverflow.com/questions/21840133
 """
 
 

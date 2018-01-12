@@ -16,7 +16,7 @@ class ToggledFrame(ttk.Frame):
     or '-' and other toggling options.
     Author: Onlyjus
     License: None
-    Source: http://stackoverflow.com/questions/13141259/expandable-and-contracting-frame-in-tkinter
+    Source: http://stackoverflow.com/questions/13141259
     """
 
     def __init__(self, parent, text="", labelwidth=25, callback=None, **options):
