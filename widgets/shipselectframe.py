@@ -46,7 +46,7 @@ class ShipSelectFrame(ttk.Frame):
         toggled = False
 
         self.server = tk.StringVar()
-        self.server_dropdown = ttk.OptionMenu(self, self.server, *("Choose server",), command=self.update_characters)
+        self.server_dropdown = ttk.OptionMenu(self, self.server, *("Choose network",), command=self.update_characters)
         self.character = tk.StringVar()
         self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose character",),
                                                  command=self.load_character)
@@ -125,7 +125,7 @@ class ShipSelectFrame(ttk.Frame):
     def update_servers(self):
         self.server_dropdown["menu"].delete(0, tk.END)
         self.character_dropdown["menu"].delete(0, tk.END)
-        servers = ["Choose server"]
+        servers = ["Choose network"]
         for data in self.window.characters_frame.characters:
             if data[0] not in self.window.characters_frame.servers:
                 return

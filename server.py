@@ -4,7 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-from server.sharing_server import SharingServer
+from network.sharing_server import SharingServer
 from datetime import datetime
 import argparse
 
@@ -13,7 +13,7 @@ Setup a SharingServer with command-line arguments. Available arguments:
 -a: address to bind to
 -p: port to accept connections on
 -c: maximum amount of clients
--t: amount of time in minutes to run the server for
+-t: amount of time in minutes to run the network for
 """
 
 DESCRIPTION = "GSF Parser Sharing Server"
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     # Address
     parser.add_argument(
-        "-a", type=str, nargs=1, help="Address to bind the server to, 'all' means all available",
+        "-a", type=str, nargs=1, help="Address to bind the network to, 'all' means all available",
         default=DEFAULT_ADDRESS)
     # Port
     parser.add_argument(
@@ -41,7 +41,7 @@ if __name__ == '__main__':
         default=DEFAULT_CLIENTS)
     # Time
     parser.add_argument(
-        "-t", type=int, nargs=1, help="Amount of time in minutes to run the server for", default=DEFAULT_TIME)
+        "-t", type=int, nargs=1, help="Amount of time in minutes to run the network for", default=DEFAULT_TIME)
 
     args = parser.parse_args()
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     time = int(args.t[0] if isinstance(args.t, list) else args.t)
 
     """
-    Start the server
+    Start the network
     """
     server = SharingServer(address=(address, port), max_clients=clients)
     server.start()

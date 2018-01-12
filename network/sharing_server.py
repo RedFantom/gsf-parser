@@ -12,7 +12,7 @@ from select import select
 # Own modules
 from tools.admin import *
 from .sharing_clienthandler import SharingClientHandler
-from server.database import DatabaseHandler
+from network.database import DatabaseHandler
 
 
 class SharingServer(threading.Thread):
@@ -62,13 +62,13 @@ class SharingServer(threading.Thread):
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
                 print("SharingServer stopping activities...")
-                SharingServer.write_log("Sharing server is exiting loop")
+                SharingServer.write_log("Sharing network is exiting loop")
                 break
             # The select.select function is used so the Server can immediately continue with its operations if there are
             # no new clients. This could also be done with a try/except socket.error block, but this would introduce
             # a rather high performance penalty, so the select function is used.
             if self._socket in select([self._socket], [], [], 0)[0]:
-                SharingServer.write_log("server ready to accept")
+                SharingServer.write_log("network ready to accept")
                 print("[SharingServer] Accepting new client.")
                 connection, address = self._socket.accept()
                 # Check if the IP is banned
@@ -109,7 +109,7 @@ class SharingServer(threading.Thread):
         for client_handler in self.client_handlers:
             client_handler.close()
             SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        SharingServer.write_log("Sharing server is returning from run()")
+        SharingServer.write_log("Sharing network is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self._socket.close()
         print("SharingServer closed.")
@@ -118,7 +118,7 @@ class SharingServer(threading.Thread):
         """
         Function to execute when one of the ClientHandlers needs something done
         """
-        print("[SharingServer] Performing action for server Queue.")
+        print("[SharingServer] Performing action for network Queue.")
         command, handler = self.server_queue.get()
         if command == "exit":
             print("[SharingServer] [{}] Removing ClientHandler".format(

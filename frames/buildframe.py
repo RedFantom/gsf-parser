@@ -304,7 +304,7 @@ class BuildsFrame(ttk.Frame):
 
     def reset(self):
         self.ship_select_frame.character.set("Choose character")
-        self.ship_select_frame.server.set("Choose server")
+        self.ship_select_frame.server.set("Choose network")
         for frame in self.components_lists.values():
             frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
         for frame in self.crew_select_frame.category_frames.values():

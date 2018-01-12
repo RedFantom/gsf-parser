@@ -127,13 +127,13 @@ class StrategiesFrame(ttk.Frame):
         if self.list.selected_phase is None:
             return
         self.large.map.update_map(self.list.db[self.list.selected_strategy][self.list.selected_phase])
-        # If the instance is connected to a server, then the Map in the MapToplevel should know about it.
+        # If the instance is connected to a network, then the Map in the MapToplevel should know about it.
         if self.client:
             self.large.map.client = self.client
 
     def client_connected(self, client):
         """
-        Callback for the SettingsToplevel (when open) to call when a Client object is connected to a server. Sets the
+        Callback for the SettingsToplevel (when open) to call when a Client object is connected to a network. Sets the
         client attribute for this instance, calls another callback, sets the client attribute for the Map instance and
         *starts the Client Thread to start the functionality of the Client*.
         :param client: Client instance
@@ -151,11 +151,11 @@ class StrategiesFrame(ttk.Frame):
         Callback that has numerous functions:
         - Before doing anything checks if the Client object is valid for operations to be performed
         - Inserts a log entry for the command received into the ServerToplevel widget if the client is a master client
-        - Executes the command of the server on the Map widgets with the given arguments
+        - Executes the command of the network on the Map widgets with the given arguments
           * add_item
           * move_item
           * del_item
-        :param command: command received from the server
+        :param command: command received from the network
         :param args: arguments to perform this command
         :return: None
         :raises: ValueError when the Client is not set or not logged in

@@ -16,7 +16,7 @@ class AddCharacter(tk.Toplevel):
         self.legacy_name_entry = ttk.Entry(self)
         self.legacy_name_entry.insert(tk.END, "Legacy name...")
         self.server = tk.StringVar()
-        servers = ("Choose server",) + servers
+        servers = ("Choose network",) + servers
         self.callback = callback
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers)
         self.faction = tk.StringVar()

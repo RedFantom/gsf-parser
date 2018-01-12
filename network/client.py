@@ -24,7 +24,7 @@ class Client(threading.Thread):
 
     def connect(self):
         """
-        Function to connect to the specified server. Can be overridden to additionally perform error handling or perhaps
+        Function to connect to the specified network. Can be overridden to additionally perform error handling or perhaps
         some sort of login functionality.
         """
         timeout = self.socket.gettimeout()

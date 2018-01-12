@@ -94,7 +94,7 @@ class RealTimeParser(Thread):
         :param data_queue: Queue to communicate queries for data with
         :param return_queue: Queue to answer queries for data with
         :param exit_queue: Queue to make the RealTimeParser stop activities
-        :param character_data: Character tuple with the character name and server to retrieve data with
+        :param character_data: Character tuple with the character name and network to retrieve data with
         """
         Thread.__init__(self)
 

@@ -43,13 +43,13 @@ class ResourcesFrame(ttk.Frame):
             "Thranta Squadron Event Calendar":
                 "An interactive calendar containing all events of the GSF community on " +
                 "different servers. This calendar is being kept up-to-date with the GSF " +
-                "forums and it includes times in UTC and server locations.",
+                "forums and it includes times in UTC and network locations.",
             "Dulfy GSF New Player Guide": "A guide for new players by the popular resource site Dulfy. ",
             "Dulfy Ships and Components Guide":
                 "An in-depth guide on ships and components by the popular resource site Dulfy. ",
             "GSF Forums on SWTOR.com":
                 "A place where subscribers who play GSF gather and discuss all sorts of things including events. ",
-            "GSF Discord Server": "A voice server created by Dakhath for anyone playing GSF for the Discord platform. ",
+            "GSF Discord Server": "A voice network created by Dakhath for anyone playing GSF for the Discord platform. ",
             "GSF Parser GitHub Repository":
                 "This is where ou can find the source code of the GSF Parser, but you can also look here to see what " +
                 "current issues are known or add an issue if you find one. Also check out the alpha builds in the " +

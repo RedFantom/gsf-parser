@@ -12,8 +12,8 @@ from widgets.snaptoplevel import SnapToplevel
 from tkinter import ttk
 import variables
 from parsing.strategies import StrategyDatabase
-from server.strategy_client import StrategyClient
-from server.strategy_server import StrategyServer
+from network.strategy_client import StrategyClient
+from network.strategy_server import StrategyServer
 from tools.admin import escalate_privileges, check_privileges
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
@@ -21,7 +21,7 @@ from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 
 class SettingsToplevel(SnapToplevel):
     """
-    Toplevel that contains options to export Strategies, whole StrategyDatabases, or start up a server/connect to one
+    Toplevel that contains options to export Strategies, whole StrategyDatabases, or start up a network/connect to one
     for real-time Strategy sharing.
     """
 
@@ -64,7 +64,7 @@ class SettingsToplevel(SnapToplevel):
         self.server_address_entry = ttk.Entry(self.server_section, width=17)
         self.server_port_entry = ttk.Entry(self.server_section, width=8)
         self.server_port_entry.bind("<Return>", self.start_server)
-        self.server_button = ttk.Button(self.server_section, text="Start server", command=self.start_server, width=15)
+        self.server_button = ttk.Button(self.server_section, text="Start network", command=self.start_server, width=15)
 
         # Client settings section
         self.client_section = ttk.Frame(self.server_client_frame)
@@ -79,7 +79,7 @@ class SettingsToplevel(SnapToplevel):
         self.client_address_entry = ttk.Entry(self.client_section, width=17)
         self.client_port_entry = ttk.Entry(self.client_section, width=8)
         self.client_port_entry.bind("<Return>", self.connect_client)
-        self.client_button = ttk.Button(self.client_section, text="Connect to server", width=15,
+        self.client_button = ttk.Button(self.client_section, text="Connect to network", width=15,
                                         command=self.connect_client)
 
         # Server master widgets
@@ -112,9 +112,9 @@ class SettingsToplevel(SnapToplevel):
         self.server_master_make_master_button = ttk.Button(self.server_master_frame,
                                                            text="Make new master Client",
                                                            command=self._make_master, state=tk.DISABLED)
-        self.server_master_kick_button = ttk.Button(self.server_master_frame, text="Kick from server",
+        self.server_master_kick_button = ttk.Button(self.server_master_frame, text="Kick from network",
                                                     command=self._kick, state=tk.DISABLED)
-        self.server_master_ban_button = ttk.Button(self.server_master_frame, text="Ban from server",
+        self.server_master_ban_button = ttk.Button(self.server_master_frame, text="Ban from network",
                                                    command=self._ban, state=tk.DISABLED)
         # List with references to all master control widgets
         self.master_control_widgets = [
@@ -294,13 +294,13 @@ class SettingsToplevel(SnapToplevel):
 
     def start_server(self, *args):
         """
-        Start a new Strategy Server. User must be an admin user to start a server (as the binding to an address
+        Start a new Strategy Server. User must be an admin user to start a network (as the binding to an address
         requires privileges to create a port in the Windows Firewall).
         """
         if not check_privileges():
             # If the user is not an admin, making a hole in the firewall to receive connections is not possible
             # The program should re-run as admin, possibly with UAC elevation
-            confirmation = messagebox.askyesno("Question", "Starting a server requires administrative privileges, "
+            confirmation = messagebox.askyesno("Question", "Starting a network requires administrative privileges, "
                                                            "would you like to restart the GSF Parser as an "
                                                            "administrator?")
             if not confirmation:
@@ -314,12 +314,12 @@ class SettingsToplevel(SnapToplevel):
                 # If an error occurs, it is highly likely that the user has denied UAC elevation
                 print(repr(e))
             exit()
-        # Try to start the server
+        # Try to start the network
         try:
             self.server = StrategyServer(self.server_address_entry.get(), int(self.server_port_entry.get()))
         # Handle any errors the Server initialization may throw by showing a messagebox to the user
         except RuntimeError:
-            messagebox.showerror("Error", "Starting the server failed due to a RuntimeError, which probably means that "
+            messagebox.showerror("Error", "Starting the network failed due to a RuntimeError, which probably means that "
                                           "binding to the port and host name failed. If you did not expect this, "
                                           "please file a bug report in the GitHub repository and include any debug "
                                           "output.")
@@ -334,9 +334,9 @@ class SettingsToplevel(SnapToplevel):
         # Start the Server thread
         self.server.start()
         # Change the UI to match behaviour
-        self.server_button.config(text="Stop server", command=self.stop_server)
-        # Allow the starter of the server to easily connect to his own server by entering the server details into
-        # The client connection data boxes after the server has started
+        self.server_button.config(text="Stop network", command=self.stop_server)
+        # Allow the starter of the network to easily connect to his own network by entering the network details into
+        # The client connection data boxes after the network has started
         self.client_address_entry.delete(0, tk.END)
         if not self.server_address_entry.get() == "":
             self.client_address_entry.insert(tk.END, self.server_address_entry.get())
@@ -374,7 +374,7 @@ class SettingsToplevel(SnapToplevel):
         while self.server.is_alive():
             closing.update()
         closing.destroy()
-        self.server_button.config(text="Start server", command=self.start_server)
+        self.server_button.config(text="Start network", command=self.start_server)
         self.server_address_entry.config(state=tk.NORMAL)
         self.server_port_entry.config(state=tk.NORMAL)
         self.server = None
@@ -445,7 +445,7 @@ class SettingsToplevel(SnapToplevel):
 
     def login_callback(self, success):
         """
-        Callback for a newly created Client object to call to indicate whether logging into the server was successful.
+        Callback for a newly created Client object to call to indicate whether logging into the network was successful.
         :param success: False if not successful, True if successful
         :return: None
         """
@@ -496,7 +496,7 @@ class SettingsToplevel(SnapToplevel):
         """
         Function to prevent the destruction of the SettingsToplevel while either a Server or Client is running.
         """
-        messagebox.showinfo("Info", "You cannot close this window while you are connected to a strategy server or "
+        messagebox.showinfo("Info", "You cannot close this window while you are connected to a strategy network or "
                                     "running one.")
         self.lift()
 
@@ -605,4 +605,4 @@ class ClosingToplevel(tk.Toplevel):
         self.bar = ttk.Progressbar(self, orient=tk.HORIZONTAL, mode="indeterminate", length=300)
         self.bar.grid(pady=5)
         self.bar.start(10)
-        self.title("Closing server...")
+        self.title("Closing network...")

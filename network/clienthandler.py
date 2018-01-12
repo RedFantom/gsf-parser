@@ -101,7 +101,7 @@ class ClientHandler(object):
         """
         Write a line to the log file, but also check if the log file is not too bit and truncate if required
 
-        Copied from server.strategy_server.write_log(line) but with different file_name
+        Copied from network.strategy_server.write_log(line) but with different file_name
         """
         if not self.debug:
             return

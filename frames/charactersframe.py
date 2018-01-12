@@ -22,7 +22,7 @@ from collections import OrderedDict
 from tkinter import messagebox as mb
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
-from server.sharing_data import servers
+from network.sharing_data import servers
 
 
 class CharactersFrame(ttk.Frame):
@@ -208,7 +208,7 @@ class CharactersFrame(ttk.Frame):
             if data["Server"] not in self.servers or character[0] not in self.servers:
                 messagebox.showinfo(
                     "United Forces Notification",
-                    "Since the United Forces update of SWTOR, the server names have changed and thus the character "
+                    "Since the United Forces update of SWTOR, the network names have changed and thus the character "
                     "database must be updated. This process is non-destructive, meaning you should be able to keep "
                     "all your characters, as long as the names do not conflict."
                 )
@@ -277,7 +277,7 @@ class CharactersFrame(ttk.Frame):
         Callback for the AddCharacter Toplevel
         :param name: character name entered
         :param legacy: legacy name entered
-        :param server: server name entered (full name)
+        :param server: network name entered (full name)
         :param faction: faction entered
         :return: None
         """

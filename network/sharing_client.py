@@ -6,7 +6,6 @@ Copyright (C) 2016-2018 RedFantom
 """
 from tkinter import messagebox
 from datetime import datetime
-import socket
 from queue import Queue
 # Own modules
 from .client import Client
@@ -26,7 +25,7 @@ class SharingClient(Client):
 
     def send_name_id(self, server, faction, mainname, altname, id):
         """
-        Send a name/ID combination to the server
+        Send a name/ID combination to the network
         """
         print("[SharingClient] Sending store name command.")
         self.send("storename_{}_{}_{}_{}_{}".format(server, faction, mainname, altname, id))
@@ -42,7 +41,7 @@ class SharingClient(Client):
 
     def get_name_id(self, server, id):
         """
-        Get a mainname from the server
+        Get a mainname from the network
         """
         self.send("getname_{}_{}".format(server, id))
         message = self.get_message()
@@ -54,7 +53,7 @@ class SharingClient(Client):
 
     def get_message(self, timeout=4):
         """
-        :return: A str message from the server
+        :return: A str message from the network
         """
         start = datetime.now()
         while self.message_queue.empty():
@@ -68,7 +67,7 @@ class SharingClient(Client):
         # Possible ban commands: "ban" or "ban_message"
         elements = message_decoded.split("_")
         if elements[0] == "ban":
-            ban_message = "Your IP address was banned from this server."
+            ban_message = "Your IP address was banned from this network."
             if len(elements) > 1:
                 _, message = elements
                 ban_message += " The following message was received: {}".format(message) + "."

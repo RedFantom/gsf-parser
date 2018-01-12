@@ -34,7 +34,7 @@ class SharingClientHandler(ClientHandler):
         self.database = database
         self.message_queue = Queue()
         self.database_queue = Queue()
-        self.client_queue = Queue()  # A Queue to receive commands from the server
+        self.client_queue = Queue()  # A Queue to receive commands from the network
         self.waiting_for_database = False
         self.state = 1
         self.internal_queue = Queue()
@@ -56,7 +56,7 @@ class SharingClientHandler(ClientHandler):
             return self.receive_from_database()
         if not self.client_queue.empty():
             command = self.client_queue.get()
-            print("[ClientHandler] Processing server command:", command)
+            print("[ClientHandler] Processing network command:", command)
             self.process_server_command(command)
             return
         self.receive()
@@ -87,14 +87,14 @@ class SharingClientHandler(ClientHandler):
         instruction = elements[0]
         # Go through all the possible instructions
         if instruction == "storename":
-            # "storename", server, faction, mainname, altname, id_number
+            # "storename", network, faction, mainname, altname, id_number
             if len(elements) != 6:
                 self.close_error("wrong number of command arguments received")
                 return
             _, server, faction, mainname, altname, id_number = elements
             self.store_name(server, faction, mainname, altname, id_number)
         elif instruction == "getname":
-            # "getname", server, faction, id_number
+            # "getname", network, faction, id_number
             if len(elements) != 3:
                 self.close_error("wrong number of command arguments received")
                 return

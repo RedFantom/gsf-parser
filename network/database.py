@@ -8,7 +8,7 @@ import sqlite3 as sql
 import threading
 import queue as Queue
 import time
-import server.queries as queries
+import network.queries as queries
 
 
 class DatabaseHandler(threading.Thread):

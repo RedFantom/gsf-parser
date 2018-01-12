@@ -10,27 +10,27 @@ import tkinter as tk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
 # Own modules
-from server.sharing_client import SharingClient
+from network.sharing_client import SharingClient
 from variables import settings
 from parsing.parser import Parser
 from tools.utilities import get_temp_directory
-from server.sharing_data import *
+from network.sharing_data import *
 
 
 def get_connected_client():
     """
     Setup a SharingClient and return the functional instance, or None
     if it failed. Also provides error handling if the SharingClient
-    fails to connect to the server.
+    fails to connect to the network.
     """
     client = SharingClient()
     try:
         client.connect()
     except ConnectionRefusedError:
-        messagebox.showerror("Error", "The remote server refused the connection.")
+        messagebox.showerror("Error", "The remote network refused the connection.")
         return None
     except Exception as e:
-        messagebox.showerror("Error", "An unidentified error occurred while connecting to the remote server:\n\n"
+        messagebox.showerror("Error", "An unidentified error occurred while connecting to the remote network:\n\n"
                                       "{}".format(repr(e)))
         return None
     client.start()
@@ -39,9 +39,9 @@ def get_connected_client():
 
 class SharingFrame(ttk.Frame):
     """
-    A Frame to contain widgets to allow uploading of CombatLogs to the server
+    A Frame to contain widgets to allow uploading of CombatLogs to the network
     and viewing leaderboards that keep track of individual player performance
-    on different fronts. A connection to the server is required, and as the
+    on different fronts. A connection to the network is required, and as the
     GSF Server is not done yet, this Frame is still empty.
     """
 
@@ -109,10 +109,10 @@ class SharingFrame(ttk.Frame):
 
     def synchronize(self):
         """
-        Function for the sync_button to call when pressed. Connects to the server.
+        Function for the sync_button to call when pressed. Connects to the network.
         """
         print("[SharingFrame] Starting synchronization")
-        # Connect to the server
+        # Connect to the network
         client = get_connected_client()
         if client is None:
             return
@@ -137,7 +137,7 @@ class SharingFrame(ttk.Frame):
                 print("[SharingFrame] Already synchronized:", file_name)
                 continue
             player_name = Parser.get_player_name(lines)
-            # Skip files with ambiguous server
+            # Skip files with ambiguous network
             if player_name not in character_names:
                 skipped.append(file_name)
                 print("[SharingFrame] Skipping file:", file_name)
@@ -189,7 +189,7 @@ class SharingFrame(ttk.Frame):
         :param completed: List of completed file names
         """
         # Build information string
-        string = "The following files were skipped because the server of the character could not be determined:\n"
+        string = "The following files were skipped because the network of the character could not be determined:\n"
         for skipped_file in skipped:
             string += skipped_file + "\n"
         string += "The following files were successfully synchronized:\n"

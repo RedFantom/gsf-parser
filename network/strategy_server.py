@@ -11,14 +11,14 @@ from queue import Queue
 from datetime import datetime
 from select import select
 # Own modules
-from server.strategy_clienthandler import StrategyClientHandler
+from network.strategy_clienthandler import StrategyClientHandler
 from tools.admin import check_privileges
 from tools.utilities import get_temp_directory
 
 
 class StrategyServer(threading.Thread):
     """
-    A Thread that runs a socket.socket server to listen for incoming tools.strategy_client.Client connections to allow
+    A Thread that runs a socket.socket network to listen for incoming tools.strategy_client.Client connections to allow
     the sharing and real-time editing of Strategy objects. Runs in a Thread to minimize performance penalty for the
     Tkinter mainloop.
     """
@@ -31,7 +31,7 @@ class StrategyServer(threading.Thread):
         :raises: ValueError if the host and/or port are found to be invalid values
         """
         if not check_privileges():
-            raise RuntimeError("Attempted to open a server while user is not admin.")
+            raise RuntimeError("Attempted to open a network while user is not admin.")
         threading.Thread.__init__(self)
         # Create a non-blocking socket to provide the best performance in the loop
         # The socket is a SOCK_STREAM (TCP) socket
@@ -49,7 +49,7 @@ class StrategyServer(threading.Thread):
         # The master_handler is a ClientHandler object with a Client with the "master" role
         self.master_handler = None
         # The exit_queue is normally empty. However, if an object with a truth value of True is found, then the
-        # server loop in run() will exit.
+        # network loop in run() will exit.
         self.exit_queue = Queue()
         # The server_queue is where the commands from the ClientHandlers are put in.
         self.server_queue = Queue()
@@ -68,13 +68,13 @@ class StrategyServer(threading.Thread):
         while True:
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
-                StrategyServer.write_log("Strategy server is exiting loop")
+                StrategyServer.write_log("Strategy network is exiting loop")
                 break
             # The select.select function is used so the Server can immediately continue with its operations if there are
             # no new clients. This could also be done with a try/except socket.error block, but this would introduce
             # a rather high performance penalty, so the select function is used.
             if self.socket in select([self.socket], [], [], 0)[0]:
-                StrategyServer.write_log("server ready to accept")
+                StrategyServer.write_log("network ready to accept")
                 connection, address = self.socket.accept()
                 # Check if the IP is banned
                 if address[0] not in self.banned:
@@ -104,7 +104,7 @@ class StrategyServer(threading.Thread):
         for client_handler in self.client_handlers:
             client_handler.close()
             StrategyServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        StrategyServer.write_log("Strategy server is returning from run()")
+        StrategyServer.write_log("Strategy network is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self.socket.close()
 
@@ -119,7 +119,7 @@ class StrategyServer(threading.Thread):
         message = self.server_queue.get()
         if isinstance(message[0], bytes):
             message = (message[0].decode(), message[1])
-        StrategyServer.write_log("Server received {0} in server queue".format(message))
+        StrategyServer.write_log("Server received {0} in network queue".format(message))
 
         # Start the handling of the message received in the server_queue
         if message[0] == "master_login":

@@ -26,7 +26,7 @@ class StrategyClientHandler(ClientHandler):
         ClientHandler.__init__(self, sock, address, server_queue, log_file, debug=False)
         self.name = None
         self.role = None
-        # The client_queue is for the server to put commands in
+        # The client_queue is for the network to put commands in
         self.client_queue = queue.Queue()
         # The message_queue is used for communication with the Client
         self.message_queue = queue.Queue()
@@ -37,7 +37,7 @@ class StrategyClientHandler(ClientHandler):
         ClientHandler. Checks the message_queue and the client_queue, and uses the server_queue.
         """
         if not self.client_queue.empty():
-            # The ClientHandler received a command from the server
+            # The ClientHandler received a command from the network
             # The data is directly sent to the Client of the ClientHandler, as it must either be login/logout for the
             # master Client, or it is a Map operation
             self.write_log("ClientHandler {0} client_queue is not empty".format(self.name))
@@ -96,7 +96,7 @@ class StrategyClientHandler(ClientHandler):
                 # The data is not valid, so a disconnect is started
                 self.close()
                 return
-            # The data is valid, and thus the login is accepted and put in the server queue
+            # The data is valid, and thus the login is accepted and put in the network queue
             self.role = elements[1]
             self.name = elements[2]
             self.write_log("ClientHandler for {0} sent b'login'".format(self.name))
@@ -211,7 +211,7 @@ class StrategyClientHandler(ClientHandler):
 
     def close(self):
         """
-        For whatever reason close the socket and notify the server of the logout
+        For whatever reason close the socket and notify the network of the logout
         """
         self.write_log("ClientHandler closing")
         self.socket.close()

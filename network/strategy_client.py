@@ -14,13 +14,13 @@ from .client import Client
 
 class StrategyClient(Client):
     """
-    Client to connect to a server.strategy_server.Server to get a ClientHandler and support real-time editing and
+    Client to connect to a network.strategy_server.Server to get a ClientHandler and support real-time editing and
     sharing of Strategies in the StrategiesFrame.
     """
     def __init__(self, address, port, name, role, list, logincallback, insertcallback, disconnectcallback):
         """
-        :param address: address of the server
-        :param port: port of the server
+        :param address: address of the network
+        :param port: port of the network
         :param name: username for the login
         :param role: role for the login ("master" or "client")
         :param list: StrategiesList object from the StrategiesFrame (for updating its database)
@@ -42,17 +42,17 @@ class StrategyClient(Client):
 
     def connect(self):
         """
-        Function to connect to the specified server or provide error handling when that fails
+        Function to connect to the specified network or provide error handling when that fails
         """
         try:
             self.socket.settimeout(4)
             self.socket.connect((self.address, self.port))
         except socket.timeout:
-            messagebox.showerror("Error", "The connection to the target server timed out.")
+            messagebox.showerror("Error", "The connection to the target network timed out.")
             self.login_failed()
             return False
         except ConnectionRefusedError:
-            messagebox.showerror("Error", "The server refused the connection. Perhaps the server does not have "
+            messagebox.showerror("Error", "The network refused the connection. Perhaps the network does not have "
                                           "correct firewall or port forwarding settings.")
             self.login_failed()
             return False
@@ -68,7 +68,7 @@ class StrategyClient(Client):
         try:
             message = self.socket.recv(16)
         except socket.timeout:
-            messagebox.showerror("Error", "The connection to the target server timed out.")
+            messagebox.showerror("Error", "The connection to the target network timed out.")
             self.login_failed()
             return False
         message = message.decode()
@@ -222,7 +222,7 @@ class StrategyClient(Client):
 
     def login_failed(self):
         """
-        Callback for when logging into the server fails, for whatever reason.
+        Callback for when logging into the network fails, for whatever reason.
         """
         self.login_callback(False)
         self.socket.close()
@@ -238,7 +238,7 @@ class StrategyClient(Client):
             self.socket.send(b"logout")
         except OSError:
             # The error occurs when there's something wrong with the socket, in which case the socket was closed
-            # on the server-side, in which case the event should be properly handled elsewhere (self.send designated for
+            # on the network-side, in which case the event should be properly handled elsewhere (self.send designated for
             # just that).
             pass
         self.socket.close()
@@ -246,7 +246,7 @@ class StrategyClient(Client):
         self.disconnect_callback()
 
     """
-    Functions to process the commands received from the server and update the database accordingly, if possible.
+    Functions to process the commands received from the network and update the database accordingly, if possible.
     Also, these functions call insert_callback for visual processing of the commands.
     """
 
@@ -274,7 +274,7 @@ class StrategyClient(Client):
         self.insert_callback("master", [new_master_name])
 
     """
-    Functions to send commands to the server upon events happening on the Map.
+    Functions to send commands to the network upon events happening on the Map.
     """
 
     def add_item(self, strategy, phase, text, font, color):

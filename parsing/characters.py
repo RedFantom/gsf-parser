@@ -44,7 +44,7 @@ class CharacterDatabase(dict):
 
     def get_player_servers(self):
         """
-        Get a dictionary of name: server
+        Get a dictionary of name: network
         """
         character_names = {}
         names = []
