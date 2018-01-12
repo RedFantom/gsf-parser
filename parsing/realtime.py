@@ -24,7 +24,7 @@ from parsing.guiparsing import GSFInterface
 from parsing import vision
 from tools.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
-from parsing.keys import keys
+from data.keys import keys
 from data.abilities import rep_ships
 from time import sleep
 
