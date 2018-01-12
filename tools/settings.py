@@ -36,7 +36,7 @@ def eval(value):
 class Settings(object):
     defaults = {
         "misc": {
-            "version": "v4.0.1",
+            "version": "v4.0.2",
             "autoupdate": True,
             "patch_level": "5.5",
             "temp_dir": ""
