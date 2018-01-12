@@ -1,64 +1,111 @@
-#!/usr/bin/env python
-# -*- coding: utf-8; mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vim: fileencoding=utf-8 tabstop=4 expandtab shiftwidth=4
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+import sys
+import os
 
-# (C) COPYRIGHT © Preston Landers 2010
-# Released under the same license as Python 2.6.5
+"""
+Based on various sources:
+
+    admin.py module
+    Copyright (C) 2010 Preston Landers
+    Released under the GPL-compatible Python 2.6.5 license
+    https://stackoverflow.com/questions/19672352
+    
+    Drop root privileges
+    Tamas on StackOverflow
+    https://stackoverflow.com/questions/2699907
+        
+
+Edited by RedFantom for platform support
+"""
 
 
-import sys, os, traceback, types
-
-
-def is_user_admin():
-    if os.name == 'nt':
+def check_privileges():
+    """
+    Return whether the current user running the program, not the one
+    logged in, has administrator rights. Supports Linux and Windows.
+    :return: True if admin, else False
+    """
+    if sys.platform == "win32":
         import ctypes
-        # WARNING: requires Windows XP SP2 or higher!
-        try:
-            return ctypes.windll.shell32.IsUserAnAdmin()
-        except:
-            traceback.print_exc()
-            print("Admin check failed, assuming not an admin.")
-            return False
-    elif os.name == 'posix':
-        # Check for root on Posix
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    elif sys.platform == "linux":
         return os.getuid() == 0
     else:
-        raise RuntimeError("Unsupported operating system for this module: %s" % (os.name,))
+        raise NotImplementedError("Unsupported platform")
 
 
-def run_as_admin(cmd_line=None, wait=True):
-    if os.name == 'nt':
-        import win32api, win32con, win32event, win32process
-        from win32com.shell.shell import ShellExecuteEx
+def escalate_privileges():
+    """
+    Rerun the currently active Python script as administrator. Only
+    works on Windows with UAC activation. Does not return. The current
+    program will exit. Behaviour:
+
+    Windows: Rerun as administrator with a UAC prompt through PowerShell
+             (PowerShell command).
+    Linux:   Replaces the current process with a new one executed as
+             administrator with a password prompt (sudo). Retains the
+             same PID and other attributes.
+    """
+    print("[Admin] Escalating privileges.")
+    if sys.platform == "win32":
+        import win32con
         from win32com.shell import shellcon
-
-        python_exe = sys.executable
-        if cmd_line is None:
-            cmd_line = [python_exe] + sys.argv
-        elif type(cmd_line) not in (tuple, list):
-            raise ValueError("cmdLine is not a sequence.")
-        cmd = '"%s"' % (cmd_line[0],)
-        params = " ".join(['"%s"' % (x,) for x in cmd_line[1:]])
-        show_cmd = win32con.SW_SHOWNORMAL
-        lp_verb = 'runas'  # causes UAC elevation prompt.
-        # ShellExecute() doesn't seem to allow us to fetch the PID or handle
-        # of the process, so we can't get anything useful from it. Therefore
-        # the more complex ShellExecuteEx() must be used.
-        proc_info = ShellExecuteEx(nShow=show_cmd,
-                                   fMask=shellcon.SEE_MASK_NOCLOSEPROCESS,
-                                   lpVerb=lp_verb,
-                                   lpFile=cmd,
-                                   lpParameters=params)
-        if wait:
-            proc_handle = proc_info['hProcess']
-            obj = win32event.WaitForSingleObject(proc_handle, win32event.INFINITE)
-            rc = win32process.GetExitCodeProcess(proc_handle)
-            # print "Process handle %s returned code %s" % (procHandle, rc)
-        else:
-            rc = None
-        return rc
+        from win32com.shell.shell import ShellExecuteEx
+        ShellExecuteEx(
+            nShow=win32con.SW_SHOWNORMAL,
+            fMask=shellcon.SEE_MASK_NOCLOSEPROCESS,
+            lpVerb="runas",
+            lpFile="\"{}\"".format(sys.executable),
+            lpParameters=" ".join(["\"{}\"".format(arg) for arg in sys.argv])
+        )
     elif sys.platform == "linux":
         os.execvp("sudo", ["sudo"] + sys.argv)
     else:
-        raise NotImplementedError()
-    exit()
+        raise NotImplementedError("Unsupported platform")
+
+
+def drop_privileges():
+    """
+    Drop administrative privileges, if the program has any. Platform
+    behaviour:
+    - Windows: Rerunning the whole program as a non-administrative user
+    - Linux:   Switching from an administrative user to a normal user.
+               This assumes that the program was run with sudo.
+    """
+    print("[Admin] Dropping privileges.")
+    # Check if the program is running with administrative privileges
+    if check_privileges() is False:
+        return False
+    # Drop the privileges
+    if sys.platform == "win32":
+        import win32con
+        from win32com.shell import shellcon
+        from win32com.shell.shell import ShellExecuteEx
+        ShellExecuteEx(
+            nShow=win32con.SW_SHOWNORMAL,
+            fMask=shellcon.SEE_MASK_NOCLOSEPROCESS,
+            lpFile="\"{}\"".format(sys.executable),
+            lpParameters=" ".join(["\"{}\"".format(arg) for arg in sys.argv])
+        )
+        return True
+    elif sys.platform == "linux":
+        import pwd
+        import grp
+        current_uid = pwd.getpwnam("nobody").pw_uid
+        current_gid = grp.getgrnam("nogroup").gr_gid
+        # Remove group privileges
+        os.setgroups([])
+        # Drop the privileges
+        os.setgid(current_gid)
+        os.setuid(current_uid)
+        # Set a new umask for security
+        os.umask(0o077)
+        return True
+    else:
+        raise NotImplementedError("Unsupported platform")
+

@@ -17,7 +17,7 @@ from queue import Queue
 # Miscellaneous
 from variables import settings
 from tools.utilities import get_swtor_screen_mode
-from tools.admin import is_user_admin
+from tools.admin import check_privileges
 import time
 import psutil
 import os
@@ -98,7 +98,7 @@ class RealtimeFrame(ttk.Frame):
             if self.check_screen_mode() is False:
                 return
         if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
-            if not is_user_admin():
+            if not check_privileges():
                 messagebox.showinfo(
                     "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
                             "administrator, which prevents reading input from the SWTOR window. Please restart the "

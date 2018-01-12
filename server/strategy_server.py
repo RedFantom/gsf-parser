@@ -12,7 +12,7 @@ from datetime import datetime
 from select import select
 # Own modules
 from server.strategy_clienthandler import StrategyClientHandler
-from tools.admin import is_user_admin
+from tools.admin import check_privileges
 from tools.utilities import get_temp_directory
 
 
@@ -30,7 +30,7 @@ class StrategyServer(threading.Thread):
         :raises: RuntimeError if the binding to the hostname and port fails
         :raises: ValueError if the host and/or port are found to be invalid values
         """
-        if not is_user_admin():
+        if not check_privileges():
             raise RuntimeError("Attempted to open a server while user is not admin.")
         threading.Thread.__init__(self)
         # Create a non-blocking socket to provide the best performance in the loop

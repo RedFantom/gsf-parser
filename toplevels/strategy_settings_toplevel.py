@@ -14,7 +14,7 @@ import variables
 from parsing.strategies import StrategyDatabase
 from server.strategy_client import StrategyClient
 from server.strategy_server import StrategyServer
-from tools.admin import run_as_admin, is_user_admin
+from tools.admin import escalate_privileges, check_privileges
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 
@@ -297,7 +297,7 @@ class SettingsToplevel(SnapToplevel):
         Start a new Strategy Server. User must be an admin user to start a server (as the binding to an address
         requires privileges to create a port in the Windows Firewall).
         """
-        if not is_user_admin():
+        if not check_privileges():
             # If the user is not an admin, making a hole in the firewall to receive connections is not possible
             # The program should re-run as admin, possibly with UAC elevation
             confirmation = messagebox.askyesno("Question", "Starting a server requires administrative privileges, "
@@ -309,7 +309,7 @@ class SettingsToplevel(SnapToplevel):
             variables.main_window.destroy()
             try:
                 # Re-run as an administrator
-                run_as_admin()
+                escalate_privileges()
             except Exception as e:
                 # If an error occurs, it is highly likely that the user has denied UAC elevation
                 print(repr(e))

@@ -19,10 +19,10 @@ from tools import admin
 
 class CartelFix(tk.Toplevel):
     def __init__(self, master, first, second, coordinates, scale):
-        if not admin.is_user_admin():
+        if not admin.check_privileges():
             if sys.platform == "win32":
                 variables.main_window.destroy()
-                admin.run_as_admin()
+                admin.escalate_privileges()
                 exit()
             else:
                 showinfo("Information", "This feature is currently not supported on Unix machines.")

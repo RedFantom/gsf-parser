@@ -10,9 +10,8 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
-from time import sleep
 # Own modules
-from tools.admin import is_user_admin, run_as_admin
+from tools.admin import check_privileges, escalate_privileges
 from .sharing_clienthandler import SharingClientHandler
 from server.database import DatabaseHandler
 
@@ -42,8 +41,8 @@ class SharingServer(threading.Thread):
         Setup the socket to bind and then listen for clients
         :raises: RuntimeError if executed as non-admin
         """
-        if not is_user_admin():
-            run_as_admin()
+        if not check_privileges():
+            escalate_privileges()
         self._socket.bind(self._address)
         print("SharingServer bound to addres:", self._address)
 
