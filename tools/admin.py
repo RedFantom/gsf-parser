@@ -64,7 +64,7 @@ def escalate_privileges():
             lpParameters=" ".join(["\"{}\"".format(arg) for arg in sys.argv])
         )
     elif sys.platform == "linux":
-        os.execvp("sudo", ["sudo"] + sys.argv)
+        os.execvp("sudo", ["sudo", sys.executable] + sys.argv)
     else:
         raise NotImplementedError("Unsupported platform")
 

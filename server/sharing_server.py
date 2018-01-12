@@ -5,13 +5,12 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 import socket
-import os
 import threading
 from queue import Queue
 from datetime import datetime
 from select import select
 # Own modules
-from tools.admin import check_privileges, escalate_privileges
+from tools.admin import *
 from .sharing_clienthandler import SharingClientHandler
 from server.database import DatabaseHandler
 
@@ -44,6 +43,7 @@ class SharingServer(threading.Thread):
         if not check_privileges():
             escalate_privileges()
         self._socket.bind(self._address)
+        drop_privileges()
         print("SharingServer bound to addres:", self._address)
 
     def run(self):
