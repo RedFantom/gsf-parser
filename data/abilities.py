@@ -12,6 +12,8 @@ onto the screen.
 """
 from collections import OrderedDict
 
+
+component_types = ["primaries", "secondaries", "systems", "engines", "shields"]
 """
 All components sorted into categories of their component type
 """
