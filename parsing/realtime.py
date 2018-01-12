@@ -25,8 +25,7 @@ from parsing import vision
 from tools.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
 from parsing.keys import keys
-from parsing.ships import ships, Ship
-from parsing.abilities import rep_ships
+from data.abilities import rep_ships
 from time import sleep
 
 """

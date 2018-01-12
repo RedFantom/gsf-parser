@@ -15,7 +15,7 @@ from parsing.parser import Parser
 from widgets.verticalscrollframe import VerticalScrollFrame
 from widgets import ScaleEntry
 from . import splashscreens
-from parsing import abilities as abls
+from data import abilities as abls
 
 
 class Filters(tk.Toplevel):

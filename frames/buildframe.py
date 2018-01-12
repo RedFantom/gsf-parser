@@ -5,9 +5,8 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 from frames.shipstatsframe import ShipStatsFrame
-from parsing.abilities import all_ships
+from data.abilities import all_ships
 from parsing.ships import Ship, Component, companions_db_categories
-from tools.utilities import get_assets_directory
 from widgets import *
 
 

@@ -8,7 +8,7 @@ Copyright (C) 2016-2018 RedFantom
 # UI imports
 import datetime
 import variables
-from . import abilities
+from data import abilities
 import re
 
 # Name of the columns for the pretty event printing functions

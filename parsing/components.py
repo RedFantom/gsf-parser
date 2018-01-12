@@ -3,7 +3,7 @@
 """
 This file contains code to generate new ability data structures during runtime
 """
-from parsing import abilities
+from data import abilities
 from parsing.ships import ships as ships_full_dict
 
 # Run-time generated dictionary of lists of abilities

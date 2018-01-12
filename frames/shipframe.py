@@ -12,7 +12,7 @@ import tkinter.messagebox
 import os
 from PIL import Image, ImageTk
 import variables
-from parsing import abilities
+from data import abilities
 
 
 class ShipFrame(ttk.Frame):

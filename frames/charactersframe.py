@@ -17,7 +17,7 @@ from tools.utilities import get_assets_directory
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from toplevels.addcharacter import AddCharacter
 from variables import settings
-from parsing import abilities
+from data import abilities
 from collections import OrderedDict
 from tkinter import messagebox as mb
 from parsing.ships import Ship

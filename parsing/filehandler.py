@@ -10,7 +10,7 @@ from tools.utilities import get_temp_directory
 # General imports
 from parsing.parser import Parser
 from parsing.vision import *
-from parsing import abilities
+from data import abilities
 from parsing.shipstats import ShipStats
 # General imports
 from pynput.mouse import Button

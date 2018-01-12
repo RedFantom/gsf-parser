@@ -2,7 +2,8 @@
 # Is capable of parsing files as well as realtime parsing
 import os
 from datetime import datetime
-from parsing import abilities, effects, durations
+from parsing import effects, durations
+from data import abilities
 from variables import settings, colors
 
 

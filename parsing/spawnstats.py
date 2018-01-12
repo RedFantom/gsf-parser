@@ -3,7 +3,7 @@
 # All additions are under the copyright of their respective authors
 # For license see LICENSE.md
 from parsing.parser import Parser
-from parsing import abilities
+from data import abilities
 from parsing.components import component_types
 
 

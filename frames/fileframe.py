@@ -15,7 +15,8 @@ import operator
 import os
 # Own modules
 import variables
-from parsing import abilities, folderstats, filestats, matchstats, spawnstats
+from parsing import folderstats, filestats, matchstats, spawnstats
+from data import abilities
 from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters

@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from variables import settings
 from .ships import Ship
-from . import abilities
+from data import abilities
 
 
 class CharacterDatabase(dict):
