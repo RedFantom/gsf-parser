@@ -10,10 +10,12 @@ from tkinter import messagebox
 import pickle as pickle
 import os
 import sys
-from tools import utilities
+
+from utils import directories
+from utils import utilities
 from widgets import VerticalScrollFrame
 from PIL import Image, ImageTk
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from toplevels.addcharacter import AddCharacter
 from variables import settings
@@ -55,7 +57,7 @@ class CharactersFrame(ttk.Frame):
         """
         ttk.Frame.__init__(self, parent)
         self.window = main_window
-        self.directory = utilities.get_temp_directory()
+        self.directory = directories.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = servers
         # Create a dictionary that is the reverse of self.servers

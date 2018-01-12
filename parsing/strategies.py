@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 
 import _pickle as pickle
-from tools.utilities import get_temp_directory
+from utils.directories import get_temp_directory
 import os
 
 

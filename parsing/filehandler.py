@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 
 # Own modules
-from tools.utilities import get_temp_directory
+from utils.directories import get_temp_directory
 # General imports
 from parsing.parser import Parser
 from parsing.vision import *

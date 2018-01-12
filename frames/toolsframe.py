@@ -13,8 +13,8 @@ from tkinter.filedialog import askopenfilename
 from widgets import VerticalScrollFrame
 # Tools
 from parsing.guiparsing import GSFInterface, get_gui_profiles
-from tools.utilities import get_assets_directory
-from tools.database_explorer import DatabaseExplorer
+from utils.directories import get_assets_directory
+from tools.explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix
 from tools import simulator
 # Miscellaneous
@@ -132,7 +132,6 @@ class ToolsFrame(ttk.Frame):
         """
         This is a stand-alone tool, so simply importing will start this tool.
         """
-        from tools import splitting
 
     def set_simulator_file(self):
         """

@@ -13,7 +13,7 @@ from ttkwidgets import CheckboxTreeview
 from network.sharing_client import SharingClient
 from variables import settings
 from parsing.parser import Parser
-from tools.utilities import get_temp_directory
+from utils.directories import get_temp_directory
 from network.sharing_data import *
 
 

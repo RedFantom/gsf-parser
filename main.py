@@ -11,7 +11,7 @@ import sys
 import shutil
 import platform
 from tkinter import messagebox, filedialog
-from tools.utilities import get_temp_directory
+from utils.directories import get_temp_directory
 
 
 def new_window():

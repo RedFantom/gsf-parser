@@ -10,7 +10,8 @@ from tkinter import messagebox
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread
-from tools.utilities import get_temp_directory, get_screen_resolution
+from utils.utilities import get_screen_resolution
+from utils.directories import get_temp_directory
 from variables import settings
 # File parsing
 import os
@@ -22,7 +23,7 @@ from PIL import Image
 from datetime import datetime, timedelta
 from parsing.guiparsing import GSFInterface
 from parsing import vision
-from tools.utilities import get_cursor_position
+from utils.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
 from data.keys import keys
 from data.abilities import rep_ships

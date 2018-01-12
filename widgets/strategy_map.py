@@ -13,7 +13,8 @@ from PIL import Image, ImageTk
 from ttkwidgets.color import askcolor
 from ttkwidgets.font import FontSelectFrame
 from parsing.strategies import *
-from tools.utilities import get_assets_directory, map_dictionary
+from utils.utilities import map_dictionary
+from utils.directories import get_assets_directory
 
 
 class Map(ttk.Frame):

@@ -8,7 +8,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from widgets import HoverInfo, VerticalScrollFrame
 import variables
-from tools.utilities import open_icon
+from utils.utilities import open_icon
 
 
 class ComponentWidget(ttk.Frame):

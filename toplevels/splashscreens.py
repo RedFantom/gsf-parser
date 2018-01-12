@@ -12,7 +12,8 @@ import tkinter.ttk as ttk
 import os
 from PIL import Image, ImageTk
 # Own modules
-from tools import utilities
+from utils import directories
+from utils import utilities
 
 
 class SplashScreen(tk.Toplevel):
@@ -39,7 +40,7 @@ class BootSplash(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
         self.logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(utilities.get_assets_directory(), "logos", "logo_green.png")))
+            Image.open(os.path.join(directories.get_assets_directory(), "logos", "logo_green.png")))
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         self.window = window

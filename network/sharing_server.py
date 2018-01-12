@@ -10,7 +10,7 @@ from queue import Queue
 from datetime import datetime
 from select import select
 # Own modules
-from tools.admin import *
+from utils.admin import *
 from .sharing_clienthandler import SharingClientHandler
 from network.database import DatabaseHandler
 

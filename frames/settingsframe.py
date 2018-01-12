@@ -16,7 +16,7 @@ import os
 from variables import settings, colors
 from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
-from tools.utilities import get_screen_resolution
+from utils.utilities import get_screen_resolution
 from collections import OrderedDict
 from parsing.vision import timer_boxes
 

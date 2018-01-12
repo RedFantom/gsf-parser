@@ -10,8 +10,8 @@ import pip
 from shutil import rmtree, move, copytree, copyfile, make_archive
 import subprocess
 # Own modules
-from tools.settings import Settings
-from tools import admin
+from settings.settings import Settings
+from utils import admin
 from setup_script import script
 
 

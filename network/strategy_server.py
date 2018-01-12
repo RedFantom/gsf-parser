@@ -12,8 +12,8 @@ from datetime import datetime
 from select import select
 # Own modules
 from network.strategy_clienthandler import StrategyClientHandler
-from tools.admin import check_privileges
-from tools.utilities import get_temp_directory
+from utils.admin import check_privileges
+from utils.directories import get_temp_directory
 
 
 class StrategyServer(threading.Thread):

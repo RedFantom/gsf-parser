@@ -9,7 +9,7 @@ import math
 import cv2
 from PIL import Image
 import numpy
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 from parsing.imgcompare import get_similarity, get_similarity_pixels, get_brightest_pixel
 import operator
 

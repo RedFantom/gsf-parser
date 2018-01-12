@@ -27,7 +27,7 @@ from toplevels.splashscreens import BootSplash
 # Own modules
 import variables
 import main
-from tools.utilities import get_temp_directory, get_assets_directory
+from utils.directories import get_temp_directory, get_assets_directory
 # Packages
 import pyscreenshot
 from github import Github, GithubException

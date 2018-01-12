@@ -16,7 +16,7 @@ import os
 from parsing.parser import Parser
 from data.icons import icons
 from data.effects import all_effects
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 import variables
 
 

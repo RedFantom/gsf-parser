@@ -14,7 +14,7 @@ from PIL import Image, ImageTk
 import sys
 # Own modules
 import variables
-from tools import admin
+from utils import admin
 
 
 class CartelFix(tk.Toplevel):

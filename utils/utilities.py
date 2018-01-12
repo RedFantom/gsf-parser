@@ -5,9 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 
-import os
 from os import path
-import sys
 from PIL import Image
 from PIL.ImageTk import PhotoImage as photo
 from sys import platform
@@ -86,32 +84,6 @@ def get_cursor_position():
         raise ValueError("This function does not support macOS")
     else:
         raise ValueError("Unknown platform detected")
-
-
-def get_temp_directory():
-    """
-    Returns the absolute path to the directory that is to be used by the
-    GSF Parser for the temporary files.
-    """
-    if sys.platform == "win32":
-        import tempfile
-        folder = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "GSF Parser"))
-    elif sys.platform == "linux":
-        folder = "/var/tmp/gsfparser"
-    else:
-        raise ValueError("Unsupported platform: %s" % sys.platform)
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    return folder
-
-
-def get_assets_directory():
-    """
-    Returns the absolute path to the assets directory of the GSF Parser
-    :return: str, absolute path
-    """
-    path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
-    return path
 
 
 def get_screen_resolution():

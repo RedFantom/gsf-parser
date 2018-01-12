@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from parsing.ships import component_types_list, Ship, Component, component_types
 from pprint import pprint
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 import os
 import _pickle as pickle
 component_types_reverse = {value: key for key, value in component_types.items()}

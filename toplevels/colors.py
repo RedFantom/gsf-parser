@@ -14,7 +14,7 @@ import tkinter.colorchooser
 import collections
 import os
 # Own modules
-from tools import utilities
+from utils import directories
 import variables
 
 
@@ -100,10 +100,11 @@ class EventColors(tk.Toplevel):
             self.color_entry_widgets_fg[key].config(foreground=foreground_color, background=self.colors[key][1])
 
     def import_button_cb(self):
-        file_to_open = tkinter.filedialog.askopenfile(filetypes=[("Settings file", ".ini")],
-                                                      initialdir=os.path.join(utilities.get_temp_directory(),
-                                                                              "event_colors.ini"),
-                                                      parent=self, title="GSF Parser: Import colors from file")
+        file_to_open = tkinter.filedialog.askopenfile(
+            filetypes=[("Settings file", ".ini")],
+            initialdir=os.path.join(directories.get_temp_directory(),
+                                    "event_colors.ini"),
+            parent=self, title="GSF Parser: Import colors from file")
         if not file_to_open:
             self.focus_set()
             return
@@ -118,11 +119,13 @@ class EventColors(tk.Toplevel):
         self.focus_set()
 
     def export_button_cb(self):
-        file_to_save = tkinter.filedialog.asksaveasfilename(defaultextension=".ini",
-                                                            filetypes=[("Settings file", ".ini")],
-                                                            initialdir=os.path.join(utilities.get_temp_directory(),
-                                                                                    "event_colors.ini"),
-                                                            parent=self, title="GSF Parser: Export colors to file")
+        file_to_save = tkinter.filedialog.asksaveasfilename(
+            defaultextension=".ini",
+            filetypes=[("Settings file", ".ini")],
+            initialdir=os.path.join(
+                directories.get_temp_directory(),
+                "event_colors.ini"),
+            parent=self, title="GSF Parser: Export colors to file")
         if not file_to_save:
             self.focus_set()
             return
@@ -137,10 +140,11 @@ class EventColors(tk.Toplevel):
 
     def set_color(self, key, fg=False):
         if not fg:
-            color_tuple = tkinter.colorchooser.askcolor(color=self.color_entry_widgets_bg[key].get(),
-                                                        title="GSF Parser: Choose color for %s" %
-                                                              self.color_descriptions[
-                                                                  key])
+            color_tuple = tkinter.colorchooser.askcolor(
+                color=self.color_entry_widgets_bg[key].get(),
+                title="GSF Parser: Choose color for %s" %
+                      self.color_descriptions[
+                          key])
             try:
                 red = int(color_tuple[0][0])
                 green = int(color_tuple[0][1])

@@ -12,7 +12,7 @@ except ImportError:
 from PIL import Image
 from PIL.ImageTk import PhotoImage
 from collections import OrderedDict
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 import os
 
 

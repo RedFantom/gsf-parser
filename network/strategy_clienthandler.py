@@ -8,7 +8,7 @@ import queue
 from os import path
 # Own modules
 from .clienthandler import ClientHandler
-from tools.utilities import get_temp_directory
+from utils.directories import get_temp_directory
 
 
 class StrategyClientHandler(ClientHandler):

@@ -6,7 +6,7 @@
 import tkinter.ttk as ttk
 import tkinter as tk
 from PIL import Image, ImageTk
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 import os
 
 

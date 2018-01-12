@@ -5,7 +5,8 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 import os
-from tools.settings import Settings, ColorSchemes
+from settings.settings import Settings
+from settings.colors import ColorSchemes
 
 settings = Settings()
 colors = ColorSchemes()

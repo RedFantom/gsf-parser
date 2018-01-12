@@ -19,8 +19,8 @@ from parsing.realtime import RealTimeParser
 from queue import Queue
 # Miscellaneous
 from variables import settings
-from tools.swtor import get_swtor_screen_mode
-from tools.admin import check_privileges
+from utils.swtor import get_swtor_screen_mode
+from utils.admin import check_privileges
 
 
 class RealtimeFrame(ttk.Frame):
