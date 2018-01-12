@@ -11,10 +11,11 @@ from math import ceil, floor
 
 def get_ship_from_lineup(character_data, abilities):
     """
-    :param character_data: a character data dictionary (of which one of the keys must be "Ship Objects"
+    :param character_data: a character data dictionary (of which one of
+    the keys must be "Ship Objects"
     :param abilities: an abilities dictionary {ability: count}
-    :return: The Ship object from the character's line-up that matches the given abilities, or None if no match
-             was established.
+    :return: The Ship object from the character's line-up that matches
+             the given abilities, or None if no match was established.
     """
     pass
 
@@ -26,7 +27,8 @@ def get_time_to_kill(source, target, distance=None, source_buffs=None, target_bu
     :param distance: The distance to the target, assumes max when None
     :param source_buffs: A tuple of str with the source ability buffs
     :param target_buffs: A tuple of str with the target ability buffs
-    :param weapon: Weapon key (may also be PrimaryWeapon2, or even SecondaryWeapon (which is probably not very usable,
+    :param weapon: Weapon key (may also be PrimaryWeapon2, or even
+                   SecondaryWeapon (which is probably not very usable,
                    but hey, it's possible))
     :return: The estimated TTK, factoring in shield piercing and all other important statistics, float
     """

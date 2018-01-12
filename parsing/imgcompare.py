@@ -8,9 +8,10 @@ Copyright (C) 2016-2018 RedFantom
 
 def get_similarity(template, to_match):
     """
-    Compares two images and returns the similarity ratio. Based upon code of a StackOverflow question that I can't seem
-    to find to put the link here. Anyway, RedFantom has rewritten this code to work with Python 3 and to comply with
-    PEP-8.
+    Compares two images and returns the similarity ratio. Based upon
+    code of a StackOverflow question that I can't seem to find to put
+    the link here. Anyway, RedFantom has rewritten this code to work
+    with Python 3 and to comply with PEP-8.
     :param template: Image object or path
     :param to_match: Image object or path
     :return: ratio

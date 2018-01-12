@@ -56,7 +56,3 @@ def get_file_string(file_name):
         return None
     file_string = file_time.strftime("%Y-%m-%d   %H:%M")
     return file_string
-
-
-def get_id_numbers_from_file():
-    pass

@@ -14,8 +14,9 @@ component_types_reverse = {value: key for key, value in component_types.items()}
 
 class ShipStats(object):
     """
-    Class to calculate the statistics for a given ship object. Uses the data found in the databases to calculate
-    statistics for the main ship and each component.
+    Class to calculate the statistics for a given ship object. Uses the
+    data found in the databases to calculate statistics for the main
+    ship and each component.
     """
 
     def __init__(self, ship, ships_data, companions_data):

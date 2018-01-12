@@ -11,9 +11,10 @@ import os
 
 class LogStalker(object):
     """
-    LogStalker class that does *not* run in a Thread, but can instead be called upon in cycles to read from the log
-    file and return the lines that are newly found in the most recent CombatLog. Not interchangeable with earlier
-    implementations.
+    LogStalker class that does *not* run in a Thread, but can instead
+    be called upon in cycles to read from the log file and return the
+    lines that are newly found in the most recent CombatLog. Not
+    interchangeable with earlier implementations.
     """
     def __init__(self, folder=variables.settings["parsing"]["path"], watching_callback=None):
         """
@@ -27,8 +28,9 @@ class LogStalker(object):
 
     def update_file(self):
         """
-        Update the currently watched file to the newest file available. Does not change anything if the file is already
-        the most recent available.
+        Update the currently watched file to the newest file available.
+        Does not change anything if the file is already the most recent
+        available.
         """
         files = os.listdir(self._folder)
         if len(files) == 0:

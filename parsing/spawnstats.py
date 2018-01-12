@@ -4,6 +4,7 @@
 # For license see LICENSE.md
 from parsing.parser import Parser
 from parsing import abilities
+from parsing.components import component_types
 
 
 def spawn_statistics(file_name, spawn, spawn_timing):
@@ -43,7 +44,7 @@ def spawn_statistics(file_name, spawn, spawn_timing):
         dps=dmg_d / delta.total_seconds() if delta.total_seconds() != 0 else 0
     )
     # Build the components list
-    components = {key: "" for key in abilities.component_types}
+    components = {key: "" for key in component_types}
     for component in [ability for ability in abilities_dict.keys() if ability in abilities.components]:
         for type in components.keys():
             if component not in getattr(abilities, type):
@@ -54,6 +55,6 @@ def spawn_statistics(file_name, spawn, spawn_timing):
                 break
             components[type] = component
             break
-    components = [components[category] for category in abilities.component_types]
+    components = [components[category] for category in component_types]
     # Return
     return name, spawn, abilities_dict, stat_string, ships_list, components, enemies, enemy_dmg_d, enemy_dmg_t

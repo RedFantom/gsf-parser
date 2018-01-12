@@ -11,8 +11,10 @@ from . import abilities
 
 class CharacterDatabase(dict):
     """
-    Dictionary like object with more attributes to allow for management of the character database. Built for 5.5 update,
-    as updating the ships database requires the clearing of all data in the characters database.
+    Dictionary like object with more attributes to allow for management
+    of the character database. Built for 5.5 update, as updating the
+    ships database requires the clearing of all data in the characters
+    database.
     """
 
     def __init__(self):

@@ -21,9 +21,11 @@ def get_gui_profiles():
 
 def get_player_guiname(player_name):
     """
-    Returns the GUI Profile name for a certain player name. Does not work if there are multiple characters with the same
-    name on the same account used on the same computer and also doesn't work if the name is misspelled. Credit for
-    finding this reference to the GUI state files in the SWTOR settings files goes to Ion.
+    Returns the GUI Profile name for a certain player name. Does not
+    work if there are multiple characters with the same name on the same
+    account used on the same computer and also doesn't work if the name
+    is misspelled. Credit for finding this reference to the GUI state
+    files in the SWTOR settings files goes to Ion.
     :param player_name: name of the player
     :return: GUI profile name, not XML file
     """
@@ -59,8 +61,10 @@ def get_player_guiname(player_name):
 
 class GUIParser(object):
     """
-    Parses an SWTOR GUI profile by first reading the file into an ElementTree and then allowing the user to retrieve
-    data values from the profile by providing tuples or directly calculating coordinates the user needs. Example piece
+    Parses an SWTOR GUI profile by first reading the file into an
+    ElementTree and then allowing the user to retrieve data values from
+    the profile by providing tuples or directly calculating coordinates
+    the user needs. Example piece
     of GSF GUI profile section:
     <FreeFlightPlayerStatusEffects>
         <anchorAlignment Type="3" Value="2.000000" />
@@ -70,13 +74,15 @@ class GUIParser(object):
         <enabled Type="2" Value="1" />
         <alpha Type="3" Value="100.000000" />
     </FreeFlightPlayerStatusEffects>
-    All GSF GUI elements provide the attributes anchorAlignment, anchorXOffset, anchorYOffset, scale, enabled and alpha
-    The amount of GSF GUI elements is, luckily, quite limited, a list of items is available in the class' __init__
-    function.
+    All GSF GUI elements provide the attributes anchorAlignment,
+    anchorXOffset, anchorYOffset, scale, enabled and alpha. The amount
+    of GSF GUI elements is, luckily, quite limited, a list of items is
+    available in the class' __init__ function.
 
     The alignment of the GUI element works as follows:
     - The anchorXOffset and anchorYOffset are in pixels
-    - The offsets are counted from one out of nine points on the screen, to the same respective point on the GUI element
+    - The offsets are counted from one out of nine points on the screen,
+    to the same respective point on the GUI element
     - The points are these:
              X    Y
       * 1: Left top
@@ -89,23 +95,28 @@ class GUIParser(object):
       * 8: Center bottom
       * 9: Center center
 
-    So, if the anchorXOffset is 50, the anchorYOffset is 0 and the anchor is 8, then the bottom center of the GUI
-    element is 50 pixels to the right from the bottom center of the screen
+    So, if the anchorXOffset is 50, the anchorYOffset is 0 and the
+    anchor is 8, then the bottom center of the GUI element is 50 pixels
+    to the right from the bottom center of the screen.
 
-    All the credit for this incredibly useful information goes to Ion, who has written a SWTOR UI layout generator
-    that you can find here: https://github.com/ion1/swtor-ui
+    All the credit for this incredibly useful information goes to Ion,
+    who has written a SWTOR UI layout generator that you can find here:
+    https://github.com/ion1/swtor-ui
 
-    Important Note: Not all GUI elements in the SWTOR XML files have the same capitalization in their elements. Such as
-    the different variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please check what forrmat your option
-    uses before using it in this class.
+    Important Note: Not all GUI elements in the SWTOR XML files have
+    the same capitalization in their elements. Such as the different
+    variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please
+    check what forrmat your option uses before using it in this class.
     """
 
     debug = True
 
     def __init__(self, file_name, target_items):
         """
-        Initializes the class by reading the XML file and setting things up for access by the user
-        :param file_name: a GUI profile file_name, either an absolute path or a plain file_name
+        Initializes the class by reading the XML file and setting things
+        up for access by the user
+        :param file_name: a GUI profile file_name, either an absolute
+                          path or a plain file_name
         """
         file_name = os.path.basename(file_name)
         if ".xml" not in file_name:
@@ -149,7 +160,8 @@ class GUIParser(object):
     @staticmethod
     def get_anchor_dictionary(resolution):
         """
-        Get a dictionary of the absolute pixel points for each of the nine anchor points in the docstring of this class
+        Get a dictionary of the absolute pixel points for each of the
+        nine anchor points in the docstring of this class
         by performing the required calculations.
         :param resolution: (width, height) tuple
         :return: anchor_point dict
@@ -198,7 +210,8 @@ class GUIParser(object):
     @staticmethod
     def get_element_scale(element):
         """
-        As the scale is a float value, not an int, the normal class method can't be used for this item
+        As the scale is a float value, not an int, the normal class
+        method can't be used for this item
         :param element: element object
         :return: float
         """
@@ -210,7 +223,8 @@ class GUIParser(object):
 
     def get_essential_element_values(self, element):
         """
-        Get the essential element values for a GSF GUI element (for the position)
+        Get the essential element values for a GSF GUI element (for the
+        position)
         :param element: XML parser element
         :return: anchor number, x_offset int, y_offset int, alpha percentage
         """
@@ -221,13 +235,14 @@ class GUIParser(object):
 
     def get_element_object(self, element_name):
         """
-        Check the element name passed as argument and return an appropriate element object
+        Check the element name passed as argument and return an
+        appropriate element object
         :param element_name: str name
         :return: element object
         """
         if element_name not in self.gui_elements:
-            raise ValueError("element requested that was not in target_items initializer argument: {0}".
-                             format(element_name))
+            raise ValueError(
+                "element requested that was not in target_items initializer argument: {0}".format(element_name))
         return self.gui_elements[element_name]
 
     def get_element_anchor(self, element):

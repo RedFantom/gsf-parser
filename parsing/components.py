@@ -33,4 +33,5 @@ ship_components.update(
     {full: ship_components[basic] for basic, full in ships_full_dict.items() if basic in ship_components}
 )
 
+component_types = ["primaries", "secondaries", "systems", "engines", "shields"]
 
