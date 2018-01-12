@@ -13,8 +13,8 @@ import textwrap
 # Own modules
 from parsing.shipstats import ShipStats
 from parsing.ships import component_types_list, component_strings
-from parsing.statistics import categories as statistic_categories, statistics as statistic_strings
-from parsing.statistics import weapon_categories as weapon_statistic_categories
+from data.statistics import categories as statistic_categories, statistics as statistic_strings
+from data.statistics import weapon_categories as weapon_statistic_categories
 
 
 class ShipStatsFrame(ttk.Frame):
