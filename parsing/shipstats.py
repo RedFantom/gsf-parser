@@ -9,7 +9,7 @@ from pprint import pprint
 from tools.utilities import get_assets_directory
 import os
 import _pickle as pickle
-reverse_component_types = {value: key for key, value in component_types.items()}
+component_types_reverse = {value: key for key, value in component_types.items()}
 
 
 class ShipStats(object):
@@ -46,7 +46,7 @@ class ShipStats(object):
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
         for category in component_types_list:
-            category = reverse_component_types[category]
+            category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
                 print("Category not found: {}".format(category))
