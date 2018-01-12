@@ -4,7 +4,10 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
+import time
+import psutil
+import os
+import sys
 # UI imports
 import tkinter as tk
 from tkinter import ttk
@@ -16,12 +19,8 @@ from parsing.realtime import RealTimeParser
 from queue import Queue
 # Miscellaneous
 from variables import settings
-from tools.utilities import get_swtor_screen_mode
+from tools.swtor import get_swtor_screen_mode
 from tools.admin import check_privileges
-import time
-import psutil
-import os
-import sys
 
 
 class RealtimeFrame(ttk.Frame):

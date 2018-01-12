@@ -4,7 +4,8 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from tools.utilities import get_swtor_directory, get_screen_resolution, get_assets_directory
+from tools.utilities import get_screen_resolution, get_assets_directory
+from tools.swtor import get_swtor_directory
 import xml.etree.cElementTree as et
 import os
 from tkinter import messagebox
@@ -16,7 +17,8 @@ def get_gui_profiles():
     :return: list
     """
     return [item.replace(".xml", "") for item in
-            os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
+            os.listdir(os.path.join(get_swtor_directory(),
+                                    "swtor", "settings", "GUIProfiles"))]
 
 
 def get_player_guiname(player_name):
