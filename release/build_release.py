@@ -10,7 +10,7 @@ import pip
 from shutil import rmtree, move, copytree, copyfile, make_archive
 import subprocess
 # Own modules
-from settings.settings import Settings
+from settings.defaults import defaults
 from utils import admin
 from setup_script import script
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     if target == "s" or target == "b":
         printw("Please enter a Publisher name for the Setup: ")
         publisher = input()
-    version = Settings.defaults["misc"]["version"]
+    version = defaults["misc"]["version"]
     # Install all required packages using pip
     printw("Installing packages if required...")
     pip.main(["install", "-r", "../requirements.txt", "-q"])
