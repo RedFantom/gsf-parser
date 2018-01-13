@@ -14,7 +14,8 @@ from widgets.strategy_map import Map
 
 class AddStrategy(tk.Toplevel):
     """
-    Toplevel to allow the user to choose a name and map for the new Strategy the user wants to create. Also features a
+    Toplevel to allow the user to choose a name and map for the new
+    Strategy the user wants to create. Also features a
     Cancel button to allow the user to cancel the action.
     """
     maps = {
@@ -22,7 +23,8 @@ class AddStrategy(tk.Toplevel):
         "Lost Shipyards DOM": ("dom", "ls"),
         "Denon Exosphere DOM": ("dom", "de"),
         "Kuat Mesas TDM": ("tdm", "km"),
-        "Lost Shipyards TDM": ("tdm", "ls")
+        "Lost Shipyards TDM": ("tdm", "ls"),
+        "Battle over Iokath TDM": ("tdm", "io")
     }
 
     def __init__(self, *args, **kwargs):

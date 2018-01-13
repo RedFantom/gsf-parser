@@ -16,7 +16,8 @@ from tkinter import messagebox
 map_dictionary = {
     "tdm": {
         "km": "kuatmesas",
-        "ls": "lostshipyards"
+        "ls": "lostshipyards",
+        "io": "iokath"
     },
     "dom": {
         "km": "kuatmesas",
