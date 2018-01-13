@@ -10,8 +10,6 @@ used in Galactic StarFighter, in order for the parser to be able to
 identify ships by their components and abilities and print them neatly
 onto the screen.
 """
-from collections import OrderedDict
-
 
 component_types = ["primaries", "secondaries", "systems", "engines", "shields"]
 """
@@ -203,7 +201,9 @@ excluded_abilities = [
 
 # All ships with their Imperial Faction names available in GSF
 ships = [
-    "Legion", "Decimus", "Razorwire", "Jurgoran", "Dustmaker", "Mangler", "Bloodmark", "Blackbolt", "Sting",
+    "Legion", "Decimus", "Razorwire",
+    "Jurgoran", "Dustmaker", "Mangler",
+    "Bloodmark", "Blackbolt", "Sting",
     "Imperium", "Rycer", "Quell"
 ]
 # Ships abilities
@@ -242,8 +242,10 @@ rep_ships = {
 # The ships with their Imperial Faction names to print on the screen, with \t padding
 # to make the printing look the same for every ship.
 ships_strings = [
-    "Legion\t", "Decimus\t", "Razorwire\t", "Jurgoran\t", "Dustmaker", "Mangler\t", "Bloodmark",
-    "Blackbolt\t", "Sting\t", "Imperium\t", "Rycer\t", "Quell\t"
+    "Legion\t", "Decimus\t", "Razorwire\t",
+    "Jurgoran\t", "Dustmaker", "Mangler\t",
+    "Bloodmark", "Blackbolt\t", "Sting\t",
+    "Imperium\t", "Rycer\t", "Quell\t"
 ]
 
 rep_strings = {
@@ -283,25 +285,6 @@ all_ships = {
     "Demolisher": "Strongarm",
     "Gladiator": "Enforcer"
 }
-
-sorted_ships = OrderedDict()
-sorted_ships["Legion"] = "Warcarrier"
-sorted_ships["Razorwire"] = "Rampart Mark Four"
-sorted_ships["Decimus"] = "Sledgehammer"
-sorted_ships["Mangler"] = "Quarrel"
-sorted_ships["Jurgoran"] = "Condor"
-sorted_ships["Dustmaker"] = "Comet Breaker"
-sorted_ships["Rycer"] = "Star Guard"
-sorted_ships["Imperium"] = "Clarion"
-sorted_ships["Quell"] = "Pike"
-sorted_ships["Sting"] = "Flashfire"
-sorted_ships["Bloodmark"] = "Spearpoint"
-sorted_ships["Blackbolt"] = "Novadive"
-sorted_ships["Onslaught"] = "Firehauler"
-sorted_ships["Mailoc"] = "Redeemer"
-sorted_ships["Demolisher"] = "Strongarm"
-sorted_ships["Ocula"] = "Skybolt"
-sorted_ships["Gladiator"] = "Enforcer"
 
 ships_dual_secondaries = ["Mangler", "Jurgoran", "Dustmaker", "Quell"]
 ships_dual_primaries = ["Rycer"]

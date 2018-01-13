@@ -4,6 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+import data.ships
 from variables import settings
 from .ships import Ship
 from data import abilities
@@ -20,13 +21,15 @@ class CharacterDatabase(dict):
     def __init__(self):
         dict.__init__(self)
         self.version = settings["misc"]["patch_level"]
-        self[("TRE", "Example")] = {"Server": "DM",
-                                    "Faction": "Imperial",
-                                    "Name": "Example",
-                                    "Legacy": "E_Legacy",
-                                    "Ships": ("Blackbolt", "Rycer"),
-                                    "Ship Objects": {name: Ship(name) for name in abilities.sorted_ships.keys()},
-                                    "GUI": "Default"}
+        self[("TRE", "Example")] = {
+            "Server": "DM",
+            "Faction": "Imperial",
+            "Name": "Example",
+            "Legacy": "E_Legacy",
+            "Ships": ("Blackbolt", "Rycer"),
+            "Ship Objects": {name: Ship(name) for name in data.ships.sorted_ships.keys()},
+            "GUI": "Default"
+        }
 
     def update_servers(self, trans):
         """

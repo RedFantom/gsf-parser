@@ -8,11 +8,13 @@ Copyright (C) 2016-2018 RedFantom
 # UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox
+# Standard library
 import os
 from PIL import Image, ImageTk
-import variables
-from data import abilities
+# Custom modules
+from variables import settings
+from utils.directories import get_assets_directory
+from data.abilities import rep_ships
 
 
 class ShipFrame(ttk.Frame):
@@ -48,7 +50,6 @@ class ShipFrame(ttk.Frame):
     def grid_widgets(self):
         """
         Put the widgets in the right place
-        :return:
         """
         self.ship_image.grid(column=0, row=0, sticky="nswe")
         self.ship_label.grid(column=0, row=1, sticky="nswe", padx=5)
@@ -56,66 +57,37 @@ class ShipFrame(ttk.Frame):
 
     def update_ship(self, ships_list):
         """
-        Update the picture of the ship by using the ships_list as reference
-        If more ships are possible, set the default.
-        If zero ships are possible, there must be an error somewhere in the abilities module
-        :param ships_list:
-        :return:
+        Update the picture of the ship by using the ships_list as
+        reference. If multiple ships are possible, set the default.
+        If zero ships are possible, there must be an error somewhere
+        in the abilities module.
         """
         if len(ships_list) > 1:
-            print("[DEBUG] Ship_list larger than 1, setting default.png")
-            try:
-                self.set_image(os.path.dirname(__file__).replace("frames", "") + "assets\\img\\default.png".
-                               replace("\\", "/"))
-            except IOError:
-                print("[DEBUG] File not found.")
-                tkinter.messagebox.showerror("Error", "The specified picture can not be found. Is the assets folder "
-                                                      "copied correctly?")
-                return
-        elif len(ships_list) == 0:
-            raise ValueError("Ships_list == 0")
-        else:
-            print("[DEBUG]  Ship_list not larger than one, setting appropriate image")
-            try:
-                if variables.settings["gui"]["faction"] == "republic":
-                    img = abilities.rep_ships[ships_list[0]]
-                else:
-                    img = ships_list[0]
-                self.set_image(os.path.dirname(__file__).replace("frames", "") +
-                               ("\\assets\\img\\" + img + ".png").replace("\\", "/"))
-            except IOError:
-                tkinter.messagebox.showerror("Error", "The specified picture can not be found. Is the assets folder "
-                                                      "copied correctly?")
-                return
-        return
+            self.set_image("default.png")
+            return
+        name = ships_list[0] if settings["gui"]["faction"] != "republic" else rep_ships[ships_list[0]]
+        image = name + ".png"
+        self.set_image(image)
 
     def set_image(self, file):
         """
-        Set the image file, unless there is an IOError, because  then the assets folder is not in place
-        :param file:
-        :return:
+        Set the image file, unless there is an IOError, because  then
+        the assets folder is not in place
         """
-        try:
-            self.img = Image.open(file)
-            self.img = self.img.resize((260, 156), Image.ANTIALIAS)
-            self.pic = ImageTk.PhotoImage(self.img)
-            self.ship_image.config(image=self.pic)
-        except tk.TclError as e:
-            print(e)
+        path = os.path.join(get_assets_directory(), "img", file)
+        if not os.path.exists(path):
+            print("[ShipFrame] File not found:", path)
+            return
+        self.img = Image.open(file)
+        self.img = self.img.resize((260, 156), Image.ANTIALIAS)
+        self.pic = ImageTk.PhotoImage(self.img)
+        self.ship_image.config(image=self.pic)
 
     def remove_image(self):
         """
         Set the default image
-        :return:
         """
-        try:
-            self.pic = ImageTk.PhotoImage(Image.open(os.path.dirname(os.path.realpath(__file__)).
-                                                     replace("frames", "") +
-                                                     "assets\\img\\default.png").resize((260, 156), Image.ANTIALIAS))
-        except IOError:
-            print("[DEBUG] default.png can not be opened.")
-            return
-        try:
-            self.ship_image.config(image=self.pic)
-        except tk.TclError:
-            pass
+        self.set_default()
+
+    def set_default(self):
+        self.set_image("default.png")

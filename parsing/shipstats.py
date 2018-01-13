@@ -4,7 +4,8 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from parsing.ships import component_types_list, Ship, Component, component_types
+from data.components import component_types, components
+from parsing.ships import Ship, Component
 from pprint import pprint
 from utils.directories import get_assets_directory
 import os
@@ -46,7 +47,7 @@ class ShipStats(object):
         self.stats.clear()
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
-        for category in component_types_list:
+        for category in components:
             category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:

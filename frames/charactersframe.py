@@ -11,6 +11,7 @@ import pickle as pickle
 import os
 import sys
 
+import data.ships
 from utils import directories
 from utils import utilities
 from widgets import VerticalScrollFrame
@@ -116,12 +117,12 @@ class CharactersFrame(ttk.Frame):
         self.rep_ship_widgets = OrderedDict()
         self.rep_ship_variables = OrderedDict()
 
-        for ship_name in abilities.sorted_ships.keys():
+        for ship_name in data.ships.sorted_ships.keys():
             self.imp_ship_variables[ship_name] = tk.IntVar()
             self.imp_ship_widgets[ship_name] = ttk.Checkbutton(self.lineup_frame, text=ship_name,
                                                                variable=self.imp_ship_variables[ship_name],
                                                                command=self.update_ships)
-        for ship_name in abilities.sorted_ships.values():
+        for ship_name in data.ships.sorted_ships.values():
             self.rep_ship_variables[ship_name] = tk.IntVar()
             self.rep_ship_widgets[ship_name] = ttk.Checkbutton(self.lineup_frame, text=ship_name,
                                                                variable=self.rep_ship_variables[ship_name],
@@ -287,10 +288,10 @@ class CharactersFrame(ttk.Frame):
             pass
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: Ship(name) for name in abilities.sorted_ships.keys()}
+            ships_dict = {name: Ship(name) for name in data.ships.sorted_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: Ship(name) for name in abilities.sorted_ships.values()}
+            ships_dict = {name: Ship(name) for name in data.ships.sorted_ships.values()}
         else:
             raise ValueError("Unknown value for faction found: {0}".format(faction))
         server = self.reverse_servers[server]
@@ -327,10 +328,10 @@ class CharactersFrame(ttk.Frame):
             return
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: None for name in abilities.sorted_ships.keys()}
+            ships_dict = {name: None for name in data.ships.sorted_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: None for name in abilities.sorted_ships.values()}
+            ships_dict = {name: None for name in data.ships.sorted_ships.values()}
         else:
             raise ValueError("Unknown value for faction found: {0}".format(faction))
         self.character_data["Faction"] = faction

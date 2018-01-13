@@ -12,7 +12,7 @@ import tkinter.ttk as ttk
 import textwrap
 # Own modules
 from parsing.shipstats import ShipStats
-from parsing.ships import component_types_list, component_strings
+from data.components import components, component_strings
 from data.statistics import categories as statistic_categories, statistics as statistic_strings
 from data.statistics import weapon_categories as weapon_statistic_categories
 
@@ -63,7 +63,7 @@ class ShipStatsFrame(ttk.Frame):
                 continue
             self.insert_into_treeview("Ship", statistic, value)
         # Loop over the other categories to insert the other statistics
-        for category in component_types_list:
+        for category in components:
             # Skip any categories that are not in the ShipStats object
             if category not in self.stats:
                 continue
