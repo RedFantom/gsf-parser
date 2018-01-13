@@ -19,7 +19,7 @@ from frames import settingsframe, realtimeframe, buildframe, charactersframe
 from frames import shipframe, statsframe
 from frames.strategiesframe import StrategiesFrame
 # Widgets
-from widgets.debugwindow import DebugWindow
+from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
 # Own modules
 import variables
