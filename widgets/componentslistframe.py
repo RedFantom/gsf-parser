@@ -11,30 +11,17 @@ from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, ToggledFrame
 import textwrap
+from data.components import component_strings
 
 
 class ComponentListFrame(ttk.Frame):
     def __init__(self, parent, category, data_list, callback, toggle_callback):
         ttk.Frame.__init__(self, parent)
-        self.names = {
-            "PrimaryWeapon": "Primary Weapon",
-            "PrimaryWeapon2": "Primary Weapon",
-            "SecondaryWeapon": "Secondary Weapon",
-            "SecondaryWeapon2": "Secondary Weapon",
-            "Engine": "Engine",
-            "Systems": "Systems",
-            "ShieldProjector": "Shields",
-            "Magazine": "Magazine",
-            "Capacitor": "Capacitor",
-            "Reactor": "Reactor",
-            "Armor": "Armor",
-            "Sensor": "Sensors",
-            "Thruster": "Thrusters"
-        }
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=26, callback=toggle_callback)
+        self.toggled_frame = ToggledFrame(
+            self, text=component_strings[category], labelwidth=26, callback=toggle_callback)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}
