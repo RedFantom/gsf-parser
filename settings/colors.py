@@ -15,6 +15,13 @@ from settings.eval import config_eval
 
 
 class ColorSchemes(object):
+    """
+    This class provides an interface to a ConfigParser that stores the
+    colors used in the EventsView in a .ini file in the temporary
+    files directory. The colors are stored in memory in an Ordered
+    Dictionary in order to allow for looping over them in the correct
+    order for the user interface.
+    """
     def __init__(self):
         self.current_scheme = collections.OrderedDict()
 
@@ -22,9 +29,14 @@ class ColorSchemes(object):
         self.current_scheme[key] = value
 
     def __getitem__(self, key):
+        """
+        Retrieves a color for a certain category and provides error
+        handling for when the color is not available. The color may not
+        be found if the colors.ini file was modified by the user.
+        """
         try:
             return list(self.current_scheme[key])
-        except TypeError:
+        except (TypeError, KeyError, ValueError):
             messagebox.showerror(
                 "Error", "The requested color for %s was could not be "
                          "type changed into a list. Did you alter the "
@@ -32,12 +44,18 @@ class ColorSchemes(object):
             return ['#ffffff', '#000000']
 
     def set_scheme(self, name, custom_file=(os.path.join(directories.get_temp_directory(), "events_colors.ini"))):
+        """
+        Set the scheme to either the bright scheme, pastel scheme or
+        the custom scheme. If the scheme is set to custom, then the
+        configuration file is read from event_colors.ini.
+        """
         name = name.lower()
         if name == "bright":
             self.current_scheme = default_colors
         elif name == "pastel":
             self.current_scheme = pastel_colors
         elif name == "custom":
+            # Read the custom color scheme file
             cp = configparser.RawConfigParser()
             cp.read(custom_file)
             try:
@@ -53,12 +71,13 @@ class ColorSchemes(object):
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
     def write_custom(self):
+        """
+        Writes the current_scheme instance attribute to the
+        configuration file in the temporary directory.
+        """
         custom_file = os.path.join(directories.get_temp_directory(), "event_colors.ini")
         cp = configparser.RawConfigParser()
-        try:
-            cp.add_section("colors")
-        except configparser.DuplicateSectionError:
-            pass
+        cp.add_section("colors")
         for key, value in list(self.current_scheme.items()):
             cp.set('colors', key, value)
         with open(custom_file, "w") as file_obj:
