@@ -78,7 +78,7 @@ class ShipFrame(ttk.Frame):
         if not os.path.exists(path):
             print("[ShipFrame] File not found:", path)
             return
-        self.img = Image.open(file)
+        self.img = Image.open(path)
         self.img = self.img.resize((260, 156), Image.ANTIALIAS)
         self.pic = ImageTk.PhotoImage(self.img)
         self.ship_image.config(image=self.pic)
