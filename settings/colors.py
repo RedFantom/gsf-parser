@@ -14,7 +14,7 @@ from data.colors import default_colors, pastel_colors
 from settings.eval import config_eval
 
 
-class ColorSchemes(object):
+class ColorScheme(object):
     """
     This class provides an interface to a ConfigParser that stores the
     colors used in the EventsView in a .ini file in the temporary

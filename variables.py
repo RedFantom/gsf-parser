@@ -6,10 +6,10 @@ Copyright (C) 2016-2018 RedFantom
 """
 import os
 from settings.settings import Settings
-from settings.colors import ColorSchemes
+from settings.colors import ColorScheme
 
 settings = Settings()
-colors = ColorSchemes()
+colors = ColorScheme()
 
 files_done = 0
 

@@ -28,3 +28,7 @@ class TestImageOps(TestCase):
         for expected, pixel1, pixel2 in pixels:
             result = imageops.get_similarity_pixels(pixel1, pixel2)
             self.assertAlmostEquals(round(result, 0), expected)
+
+    def test_brightest_pixel(self):
+        result = imageops.get_brightest_pixel(self.image)
+        self.assertIsInstance(result, tuple)
