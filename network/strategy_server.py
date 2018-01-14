@@ -195,8 +195,9 @@ class StrategyServer(threading.Thread):
             if message[1] is not self.master_handler:
                 # If anyone else but the master_handler tries to kick, then the player requesting the kick is kicked
                 # as that behaviour should not be possible without modified code.
-                StrategyServer.write_log("Only the master_handler is allowed to kick a player, but received the kick command "
-                                 "from the ClientHandler for {0}. Kicking this person instead.".format(message[1].name))
+                StrategyServer.write_log(
+                    "Only the master_handler is allowed to kick a player, but received the kick command "
+                    "from the ClientHandler for {0}. Kicking this person instead.".format(message[1].name))
                 player = message[1].name
             sent = False
             for handler in self.client_handlers:
@@ -229,8 +230,9 @@ class StrategyServer(threading.Thread):
         elif message[0] == "master":
             StrategyServer.write_log("Master handler change requested.")
             if not message[2] is self.master_handler:
-                StrategyServer.write_log("Someone other than the master_handler attempted to set a new master: {0}. "
-                                 "Kicking this person instead.".format(message[2].name))
+                StrategyServer.write_log(
+                    "Someone other than the master_handler attempted to set a new master: {0}. "
+                    "Kicking this person instead.".format(message[2].name))
                 self.server_queue.put(("kick_{0}".format(message[2].name), self.master_handler))
             else:
                 command, name, handler_object = message
@@ -250,16 +252,17 @@ class StrategyServer(threading.Thread):
                 self.write_log("Successfully changed the master to {}".format(self.master_handler.name))
         else:
             # The command is not a login or a logout, and thus a Map operation
-            # The command is distributed to all active ClientHandlers, except to the master_handler, as the
-            # master_handler is the source of the operation
+            # The command is distributed to all active ClientHandlers, except
+            # to the master_handler, as the master_handler is the source
+            # of the operation
             StrategyServer.write_log("Sending data to other client handlers")
             for client_handler in self.client_handlers:
                 # The client_handler is checked against the source of the operation
                 if client_handler is message[1]:
                     continue
                 StrategyServer.write_log("Sending data to ClientHandler {0}".format(client_handler.name))
-                # The data is put into the client_queue of the ClientHandler, so the ClientHandler will send the data to
-                # its Client
+                # The data is put into the client_queue of the ClientHandler,
+                # so the ClientHandler will send the data to its Client
                 client_handler.client_queue.put(message[0])
 
         # Update the list of client names
