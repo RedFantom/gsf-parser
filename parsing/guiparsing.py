@@ -124,13 +124,12 @@ class GUIParser(object):
         file_name = os.path.basename(file_name)
         if ".xml" not in file_name:
             file_name += ".xml"
+        if "Default.xml" in file_name or file_name == "default":
+            file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
         if not os.path.exists(file_name):
             file_name = os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles", file_name)
         if not os.path.exists(file_name):
-            if "Default.xml" in file_name:
-                file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
-            else:
-                raise ValueError("file_name specified is not valid: {0}".format(file_name))
+            raise FileNotFoundError("file_name specified is not valid: {0}".format(file_name))
         self.file_name = file_name
         self.tree = et.parse(file_name)
         self.root = self.tree.getroot()
