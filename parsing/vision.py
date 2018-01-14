@@ -8,7 +8,7 @@ import os
 import math
 from PIL import Image
 from utils.directories import get_assets_directory
-from parsing.imgcompare import get_similarity, get_similarity_pixels, get_brightest_pixel
+from parsing.imageops import get_similarity, get_similarity_pixels, get_brightest_pixel
 import operator
 
 colors = {
@@ -139,8 +139,10 @@ def get_ship_health_shields(image, coordinates):
 
     for element, coord in generator:
         rgb = image.getpixel(coord)
+        print(coord, rgb)
         for name, color in colors.items():
             if get_similarity_pixels(color, rgb) >= 80:
                 results[element] = name
+                break
     return (health[results["f1"]] + health[results["f2"]],
             health[results["r1"]] + health[results["r2"]])
