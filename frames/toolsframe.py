@@ -12,7 +12,8 @@ import tkinter.messagebox as mb
 from tkinter.filedialog import askopenfilename
 from widgets import VerticalScrollFrame
 # Tools
-from parsing.guiparsing import GSFInterface, get_gui_profiles
+from parsing.guiparsing import get_gui_profiles
+from parsing.gsfinterface import GSFInterface
 from utils.directories import get_assets_directory
 from tools.explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix

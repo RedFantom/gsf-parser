@@ -38,6 +38,7 @@ def get_combatlogs_folder():
     Returns absolute path to the CombatLogs folder in the user's
     Documents folder. Works on both Windows or Linux.
     """
-    return os.path.realpath(
-        os.path.join(
-            os.path.expanduser("~"), "Documents", "Star Wars - The Old Republic", "CombatLogs"))
+    relative_path = os.path.join("Documents", "Star Wars - The Old Republic", "CombatLogs")
+    user_path = os.path.expanduser("~")
+    path = os.path.realpath(os.path.join(user_path, relative_path))
+    return path

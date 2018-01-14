@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 import tkinter as tk
 from tkinter import ttk
 # Own modules
-from parsing.guiparsing import GSFInterface
+from parsing.gsfinterface import GSFInterface
 
 
 class MapOverlay(tk.Toplevel):

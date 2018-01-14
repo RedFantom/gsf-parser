@@ -21,7 +21,7 @@ import mss
 import pynput
 from PIL import Image
 from datetime import datetime, timedelta
-from parsing.guiparsing import GSFInterface
+from parsing.gsfinterface import GSFInterface
 from parsing import vision
 from utils.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
@@ -487,12 +487,7 @@ class RealTimeParser(Thread):
             unit = "°" if penalty is None else "%"
             string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
             self.screen_data["tracking"] = string
-        """
-        Power Management
-        """
-        if "Power Management" in self._screen_parsing_features:
-            power_mgmt = vision.get_power_management(screenshot, *self._coordinates["power_mgmt"])
-            self.screen_data["power_mgmt"] = power_mgmt
+
         """
         Ship Health
         """
@@ -662,11 +657,6 @@ class RealTimeParser(Thread):
             self.dmg_d, self.dmg_t, self.dmg_s, self._healing
         )
         return string
-
-    def get_power_mgmt_string(self):
-        if "Power Management" not in self._screen_parsing_features:
-            return ""
-        return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
 
     def get_timer_string(self):
         if self._spawn_time is None:

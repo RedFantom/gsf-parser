@@ -6,9 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import os
 import math
-import cv2
 from PIL import Image
-import numpy
 from utils.directories import get_assets_directory
 from parsing.imgcompare import get_similarity, get_similarity_pixels, get_brightest_pixel
 import operator
@@ -37,25 +35,6 @@ def get_pointer_middle(coordinates, size=(44, 44)):
     if size[0] % 2 == 1 or size[1] % 2 == 1 or size[0] != size[1]:
         raise ValueError("The pointer image is of an invalid size.")
     return coordinates[0] + size[0] / 2, coordinates[1] + size[1] / 2
-
-
-def pillow_to_numpy(pillow):
-    """
-    :param pillow: Image file in Pillow format
-    :return: Image file in OpenCV compatible numpy array format
-    """
-    imagefile = numpy.array(pillow)
-    return imagefile[:, :, ::-1].copy()
-
-
-def numpy_to_pillow(array):
-    pillow = cv2.cvtColor(array, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(pillow)
-
-
-def get_xy_tuple(xy):
-    (x, y) = xy
-    return int(x), int(y)
 
 
 def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
@@ -112,40 +91,6 @@ def get_timer_status(source, treshold=15.0):
     if len(image_similarity) == 0:
         return None
     return int(min(image_similarity.items(), key=operator.itemgetter(1))[0])
-
-
-def get_power_management(screen, weapon_cds, shield_cds, engine_cds):
-    """
-    Uses template matching to determine how the user has divided the power
-    among the different ship components.
-    :param screen: cv2 array of screenshot
-    :param weapon_cds:
-    :param shield_cds:
-    :param engine_cds:
-    :return: int 1, 2, 3, 4
-             1: power to weapons
-             2: power to shields
-             3: power to engines
-             4: power to all
-    """
-    try:
-        weapon_rgb = screen[weapon_cds[0]][weapon_cds[1]]
-        engine_rgb = screen[shield_cds[0]][shield_cds[1]]
-        shield_rgb = screen[engine_cds[0]][engine_cds[1]]
-    except IndexError:
-        return None
-    weapon_power = list((value > 25) for value in weapon_rgb)
-    engine_power = list((value > 25) for value in engine_rgb)
-    shield_power = list((value > 25) for value in shield_rgb)
-    if True in weapon_power:
-        power_mgmt = 1
-    elif True in engine_power:
-        power_mgmt = 3
-    elif True in shield_power:
-        power_mgmt = 2
-    else:
-        power_mgmt = 4
-    return power_mgmt
 
 
 def get_ship_health_hull(image, coordinates):

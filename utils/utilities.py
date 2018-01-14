@@ -11,7 +11,7 @@ from PIL.ImageTk import PhotoImage as photo
 from sys import platform
 import tkinter as tk
 from tkinter import messagebox
-
+from utils.directories import get_assets_directory
 
 map_dictionary = {
     "tdm": {
@@ -34,14 +34,15 @@ def open_icon_pil(image_name):
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
         raise ValueError()
-    icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
+    icons_path = path.join(get_assets_directory(), "icons")
     if not image_name.endswith(".jpg"):
         image_name += ".jpg"
     filename = path.join(icons_path, image_name)
     if not path.exists(filename):
-        messagebox.showinfo("Error", "A non-critical error occurred. The GSF Parser is missing an icon "
-                                     "with the name {}. Please report this error if you did not modify the "
-                                     "assets folder.".format(image_name))
+        messagebox.showinfo(
+            "Error", "A non-critical error occurred. The GSF Parser is missing an icon "
+                     "with the name {}. Please report this error if you did not modify the "
+                     "assets folder.".format(image_name))
         filename = path.join(icons_path, "imperial.png")
     return Image.open(filename)
 
@@ -101,4 +102,3 @@ def get_screen_resolution():
     height = root.winfo_screenheight()
     root.destroy()
     return width, height
-

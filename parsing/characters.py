@@ -4,10 +4,9 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-import data.ships
+from data import ships
 from variables import settings
 from .ships import Ship
-from data import abilities
 
 
 class CharacterDatabase(dict):
@@ -27,7 +26,7 @@ class CharacterDatabase(dict):
             "Name": "Example",
             "Legacy": "E_Legacy",
             "Ships": ("Blackbolt", "Rycer"),
-            "Ship Objects": {name: Ship(name) for name in data.ships.sorted_ships.keys()},
+            "Ship Objects": {name: Ship(name) for name in ships.sorted_ships.keys()},
             "GUI": "Default"
         }
 
