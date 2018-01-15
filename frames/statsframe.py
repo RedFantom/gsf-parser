@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -129,11 +128,8 @@ class StatsFrame(ttk.Frame):
         categories["shields_f"] = {"text": "Shields Front", "foreground": "green", "font": ("default", 11)}
         categories["shields_r"] = {"text": "Shields Rear", "foreground": "green", "font": ("default", 11)}
         categories["hull"] = {"text": "Hull Health", "foreground": "brown", "font": ("default", 11)}
-        # categories["systems"] = {"text": "Systems", "foreground": "#668cff", "font": ("default", 11)}
-        # categories["engines"] = {"text": "Engines", "foreground": "#b380ff", "font": ("default", 11)}
-        # categories["shields"] = {"text": "Shields", "foreground": "#8cac20", "font": ("default", 11)}
-        # categories["copilot"] = {"text": "CoPilot", "foreground": "#17a3ff", "font": ("default", 11)}
         categories["abilities"] = {"text": "Abilities", "foreground": "#17a3ff", "font": ("default", 11)}
+        categories["boosting"] = {"text": "Engine Boost", "foreground": "#751aff", "font": ("default", 11)}
         # categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         # categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
@@ -269,15 +265,15 @@ class StatsFrame(ttk.Frame):
         if isinstance(screen_dict, str):
             return
         markers = FileHandler.get_markers(screen_dict, file_cube[match][spawn])
-        print(markers)
         for category, data in markers.items():
             for (args, kwargs) in data:
                 try:
                     self.time_line.create_marker(*args, **kwargs)
-                except (ValueError, TypeError):
-                    print("Marker creation failed: '{}', '{}', '{}', '{}'".format(
-                        args[0], args[1], args[2], kwargs["background"])
+                except (ValueError, TypeError) as e:
+                    print("[TimeLine] Marker creation failed: '{}', '{}', '{}', '{}': {}".format(
+                        args[0], args[1], args[2], kwargs["background"], repr(e))
                     )
                     continue
-                print("Creating marker: '{}', '{}', '{}', '{}'".format(args[0], args[1], args[2], kwargs["background"]))
+                print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
+                    args[0], args[1], args[2], kwargs["background"]))
         return

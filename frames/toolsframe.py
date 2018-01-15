@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -13,10 +12,10 @@ import tkinter.messagebox as mb
 from tkinter.filedialog import askopenfilename
 from widgets import VerticalScrollFrame
 # Tools
-from parsing.guiparsing import GSFInterface, get_gui_profiles
-from tools.utilities import get_assets_directory
-from toplevels.importer import SettingsImporter
-from tools.database_explorer import DatabaseExplorer
+from parsing.guiparsing import get_gui_profiles
+from parsing.gsfinterface import GSFInterface
+from utils.directories import get_assets_directory
+from tools.explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix
 from tools import simulator
 # Miscellaneous
@@ -30,11 +29,9 @@ class ToolsFrame(ttk.Frame):
 
     Tool available:
     - CartelFix
-    - GSF Parser v1.4.1
     - Simulator
     - Splitter
     - SettingsImporter
-    - DatabaseExplorer
     """
 
     def __init__(self, master):
@@ -74,18 +71,6 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_button = ttk.Button(self.interior_frame.interior, text="Open CartelFix",
                                            command=self.open_cartel_fix)
         """
-        GSF Parser v1.4.1
-        """
-        self.separator_two = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.old_parser_heading_label = ttk.Label(self.interior_frame.interior, text="GSF Parser v1.4.1",
-                                                  font=("Calibri", 12))
-        self.old_parser_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="This old version of the GSF Parser has the ability to open statistics files, which are now "
-                 "deprecated. This old version is provided for your convenience.")
-        self.old_parser_button = ttk.Button(self.interior_frame.interior, text="Start GSF Parser v1.4.1",
-                                            command=self.open_old_parser)
-        """
         Simulator
         """
         self.separator_three = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
@@ -115,18 +100,6 @@ class ToolsFrame(ttk.Frame):
                  "non-match lines. You can choose the directory to put them in yourself.")
         self.splitting_button = ttk.Button(self.interior_frame.interior, text="Start splitter",
                                            command=self.start_splitter)
-        """
-        SettingsImporter
-        """
-        self.separator_five = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.importer_heading_label = ttk.Label(self.interior_frame.interior, text="Settings importer",
-                                                font=("Calibri", 12))
-        self.importer_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="Using this small utility you can import your GSF Parser settings from another file, so you can "
-                 "exchange settings with other people. It also provides an option to export your current settings.")
-        self.importer_button = ttk.Button(self.interior_frame.interior, text="Start importer",
-                                          command=self.start_importer)
         """
         DatabaseExplorer
         """
@@ -160,14 +133,6 @@ class ToolsFrame(ttk.Frame):
         """
         This is a stand-alone tool, so simply importing will start this tool.
         """
-        from tools import splitting
-
-    @staticmethod
-    def start_importer():
-        """
-        SettingsImporter is DEPRECATED with the new Settings class
-        """
-        SettingsImporter(variables.main_window)
 
     def set_simulator_file(self):
         """
@@ -252,11 +217,6 @@ class ToolsFrame(ttk.Frame):
     def open_database_explorer():
         DatabaseExplorer(variables.main_window)
 
-    @staticmethod
-    def open_old_parser():
-        variables.main_window.destroy()
-        from archive import gui
-
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=10, sticky="w")
         self.interior_frame.grid(row=1, column=0, columnspan=10, sticky="nswe", pady=5, padx=5)
@@ -268,10 +228,6 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_second_dropdown.grid(row=5, column=3, columnspan=2, sticky="we")
         self.cartelfix_gui_profile_dropdown.grid(row=5, column=5, sticky="we")
         self.cartelfix_button.grid(row=5, column=6, columnspan=4, sticky="we")
-        self.separator_two.grid(row=6, column=0, columnspan=10, sticky="we", pady=5)
-        self.old_parser_heading_label.grid(row=7, columnspan=10, sticky="w")
-        self.old_parser_description_label.grid(row=8, columnspan=10, sticky="w")
-        self.old_parser_button.grid(row=9, columnspan=2, sticky="we")
         self.separator_three.grid(row=10, columnspan=10, sticky="we", pady=5)
         self.simulator_heading_label.grid(row=11, columnspan=10, sticky="w")
         self.simulator_description_label.grid(row=12, columnspan=10, sticky="w")
@@ -282,10 +238,6 @@ class ToolsFrame(ttk.Frame):
         self.splitting_heading_label.grid(row=15, column=0, columnspan=10, sticky="w")
         self.splitting_description_label.grid(row=16, column=0, columnspan=10, sticky="w")
         self.splitting_button.grid(row=17, column=0, columnspan=2, sticky="we")
-        self.separator_five.grid(row=18, column=0, columnspan=10, sticky="we", pady=5)
-        self.importer_heading_label.grid(row=19, column=0, columnspan=10, sticky="w")
-        self.importer_description_label.grid(row=20, column=0, columnspan=10, sticky="w")
-        self.importer_button.grid(row=21, column=0, sticky="we", columnspan=2)
         self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
         self.database_explorer_heading_label.grid(row=23, column=0, columnspan=10, sticky="w")
         self.database_explorer_description_label.grid(row=24, column=0, columnspan=10, sticky="w")

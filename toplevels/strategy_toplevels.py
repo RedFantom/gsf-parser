@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -13,7 +14,8 @@ from widgets.strategy_map import Map
 
 class AddStrategy(tk.Toplevel):
     """
-    Toplevel to allow the user to choose a name and map for the new Strategy the user wants to create. Also features a
+    Toplevel to allow the user to choose a name and map for the new
+    Strategy the user wants to create. Also features a
     Cancel button to allow the user to cancel the action.
     """
     maps = {
@@ -21,7 +23,8 @@ class AddStrategy(tk.Toplevel):
         "Lost Shipyards DOM": ("dom", "ls"),
         "Denon Exosphere DOM": ("dom", "de"),
         "Kuat Mesas TDM": ("tdm", "km"),
-        "Lost Shipyards TDM": ("tdm", "ls")
+        "Lost Shipyards TDM": ("tdm", "ls"),
+        "Battle over Iokath TDM": ("tdm", "io")
     }
 
     def __init__(self, *args, **kwargs):

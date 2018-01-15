@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -13,15 +14,15 @@ from PIL import Image, ImageTk
 import sys
 # Own modules
 import variables
-from tools import admin
+from utils import admin
 
 
 class CartelFix(tk.Toplevel):
     def __init__(self, master, first, second, coordinates, scale):
-        if not admin.is_user_admin():
+        if not admin.check_privileges():
             if sys.platform == "win32":
                 variables.main_window.destroy()
-                admin.run_as_admin()
+                admin.escalate_privileges()
                 exit()
             else:
                 showinfo("Information", "This feature is currently not supported on Unix machines.")

@@ -1,125 +1,59 @@
 # Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
 # Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
 # All additions are under the copyright of their respective authors
-# For license see LICENSE
-
-# UI imports
-import tkinter.messagebox
-import datetime
-from . import abilities
-from . import parse
-from .lineops import line_to_dictionary
-import os
-import variables
+# For license see LICENSE.md
+from parsing.parser import Parser
+from data import abilities
 
 
 def spawn_statistics(file_name, spawn, spawn_timing):
     """
-    Does the same as match_statistics but for a spawn
-
-    :param spawn: A parse.splitter(...)[match][spawn] list of events
-    :return: abilities_string, a string for in the abilities tab
-             statistics_string, a string for in the statistics label in the
-                                statistics tab
-             total_shipsdict, a dictionary with ships as keys and the amount
-                              of times they occurred as values
-             total_enemies, a list of all enemies encountered in the whole
-                            folder
-             total_enemydamaged, a dictionary with the enemies as keys and
-                                 their respective damage taken from you as
-                                 values
-             total_enemydamaget, a dictionary with the enemies as keys and
-                                 their respective damage dealt to you as
-                                 values
-             uncounted, the amount of ships that was not counted in the
-                        total_shipsdict, if there was more than one
-                        possibility
+    Build strings to show in the StatsFrame
     """
-    player_numbers = parse.determinePlayer(spawn)
-    (abilitiesdict, damagetaken, damagedealt, healingreceived, selfdamage, enemies, criticalcount,
-     criticalluck, hitcount, ships_list, enemydamaged, enemydamaget) = parse.parse_spawn(spawn, player_numbers)
-
-    with open(os.path.join(variables.settings["parsing"]["path"], file_name), "rb") as fi:
-        lines = []
-        for line in fi.readlines():
-            try:
-                lines.append(line.decode())
-            except UnicodeDecodeError:
-                continue
-        name = parse.determinePlayerName(lines)
-    killsassists = 0
-    for enemy in enemies:
-        if enemydamaget[enemy] > 0:
-            killsassists += 1
-    ship_components = []
-    for key in abilitiesdict:
-        key = key.strip()
-        if key in abilities.components:
-            ship_components.append(key)
-        else:
-            print("Key not found in components: '{}'".format(key))
-    comps = ["Primary", "Secondary", "Engine", "Shield", "System"]
-    for component in ship_components:
-        if component in abilities.primaries:
-            if "Rycer" in ships_list:
-                if comps[0] == "Primary":
-                    comps[0] = component
-                else:
-                    comps[0] += "/" + component
-            else:
-                comps[0] = component
-        elif component in abilities.secondaries:
-            if "Quell" in ships_list:
-                if comps[1] == "Secondary":
-                    comps[1] = component
-                else:
-                    comps[1] += "/" + component
-            else:
-                comps[1] = component
-        elif component in abilities.engines:
-            comps[2] = component
-        elif component in abilities.shields:
-            comps[3] = component
-        elif component in abilities.systems:
-            comps[4] = component
-        elif component in abilities.components:
-            raise ValueError("Component '{}' not found in any of the categories".format(component))
-        else:
-            tkinter.messagebox.showinfo("WHAT?!", "DID GSF GET AN UPDATE?!")
-    if "Primary" in comps:
-        del comps[comps.index("Primary")]
-    if "Secondary" in comps:
-        del comps[comps.index("Secondary")]
-    if "Engine" in comps:
-        del comps[comps.index("Engine")]
-    if "Shield" in comps:
-        del comps[comps.index("Shield")]
-    if "System" in comps:
-        del comps[comps.index("System")]
-    last_line_dict = line_to_dictionary(spawn[len(spawn) - 1])
-    timing = datetime.datetime.strptime(last_line_dict['time'][:-4], "%H:%M:%S")
-    delta = timing - spawn_timing
-    elapsed = divmod(delta.total_seconds(), 60)
-    string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
-    try:
-        dps = round(damagedealt / delta.total_seconds(), 1)
-    except ZeroDivisionError:
-        dps = 0
-    try:
-        damage_ratio_string = str(str(round(float(damagedealt) / float(damagetaken), 1)) + " : 1") + "\n"
-    except ZeroDivisionError:
-        damage_ratio_string = "0.0 : 1\n"
-    statistics_string = (
-        name + "\n" +
-        str(killsassists) + " enemies" + "\n" +
-        str(damagedealt) + "\n" +
-        str(damagetaken) + "\n" +
-        damage_ratio_string +
-        str(selfdamage) + "\n" +
-        str(healingreceived) + "\n" +
-        str(hitcount) + "\n" +
-        str(criticalcount) + "\n" +
-        str(criticalluck) + "%" + "\n" + "-\n" + string + "\n" +
-        str(dps)
+    # Retrieve required data
+    lines = Parser.read_file(file_name)
+    player_numbers = Parser.get_player_id_list(lines)
+    (abilities_dict, dmg_t, dmg_d, healing, dmg_s, enemies, critcount,
+     crit_luck, hitcount, ships_list, enemy_dmg_d, enemy_dmg_t) = \
+        Parser.parse_spawn(spawn, player_numbers)
+    name = Parser.get_player_name(lines)
+    # Build the statistics string
+    stat_string = "{name}\n{enemies} enemies\n{dmg_d}\n{dmg_t}\n{dmg_r:.1f} : 1.0\n" \
+                  "{dmg_s}\n{healing}\n{hitcount}\n{critcount}\n{crit_luck:.2f}\n" \
+                  "{deaths}\n{minutes}:{seconds:.0f}\n{dps:.1f}"
+    start = spawn_timing
+    finish = Parser.line_to_dictionary(spawn[-1])["time"]
+    delta = finish - start
+    minutes, seconds = divmod(delta.total_seconds(), 60)
+    killsassists = sum(True if enemy_dmg_t[enemy] > 0 else False for enemy in enemies if enemy in enemy_dmg_t)
+    stat_string = stat_string.format(
+        name=name,
+        enemies=killsassists,
+        dmg_d=dmg_d,
+        dmg_t=dmg_t,
+        dmg_r=dmg_d / dmg_t if dmg_t != 0 else 0,
+        dmg_s=dmg_s,
+        healing=healing,
+        hitcount=hitcount,
+        critcount=critcount,
+        crit_luck=critcount / hitcount if hitcount != 0 else 0,
+        deaths="-",
+        minutes=minutes,
+        seconds=seconds,
+        dps=dmg_d / delta.total_seconds() if delta.total_seconds() != 0 else 0
     )
-    return name, spawn, abilitiesdict, statistics_string, ships_list, comps, enemies, enemydamaged, enemydamaget
+    # Build the components list
+    components = {key: "" for key in abilities.component_types}
+    for component in [ability for ability in abilities_dict.keys() if ability in abilities.components]:
+        for type in components.keys():
+            if component not in getattr(abilities, type):
+                continue
+            # Dual primary/secondary weapons
+            if components[type] != "":
+                components[type] += " / {}".format(component)
+                break
+            components[type] = component
+            break
+    components = [components[category] for category in abilities.component_types]
+    # Return
+    return name, spawn, abilities_dict, stat_string, ships_list, components, enemies, enemy_dmg_d, enemy_dmg_t

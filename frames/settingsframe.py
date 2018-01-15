@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -17,8 +16,9 @@ import os
 from variables import settings, colors
 from widgets import VerticalScrollFrame, HoverInfo
 from toplevels.colors import EventColors
-from tools.utilities import get_screen_resolution
+from utils.utilities import get_screen_resolution
 from collections import OrderedDict
+from parsing.vision import timer_boxes
 
 
 class SettingsFrame(ttk.Frame):
@@ -93,6 +93,19 @@ class SettingsFrame(ttk.Frame):
             self.parsing_frame, width=80 if sys.platform != "linux" else 60, textvariable=self.parsing_path)
         self.parsing_path_entry.bind("<Key>", self.save_settings_delayed)
         self.parsing_path_button = ttk.Button(self.parsing_frame, text="Browse", command=self.set_directory_dialog)
+        # Sharing server
+        self.parsing_sharing_server_frame = ttk.Frame(self.parsing_frame)
+        self.parsing_sharing_address = tk.StringVar()
+        self.parsing_sharing_port = tk.StringVar()
+        self.parsing_sharing_label = ttk.Label(self.parsing_sharing_server_frame, text="Sharing Server Address:")
+        self.parsing_sharing_address_label = ttk.Label(self.parsing_sharing_server_frame, text="Address:")
+        self.parsing_sharing_port_label = ttk.Label(self.parsing_sharing_server_frame, text="Port:")
+        self.parsing_sharing_address_entry = ttk.Entry(
+            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_address, width=40)
+        self.parsing_sharing_port_entry = ttk.Entry(
+            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_port, width=6)
+        self.parsing_sharing_address_entry.bind("<Key>", self.save_settings_delayed)
+        self.parsing_sharing_port_entry.bind("<Key>", self.save_settings_delayed)
 
         """
         RealTime settings
@@ -152,7 +165,9 @@ class SettingsFrame(ttk.Frame):
             command=self.save_settings)
         # Screen parsing features
         self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
-        self.screen_features = ["Tracking penalty", "Ship health", "Power management", "Mouse and Keyboard"]
+        self.screen_features = [
+            "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer"
+        ]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
         for feature in self.screen_features:
@@ -241,6 +256,13 @@ class SettingsFrame(ttk.Frame):
         self.parsing_path_label.grid(row=0, column=0, **padding_label, **sticky_default)
         self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
         self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
+        # Sharing server
+        self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
+        self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
+        self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
+        self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
+        self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
         """
         RealTime settings
         """
@@ -290,8 +312,7 @@ class SettingsFrame(ttk.Frame):
         GUI settings
         """
         self.gui_check_updates.set(settings["misc"]["autoupdate"])
-        mode = settings["gui"]["event_colors"]
-        self.gui_event_colors_type.set(True if mode == "advanced" else False)
+        self.gui_event_colors_type.set(settings["gui"]["event_colors"])
         self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
         self.gui_faction.set(settings["gui"]["faction"].capitalize())
         self.gui_debug_window.set(settings["gui"]["debug"])
@@ -299,6 +320,9 @@ class SettingsFrame(ttk.Frame):
         Parsing Settings
         """
         self.parsing_path.set(settings["parsing"]["path"])
+        self.parsing_sharing_port.set(settings["parsing"]["port"])
+        self.parsing_sharing_address.set(settings["parsing"]["address"])
+    
         """
         Real-time Settings
         """
@@ -322,14 +346,13 @@ class SettingsFrame(ttk.Frame):
         """
         Widget states
         """
-        if get_screen_resolution() != (1920, 1080):
-            if "Spawn Timer" in self.screen_features:
-                self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-                HoverInfo(
-                    self.screen_checkboxes["Spawn Timer"],
-                    text="This feature is only available for 1080p monitors as primary device. If you would like "
-                         "for your resolution to be supported, please send RedFantom an screenshot of the "
-                         "unaltered user interface shown before the start of a match.")
+        if get_screen_resolution() not in timer_boxes:
+            self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
+            HoverInfo(
+                self.screen_checkboxes["Spawn Timer"],
+                text="Your monitor resolution is not supported by this feature. If you would like "
+                     "for your resolution to be supported, please send RedFantom a screenshot of the "
+                     "unaltered user interface shown before the start of a match.")
         if sys.platform == "linux":
             self.realtime_overlay_experimental.set(False)
             self.realtime_overlay_experimental_checkbox.config(state=tk.DISABLED)
@@ -360,6 +383,8 @@ class SettingsFrame(ttk.Frame):
             },
             "parsing": {
                 "path": self.parsing_path.get(),
+                "address": self.parsing_sharing_address.get(),
+                "port": self.parsing_sharing_port.get()
             },
             "realtime": {
                 "overlay": self.realtime_overlay_enabled.get(),
@@ -396,5 +421,9 @@ class SettingsFrame(ttk.Frame):
         y = self.realtime_overlay_position_y.get()
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
+            return False
+        # Port
+        if not self.parsing_sharing_port.get().isdigit():
+            messagebox.showerror("Error", "The port entered is not a valid number.")
             return False
         return True

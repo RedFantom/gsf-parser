@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkfont
@@ -12,7 +13,8 @@ from PIL import Image, ImageTk
 from ttkwidgets.color import askcolor
 from ttkwidgets.font import FontSelectFrame
 from parsing.strategies import *
-from tools.utilities import get_assets_directory, map_dictionary
+from utils.utilities import map_dictionary
+from utils.directories import get_assets_directory
 
 
 class Map(ttk.Frame):
@@ -109,7 +111,7 @@ class Map(ttk.Frame):
         if map != "de" and map != "km" and map != "ls":
             raise ValueError("Not a valid map value: {0}".format(map))
         map = map_dictionary[type][map]
-        self._image = Image.open(os.path.join(get_assets_directory(), "strategies", "{0}_{1}.jpg".format(type, map)))
+        self._image = Image.open(os.path.join(get_assets_directory(), "maps", "{0}_{1}.jpg".format(type, map)))
         self._image = self._image.resize((self._canvaswidth, self._canvasheight), Image.ANTIALIAS)
         self._image = ImageTk.PhotoImage(self._image)
         self._background = self.canvas.create_image(0, 0, image=self._image, anchor=tk.NW, tag="background")

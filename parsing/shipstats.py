@@ -1,17 +1,23 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
-from parsing.ships import component_types_list, Ship, Component, component_types
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+from data.components import component_types, components
+from parsing.ships import Ship, Component
 from pprint import pprint
-reverse_component_types = {value: key for key, value in component_types.items()}
+from utils.directories import get_assets_directory
+import os
+import _pickle as pickle
+component_types_reverse = {value: key for key, value in component_types.items()}
 
 
 class ShipStats(object):
     """
-    Class to calculate the statistics for a given ship object. Uses the data found in the databases to calculate
-    statistics for the main ship and each component.
+    Class to calculate the statistics for a given ship object. Uses the
+    data found in the databases to calculate statistics for the main
+    ship and each component.
     """
 
     def __init__(self, ship, ships_data, companions_data):
@@ -24,6 +30,12 @@ class ShipStats(object):
             raise ValueError("ShipStats can only be initialized with a Ship object")
         self.stats = {}
         self.ship = ship
+        if ships_data is None:
+            with open(os.path.join(get_assets_directory(), "ships.db"), "rb") as fi:
+                ships_data = pickle.load(fi)
+        if companions_data is None:
+            with open(os.path.join(get_assets_directory(), "companions.db", "rb")) as fi:
+                companions_data = pickle.load(fi)
         self.ships_data = ships_data.copy()
         self.companions_data = companions_data.copy()
         self.calculate_ship_statistics()
@@ -35,8 +47,8 @@ class ShipStats(object):
         self.stats.clear()
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
-        for category in component_types_list:
-            category = reverse_component_types[category]
+        for category in components:
+            category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
                 print("Category not found: {}".format(category))

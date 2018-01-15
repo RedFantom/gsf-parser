@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 import tkinter.ttk as ttk
 from os import path
@@ -12,30 +11,17 @@ from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
 from widgets import HoverInfo, ToggledFrame
 import textwrap
+from data.components import component_strings
 
 
 class ComponentListFrame(ttk.Frame):
     def __init__(self, parent, category, data_list, callback, toggle_callback):
         ttk.Frame.__init__(self, parent)
-        self.names = {
-            "PrimaryWeapon": "Primary Weapon",
-            "PrimaryWeapon2": "Primary Weapon",
-            "SecondaryWeapon": "Secondary Weapon",
-            "SecondaryWeapon2": "Secondary Weapon",
-            "Engine": "Engine",
-            "Systems": "Systems",
-            "ShieldProjector": "Shields",
-            "Magazine": "Magazine",
-            "Capacitor": "Capacitor",
-            "Reactor": "Reactor",
-            "Armor": "Armor",
-            "Sensor": "Sensors",
-            "Thruster": "Thrusters"
-        }
         self.category = category
         self.callback = callback
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        self.toggled_frame = ToggledFrame(self, text=self.names[category], labelwidth=26, callback=toggle_callback)
+        self.toggled_frame = ToggledFrame(
+            self, text=component_strings[category], labelwidth=26, callback=toggle_callback)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}

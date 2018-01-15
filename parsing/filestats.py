@@ -1,115 +1,52 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
-
-# UI imports
-import decimal
-from . import parse
-from parsing import abilities
-import os
-import variables
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+from parsing.parser import Parser
 
 
-def file_statistics(filename, file_cube):
+def file_statistics(file_name, file_cube):
     """
-     Puts the statistics found in a file_cube from parse.splitter() into a
-     format that is usable by the file_frame to display them to the user
-     :param file_cube: An already split file into a file_cube
-     :return: abilities_string, a string for in the abilities tab
-              statistics_string, a string for in the statistics label in the
-                                 statistics tab
-              total_shipsdict, a dictionary with ships as keys and the amount
-                               of times they occurred as values
-              total_enemies, a list of all enemies encountered in the whole
-                             folder
-              total_enemydamaged, a dictionary with the enemies as keys and
-                                  their respective damage taken from you as
-                                  values
-              total_enemydamaget, a dictionary with the enemies as keys and
-                                  their respective damage dealt to you as
-                                  values
-              uncounted, the amount of ships that was not counted in the
-                         total_shipsdict, if there was more than one
-                         possibility
+    Puts the statistics found in a file_cube from Parser.split_combatlog() into a
+    format that is usable by the file_frame to display them to the user
     """
-    lines = []
-    for match in file_cube:
-        for spawn in match:
-            for line in spawn:
-                lines.append(line)
-    player_list = parse.determinePlayer(lines)
-    _, match_timings, spawn_timings = parse.splitter(lines, player_list)
-    with open(os.path.join(variables.settings["parsing"]["path"], filename), "rb") as fi:
-        lines = []
-        for line in fi.readlines():
-            try:
-                lines.append(line.decode())
-            except UnicodeDecodeError:
-                continue
-        name = parse.determinePlayerName(lines)
-    (abs, damagetaken, damagedealt, selfdamage, healingreceived, enemies, criticalcount, criticalluck,
-     hitcount, enemydamaged, enemydamaget, match_timings, spawn_timings) = \
-        parse.parse_file(file_cube, player_list, match_timings, spawn_timings)
-    total_abilities = {}
-    total_enemies = []
+    lines = Parser.read_file(file_name)
+    player_list = Parser.get_player_id_list(lines)
+    file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
+    lines = Parser.read_file(file_name)
+    name = Parser.get_player_name(lines)
+    (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
+     crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted) = \
+        Parser.parse_file(file_cube, player_list)
+    total = 0
+    start = None
+    for timing in match_timings:
+        if start is not None:
+            total += (timing - start).total_seconds()
+            start = None
+            continue
+        start = timing
+    minutes, seconds = divmod(total, 60)
 
-    for mat in abs:
-        for dic in mat:
-            for (key, value) in dic.items():
-                if key not in total_abilities:
-                    total_abilities[key] = value
-                else:
-                    total_abilities[key] += value
-    total_damagetaken = sum(sum(lst) for lst in damagetaken)
-    total_damagedealt = sum(sum(lst) for lst in damagedealt)
-    total_selfdamage = sum(sum(lst) for lst in selfdamage)
-    total_healingrecv = sum(sum(lst) for lst in healingreceived)
-    total_criticalcount = sum(sum(lst) for lst in criticalcount)
-    total_hitcount = sum(sum(lst) for lst in hitcount)
-    for matrix in enemies:
-        for lst in matrix:
-            for enemy in lst:
-                if enemy not in total_enemies:
-                    total_enemies.append(enemy)
-    try:
-        total_criticalluck = decimal.Decimal(total_criticalcount / total_hitcount)
-    except ZeroDivisionError:
-        total_criticalluck = 0
-    total_enemydamaged = enemydamaged
-    total_enemydamaget = enemydamaget
-    total_shipsdict = {}
-    uncounted = 0
-    for ship in abilities.ships:
-        total_shipsdict[ship] = 0
-    for match in file_cube:
-        for spawn in match:
-            ships_possible = parse.parse_spawn(spawn, player_list)[9]
-            if len(ships_possible) == 1:
-                if ships_possible[0] not in total_shipsdict:
-                    total_shipsdict[ships_possible[0]] = 0
-                total_shipsdict[ships_possible[0]] += 1
-            else:
-                uncounted += 1
-    total_killsassists = 0
-    for enemy in total_enemies:
-        if total_enemydamaget[enemy] > 0:
-            total_killsassists += 1
-    total_criticalluck = round(total_criticalluck * 100, 2)
-    deaths = 0
-    for match in file_cube:
-        deaths += len(match)
-    try:
-        damage_ratio_string = str(
-            str(round(float(total_damagedealt) / float(total_damagetaken), 1)) + " : 1") + "\n"
-    except ZeroDivisionError:
-        damage_ratio_string = "0.0 : 1\n"
-    statistics_string = (name + "\n" +
-        str(total_killsassists) + " enemies" + "\n" + str(total_damagedealt) + "\n" +
-        str(total_damagetaken) + "\n" + damage_ratio_string + str(total_selfdamage) + "\n" +
-        str(total_healingrecv) + "\n" + str(total_hitcount) + "\n" +
-        str(total_criticalcount) + "\n" + str(total_criticalluck) + "%" +
-        "\n" + str(deaths) + "\n-\n-")
-    return (total_abilities, statistics_string, total_shipsdict, total_enemies, total_enemydamaged,
-            total_enemydamaget, uncounted)
+    stat_string = "{name}\n{enemies} enemies\n{dmg_d}\n{dmg_t}\n{dmg_r:.1f} : 1.0\n" \
+                  "{dmg_s}\n{healing}\n{hitcount}\n{critcount}\n{crit_luck:.2f}\n" \
+                  "{deaths}\n{minutes}:{seconds:.0f}\n{dps:.1f}"
+    stat_string = stat_string.format(
+        name=name,
+        enemies=len([enemy for enemy in enemies if enemy in enemy_dmg_t and enemy_dmg_t[enemy] > 0]),
+        dmg_d=dmg_d,
+        dmg_t=dmg_t,
+        dmg_r=dmg_d / dmg_t if dmg_t != 0 else 0,
+        dmg_s=dmg_s,
+        healing=healing,
+        hitcount=hitcount,
+        critcount=critcount,
+        crit_luck=critcount / hitcount if hitcount != 0 else 0,
+        deaths=sum(len(match) for match in file_cube),
+        minutes=minutes,
+        seconds=seconds,
+        dps=dmg_d / total,
+    )
+    return abilities_dict, stat_string, ships, enemies, enemy_dmg_d, enemy_dmg_t, uncounted

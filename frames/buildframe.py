@@ -1,51 +1,27 @@
-# -*- coding: utf-8 -*-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 from frames.shipstatsframe import ShipStatsFrame
-from parsing.abilities import all_ships
-from parsing.ships import Ship, Component, companions_db_categories
-from tools.utilities import get_assets_directory
+from data.ships import companion_indices
+from data.components import components
+from parsing.ships import Ship, Component
 from widgets import *
 
 
 class BuildsFrame(ttk.Frame):
     """
-    This file is to use the ships.db file found in the folder ships. This file contains a pickle of a dictionary that
-    is explained in the README file. This also includes the not-enabled Infiltrator class ships.
+    This file is to use the ships.db file found in the folder ships.
+    This file contains a pickle of a dictionary that is explained in the
+    README file. This also includes the not-enabled Infiltrator class
+    ships.
     """
-
-    # TODO: Add functions to the Ship class for the correct calculation of all its statistics with the Component objects
-    # TODO: Implement toplevels.shipstats.ShipStats
 
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.window = variables.main_window
-        self.working = [
-            "PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems", "Engine",
-            "ShieldProjector", "Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
-        self.categories = {
-            "Bomber": 0,
-            "Gunship": 1,
-            "Infiltrator": 2,
-            "Scout": 3,
-            "Strike Fighter": 4
-        }
-        self.component_strings = {
-            "PrimaryWeapon": "Primary Weapon",
-            "SecondaryWeapon": "Secondary Weapon",
-            "Engine": "Engine",
-            "Systems": "Systems",
-            "ShieldProjector": "Shields",
-            "Magazine": "Magazine",
-            "Capacitor": "Capacitor",
-            "Reactor": "Reactor",
-            "Armor": "Armor",
-            "Sensor": "Sensors",
-            "Thruster": "Thrusters"
-        }
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
@@ -76,7 +52,7 @@ class BuildsFrame(ttk.Frame):
         # Header above the Components ToggledFrames
         self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
                                                        justify=tk.LEFT, font=("Calibiri", 12))
-        for category in self.working:
+        for category in components:
             # Bloodmark is the default around which the widgets are created
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
@@ -100,7 +76,8 @@ class BuildsFrame(ttk.Frame):
 
     def set_crew_member(self, member):
         """
-        Callback to set the crew member in both the database as well as in the CrewAbilitiesFrame
+        Callback to set the crew member in both the database as well as
+        in the CrewAbilitiesFrame
         :param member: (faction, category, name)
         """
         print("set_crew_member received member: {0}".format(member))
@@ -108,7 +85,7 @@ class BuildsFrame(ttk.Frame):
         value = None
         faction, category, name = member
         self.ship.crew[category] = member
-        category_index = companions_db_categories[category]
+        category_index = companion_indices[category]
         for index, companion in enumerate(self.companions_data[faction][category_index][category]):
             print("Checking companion: {0}".format(companion["Name"]))
             if name == companion["Name"]:
@@ -127,52 +104,41 @@ class BuildsFrame(ttk.Frame):
 
     def set_ship(self, faction, type, ship, ship_object):
         """
-        Callback to update the component lists and other widgets to match the newly selected ship
+        Callback to update the component lists and other widgets to
+        match the newly selected ship
         :param faction: faction, str
         :param type: ship type (Scout, Strike etc)
         :param ship: Ship name
         :param ship_object: parsing.ships.Ship instance
         """
+        # Close all the open ship category ToggledFrames
         if not self.ship_select_frame.category_frames[faction][type].show.get():
             self.ship_select_frame[faction][type].toggle()
-        ship_name = ""
-        if faction == "Imperial":
-            for key in all_ships.keys():
-                if key in ship:
-                    ship_name = key
-                    break
-        elif faction == "Republic":
-            for key in all_ships.values():
-                if key in ship:
-                    ship_name = key
-                    break
-        else:
-            raise ValueError("No valid faction given as argument.")
-        if ship_name == "":
-            raise ValueError("No valid ship specified.")
+
+        # Set the data attributes
         self.ship = ship_object
         self.character = self.ship_select_frame.character_tuple
+
+        # Remove component list ToggledFrames from the UI
         for widget in self.components_lists_frame.interior.winfo_children():
+            print(widget)
             widget.grid_forget()
             if isinstance(widget, ToggledFrame):
                 if widget.show.get():
                     widget.toggle()
-        for type in self.working:
+        for type in components:
             if type not in self.ship.data:
+                # Not all ships have all component types
                 print("type not in self.ship.data: {0}".format(type))
                 continue
             self.components_lists[type] = ComponentListFrame(
                 self.components_lists_frame.interior, type, self.ship.data[type], self.set_component,
                 self.toggle_callback)
-            try:
-                if self.ship[type] is None:
-                    continue
-                index = self.ship[type].index
-                print("Setting type {0} to index {1}".format(type, index))
-                self.components_lists[type].variable.set(index)
-            except KeyError as e:
-                print(e)
-                print("KeyError while setting index of type {0}".format(type))
+            if self.ship[type] is None:
+                continue
+            index = self.ship[type].index
+            print("Setting type {0} to index {1}".format(type, index))
+            self.components_lists[type].variable.set(index)
         for button in self.ship_select_frame.ship_buttons.values():
             button.config(state=tk.ACTIVE)
         for key in self.ship_select_frame.ship_buttons.keys():
@@ -197,8 +163,9 @@ class BuildsFrame(ttk.Frame):
 
     def set_component(self, category, component):
         """
-        Callback for the Radiobuttons in components list frame to update the component set for a certain category
-        on the currently selected ship.
+        Callback for the Radiobuttons in components list frame to update
+        the component set for a certain category on the currently
+        selected ship.
         """
         # Remove the current ComponentWidget
         self.current_component.grid_forget()
@@ -210,16 +177,6 @@ class BuildsFrame(ttk.Frame):
             if component == dictionary["Name"]:
                 indexing = index
                 break
-        print("Index determined as {}".format(indexing))
-        # This ValueError is raised when something is wrong with the database
-        # This error should not be raised if the database is okay
-        if indexing == -1:
-            messagebox.showerror("Error", "The GSF Parser encountered an error. A component was not found in the "
-                                          "component database:\nShip: {}\nCategory: {}\nComponent:{}\nPlease report "
-                                          "this issue.".format(self.ship.ship_name, category, component))
-            raise ValueError("Component not found in database with ship {0}, category {1} and component {2}".format(
-                self.ship.ship_name, category, component
-            ))
         # Create a tuple of arguments for the new Component widget
         args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship, category)
         # Create an appropriate ComponentWidget
@@ -261,6 +218,9 @@ class BuildsFrame(ttk.Frame):
         self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):
+        """
+        Puts all the widgets in the correct place for this Frame.
+        """
         self.grid_forget_widgets()
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky="nswe", padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
@@ -278,6 +238,10 @@ class BuildsFrame(ttk.Frame):
         self.crew_select_frame.grid(row=set_row, column=0, sticky="nswe")
 
     def grid_forget_widgets(self):
+        """
+        The opposite of grid_widgets. Removes all widgets from the user
+        interface if they are displayed.
+        """
         self.ship_select_frame.grid_forget()
         self.ship_stats_button.grid_forget()
         self.components_lists_frame.grid_forget()
@@ -288,6 +252,11 @@ class BuildsFrame(ttk.Frame):
             frame.grid_forget()
 
     def show_ship_stats(self):
+        """
+        Callback for the Show Ship Statistics button. Creates a Frame
+        containing a Treeview and showing this Treeview in the place
+        of a ComponentWidget on the right.
+        """
         if self.ship is None:
             return
         self.grid_forget_widgets()
@@ -296,16 +265,27 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid(row=0, rowspan=3, column=2, sticky="nswe")
 
     def set_faction(self, faction):
+        """
+        Sets the faction attribute and calls grid_widgets to update the
+        ship widgets that are displayed for the appropriate faction.
+        """
         self.faction = faction
         self.grid_widgets()
 
     def save_ship_data(self):
+        """
+        Saves the modified Ship instance to the CharacterDatabase.
+        """
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
         self.window.characters_frame.save_button.invoke()
 
     def reset(self):
+        """
+        Reset frame to the state it is found in on start-up of the GSF
+        Parser. Unloads the character loaded, resets all ToggledFrames.
+        """
         self.ship_select_frame.character.set("Choose character")
-        self.ship_select_frame.server.set("Choose server")
+        self.ship_select_frame.server.set("Choose network")
         for frame in self.components_lists.values():
             frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
         for frame in self.crew_select_frame.category_frames.values():
@@ -318,6 +298,12 @@ class BuildsFrame(ttk.Frame):
             button.config(state=tk.DISABLED)
 
     def toggle_callback(self, frame, open):
+        """
+        Callback for ToggledFrame in order to close all the open frames
+        upon opening a new one so only a single frame is open at the
+        any given moment.
+
+        """
         if open is False:
             return
         for component_list_frame in self.components_lists.values():

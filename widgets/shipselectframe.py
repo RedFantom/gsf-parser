@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 from tkinter import messagebox as mb
 import tkinter.ttk as ttk
@@ -47,7 +46,7 @@ class ShipSelectFrame(ttk.Frame):
         toggled = False
 
         self.server = tk.StringVar()
-        self.server_dropdown = ttk.OptionMenu(self, self.server, *("Choose server",), command=self.update_characters)
+        self.server_dropdown = ttk.OptionMenu(self, self.server, *("Choose network",), command=self.update_characters)
         self.character = tk.StringVar()
         self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose character",),
                                                  command=self.load_character)
@@ -104,7 +103,7 @@ class ShipSelectFrame(ttk.Frame):
         if not self.ships:
             mb.showinfo("Request", "Please choose a character first.")
             return
-        ship_name = ships.other_ships[ship_name]
+        ship_name = ships.ships_other[ship_name]
         if self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
             ship_object = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]
         else:
@@ -126,7 +125,7 @@ class ShipSelectFrame(ttk.Frame):
     def update_servers(self):
         self.server_dropdown["menu"].delete(0, tk.END)
         self.character_dropdown["menu"].delete(0, tk.END)
-        servers = ["Choose server"]
+        servers = ["Choose network"]
         for data in self.window.characters_frame.characters:
             if data[0] not in self.window.characters_frame.servers:
                 return

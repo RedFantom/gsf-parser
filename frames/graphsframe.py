@@ -1,32 +1,41 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI Imports
 import tkinter as tk
 import tkinter.ttk as ttk
-import tkinter.messagebox
 import platform
 import os
-import datetime
-from collections import OrderedDict
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
-import variables
-from parsing import parse
+from variables import settings
 from toplevels.splashscreens import SplashScreen
+from parsing.parser import Parser
 
 
 class GraphsFrame(ttk.Frame):
     """
     A frame containing a place for a graph where the user can view his/her performance over time.
     """
+
+    graph_options = {
+        "play": ("Matches played", "Matches played per day", "bar"),
+        "dmgd": ("Damage dealt", "Damage dealt per match", "plot"),
+        "dmgt": ("Damage taken", "Damage taken per match", "plot"),
+        "hrec": ("Healing received", "Healing received per match", "plot"),
+        "enem": ("Enemies", "Kills + Assists per match", "plot"),
+        "critluck": ("Critical luck", "Critical hit percentage per match", "plot"),
+        "hitcount": ("Hit count", "Amount of hits per match", "plot"),
+        "spawn": ("Spawn Length", "Spawn length per match", "plot"),
+        "match": ("Match Length", "Match length per day", "plot"),
+        "deaths": ("Deaths", "Amount of deaths per match", "plot"),
+    }
 
     def __init__(self, root, main_window):
         """
@@ -41,34 +50,17 @@ class GraphsFrame(ttk.Frame):
         self.main_window = main_window
         self.type_graph = tk.StringVar()
         self.type_graph.set("play")
-        self.graph_label = ttk.Label(self,
-                                     text="Here you can view various types of graphs of your performance over "
-                                          "time.",
-                                     justify=tk.LEFT, font=("Calibri", 12))
-        self.play_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="play",
-                                                text="Matches played")
-        self.dmgd_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgd",
-                                                text="Damage dealt")
-        self.dmgt_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="dmgt",
-                                                text="Damage taken")
-        self.hrec_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hrec",
-                                                text="Healing received")
-        self.enem_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="enem", text="Enemies")
-        self.crit_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="critluck",
-                                                text="Critical luck")
-        self.hitc_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="hitcount",
-                                                text="Hitcount")
-        self.spawn_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="spawn",
-                                                 text="Spawn length")
-        self.match_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="match",
-                                                 text="Match length")
-        self.death_graph_radio = ttk.Radiobutton(self, variable=self.type_graph, value="deaths", text="Deaths")
-        self.update_button = ttk.Button(self, command=self.update_graph, text="Update graph")
+        self.graph_label = ttk.Label(
+            self, text="Here you can view various types of graphs of your performance over time.", justify=tk.LEFT,
+            font=("Calibri", 12))
+        self.graph_radios = {
+            type: ttk.Radiobutton(self, variable=self.type_graph, value=type, text=description)
+            for type, (description, _, _) in self.graph_options.items()
+        }
+        self.update_button = ttk.Button(self, command=self.calculate_graph, text="Calculate Graph")
         self.graph = ttk.Frame(self)
-        if platform.release() == "7" or platform.release() == "8" or platform.release() == "8.1":
-            self.figure = Figure(figsize=(6.6, 3.3))
-        else:
-            self.figure = Figure(figsize=(6.7, 3.35))
+        size = (6.6, 3.3) if platform.release() in ("7", "8", "8.1", "10") else (6.7, 3.35)
+        self.figure = Figure(figsize=size)
         self.canvas = FigureCanvasTkAgg(self.figure, self)
         self.canvas = FigureCanvasTkAgg(self.figure, self.graph)
         self.canvasw = self.canvas.get_tk_widget()
@@ -76,586 +68,135 @@ class GraphsFrame(ttk.Frame):
         self.toolbar = NavigationToolbar2TkAgg(self.canvas, self.graph)
         self.toolbar.update()
 
-    def update_graph(self):
+    def calculate_graph(self):
         """
-        Function called by the update_button.
-        Starts the calculation of the graphs and sets the axes and format of the plot
-        Shows the plot accordingly
-        Code of last three options is mostly the same
-        :return:
+        Calculate a new Graph based on the setting given by the user
         """
+        # Setup Figure for calculation
         self.figure.clear()
-        self.axes = self.figure.add_subplot(111)
-        if self.type_graph.get() == "play":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
+        axes = self.figure.add_subplot(111)
+        # Create required data variables
+        files_done = 0
+        graph_type = self.type_graph.get()
+        print("[GraphsFrame] Calculating graph:", graph_type)
+        files = os.listdir(settings["parsing"]["path"])
+        value_per_date = {}
+        files_per_date = {}
+        # Open splash screen
+        splash_screen = SplashScreen(
+            self.main_window, len(files), title="Calculating graph...")
+        # Loop over all the files
+        for file in files:
+            # Update splash screen
+            files_done += 1
+            splash_screen.update_progress(files_done)
+            # Skip non-valid files
+            if not Parser.get_gsf_in_file(file):
+                continue
+            file_datetime = Parser.parse_filename(file)
+            if file_datetime is None:
+                continue
+            # Process date
+            file_date = file_datetime.date()
+            # Parse the file and calculate the value
+            lines = Parser.read_file(file)
+            player = Parser.get_player_id_list(lines)
+            file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player)
+            # Retrieve value for file
+            value = GraphsFrame.calculate_value(graph_type, file_cube, match_timings, spawn_timings, player)
+            # Update dictionary of amount of files per date
+            if file_date not in files_per_date:
+                files_per_date[file_date] = 0
+            files_per_date[file_date] += 1
+            # Update value per date
+            if file_date not in value_per_date:
+                value_per_date[file_date] = 0
+            value_per_date[file_date] += value
+        # Calculate the final values dictionary
+        average_per_file = {date: value / files_per_date[date] for date, value in value_per_date.items()}
+        values = average_per_file if graph_type != "play" else value_per_date
+        # Calculate values
+        x_values = sorted(values.keys())
+        y_values = [values[key] for key in x_values]
+        # Graph this setup
+        graph_func = getattr(axes, self.graph_options[graph_type][2])
+        graph_func(x_values, y_values, color=settings["gui"]["color"])
+        # Change graph properties
+        axes.xaxis_date()
+        axes.set_xlabel("Date")
+        axes.set_ylim(ymin=0, ymax=max(y_values) * 1.1)
+        axes.set_title(self.graph_options[graph_type][1])
+        axes.set_ylabel(self.graph_options[graph_type][0])
+        self.toolbar.update()
+        self.canvas.show()
+        self.figure.autofmt_xdate(bottom=0.25)
+        self.figure.canvas.draw()
+        splash_screen.destroy()
+
+    @staticmethod
+    def calculate_value(graph_type, file_cube, match_timings, spawn_timings, player_id_list):
+        """
+        Calculate the correct value for a given graph type and file
+        cube. Calculates the average per match in principal, but can
+        differ for certain graph types.
+        """
+        amount_matches = len(file_cube)
+        # Amount of matches played
+        if graph_type == "play":
+            return amount_matches
+        # Amount of deaths per match
+        elif graph_type == "deaths":
+            return len(player_id_list) / amount_matches - 1
+        # Average match and spawn length
+        elif graph_type in ("match", "spawn"):
+            total = 0
+            start = None
+            amount_spawns = sum(len(match) for match in file_cube)
+            for timing in match_timings:
+                if start is not None:
+                    total += (timing - start).total_seconds()
+                    start = None
                     continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                    file_cube, match_timings, spawn_timings = parse.splitter(lines, parse.determinePlayer(lines))
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            self.axes.set_ylim(ymin=0, ymax=matches_played_date[
-                                                max(matches_played_date, key=matches_played_date.get)] + 2)
-            self.axes.bar(list(matches_played_date.keys()), list(matches_played_date.values()),
-                          color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Matches played")
-            self.axes.set_ylabel("Amount of matches")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "dmgd":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            damage_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in damage_per_date:
-                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[2]])
-                else:
-                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[2]])
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_dmg_date = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
-                    pass
-            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average damage dealt per match")
-            self.axes.set_ylabel("Amount of damage")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "dmgt":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            damage_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in damage_per_date:
-                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[1]])
-                else:
-                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[1]])
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_dmg_date = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
-                    pass
-            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average damage taken per match")
-            self.axes.set_ylabel("Amount of damage")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "hrec":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            damage_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in damage_per_date:
-                    damage_per_date[file_date] = sum([sum(match) for match in results_tuple[4]])
-                else:
-                    damage_per_date[file_date] += sum([sum(match) for match in results_tuple[4]])
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_dmg_date = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_dmg_date[key] = round(damage_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
-                    pass
-            avg_dmg_date = OrderedDict(sorted(list(avg_dmg_date.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2000)
-            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average healing received per match")
-            self.axes.set_ylabel("Amount of healing")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "enem":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            enem_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                total_enemies_dt = []
-                for match_matrix in results_tuple[5]:
-                    for spawn_list in match_matrix:
-                        for enem in spawn_list:
-                            if results_tuple[10][enem] > 0:
-                                total_enemies_dt.append(enem)
-                total_enemies_dt = set(total_enemies_dt)
-                amount_enem = len(total_enemies_dt)
-                if file_date in enem_per_date:
-                    enem_per_date[file_date] += amount_enem
-                else:
-                    enem_per_date[file_date] = amount_enem
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_enem_date = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_enem_date[key] = round(enem_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing damage by matches, passing")
-                    pass
-            avg_dmg_date = OrderedDict(sorted(list(avg_enem_date.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_dmg_date[max(avg_dmg_date, key=avg_dmg_date.get)] + 2)
-            self.axes.plot(list(avg_dmg_date.keys()), list(avg_dmg_date.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average enemies damage dealt to per match")
-            self.axes.set_ylabel("Amount of enemies")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "critluck":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            hitcount_per_date = {}
-            critcount_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in hitcount_per_date:
-                    hitcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
-                    critcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[6]))
-                else:
-                    hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
-                    critcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[6]))
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_crit_luck = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_crit_luck[key] = float(critcount_per_date[key]) / float(hitcount_per_date[key]) * 100
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
-                    pass
-            avg_crit_luck = OrderedDict(sorted(list(avg_crit_luck.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 0.02)
-            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average percentage critical hits per day")
-            self.axes.set_ylabel("Percentage critical hits")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "hitcount":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            hitcount_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                results_tuple = parse.parse_file(file_cube, player, match_timings, spawn_timings)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in hitcount_per_date:
-                    hitcount_per_date[file_date] = sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
-                else:
-                    hitcount_per_date[file_date] += sum(sum(spawn) for spawn in (match for match in results_tuple[8]))
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_hit_match = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_hit_match[key] = round(hitcount_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
-                    pass
-            avg_crit_luck = OrderedDict(sorted(list(avg_hit_match.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 10)
-            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average hitcount per match per day")
-            self.axes.set_ylabel("Amount of hits")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "spawn":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            spawns_played_date = {}
-            spawn_length_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                if file_date in spawns_played_date:
-                    spawns_played_date[file_date] += sum(len(match) for match in file_cube)
-                else:
-                    spawns_played_date[file_date] = sum(len(match) for match in file_cube)
-                start = True
-                spawns_length = 0
-                start_timing = None
-                for match in spawn_timings:
-                    for timing in match:
-                        if start:
-                            start = False
-                            start_timing = timing
-                        else:
-                            start = True
-                            spawns_length += (timing - start_timing).seconds
-                if file_date in spawn_length_per_date:
-                    spawn_length_per_date[file_date] += spawns_length
-                else:
-                    spawn_length_per_date[file_date] = spawns_length
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_spawn_min = {}
-            for key, value in spawns_played_date.items():
-                try:
-                    avg_spawn_min[key] = round((float(spawn_length_per_date[key]) / float(value)) / 60, 2)
-                    if avg_spawn_min[key] == 0:
-                        del avg_spawn_min[key]
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
-                    pass
-            avg_crit_luck = OrderedDict(sorted(list(avg_spawn_min.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 1)
-            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Length of average spawn per day")
-            self.axes.set_ylabel("Spawn length in minutes")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "match":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            match_length_day = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                match_length = 0
-                start = True
-                start_timing = None
-                for timing in match_timings:
-                    if start:
-                        start_timing = timing
-                        start = False
-                    else:
-                        match_length += (timing - start_timing).seconds
-                        start = True
-                if file_date in match_length_day:
-                    match_length_day[file_date] += match_length
-                else:
-                    match_length_day[file_date] = match_length
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_match_min = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_match_min[key] = round((float(match_length_day[key]) / float(value)) / 60, 2)
-                    if avg_match_min[key] == 0:
-                        del avg_match_min[key]
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
-                    pass
-            avg_crit_luck = OrderedDict(sorted(list(avg_match_min.items()), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
-            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Length of average match per day")
-            self.axes.set_ylabel("Match length in minutes")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
-        elif self.type_graph.get() == "deaths":
-            files_dates = {}
-            datetimes = []
-            files_done = 0
-            self.splash_screen = SplashScreen(self.main_window,
-                                              len(os.listdir(variables.settings["parsing"]["path"])),
-                                              title="Calculating graph...")
-            matches_played_date = {}
-            deaths_per_date = {}
-            for file in os.listdir(variables.settings["parsing"]["path"]):
-                if not file.endswith(".txt"):
-                    continue
-                try:
-                    file_date = datetime.date(int(file[7:-26]), int(file[12:-23]), int(file[15:-20]))
-                except ValueError:
-                    continue
-                datetimes.append(file_date)
-                files_dates[file] = file_date
-                with open(variables.settings["parsing"]["path"] + "/" + file, "r") as file_obj:
-                    lines = file_obj.readlines()
-                player = parse.determinePlayer(lines)
-                file_cube, match_timings, spawn_timings = parse.splitter(lines, player)
-                if file_date not in matches_played_date:
-                    matches_played_date[file_date] = len(file_cube)
-                else:
-                    matches_played_date[file_date] += len(file_cube)
-                if file_date not in deaths_per_date:
-                    deaths_per_date[file_date] = sum((len(match) - 1) for match in file_cube)
-                else:
-                    deaths_per_date[file_date] += sum((len(match) - 1) for match in file_cube)
-                files_done += 1
-                self.splash_screen.update_progress(files_done)
-            avg_hit_match = {}
-            for key, value in matches_played_date.items():
-                try:
-                    avg_hit_match[key] = round(deaths_per_date[key] / value, 0)
-                except ZeroDivisionError:
-                    print("[DEBUG] ZeroDivisionError while dividing by hitcount, passing")
-                    pass
-            avg_crit_luck = OrderedDict(sorted(avg_hit_match.items(), key=lambda t: t[0]))
-            self.axes.set_ylim(ymin=0, ymax=avg_crit_luck[max(avg_crit_luck, key=avg_crit_luck.get)] + 2)
-            self.axes.plot(list(avg_crit_luck.keys()), list(avg_crit_luck.values()),
-                           color=variables.settings["gui"]["color"])
-            self.axes.xaxis_date()
-            self.axes.set_title("Average amount of deaths per match per day")
-            self.axes.set_ylabel("Amount of deaths")
-            self.axes.set_xlabel("Date")
-            self.toolbar.update()
-            self.canvas.show()
-            self.figure.autofmt_xdate(bottom=0.25)
-            self.figure.canvas.draw()
-            self.splash_screen.destroy()
+                start = timing
+            total = total / 60
+            return total / (amount_matches if graph_type == "match" else amount_spawns)
+
+        # Parse the file as its required now
+        (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
+         crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted) = \
+            Parser.parse_file(file_cube, player_id_list)
+        # Average damage dealt per match
+        if graph_type == "dmgd":
+            return dmg_d / amount_matches
+        # Average damage taken per match
+        elif graph_type == "dmgt":
+            return dmg_t / amount_matches
+        # Average healing received per match
+        elif graph_type == "hrec":
+            return healing / amount_matches
+        # Average hit count per match
+        elif graph_type == "hitcount":
+            return hitcount / amount_matches
+        # Average critical luck per match
+        elif graph_type == "critluck":
+            return crit_luck / amount_matches
+        # Average amount of enemies damage dealt to
+        elif graph_type == "enem":
+            return len(enemies) / amount_matches
         else:
-            tkinter.messagebox.showinfo("Notice", "No correct graph type selected!")
+            raise NotImplementedError()
 
     def grid_widgets(self):
         """
         Put all widgets in the right place
-        :return:
         """
         self.graph_label.grid(column=0, row=0, rowspan=1, columnspan=2, sticky="w", pady=5)
-        self.play_graph_radio.grid(column=0, row=1, sticky="w")
-        self.dmgd_graph_radio.grid(column=0, row=2, sticky="w")
-        self.dmgt_graph_radio.grid(column=0, row=3, sticky="w")
-        self.hrec_graph_radio.grid(column=0, row=4, sticky="w")
-        self.enem_graph_radio.grid(column=0, row=5, sticky="w")
-        self.crit_graph_radio.grid(column=0, row=6, sticky="w")
-        self.hitc_graph_radio.grid(column=0, row=7, sticky="w")
-        self.spawn_graph_radio.grid(column=0, row=8, sticky="w")
-        self.match_graph_radio.grid(column=0, row=9, sticky="w")
-        self.death_graph_radio.grid(column=0, row=10, sticky="w")
-        self.update_button.grid(column=0, row=19, sticky="nswe")
+        row = 1
+        for radio in self.graph_radios.values():
+            radio.grid(row=row, column=0, sticky="w")
+            row += 1
+        self.update_button.grid(column=0, row=row, sticky="nswe")
         self.canvasw.pack()
         self.tkcanvas.pack()
         self.toolbar.pack()
-        self.graph.grid(column=1, row=1, rowspan=20)
+        self.graph.grid(column=1, row=1, rowspan=row+1)

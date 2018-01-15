@@ -1,15 +1,17 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 # UI imports
 from tkinter import messagebox
 # Own modules
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread
-from tools.utilities import get_temp_directory, get_screen_resolution
+from utils.utilities import get_screen_resolution
+from utils.directories import get_temp_directory
 from variables import settings
 # File parsing
 import os
@@ -18,14 +20,13 @@ import _pickle as pickle  # known as cPickle
 import mss
 import pynput
 from PIL import Image
-from datetime import datetime
-from parsing.guiparsing import GSFInterface
+from datetime import datetime, timedelta
+from parsing.gsfinterface import GSFInterface
 from parsing import vision
-from tools.utilities import get_cursor_position
+from utils.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
-from parsing.keys import keys
-from parsing.ships import ships, Ship
-from parsing.abilities import rep_ships
+from data.keys import keys
+from data.abilities import rep_ships
 from time import sleep
 
 """
@@ -60,9 +61,12 @@ spawn_dictionary["ship_name"]
 
 class RealTimeParser(Thread):
     """
-    Class to parse Galactic StarFighter in real-time. Manages LogStalker instance to gather all data
-    and save it to a data dictionary, in realtime.db.
+    Class to parse Galactic StarFighter in real-time. Manages LogStalker
+    instance to gather all data and save it to a data dictionary, in
+    realtime.db.
     """
+
+    TIMER_MARGIN = 10
 
     def __init__(
             self,
@@ -91,7 +95,7 @@ class RealTimeParser(Thread):
         :param data_queue: Queue to communicate queries for data with
         :param return_queue: Queue to answer queries for data with
         :param exit_queue: Queue to make the RealTimeParser stop activities
-        :param character_data: Character tuple with the character name and server to retrieve data with
+        :param character_data: Character tuple with the character name and network to retrieve data with
         """
         Thread.__init__(self)
 
@@ -152,6 +156,8 @@ class RealTimeParser(Thread):
         self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
         self._resolution = resolution
         self._pixels_per_degree = 10
+        self._waiting_for_timer = False
+        self._spawn_time = None
 
         """
         Data processing
@@ -240,14 +246,15 @@ class RealTimeParser(Thread):
         lines = self._stalker.get_new_lines()
         for line in lines:
             self.process_line(line)
-        if not self.is_match:
+        if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
             return
         # Screen parsing
         if self._screen_parsing_enabled:
             screenshot = self._mss.grab(self._monitor)
+            screenshot_time = datetime.now()
             image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-            self.process_screenshot(image)
+            self.process_screenshot(image, screenshot_time)
         # Performance measurements
         self.diff = datetime.now() - now
         if self.diff.total_seconds() < 0.5:
@@ -260,7 +267,8 @@ class RealTimeParser(Thread):
 
     def process_line(self, line):
         """
-        Parse a single line dictionary and update the data attributes of the instance accordingly
+        Parse a single line dictionary and update the data attributes
+        of the instance accordingly
         """
         # Skip any and all SetLevel or Infection events
         ignorable = ("SetLevel", "Infection")
@@ -271,6 +279,18 @@ class RealTimeParser(Thread):
                 ":" not in line["source"]:
             self.player_name = line["source"][1:]  # Do not store @
             print("[RealTimeParser] Login: {}".format(self.player_name))
+            # Spawn Timer
+            if (self._screen_parsing_enabled and "Spawn Timer" in self._screen_parsing_features and
+                    self._waiting_for_timer is False and self.is_match is False):
+                # Only activates if the Spawn Timer screen parsing
+                # feature is enabled and there is no match active.
+                # If a match is active, then this probably marks the end
+                # of a match instead of the start of one.
+                self._waiting_for_timer = datetime.now()
+
+            # Perform error handling. Using real-time parsing with a
+            # different character name is not possible for screen parsing
+            # To be consistent, it is never allowed.
             if self.player_name != self._character_data[1]:
                 messagebox.showerror(
                     "Error",
@@ -288,6 +308,8 @@ class RealTimeParser(Thread):
             # No longer a match
             self.is_match = False
             self.lines.clear()
+            # Spawn timer
+            self._spawn_time = None  # if-statement is slower than just calling this always
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -378,13 +400,14 @@ class RealTimeParser(Thread):
             self.ship = self._character_db[self._character_data]["Ship Objects"][ship]
             args = (self.ship, self.ships_db, self.companions_db)
             self.ship_stats = ShipStats(*args)
+            self.set_for_current_spawn("ship", self.ship)
         return
 
     """
     ScreenParser
     """
 
-    def process_screenshot(self, screenshot):
+    def process_screenshot(self, screenshot, screenshot_time):
         """
         Analyze a screenshot and take the data to save it
         """
@@ -399,6 +422,44 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
             return
         spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
+
+        """
+        TimerParser
+        
+        Attempts to parse a screenshot that is expected to show the 
+        GSF pre-match interface with a spawn timer.
+        """
+        if ("Spawn Timer" in self._screen_parsing_features and self._waiting_for_timer and not self.is_match and
+                self._spawn_time is None):
+            print("[TimerParser] Spawn timer parsing activating.")
+            # Only activates after a login event was detected and no
+            # match is active and no time was already determined.
+
+            # self._waiting_for_timer is a datetime instance, or False.
+            if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
+                # If a certain time has passed, give up on finding the timer
+                print("[TimerParser] Last timer parsing attempt.")
+                self._waiting_for_timer = False
+            # Check if the resolution is supported
+            if self._resolution not in vision.timer_boxes:
+                messagebox.showerror("Error", "Spawn Timer parsing is enabled for an unsupported resolution.")
+                raise ValueError("Unsupported resolution for spawn timer parsing.")
+            # Now crop the screenshot, see vision.timer_boxes for details
+            source = screenshot.crop(vision.timer_boxes[self._resolution])
+            # Attempt to determine the spawn timer status
+            status = vision.get_timer_status(source)
+            # Now status is a string of format "%M:%S" or None
+            if status is None:
+                print("[TimerParser] Failed to detect a valid timer value.")
+            else:
+                print("[TimerParser] Successfully determined timer status as:", status)
+                # Spawn timer was successfully determined. Now parse the string
+                minutes, seconds = (int(elem) for elem in status.split(":"))
+                delta = timedelta(minutes=minutes, seconds=seconds)
+                # Now delta contains the amount of time left until the spawn starts
+                self._spawn_time = screenshot_time + delta
+            # End of TimerParser
+
         """
         Tracking penalty
         
@@ -426,17 +487,12 @@ class RealTimeParser(Thread):
             unit = "°" if penalty is None else "%"
             string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
             self.screen_data["tracking"] = string
-        """
-        Power Management
-        """
-        if "Power Management" in self._screen_parsing_features:
-            power_mgmt = vision.get_power_management(screenshot, *self._coordinates["power_mgmt"])
-            self.screen_data["power_mgmt"] = power_mgmt
+
         """
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            health_hull = vision.get_ship_health_hull(screenshot)
+            health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
@@ -447,7 +503,9 @@ class RealTimeParser(Thread):
 
     def get_tracking_penalty(self):
         """
-        Determine the correct weapon to determine the tracking penalty for and then retrieve that data
+        Determine the correct weapon to determine the tracking penalty
+        for and then retrieve that data from the ship statistics object
+        stored in the self.ship_stats attribute.
         """
         if self.ship_stats is None:
             print("[RealTimeParser] get_tracking_penalty was called while ship_stats is None")
@@ -469,20 +527,10 @@ class RealTimeParser(Thread):
             upgrade_constant = 0
         return tracking_penalty, upgrade_constant, firing_arc
 
-    """
-    TimerParser
-    """
-
-    def process_login(self):
-        """
-        TimerParser attempts for ten seconds to determine if there is a spawn timer available on the screen
-        """
-        if "Spawn Timer" not in self._screen_parsing_features:
-            return
-
     def run(self):
         """
-        Run the loop and exit if necessary and perform error-handling for everything
+        Run the loop and exit if necessary and perform error-handling
+        for everything
         """
         self.start_listeners()
         while True:
@@ -610,11 +658,12 @@ class RealTimeParser(Thread):
         )
         return string
 
-    def get_power_mgmt_string(self):
-        return "Power Management: {}\n".format(self.screen_data["power_mgmt"])
-
     def get_timer_string(self):
-        pass
+        if self._spawn_time is None:
+            return ""
+        return "Spawn in {:02d}s".format(
+            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
+        )
 
     def get_health_string(self):
         pass

@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -11,7 +12,8 @@ import tkinter.ttk as ttk
 import os
 from PIL import Image, ImageTk
 # Own modules
-from tools import utilities
+from utils import directories
+from utils import utilities
 
 
 class SplashScreen(tk.Toplevel):
@@ -38,7 +40,7 @@ class BootSplash(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
         self.logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(utilities.get_assets_directory(), "logos", "logo_green.png")))
+            Image.open(os.path.join(directories.get_assets_directory(), "logos", "logo_green.png")))
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         self.window = window

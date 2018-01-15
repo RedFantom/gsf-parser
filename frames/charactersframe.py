@@ -1,28 +1,31 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 import pickle as pickle
 import os
 import sys
-from tools import utilities
+
+import data.ships
+from utils import directories
+from utils import utilities
 from widgets import VerticalScrollFrame
 from PIL import Image, ImageTk
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from toplevels.addcharacter import AddCharacter
-import variables
-from parsing import abilities
+from variables import settings
+from data import abilities
 from collections import OrderedDict
 from tkinter import messagebox as mb
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
+from network.sharing_data import servers
 
 
 class CharactersFrame(ttk.Frame):
@@ -48,25 +51,16 @@ class CharactersFrame(ttk.Frame):
         "JKS": "TH"
     }
 
-    def __init__(self, parent):
+    def __init__(self, parent, main_window):
         """
         Initializes the class instance and sets up all instance variables
         :param parent: tkinter parent
         """
         ttk.Frame.__init__(self, parent)
-        self.window = variables.main_window
-        self.directory = utilities.get_temp_directory()
+        self.window = main_window
+        self.directory = directories.get_temp_directory()
         # Lists of servers and abbreviations
-        self.servers = {
-            # US servers
-            "SF": "Star Forge",
-            "SA": "Satele Shan",
-            # European servers
-            "TH": "Tulak Hord",
-            "DM": "Darth Malgus",
-            "TL": "The Leviathan"
-        }
-
+        self.servers = servers
         # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
         self.characters = {}
@@ -123,12 +117,12 @@ class CharactersFrame(ttk.Frame):
         self.rep_ship_widgets = OrderedDict()
         self.rep_ship_variables = OrderedDict()
 
-        for ship_name in abilities.sorted_ships.keys():
+        for ship_name in data.ships.sorted_ships.keys():
             self.imp_ship_variables[ship_name] = tk.IntVar()
             self.imp_ship_widgets[ship_name] = ttk.Checkbutton(self.lineup_frame, text=ship_name,
                                                                variable=self.imp_ship_variables[ship_name],
                                                                command=self.update_ships)
-        for ship_name in abilities.sorted_ships.values():
+        for ship_name in data.ships.sorted_ships.values():
             self.rep_ship_variables[ship_name] = tk.IntVar()
             self.rep_ship_widgets[ship_name] = ttk.Checkbutton(self.lineup_frame, text=ship_name,
                                                                variable=self.rep_ship_variables[ship_name],
@@ -217,7 +211,7 @@ class CharactersFrame(ttk.Frame):
             if data["Server"] not in self.servers or character[0] not in self.servers:
                 messagebox.showinfo(
                     "United Forces Notification",
-                    "Since the United Forces update of SWTOR, the server names have changed and thus the character "
+                    "Since the United Forces update of SWTOR, the network names have changed and thus the character "
                     "database must be updated. This process is non-destructive, meaning you should be able to keep "
                     "all your characters, as long as the names do not conflict."
                 )
@@ -286,7 +280,7 @@ class CharactersFrame(ttk.Frame):
         Callback for the AddCharacter Toplevel
         :param name: character name entered
         :param legacy: legacy name entered
-        :param server: server name entered (full name)
+        :param server: network name entered (full name)
         :param faction: faction entered
         :return: None
         """
@@ -294,10 +288,10 @@ class CharactersFrame(ttk.Frame):
             pass
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: Ship(name) for name in abilities.sorted_ships.keys()}
+            ships_dict = {name: Ship(name) for name in data.ships.sorted_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: Ship(name) for name in abilities.sorted_ships.values()}
+            ships_dict = {name: Ship(name) for name in data.ships.sorted_ships.values()}
         else:
             raise ValueError("Unknown value for faction found: {0}".format(faction))
         server = self.reverse_servers[server]
@@ -334,10 +328,10 @@ class CharactersFrame(ttk.Frame):
             return
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: None for name in abilities.sorted_ships.keys()}
+            ships_dict = {name: None for name in data.ships.sorted_ships.keys()}
         elif faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: None for name in abilities.sorted_ships.values()}
+            ships_dict = {name: None for name in data.ships.sorted_ships.values()}
         else:
             raise ValueError("Unknown value for faction found: {0}".format(faction))
         self.character_data["Faction"] = faction
@@ -373,7 +367,7 @@ class CharactersFrame(ttk.Frame):
         except (OSError, EOFError):
             self.new_database()
         if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != variables.settings["misc"]["patch_level"]:
+                self.characters.version != settings["misc"]["patch_level"]:
             mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
                                       "Parser database has been updated, and your character database must be updated "
                                       "as well to match the data. Currently, this process is destructive, and "

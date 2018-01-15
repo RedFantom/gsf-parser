@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 
 # UI imports
 import tkinter as tk
@@ -11,9 +12,9 @@ import tkinter.ttk as ttk
 import textwrap
 # Own modules
 from parsing.shipstats import ShipStats
-from parsing.ships import component_types_list, component_strings
-from parsing.statistics import categories as statistic_categories, statistics as statistic_strings
-from parsing.statistics import weapon_categories as weapon_statistic_categories
+from data.components import components, component_strings
+from data.statistics import categories as statistic_categories, statistics as statistic_strings
+from data.statistics import weapon_categories as weapon_statistic_categories
 
 
 class ShipStatsFrame(ttk.Frame):
@@ -62,7 +63,7 @@ class ShipStatsFrame(ttk.Frame):
                 continue
             self.insert_into_treeview("Ship", statistic, value)
         # Loop over the other categories to insert the other statistics
-        for category in component_types_list:
+        for category in components:
             # Skip any categories that are not in the ShipStats object
             if category not in self.stats:
                 continue

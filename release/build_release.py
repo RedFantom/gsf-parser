@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
 import os
 import sys
 import pip
 from shutil import rmtree, move, copytree, copyfile, make_archive
 import subprocess
 # Own modules
-from tools.settings import Settings
-from tools import admin
+from settings.defaults import defaults
+from utils import admin
 from setup_script import script
 
 
@@ -66,8 +65,8 @@ if __name__ == '__main__':
         printw("This script is only supported on Windows.\n")
         exit(-1)
     # Check for admin permissions
-    if not admin.is_user_admin():
-        admin.run_as_admin()
+    if not admin.check_privileges():
+        admin.escalate_privileges()
     # Check the Python version
     major, minor = sys.version_info.major, sys.version_info.minor
     if major != 3 or minor != 5:
@@ -110,7 +109,7 @@ if __name__ == '__main__':
     if target == "s" or target == "b":
         printw("Please enter a Publisher name for the Setup: ")
         publisher = input()
-    version = Settings.defaults["misc"]["version"]
+    version = defaults["misc"]["version"]
     # Install all required packages using pip
     printw("Installing packages if required...")
     pip.main(["install", "-r", "../requirements.txt", "-q"])
@@ -161,7 +160,7 @@ if __name__ == '__main__':
     copytree("../archive", os.path.join(build_dir, "archive"))
     copytree("../assets", os.path.join(build_dir, "assets"))
     copyfile("../README.md", os.path.join(build_dir, "README.md"))
-    copyfile("../LICENSE", os.path.join(build_dir, "LICENSE"))
+    copyfile("../LICENSE.md", os.path.join(build_dir, "LICENSE.md"))
     printw("Done.\n")
     # Build Setup File
     if target == "s" or target == "b":

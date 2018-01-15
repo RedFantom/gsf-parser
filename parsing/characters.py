@@ -1,31 +1,34 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
+from data import ships
 from variables import settings
 from .ships import Ship
-from . import abilities
 
 
 class CharacterDatabase(dict):
     """
-    Dictionary like object with more attributes to allow for management of the character database. Built for 5.5 update,
-    as updating the ships database requires the clearing of all data in the characters database.
+    Dictionary like object with more attributes to allow for management
+    of the character database. Built for 5.5 update, as updating the
+    ships database requires the clearing of all data in the characters
+    database.
     """
 
     def __init__(self):
         dict.__init__(self)
         self.version = settings["misc"]["patch_level"]
-        self[("TRE", "Example")] = {"Server": "DM",
-                                    "Faction": "Imperial",
-                                    "Name": "Example",
-                                    "Legacy": "E_Legacy",
-                                    "Ships": ("Blackbolt", "Rycer"),
-                                    "Ship Objects": {name: Ship(name) for name in abilities.sorted_ships.keys()},
-                                    "GUI": "Default"}
+        self[("TRE", "Example")] = {
+            "Server": "DM",
+            "Faction": "Imperial",
+            "Name": "Example",
+            "Legacy": "E_Legacy",
+            "Ships": ("Blackbolt", "Rycer"),
+            "Ship Objects": {name: Ship(name) for name in ships.sorted_ships.keys()},
+            "GUI": "Default"
+        }
 
     def update_servers(self, trans):
         """
@@ -41,3 +44,34 @@ class CharacterDatabase(dict):
         self.clear()
         self.update(updated)
 
+    def get_player_servers(self):
+        """
+        Get a dictionary of name: network
+        """
+        character_names = {}
+        names = []
+        for server, name in self.keys():
+            if name in names:
+                if name in character_names:
+                    del character_names[name]
+                continue
+            print("[CharacterDatabase] Found character:", server, name)
+            character_names[name] = server
+            names.append(name)
+        return character_names
+
+    def get_player_legacies(self):
+        """
+        Get a dictionary name: legacy
+        """
+        character_legacies = {}
+        names = []
+        for server, name in self.keys():
+            legacy = self[(server, name)]["Legacy"]
+            if name in names:
+                if name in character_legacies:
+                    del character_legacies[name]
+                continue
+            character_legacies[name] = legacy
+            names.append(name)
+        return character_legacies

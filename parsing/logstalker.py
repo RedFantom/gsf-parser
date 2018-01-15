@@ -1,8 +1,9 @@
-﻿# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+﻿"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import variables
 from parsing.parser import Parser
 import os
@@ -10,9 +11,10 @@ import os
 
 class LogStalker(object):
     """
-    LogStalker class that does *not* run in a Thread, but can instead be called upon in cycles to read from the log
-    file and return the lines that are newly found in the most recent CombatLog. Not interchangeable with earlier
-    implementations.
+    LogStalker class that does *not* run in a Thread, but can instead
+    be called upon in cycles to read from the log file and return the
+    lines that are newly found in the most recent CombatLog. Not
+    interchangeable with earlier implementations.
     """
     def __init__(self, folder=variables.settings["parsing"]["path"], watching_callback=None):
         """
@@ -26,8 +28,9 @@ class LogStalker(object):
 
     def update_file(self):
         """
-        Update the currently watched file to the newest file available. Does not change anything if the file is already
-        the most recent available.
+        Update the currently watched file to the newest file available.
+        Does not change anything if the file is already the most recent
+        available.
         """
         files = os.listdir(self._folder)
         if len(files) == 0:

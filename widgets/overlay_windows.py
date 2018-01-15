@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import win32api as api
 import win32con as con
 import win32gui as gui
@@ -13,7 +14,7 @@ import random
 
 """
 The contents of this file are based on this excellent StackOverflow answer:
-https://stackoverflow.com/questions/21840133/how-to-display-text-on-the-screen-without-a-window-using-python
+https://stackoverflow.com/questions/21840133
 """
 
 

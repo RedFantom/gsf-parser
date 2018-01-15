@@ -1,106 +1,12 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 from os import path
 import pickle as pickle
-
-ships = {
-    "Decimus": "Imperial_B-5_Decimus",
-    "Quell": "Imperial_F-T2_Quell",
-    "Imperium": "Imperial_FT-3C_Imperium",
-    "Rycer": "Imperial_F-T6_Rycer",
-    "Mangler": "Imperial_GSS-3_Mangler",
-    "Jurgoran": "Imperial_GSS-4Y_Jurgoran",
-    "Dustmaker": "Imperial_GSS-5C_Dustmaker",
-    "Onslaught": "Imperial_G-X1_Onslaught",
-    "Frostburn": "Imperial_ICA-2B_Frostburn",
-    "Sable Claw": "Imperial_ICA-3A_-_Sable_Claw",
-    "Tormentor": "Imperial_ICA-X_Tormentor",
-    "Ocula": "Imperial_IL-5_Ocula",
-    "Demolisher": "Imperial_K-52_Demolisher",
-    "Razorwire": "Imperial_M-7_Razorwire",
-    "Blackbolt": "Imperial_S-12_Blackbolt",
-    "Sting": "Imperial_S-13_Sting",
-    "Bloodmark": "Imperial_S-SC4_Bloodmark",
-    "Gladiator": "Imperial_TZ-24_Gladiator",
-    "Mailoc": "Imperial_VX-9_Mailoc",
-    "Banshee": "Republic_Banshee",
-    "Flashfire": "Republic_Flashfire",
-    "Pike": "Republic_FT-6_Pike",
-    "Clarion": "Republic_FT-7B_Clarion",
-    "Star Guard": "Republic_FT-8_Star_Guard",
-    "Firehauler": "Republic_G-X1_Firehauler",
-    "Skybolt": "Republic_IL-5_Skybolt",
-    "Strongarm": "Republic_K-52_Strongarm",
-    "Novadive": "Republic_NovaDive",
-    "Rampart Mark Four": "Republic_Rampart_Mark_Four",
-    "Comet Breaker": "Republic_SGS-41B_Comet_Breaker",
-    "Quarrel": "Republic_SGS-45_Quarrel",
-    "Condor": "Republic_SGS-S1_Condor",
-    "Sledgehammer": "Republic_Sledgehammer",
-    "Spearpoint": "Republic_Spearpoint",
-    "Enforcer": "Republic_TZ-24_Enforcer",
-    "Redeemer": "Republic_VX-9_Redeemer",
-    "Warcarrier": "Republic_Warcarrier",
-    "Whisper": 'Republic_X5-Whisper',
-    "Mirage": "Republic_X7-Mirage",
-    "Legion": "Imperial_B-4D_Legion"
-}
-
-reverse_ships = {value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key for key, value in
-                 ships.items()}
-other_ships = {value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key for key, value in
-               ships.items()}
-
-companions_db_categories = {
-    "Engineering": 0,
-    "Offensive": 1,
-    "Tactical": 2,
-    "Defensive": 3,
-    "CoPilot": 4
-}
-
-component_types = {
-    "primary": "PrimaryWeapon",
-    "primary2": "PrimaryWeapon2",
-    "secondary": "SecondaryWeapon",
-    "secondary2": "SecondaryWeapon2",
-    "engine": "Engine",
-    "shields": "ShieldProjector",
-    "systems": "Systems",
-    "armor": "Armor",
-    "reactor": "Reactor",
-    "magazine": "Magazine",
-    "sensors": "Sensor",
-    "thrusters": "Thruster",
-    "capacitor": "Capacitor"
-}
-
-component_strings = {
-    "PrimaryWeapon": "Primary Weapon",
-    "PrimaryWeapon2": "Primary Weapon II",
-    "SecondaryWeapon": "Secondary Weapon",
-    "SecondaryWeapon2": "Secondary Weapon II",
-    "ShieldProjector": "Shields"
-}
-
-component_types_list = [
-    "PrimaryWeapon",
-    "PrimaryWeapon2",
-    "SecondaryWeapon",
-    "SecondaryWeapon2",
-    "Engine",
-    "ShieldProjector",
-    "Systems",
-    "Armor",
-    "Reactor",
-    "Magazine",
-    "Sensor",
-    "Thruster",
-    "Capacitor"
-]
+from data.ships import ship_names
 
 
 class Ship(object):
@@ -109,7 +15,7 @@ class Ship(object):
                   "rb") as f:
             ships_data = pickle.load(f)
         if ship_name not in ships_data:
-            self.ship_name = ships[ship_name]
+            self.ship_name = ship_names[ship_name]
         else:
             self.ship_name = ship_name
         self.name = ship_name

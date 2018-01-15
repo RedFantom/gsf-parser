@@ -1,9 +1,12 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
-from tools.utilities import get_swtor_directory, get_screen_resolution, get_assets_directory
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+from utils.utilities import get_screen_resolution
+from utils.directories import get_assets_directory
+from utils.swtor import get_swtor_directory
 import xml.etree.cElementTree as et
 import os
 from tkinter import messagebox
@@ -15,14 +18,17 @@ def get_gui_profiles():
     :return: list
     """
     return [item.replace(".xml", "") for item in
-            os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
+            os.listdir(os.path.join(get_swtor_directory(),
+                                    "swtor", "settings", "GUIProfiles"))]
 
 
 def get_player_guiname(player_name):
     """
-    Returns the GUI Profile name for a certain player name. Does not work if there are multiple characters with the same
-    name on the same account used on the same computer and also doesn't work if the name is misspelled. Credit for
-    finding this reference to the GUI state files in the SWTOR settings files goes to Ion.
+    Returns the GUI Profile name for a certain player name. Does not
+    work if there are multiple characters with the same name on the same
+    account used on the same computer and also doesn't work if the name
+    is misspelled. Credit for finding this reference to the GUI state
+    files in the SWTOR settings files goes to Ion.
     :param player_name: name of the player
     :return: GUI profile name, not XML file
     """
@@ -58,8 +64,10 @@ def get_player_guiname(player_name):
 
 class GUIParser(object):
     """
-    Parses an SWTOR GUI profile by first reading the file into an ElementTree and then allowing the user to retrieve
-    data values from the profile by providing tuples or directly calculating coordinates the user needs. Example piece
+    Parses an SWTOR GUI profile by first reading the file into an
+    ElementTree and then allowing the user to retrieve data values from
+    the profile by providing tuples or directly calculating coordinates
+    the user needs. Example piece
     of GSF GUI profile section:
     <FreeFlightPlayerStatusEffects>
         <anchorAlignment Type="3" Value="2.000000" />
@@ -69,13 +77,15 @@ class GUIParser(object):
         <enabled Type="2" Value="1" />
         <alpha Type="3" Value="100.000000" />
     </FreeFlightPlayerStatusEffects>
-    All GSF GUI elements provide the attributes anchorAlignment, anchorXOffset, anchorYOffset, scale, enabled and alpha
-    The amount of GSF GUI elements is, luckily, quite limited, a list of items is available in the class' __init__
-    function.
+    All GSF GUI elements provide the attributes anchorAlignment,
+    anchorXOffset, anchorYOffset, scale, enabled and alpha. The amount
+    of GSF GUI elements is, luckily, quite limited, a list of items is
+    available in the class' __init__ function.
 
     The alignment of the GUI element works as follows:
     - The anchorXOffset and anchorYOffset are in pixels
-    - The offsets are counted from one out of nine points on the screen, to the same respective point on the GUI element
+    - The offsets are counted from one out of nine points on the screen,
+    to the same respective point on the GUI element
     - The points are these:
              X    Y
       * 1: Left top
@@ -88,34 +98,38 @@ class GUIParser(object):
       * 8: Center bottom
       * 9: Center center
 
-    So, if the anchorXOffset is 50, the anchorYOffset is 0 and the anchor is 8, then the bottom center of the GUI
-    element is 50 pixels to the right from the bottom center of the screen
+    So, if the anchorXOffset is 50, the anchorYOffset is 0 and the
+    anchor is 8, then the bottom center of the GUI element is 50 pixels
+    to the right from the bottom center of the screen.
 
-    All the credit for this incredibly useful information goes to Ion, who has written a SWTOR UI layout generator
-    that you can find here: https://github.com/ion1/swtor-ui
+    All the credit for this incredibly useful information goes to Ion,
+    who has written a SWTOR UI layout generator that you can find here:
+    https://github.com/ion1/swtor-ui
 
-    Important Note: Not all GUI elements in the SWTOR XML files have the same capitalization in their elements. Such as
-    the different variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please check what forrmat your option
-    uses before using it in this class.
+    Important Note: Not all GUI elements in the SWTOR XML files have
+    the same capitalization in their elements. Such as the different
+    variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please
+    check what forrmat your option uses before using it in this class.
     """
 
     debug = True
 
     def __init__(self, file_name, target_items):
         """
-        Initializes the class by reading the XML file and setting things up for access by the user
-        :param file_name: a GUI profile file_name, either an absolute path or a plain file_name
+        Initializes the class by reading the XML file and setting things
+        up for access by the user
+        :param file_name: a GUI profile file_name, either an absolute
+                          path or a plain file_name
         """
         file_name = os.path.basename(file_name)
         if ".xml" not in file_name:
             file_name += ".xml"
+        if "Default.xml" in file_name or file_name == "default":
+            file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
         if not os.path.exists(file_name):
             file_name = os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles", file_name)
         if not os.path.exists(file_name):
-            if "Default.xml" in file_name:
-                file_name = os.path.join(get_assets_directory(), "vision", "Default_Interface.xml")
-            else:
-                raise ValueError("file_name specified is not valid: {0}".format(file_name))
+            raise FileNotFoundError("file_name specified is not valid: {0}".format(file_name))
         self.file_name = file_name
         self.tree = et.parse(file_name)
         self.root = self.tree.getroot()
@@ -148,7 +162,8 @@ class GUIParser(object):
     @staticmethod
     def get_anchor_dictionary(resolution):
         """
-        Get a dictionary of the absolute pixel points for each of the nine anchor points in the docstring of this class
+        Get a dictionary of the absolute pixel points for each of the
+        nine anchor points in the docstring of this class
         by performing the required calculations.
         :param resolution: (width, height) tuple
         :return: anchor_point dict
@@ -197,7 +212,8 @@ class GUIParser(object):
     @staticmethod
     def get_element_scale(element):
         """
-        As the scale is a float value, not an int, the normal class method can't be used for this item
+        As the scale is a float value, not an int, the normal class
+        method can't be used for this item
         :param element: element object
         :return: float
         """
@@ -209,7 +225,8 @@ class GUIParser(object):
 
     def get_essential_element_values(self, element):
         """
-        Get the essential element values for a GSF GUI element (for the position)
+        Get the essential element values for a GSF GUI element (for the
+        position)
         :param element: XML parser element
         :return: anchor number, x_offset int, y_offset int, alpha percentage
         """
@@ -220,13 +237,14 @@ class GUIParser(object):
 
     def get_element_object(self, element_name):
         """
-        Check the element name passed as argument and return an appropriate element object
+        Check the element name passed as argument and return an
+        appropriate element object
         :param element_name: str name
         :return: element object
         """
         if element_name not in self.gui_elements:
-            raise ValueError("element requested that was not in target_items initializer argument: {0}".
-                             format(element_name))
+            raise ValueError(
+                "element requested that was not in target_items initializer argument: {0}".format(element_name))
         return self.gui_elements[element_name]
 
     def get_element_anchor(self, element):
@@ -334,124 +352,6 @@ class GUIParser(object):
         if self.debug:
             print(line)
         return
-
-
-class GSFInterface(GUIParser):
-    def __init__(self, file_name, target_items=None):
-        if target_items is None:
-            target_items = {
-                "FreeFlightQuickBar": (230, 70),
-                "FreeFlightShipStatus": (190, 180),
-                "FreeFlightPlayerStatusEffects": (245, 50),
-                "FreeFlightTargetStatusEffects": (280, 50),
-                "FreeFlightShipAmmo": (170, 90),
-                "FreeFlightTargetingComputer": (345, 260),
-                "FreeFlightPowerSettings": (80, 180),
-                "FreeFlightMissileLockIndicator": (90, 80),
-                "FreeFlightMiniMap": (325, 245),
-                "FreeFlightScorecard": (420, 120),
-                "FreeFlightCopilotBark": (245, 90),
-                "Global": (0, 0)
-            }
-        GUIParser.__init__(self, file_name, target_items)
-
-    def get_element_coordinates(self, element_name):
-        """
-        Get element screen coordinates
-        :param element_name: str name
-        :return: (x, y)
-        """
-        element = self.get_element_object(element_name)
-        x_offset, y_offset, alpha = self.get_essential_element_values(element)
-        anchor = self.get_element_anchor(element)
-        if alpha is not 0:
-            messagebox.showerror("Error", "The GSF Parser cannot work with GUI profiles for GSF that have an opacity "
-                                          "level higher than 0. Please adjust your GUI profile.")
-            raise ValueError("opacity for element {0} is higher than zero".format(element_name))
-        return self.get_element_absolute_coordinates(self.anchor_dictionary, anchor, x_offset, y_offset)
-
-    def get_ship_health_coordinates(self):
-        temp_cds = self.get_box_coordinates("FreeFlightShipStatus")
-        temp_scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
-        front_one = (temp_cds[0] + int(25 * temp_scale), temp_cds[1] + int(70 * temp_scale))
-        front_two = (temp_cds[0] + int(40 * temp_scale), temp_cds[1] + int(70 * temp_scale))
-        back_one = temp_cds[0] + int(25 * temp_scale), temp_cds[1] + int(120 * temp_scale)
-        back_two = temp_cds[0] + int(40 * temp_scale), temp_cds[1] + int(120 * temp_scale)
-        return front_one, front_two, back_one, back_two
-
-    def get_ship_powermgmt_coordinates(self):
-        temp_cds = self.get_box_coordinates("FreeFlightShipStatus")
-        temp_scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
-        weapon_cds = (temp_cds[0] + int(15 * temp_scale), temp_cds[1] + int(70 * temp_scale))
-        shield_cds = (temp_cds[0] + int(37 * temp_scale), temp_cds[1] + int(70 * temp_scale))
-        engine_cds = (temp_cds[0] + int(60 * temp_scale), temp_cds[1] + int(70 * temp_scale))
-        return weapon_cds, shield_cds, engine_cds
-
-    def get_ship_buffs_coordinates(self):
-        return self.get_box_coordinates("FreeFlightPlayerStatusEffects")
-
-    def get_target_name_coordinates(self):
-        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
-        try:
-            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
-        except AttributeError:
-            # TODO: Figure this out
-            temp_scale = 1.0
-        x_one = temp_cds[0] + int(95 * temp_scale)
-        y_one = temp_cds[1] + int(14 * temp_scale)
-        x_two = temp_cds[0] + int(305 * temp_scale)
-        y_two = temp_cds[1] + int(28 * temp_scale)
-        return x_one, y_one, x_two, y_two
-
-    def get_target_shiptype_coordinates(self):
-        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
-        try:
-            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
-        except AttributeError:
-            # TODO: Figure this out
-            temp_scale = 1.0
-        x_one = temp_cds[0] + int(80 * temp_scale)
-        y_one = temp_cds[1] + int(165 * temp_scale)
-        x_two = temp_cds[0] + int(220 * temp_scale)
-        y_two = temp_cds[1] + int(175 * temp_scale)
-        return x_one, y_one, x_two, y_two
-
-    def get_target_distance_coordinates(self):
-        temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
-        try:
-            temp_scale = self.get_element_scale("FreeFlightTargetingComputer")
-        except AttributeError:
-            # TODO: Figure this out
-            temp_scale = 1.0
-        x_one = temp_cds[0] + int(120 * temp_scale)
-        y_one = temp_cds[1] + int(183 * temp_scale)
-        x_two = temp_cds[0] + int(185 * temp_scale)
-        y_two = temp_cds[1] + int(193 * temp_scale)
-        return x_one, y_one, x_two, y_two
-
-    def get_target_buffs_coordinates(self):
-        return self.get_box_coordinates("FreeFlightTargetStatusEffects")
-
-    def get_pixels_per_degree(self):
-        obj = self.get_element_object("Global")
-        return self.get_item_value(obj, "GlobalScale") * 10
-
-    def get_score_coordinates(self):
-        pass
-
-    def get_secondary_icon_coordinates(self):
-        # (95, 16)
-        box = self.get_box_coordinates("FreeFlightShipAmmo")
-        scale = self.get_element_scale(self.get_element_object("FreeFlightShipAmmo"))
-        x = box[0] + int(95 * scale)
-        y = box[1] + int(16 * scale)
-        return x, y
-
-    def get_ammo_coordinates(self):
-        pass
-
-    def get_distance_coordinates(self):
-        pass
 
 
 if __name__ == '__main__':

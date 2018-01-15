@@ -1,11 +1,13 @@
-# -*- coding: utf-8 -*-
-
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
-
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE.md
+Copyright (C) 2016-2018 RedFantom
+"""
+import time
+import psutil
+import os
+import sys
 # UI imports
 import tkinter as tk
 from tkinter import ttk
@@ -17,12 +19,8 @@ from parsing.realtime import RealTimeParser
 from queue import Queue
 # Miscellaneous
 from variables import settings
-from tools.utilities import get_swtor_screen_mode
-from tools.admin import is_user_admin
-import time
-import psutil
-import os
-import sys
+from utils.swtor import get_swtor_screen_mode
+from utils.admin import check_privileges
 
 
 class RealtimeFrame(ttk.Frame):
@@ -99,7 +97,7 @@ class RealtimeFrame(ttk.Frame):
             if self.check_screen_mode() is False:
                 return
         if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
-            if not is_user_admin():
+            if not check_privileges():
                 messagebox.showinfo(
                     "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
                             "administrator, which prevents reading input from the SWTOR window. Please restart the "

@@ -1,8 +1,9 @@
-# Written by RedFantom, Wing Commander of Thranta Squadron,
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter as tk
 from tkinter import ttk
 
@@ -15,7 +16,7 @@ class AddCharacter(tk.Toplevel):
         self.legacy_name_entry = ttk.Entry(self)
         self.legacy_name_entry.insert(tk.END, "Legacy name...")
         self.server = tk.StringVar()
-        servers = ("Choose server",) + servers
+        servers = ("Choose network",) + servers
         self.callback = callback
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers)
         self.faction = tk.StringVar()

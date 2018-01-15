@@ -12,7 +12,7 @@ except ImportError:
 from PIL import Image
 from PIL.ImageTk import PhotoImage
 from collections import OrderedDict
-from tools.utilities import get_assets_directory
+from utils.directories import get_assets_directory
 import os
 
 
@@ -23,43 +23,60 @@ def open_icon(image_name):
 
 class TimeLine(ttk.Frame):
     """
-    A Frame containing a Canvas and various buttons to manage a timeline that can be marked with certain events,
-    allowing the binding of commands to hovering over certain elements and creating texts inside the elements.
+    A Frame containing a Canvas and various buttons to manage a timeline
+    that can be marked with certain events, allowing the binding of
+    commands to hovering over certain elements and creating texts inside
+    the elements.
 
-    Each marker is pretty much a coloured rectangle with some optional text, that can be assigned tags. Tags may specify
-    the colors of the marker, but tags can also be assigned callbacks that can be called with the identifier of the tag
-    as well as a Tkinter event instance that was generated upon clicking. For example, the markers may be moved, or the
-    user may want to add a menu that shows upon right-clicking. See the create_marker function for more details on the
-    markers.
+    Each marker is pretty much a coloured rectangle with some optional
+    text, that can be assigned tags. Tags may specify the colors of the
+    marker, but tags can also be assigned callbacks that can be called
+    with the identifier of the tag as well as a Tkinter event instance
+    that was generated upon clicking. For example, the markers may be
+    moved, or the user may want to add a menu that shows upon
+    right-clicking. See the create_marker function for more details on
+    the markers.
 
-    The markers are put into a Canvas, which contains rows for each category. The categories are indicated by Labels and
-    separated by black separating lines. Underneath the rows of categories, there is a second Canvas containing markers
-    for the ticks of the time unit. Some time units get special treatment, such as "h" and "m", displayed in an
-    appropriate H:M and M:S format respectively.
+    The markers are put into a Canvas, which contains rows for each
+    category. The categories are indicated by Labels and separated by
+    black separating lines. Underneath the rows of categories, there is
+    a second Canvas containing markers for the ticks of the time unit.
+    Some time units get special treatment, such as "h" and "m",
+    displayed in an appropriate H:M and M:S format respectively.
 
-    The height of the row for each category is automatically adjusted to the height of its respective Label to give
-    a uniform appearance. All markers are redrawn if the generate_canvas_contents is called, and therefore it should
-    be called after any size change. Depending on the number of markers to draw, it may take a long time.
+    The height of the row for each category is automatically adjusted to
+    the height of its respective Label to give a uniform appearance. All
+    markers are redrawn if the generate_canvas_contents is called, and
+    therefore it should be called after any size change. Depending on
+    the number of markers to draw, it may take a long time.
 
-    The TimeLine can be scrolled in two ways: horizontally (with _scrollbar_timeline) and vertically (with
-    _scrollbar_timeline_v), which both use a class function as a proxy to allow for other functions to be called upon
-    scrolling. The horizontal scrollbar makes a small pop-up window appear to indicate the time the cursor is currently
-    pointing at on the timeline.
+    The TimeLine can be scrolled in two ways: horizontally
+    (with _scrollbar_timeline) and vertically (with
+    _scrollbar_timeline_v), which both use a class function as a proxy
+    to allow for other functions to be called upon scrolling. The
+    horizontal scrollbar makes a small pop-up window appear to indicate
+    the time the cursor is currently pointing at on the timeline.
 
-    The markers can be retrieved from the class using the markers property, and they can be saved and then the markers
-    can be recreated by calling create_marker again for each marker. This functionality is not built into the class,
-    if the user wants to do something like this, he or she should write the code required, as it can be done in
-    different ways.
+    The markers can be retrieved from the class using the markers
+    property, and they can be saved and then the markers can be
+    recreated by calling create_marker again for each marker.
+    This functionality is not built into the class, if the user wants to
+    do something like this, he or she should write the code required, as
+    it can be done in different ways.
 
-    Some of the code has been inspired by the ItemsCanvas, as that is also a Canvas that supports the manipulation of
-    items, but as this works in a fundamentally different way, the classes do not share any common parent class.
+    Some of the code has been inspired by the ItemsCanvas, as that is
+    also a Canvas that supports the manipulation of items, but as this
+    works in a fundamentally different way, the classes do not share any
+    common parent class.
 
-    This widget is *absolutely not* thread-safe, and it was not designed as such. It may work in some situations, but
-    nothing is guaranteed when using this widget from multiple threads, even with Tkinter compiled with thread-safe
-    flags or when using mtTkinter for Python 2.
+    This widget is *absolutely not* thread-safe, and it was not designed
+    as such. It may work in some situations, but nothing is guaranteed
+    when using this widget from multiple threads, even with Tkinter
+    compiled with thread-safe flags or when using mtTkinter for Python 2.
 
-    Some themes may conflict with this widget, for example because it makes the default font bigger for the category
-    Labels. This should be fixed by the user by modifying the TimeLine.T(Widget) style.
+    Some themes may conflict with this widget, for example because it
+    makes the default font bigger for the category Labels. This should
+    be fixed by the user by modifying the TimeLine.T(Widget) style.
     """
 
     def __init__(self, master=None, **kwargs):
@@ -514,7 +531,7 @@ class TimeLine(ttk.Frame):
         Delete a marker from the timeline based on its iid
         """
         if iid == tk.ALL:
-            print("Deleting all markers.")
+            print("[TimeLine] Deleting all markers.")
             for iid in self.markers.copy().keys():
                 self.delete_marker(iid)
             return

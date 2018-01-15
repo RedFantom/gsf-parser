@@ -24,4 +24,6 @@ debug.txt
 /release/archive_scripts
 /release/*.zip
 development
+*.log
+parser.db
 
