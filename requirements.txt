@@ -13,3 +13,4 @@ pyscreenshot>=0.4.2
 pywinusb>=0.4.2
 semantic-version>=2.6.0
 ttkthemes>=1.5.2
+ttkwidgets>=0.8.0
