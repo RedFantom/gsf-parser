@@ -25,6 +25,7 @@ from toplevels.splashscreens import BootSplash
 import variables
 from utils.directories import get_temp_directory, get_assets_directory
 from utils.update import check_update
+from variables import settings
 # Packages
 import pyscreenshot
 from PIL import Image
@@ -205,7 +206,7 @@ class MainWindow(ThemedTk):
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
-        self.style.configure('.', foreground='#2f77d0')
+        self.style.configure('.', foreground=settings["gui"]["color"])
 
     def set_icon(self):
         """

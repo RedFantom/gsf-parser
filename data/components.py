@@ -25,7 +25,15 @@ component_strings = {
     "PrimaryWeapon2": "Primary Weapon II",
     "SecondaryWeapon": "Secondary Weapon",
     "SecondaryWeapon2": "Secondary Weapon II",
-    "ShieldProjector": "Shields"
+    "ShieldProjector": "Shields",
+    "Engine": "Engine",
+    "Systems": "Systems",
+    "Armor": "Armor",
+    "Reactor": "Reactor",
+    "Magazine": "Magazine",
+    "Sensor": "Sensors",
+    "Thruster": "Thrusters",
+    "Capacitor": "Capacitor"
 }
 components = [
     "PrimaryWeapon",
