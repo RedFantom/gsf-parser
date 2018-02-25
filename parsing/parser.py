@@ -1,5 +1,9 @@
-# A new parsing engine built by RedFantom based on principles from parse.py and realtime.py
-# Is capable of parsing files as well as realtime parsing
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import os
 from datetime import datetime
 from data import abilities, effects, durations
@@ -8,9 +12,10 @@ from variables import settings, colors
 
 class Parser(object):
     """
-    A Parsing engine that can sequentially parse CombatLog lines and supports staticmethods for parsing individual
-    spawns and matches to keep some backwards compatibility with the functions found in parse.py. Replaces the Parsing
-    engine found in realtime_alt.py.
+    A Parsing engine that can sequentially parse CombatLog lines and
+    supports staticmethods for parsing individual spawns and matches to
+    keep some backwards compatibility with the functions found in
+    parse.py. Replaces the Parsing engine found in realtime_alt.py.
 
     Capabilities:
     - Determine player name and IDs
