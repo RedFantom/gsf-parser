@@ -14,10 +14,10 @@ class Patterns:
     {
         "name": pattern name,
         "description": str description,
-        "trigger": event descriptor,
-        "events": [(int seconds from trigger, event descriptor, id),]
+        "trigger": event descriptor (only CombatLog lines!),
+        "events": [((start, end), event descriptor, id),]
     }
-
+    The 'start' and 'end' values are relative
     The PatternParser requires a single event for each ID to be present
     within the time range described.
 
@@ -34,4 +34,4 @@ class Patterns:
             component: (component_name)
             crew: (crew_name)
     """
-
+    pass
