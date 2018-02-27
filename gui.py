@@ -14,10 +14,9 @@ from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 # Frames
-from frames import fileframe, resourcesframe, sharingframe, graphsframe, toolsframe
-from frames import settingsframe, realtimeframe, buildframe, charactersframe
-from frames import shipframe, statsframe
-from frames.strategiesframe import StrategiesFrame
+from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
+    SettingsFrame, RealtimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
+    StatsFrame, StrategiesFrame, ToolsFrame
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
@@ -37,8 +36,9 @@ from PIL.ImageTk import PhotoImage
 # Main loop is started at the end
 class MainWindow(ThemedTk):
     """
-    Child class of tk.Tk that creates the main windows of the parser. Creates all frames that are necessary for the
-    various functions of the parser an
+    Child class of tk.Tk that creates the main windows of the parser.
+    Creates all frames that are necessary for the various functions of
+    the parser and provides exit-handling.
     """
 
     def __init__(self):
@@ -67,18 +67,18 @@ class MainWindow(ThemedTk):
         self.file_tab_frame = ttk.Frame(self.notebook)
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
-        self.file_select_frame = fileframe.FileFrame(self.file_tab_frame, self)
-        self.middle_frame = statsframe.StatsFrame(self.file_tab_frame, self)
-        self.ship_frame = shipframe.ShipFrame(self.middle_frame.notebook)
+        self.file_select_frame = FileFrame(self.file_tab_frame, self)
+        self.middle_frame = StatsFrame(self.file_tab_frame, self)
+        self.ship_frame = ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
-        self.characters_frame = charactersframe.CharactersFrame(self.notebook, self)
-        self.sharing_frame = sharingframe.SharingFrame(self.notebook, self)
-        self.realtime_frame = realtimeframe.RealtimeFrame(self.realtime_tab_frame, self)
-        self.settings_frame = settingsframe.SettingsFrame(self.settings_tab_frame, self)
-        self.graphs_frame = graphsframe.GraphsFrame(self.notebook, self)
-        self.resources_frame = resourcesframe.ResourcesFrame(self.notebook, self)
-        self.builds_frame = buildframe.BuildsFrame(self.notebook)
-        self.toolsframe = toolsframe.ToolsFrame(self.notebook)
+        self.characters_frame = CharactersFrame(self.notebook, self)
+        self.sharing_frame = SharingFrame(self.notebook, self)
+        self.realtime_frame = RealtimeFrame(self.realtime_tab_frame, self)
+        self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
+        self.graphs_frame = GraphsFrame(self.notebook, self)
+        self.resources_frame = ResourcesFrame(self.notebook, self)
+        self.builds_frame = BuildsFrame(self.notebook)
+        self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.grid_widgets()
@@ -101,9 +101,7 @@ class MainWindow(ThemedTk):
         # Start the main loop
 
     def grid_widgets(self):
-        """
-        Grid all widgets in the frames
-        """
+        """Grid all widgets in the frames"""
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
@@ -129,9 +127,7 @@ class MainWindow(ThemedTk):
         self.sharing_frame.grid_widgets()
 
     def setup_notebook(self):
-        """
-        Add all created frames to the notebook widget
-        """
+        """Add all created frames to the notebook widget"""
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
@@ -159,9 +155,7 @@ class MainWindow(ThemedTk):
         self.bind("<F10>", self.screenshot)
 
     def set_variables(self):
-        """
-        Set program global variables in the shared variables module
-        """
+        """Set program global variables in the shared variables module"""
         variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
         # Get the screen properties
         variables.screen_w = self.winfo_screenwidth()
@@ -169,30 +163,22 @@ class MainWindow(ThemedTk):
         variables.path = variables.settings["parsing"]["path"]
 
     def get_scaling_factor(self):
-        """
-        Return the DPI scaling factor (float)
-        """
+        """Return the DPI scaling factor (float)"""
         return self.winfo_pixels("1i") / 72.0
 
     def get_window_size(self):
-        """
-        Return the window size, taking scaling into account
-        """
+        """Return the window size, taking scaling into account"""
         factor = self.winfo_pixels("1i") / 96.0
         size_x = int(self.width * factor)
         size_y = int(self.height * factor)
         return size_x, size_y
 
     def update_scaling(self):
-        """
-        Update the DPI scaling of the child widgets of the window
-        """
+        """Update the DPI scaling of the child widgets of the window"""
         self.tk.call('tk', 'scaling', '-displayof', '.', self.get_scaling_factor())
 
     def open_debug_window(self):
-        """
-        Open a DebugWindow instance if that setting is set to True
-        """
+        """Open a DebugWindow instance if that setting is set to True"""
         if variables.settings["gui"]["debug"] is True:
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         return
@@ -209,9 +195,7 @@ class MainWindow(ThemedTk):
         self.style.configure('.', foreground=settings["gui"]["color"])
 
     def set_icon(self):
-        """
-        Changes the window's icon
-        """
+        """Changes the window's icon"""
         icon_path = os.path.join(get_assets_directory(), "logos", "icon_green.ico")
         icon = PhotoImage(Image.open(icon_path))
         self.tk.call("wm", "iconphoto", self._w, icon)
@@ -227,10 +211,7 @@ class MainWindow(ThemedTk):
             exit()
 
     def screenshot(self, *args):
-        """
-        Take a screenshot of the GSF Parser window and save, only works on Windows
-        :return: None
-        """
+        """Take a screenshot of the GSF Parser window and save"""
         x = self.winfo_x()
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)

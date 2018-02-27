@@ -135,8 +135,9 @@ class FileHandler(object):
     @staticmethod
     def get_spawn_dictionary(data, file_name, match_dt, spawn_dt):
         """
-        Function to get the data dictionary for a spawn based on a file name, match datetime and spawn datetime. Uses
-        a lot of code to make the searching as reliable as possible.
+        Function to get the data dictionary for a spawn based on a file
+        name, match datetime and spawn datetime. Uses a lot of code to
+        make the searching as reliable as possible.
         """
         print("Spawn data requested for:\n{}\n{}\n{}".format(file_name, match_dt, spawn_dt))
         # First check if the file_name is available

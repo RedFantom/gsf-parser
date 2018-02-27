@@ -4,16 +4,13 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-
 import os
 import datetime
 import tkinter.filedialog
 import tkinter.messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
-
-from parsing import parse
-
+from parsing import Parser
 
 # Function that returns True if a file contains any GSF events
 def check_gsf(file_name):

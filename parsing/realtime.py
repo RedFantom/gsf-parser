@@ -403,6 +403,9 @@ class RealTimeParser(Thread):
             self.set_for_current_spawn("ship", self.ship)
         return
 
+    def process_login(self):
+        pass
+
     """
     ScreenParser
     """
@@ -654,8 +657,8 @@ class RealTimeParser(Thread):
                  "Damage Taken: {}\n" \
                  "Selfdamage: {}\n" \
                  "Healing Recv: {}\n".format(
-            self.dmg_d, self.dmg_t, self.dmg_s, self._healing
-        )
+                    self.dmg_d, self.dmg_t, self.dmg_s, self._healing
+                )
         return string
 
     def get_timer_string(self):
@@ -664,6 +667,9 @@ class RealTimeParser(Thread):
         return "Spawn in {:02d}s".format(
             divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
         )
+
+    def get_power_mgmt_string(self):
+        return ""
 
     def get_health_string(self):
         pass
