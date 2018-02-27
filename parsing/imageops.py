@@ -28,5 +28,5 @@ def get_similarity_pixels(rgb1, rgb2):
     return 100 - sum(abs(one - two) / 255 * 100 for one, two in zip(rgb1, rgb2)) / 3
 
 
-def get_brightest_pixel(image):
-    return max(image.getdata(), key=lambda pair: sum(pair))
+def get_brightest_pixel(image, color=None):
+    return max(image.getdata(), key=lambda pair: sum(pair if color is None else (pair[color],)))

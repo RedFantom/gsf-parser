@@ -6,10 +6,12 @@ Copyright (C) 2016-2018 RedFantom
 """
 import os
 import math
+import operator
 from PIL import Image
+import cv2  # OpenCV 3 required
+import numpy
 from utils.directories import get_assets_directory
 from parsing.imageops import get_similarity, get_similarity_pixels, get_brightest_pixel
-import operator
 
 colors = {
     "blue": (2, 95, 133),
@@ -146,3 +148,29 @@ def get_ship_health_shields(image, coordinates):
                 break
     return (health[results["f1"]] + health[results["f2"]],
             health[results["r1"]] + health[results["r2"]])
+
+
+def get_minimap_location(minimap: Image.Image):
+    """
+    Determine the location of a ship on the given (cropped-screenshot)
+    minimap image. Uses OpenCV to determine the region which is
+    the brightest in the whole image.
+    """
+    # Remove red and blue color channels
+    pixels = minimap.load()
+    for i, j in range(minimap.size[0]), range(minimap.size[1]):
+        pixels[i, j] = (0, pixels[i, j][1], 0)
+    # Open in OpenCV
+    opencv = image_to_opencv(minimap)
+    # Perform pre-processing operations
+    opencv = cv2.cvtColor(opencv, cv2.COLOR_RGB2GRAY)
+    # GaussianBlur should be applied if the result is unreliable
+    # opencv = cv2.GaussianBlur(opencv)
+    (_, _, _, max_loc) = cv2.minMaxLoc(opencv)
+    # max_loc now contains the location of the brightest pixel in the green channel
+    return max_loc
+
+
+def image_to_opencv(image: Image.Image):
+    """Convert a PIL image into a cv2 compatible array"""
+    return numpy.array(image)[:, :, ::-1].copy()
