@@ -39,8 +39,6 @@ Dictionary structure:
 data_dictionary[filename] = file_dictionary
 file_dictionary[datetime_obj] = match_dictionary
 match_dictionary[datetime_obj] = spawn_dictionary
-spawn_dictionary["power_mgmt"] = power_mgmt_dict
-    power_mgmt_dict[datetime_obj] = integer
 spawn_dictionary["cursor_pos"] = cursor_pos_dict
     cursor_pos_dict[datetime_obj] = (x, y)
 spawn_dictionary["tracking"] = tracking_dict
@@ -162,7 +160,7 @@ class RealTimeParser(Thread):
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
         self._interface = None
         self._coordinates = {}
-        self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
+        self.screen_data = {"tracking": "", "health": (None, None, None)}
         self._resolution = resolution
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
@@ -317,7 +315,6 @@ class RealTimeParser(Thread):
                     "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
                         self._character_data[1], self.player_name
                     ))
-            self.process_login()
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")
@@ -675,8 +672,7 @@ class RealTimeParser(Thread):
         overlay_string = ""
         tracking = self.get_tracking_string()
         parsing = self.get_parsing_string()
-        power = self.get_power_mgmt_string()
-        for string in [parsing, tracking, power]:
+        for string in [parsing, tracking]:
             overlay_string += string
         return overlay_string
 
@@ -701,8 +697,5 @@ class RealTimeParser(Thread):
             divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
         )
 
-    def get_power_mgmt_string(self):
-        return ""
-
     def get_health_string(self):
-        pass
+        return ""
