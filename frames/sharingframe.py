@@ -1,7 +1,10 @@
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE.md
-# General imports
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+# Standard Library
 import os
 import shelve
 # UI imports
@@ -9,7 +12,7 @@ import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
-# Own modules
+# Custom Modules
 from network.sharing_client import SharingClient
 from variables import settings
 from parsing.parser import Parser

@@ -18,15 +18,19 @@ from toplevels.strategy_toplevels import MapToplevel
 
 class StrategiesFrame(ttk.Frame):
     """
-    Frame to display a StrategiesList and Map widget to allow the user to create and edit Strategies with custom items
-    in them to visualize their tactics. An interface to allow real-time Strategy editing is also provided.
+    Frame to display a StrategiesList and Map widget to allow the user to create
+    and edit Strategies with custom item in them to visualize their tactics. An
+    interface to allow real-time Strategy editing is also provided.
     """
 
     def __init__(self, *args, **kwargs):
         ttk.Frame.__init__(self, *args, **kwargs)
-        # The two core widgets of this frame, with lots of callbacks to support the different functionality
-        # Not all functionality is provided through callbacks, and providing any other widget than the StrategiesFrame
-        # as a master widget is inadvisable. This is the result of bad coding practices.
+        """
+        The two core widgets of this frame, with lots of callbacks to support 
+        the different functionality. Not all functionality is provided through 
+        callbacks, and providing any other widget than the StrategiesFrame as a
+        master widget is inadvisable. This is the result of bad coding practices.
+        """
         self.list = StrategiesList(self, callback=self._set_phase, settings_callback=self.open_settings, frame=self)
         self.map = Map(self, moveitem_callback=self.list.move_item_phase, additem_callback=self.list.add_item_to_phase,
                        canvasheight=385, canvaswidth=385)
@@ -47,21 +51,24 @@ class StrategiesFrame(ttk.Frame):
 
     def open_settings(self, *args):
         """
-        Callback for the Settings button to open a SettingsToplevel. Only one SettingsToplevel is allowed to be open at
-        any given time, to prevent any problems with the Client/Server functionality. If a SettingsToplevel is already
-        open, lifts the SettingsToplevel to the front so it is visible to the user.
+        Callback for the Settings button to open a SettingsToplevel. Only one
+        SettingsToplevel is allowed to be open at any given time, to prevent
+        any problems with the Client/Server functionality. If a SettingsToplevel
+        is already open, lifts the SettingsToplevel to the front so it is
+        visible to the user.
         """
         if self.settings:
             self.settings.lift()
             return
-        # The StrategiesFrame instance is passed as an argument because not all functionality is provided through
-        # callbacks, but some code is directly executed on the StrategiesFrame instance. Bad coding practices yet again.
+        """
+        The StrategiesFrame instance is passed as an argument because not all 
+        functionality is provided through callbacks, but some code is directly 
+        executed on the StrategiesFrame instance. Bad coding practices yet again.
+        """
         self.settings = SettingsToplevel(master=self, disconnect_callback=self.disconnect_callback)
 
     def grid_widgets(self):
-        """
-        It is pretty obvious what this does
-        """
+        """It is pretty obvious what this does"""
         self.list.grid(column=0, row=1, sticky="nswe", rowspan=2)
         self.map.grid(column=1, row=1, sticky="nswe", pady=5, rowspan=2)
         self.description_header.grid(column=3, columnspan=2, sticky="w", pady=(5, 0), padx=5, row=1)
@@ -70,9 +77,9 @@ class StrategiesFrame(ttk.Frame):
 
     def _set_phase(self, phase):
         """
-        Callback for the StrategiesList widget to call when a new Phase is selected.
+        Callback for the StrategiesList widget to call when a new Phase is
+        selected.
         :param phase: phase name
-        :return: None
         """
         for map in self.maps:
             map.update_map(self.list.db[self.list.selected_strategy][phase])
@@ -86,8 +93,9 @@ class StrategiesFrame(ttk.Frame):
 
     def set_description(self):
         """
-        Update the description of a certain item in the database. Also immediately saves the database, so the
-        description is automatically saved when updated.
+        Update the description of a certain item in the database. Also
+        immediately saves the database, so the description is automatically
+        saved when updated.
         """
         if self.client and self.settings.client_permissions[self.client.name][1] is False:
             self.description.delete("1.0", tk.END)
@@ -107,8 +115,8 @@ class StrategiesFrame(ttk.Frame):
 
     def send_description(self):
         """
-        Function to make sure that the description only gets sent two seconds after stopping typing when editing it,
-        to lower bandwidth requirements.
+        Function to make sure that the description only gets sent two seconds
+        after stopping typing when editing it, to lower bandwidth requirements.
         """
         if self.description_update_task:
             self.after_cancel(self.description_update_task)
@@ -120,8 +128,9 @@ class StrategiesFrame(ttk.Frame):
 
     def show_large(self):
         """
-        Callback for the Edit (large map)-Button of the StrategiesList widget to open a larger map in a Toplevel (the
-        MapToplevel from toplevels.strategy_toplevels)
+        Callback for the Edit (large map)-Button of the StrategiesList widget
+        to open a larger map in a Toplevel (the MapToplevel from
+        toplevels.strategy_toplevels)
         """
         self.large = MapToplevel(frame=self)
         if self.list.selected_phase is None:
@@ -133,11 +142,11 @@ class StrategiesFrame(ttk.Frame):
 
     def client_connected(self, client):
         """
-        Callback for the SettingsToplevel (when open) to call when a Client object is connected to a network. Sets the
-        client attribute for this instance, calls another callback, sets the client attribute for the Map instance and
-        *starts the Client Thread to start the functionality of the Client*.
-        :param client: Client instance
-        :return: None
+        Callback for the SettingsToplevel (when open) to call when a Client
+        object is connected to a network. Sets the client attribute for this
+        instance, calls another callback, sets the client attribute for the Map
+        instance and *starts the Client Thread to start the functionality of
+        the Client*.
         """
         self.client = client
         self.list.client_connected(client)
@@ -149,9 +158,12 @@ class StrategiesFrame(ttk.Frame):
     def insert_callback(self, command, args):
         """
         Callback that has numerous functions:
-        - Before doing anything checks if the Client object is valid for operations to be performed
-        - Inserts a log entry for the command received into the ServerToplevel widget if the client is a master client
-        - Executes the command of the network on the Map widgets with the given arguments
+        - Before doing anything checks if the Client object is valid for
+          operations to be performed
+        - Inserts a log entry for the command received into the ServerToplevel
+          widget if the client is a master client
+        - Executes the command of the network on the Map widgets with the given
+          arguments
           * add_item
           * move_item
           * del_item
@@ -248,10 +260,13 @@ class StrategiesFrame(ttk.Frame):
                 self.description.delete("1.0", tk.END)
                 self.description.insert("1.0", description)
 
-        # The arguments *always* include the Strategy name and Phase name for the operations to be performed on
-        # If these do not match the selected Strategy and Phase, then no visible changes occur on the Map widgets
-        # However, the saving of the changes happen before this code is reached, and thus if the user moves to the other
-        # Strategy and Phase that the operations were performed on, the user will still see the changed elements
+        # The arguments *always* include the Strategy name and Phase name for
+        # the operations to be performed on if these do not match the selected
+        # Strategy and Phase, then no visible changes occur on the Map widgets.
+        # However, the saving of the changes happen before this code is reached,
+        # and thus if the user moves to the other Strategy and Phase that the
+        # operations were performed on, the user will still see the changed
+        # elements
         elif self.list.selected_strategy != args[0] or self.list.selected_phase != args[1]:
             return
         # Perform the operations on the Map instances to make the visual changes
@@ -278,9 +293,10 @@ class StrategiesFrame(ttk.Frame):
 
     def disconnect_callback(self):
         """
-        Callback that is called when the Client is disconnected from the Server, for whatever reason. All changes the
-        master Client made are already saved, so this code only resets the state of the widgets in the StrategiesFrame
-        instance.
+        Callback that is called when the Client is disconnected from the Server,
+        for whatever reason. All changes the master Client made are already s
+        aved, so this code only resets the state of the widgets in the
+        StrategiesFrame instance.
         """
         self.map.client = None
         if self.in_map:
@@ -291,10 +307,7 @@ class StrategiesFrame(ttk.Frame):
 
     @property
     def maps(self):
-        """
-        :return: list of Map objects available in StrategiesFrame instance
-        """
+        """Return list of Map objects available in StrategiesFrame instance"""
         if self.in_map is not self.map:
             return [self.map, self.in_map]
-        else:
-            return [self.map]
+        return [self.map]

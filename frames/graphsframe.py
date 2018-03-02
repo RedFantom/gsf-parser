@@ -21,7 +21,8 @@ from parsing.parser import Parser
 
 class GraphsFrame(ttk.Frame):
     """
-    A frame containing a place for a graph where the user can view his/her performance over time.
+    A frame containing a place for a graph where the user can view his/her
+    performance over time.
     """
 
     graph_options = {
@@ -39,10 +40,8 @@ class GraphsFrame(ttk.Frame):
 
     def __init__(self, root, main_window):
         """
-        Set-up the plot, check the back-end and create all widgets necessary to display the plot
-        and let the user select the type of plot he/she wants.
-        :param root:
-        :param main_window:
+        Set-up the plot, check the back-end and create all widgets necessary to
+        display the plot and let the user select the type of plot he/she wants.
         """
         ttk.Frame.__init__(self, root)
         if matplotlib.get_backend() != "TkAgg":
@@ -69,9 +68,7 @@ class GraphsFrame(ttk.Frame):
         self.toolbar.update()
 
     def calculate_graph(self):
-        """
-        Calculate a new Graph based on the setting given by the user
-        """
+        """Calculate a new Graph based on the setting given by the user"""
         # Setup Figure for calculation
         self.figure.clear()
         axes = self.figure.add_subplot(111)

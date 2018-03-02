@@ -4,25 +4,25 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# UI imports
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import messagebox
-import pickle as pickle
+from tkinter import messagebox as mb
+# Standard Library
 import os
 import sys
-
+import pickle as pickle
+from collections import OrderedDict
+# Custom modules
 import data.ships
 from utils import directories
-from utils import utilities
 from widgets import VerticalScrollFrame
 from PIL import Image, ImageTk
 from utils.directories import get_assets_directory
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from toplevels.addcharacter import AddCharacter
 from variables import settings
-from data import abilities
-from collections import OrderedDict
-from tkinter import messagebox as mb
+import variables
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
 from network.sharing_data import servers
@@ -209,7 +209,7 @@ class CharactersFrame(ttk.Frame):
 
         for character, data in sorted(self.characters.items()):
             if data["Server"] not in self.servers or character[0] not in self.servers:
-                messagebox.showinfo(
+                mb.showinfo(
                     "United Forces Notification",
                     "Since the United Forces update of SWTOR, the network names have changed and thus the character "
                     "database must be updated. This process is non-destructive, meaning you should be able to keep "

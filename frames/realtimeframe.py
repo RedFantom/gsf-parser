@@ -94,7 +94,7 @@ class RealtimeFrame(ttk.Frame):
         if (settings["realtime"]["overlay"] or
                 settings["realtime"]["screen_overlay"] or
                 settings["realtime"]["screenparsing"]):
-            if self.check_screen_mode() is False:
+            if get_swtor_screen_mode() is False:
                 return
         if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
             if not check_privileges():
@@ -135,9 +135,7 @@ class RealtimeFrame(ttk.Frame):
         self.parser.start()
 
     def stop_parsing(self):
-        """
-        Stop the parsing process
-        """
+        """Stop the parsing process"""
         self.close_overlay()
         self.parser.stop()
         self.parsing_control_button.config(text="Start Parsing", command=self.start_parsing)
@@ -154,21 +152,18 @@ class RealtimeFrame(ttk.Frame):
 
     def file_callback(self, file_name):
         """
-        Callback for the RealTimeParser's LogStalker to set the file name in the watching label
+        Callback for the RealTimeParser's LogStalker to set the file name in
+        the watching label
         """
         print("[RealTimeParser] New file {}".format(file_name))
         self.watching_stringvar.set("Watching: {}".format(file_name))
 
     def match_callback(self):
-        """
-        Callback for the RealTimeParser to clear the TimeView
-        """
+        """Callback for the RealTimeParser to clear the TimeView"""
         self.time_view.delete_all()
 
     def spawn_callback(self):
-        """
-        Callback for the RealTimeParser to clear the TimeView
-        """
+        """Callback for the RealTimeParser to clear the TimeView"""
         self.time_view.delete_all()
 
     def event_callback(self, event, player_name, active_ids, start_time):
@@ -191,9 +186,7 @@ class RealtimeFrame(ttk.Frame):
     """
 
     def open_overlay(self):
-        """
-        Open an overlay if the settings given by the user allow for it
-        """
+        """Open an overlay if the settings given by the user allow for it"""
         if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
             return
         if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
@@ -238,9 +231,7 @@ class RealtimeFrame(ttk.Frame):
         self.overlay_after_id = self.after(1000, self.update_overlay)
 
     def close_overlay(self):
-        """
-        Close the overlay
-        """
+        """Close the overlay"""
         if self.overlay_after_id is not None:
             self.after_cancel(self.overlay_after_id)
         if self.overlay is not None:
@@ -248,44 +239,12 @@ class RealtimeFrame(ttk.Frame):
         self.overlay = None
         self.overlay_after_id = None
 
-    @staticmethod
-    def check_screen_mode():
-        """
-        Check if the screen mode of SWTOR is suitable for the Overlay and display a message if that's not the case
-        """
-        screen_mode = get_swtor_screen_mode()
-        if screen_mode is FileNotFoundError:
-            messagebox.showerror(
-                "Error", "In an attempt to determine the screen mode of SWTOR, the GSF parser could not locate the "
-                         "client_settings.ini file. Please check if SWTOR is correctly installed.")
-            return False
-        elif screen_mode is ValueError:
-            return True  # Safe-guard against false negatives
-        elif screen_mode == "Windowed":
-            messagebox.showerror(
-                "Error", "The GSF Parser determined the SWTOR screen mode as 'Windowed'. This means that Overlays "
-                         "might not display correctly and screen parsing will be unreliable at best.")
-            return True  # Still allowed to continue
-        elif screen_mode == "FullScreen (Windowed)":
-            # Perfect!
-            return True
-        elif screen_mode == "FullScreen":
-            messagebox.showerror(
-                "Error", "The GSF Parser determined the SWTOR screen mode as 'FullScreen'. This means that Overlays "
-                         "cannot be displayed and screen parsing cannot be started. Please change your screen mode "
-                         "to 'FullScreen (Windowed)'.")
-            return False
-        else:
-            raise ValueError("Unexpected screen mode value: {}".format(screen_mode))
-
     """
     Character handling
     """
 
     def update_characters(self, *args):
-        """
-        Update the characters shown in the character dropdown
-        """
+        """Update the characters shown in the character dropdown"""
         if len(args) != 1:
             return
         server = args[0]
@@ -305,9 +264,7 @@ class RealtimeFrame(ttk.Frame):
 
     @property
     def character_data(self):
-        """
-        Return Character Data tuple for selected character or None
-        """
+        """Return Character Data tuple for selected character or None"""
         if "Choose" in self.server.get() or "Choose" in self.character.get():
             return None
         reverse_servers = {value: key for key, value in self.window.characters_frame.servers.items()}
