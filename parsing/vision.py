@@ -69,7 +69,6 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     :param degrees: The amount of degrees for tracking penalty
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
-    :return:
     """
     return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
 
@@ -153,22 +152,17 @@ def get_ship_health_shields(image, coordinates):
 def get_minimap_location(minimap: Image.Image):
     """
     Determine the location of a ship on the given (cropped-screenshot)
-    minimap image. Uses OpenCV to determine the region which is
-    the brightest in the whole image.
+    minimap image. Uses pixel matching to determine the brightest green spot
+    in the minimap image.
     """
-    # Remove red and blue color channels
+    # minimap = minimap.convert("RGB")  # Image might be RGBA
     pixels = minimap.load()
-    for i, j in range(minimap.size[0]), range(minimap.size[1]):
-        pixels[i, j] = (0, pixels[i, j][1], 0)
-    # Open in OpenCV
-    opencv = image_to_opencv(minimap)
-    # Perform pre-processing operations
-    opencv = cv2.cvtColor(opencv, cv2.COLOR_RGB2GRAY)
-    # GaussianBlur should be applied if the result is unreliable
-    # opencv = cv2.GaussianBlur(opencv)
-    (_, _, _, max_loc) = cv2.minMaxLoc(opencv)
-    # max_loc now contains the location of the brightest pixel in the green channel
-    return max_loc
+    for i in range(minimap.size[0]):
+        for j in range(minimap.size[1]):
+            red, green, blue = pixels[i, j]
+            if green >= 240 and red <= 30 and blue <= 30:
+                return i + 1, j + 1
+    return None, None
 
 
 def image_to_opencv(image: Image.Image):

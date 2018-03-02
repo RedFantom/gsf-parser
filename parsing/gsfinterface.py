@@ -99,3 +99,6 @@ class GSFInterface(GUIParser):
         y = box[1] + int(16 * scale)
         return x, y
 
+    def get_map_coordinates(self):
+        return self.get_box_coordinates("FreeFlightMiniMap")
+
