@@ -1,11 +1,15 @@
-from .hoverinfo import *
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 from .toggledframe import *
 from .verticalscrollframe import *
-from .crewabilitiesframe import *
-from .crewlistframe import *
-from .shipselectframe import *
-from .componentslistframe import *
-from .componentwidgets import *
+from widgets.builds.crewabilitiesframe import *
+from widgets.builds.crewlistframe import *
+from widgets.builds.shipselectframe import *
+from widgets.builds.componentslistframe import *
+from widgets.builds.componentwidgets import *
 from .scaleentry import ScaleEntry
-from ttkwidgets import Calendar
-from .overlay_tkinter import TkinterOverlay as Overlay
+from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay

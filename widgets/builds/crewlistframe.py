@@ -11,7 +11,7 @@ from os import path
 from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-from .toggledframe import ToggledFrame
+from widgets.toggledframe import ToggledFrame
 import variables
 
 

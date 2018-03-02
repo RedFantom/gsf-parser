@@ -197,7 +197,7 @@ class RealtimeFrame(ttk.Frame):
         if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
             return
         if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
-            from widgets.overlay_windows import WindowsOverlay as Overlay
+            from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
         else:  # Linux or non-experimental
             from widgets import Overlay
         # Generate arguments for Overlay.__init__

@@ -10,8 +10,8 @@ from tkinter import messagebox
 from ast import literal_eval
 import sys
 # Own modules
-from widgets.strategy_list import StrategiesList
-from widgets.strategy_map import Map
+from widgets.strategies.strategy_list import StrategiesList
+from widgets.strategies.strategy_map import Map
 from toplevels.strategy_settings_toplevel import SettingsToplevel
 from toplevels.strategy_toplevels import MapToplevel
 
