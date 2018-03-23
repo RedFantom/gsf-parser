@@ -24,9 +24,26 @@ def get_similarity(template, to_match):
     return 100 - (diff / 255.0 * 100) / ncomponents
 
 
-def get_similarity_pixels(rgb1, rgb2):
+def get_similarity_pixels(rgb1: tuple, rgb2: tuple):
+    """Return the similarity ration between two pixel tuples"""
     return 100 - sum(abs(one - two) / 255 * 100 for one, two in zip(rgb1, rgb2)) / 3
 
 
-def get_brightest_pixel(image, color=None):
+def get_brightest_pixel(image, color: int=None):
+    """Return the pixel value of the brightest pixel in an image"""
     return max(image.getdata(), key=lambda pair: sum(pair if color is None else (pair[color],)))
+
+
+def get_brightest_pixel_loc(image, color: int=None):
+    """Return the coordinates of the brightest pixel"""
+    max_value = 0
+    max_coords = None
+    pixels = image.load()
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            total = sum(pixels[i, j] if color is None else (pixels[i, j][color],))
+            if not total > max_value:
+                continue
+            max_coords = (i, j)
+            max_value = total
+    return max_coords

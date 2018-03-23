@@ -37,16 +37,12 @@ class TestVision(TestCase):
 
     def test_get_ship_health_shields(self):
         coords = self.gui_parser.get_ship_health_coordinates()
-        vision.get_ship_health_shields(self.image, coords)
+        result = vision.get_ship_health_shields(self.image, coords)
+        print("[TESTS] Ship health:", result)
 
-    def test_get_ship_location(self):
-        cds = vision.get_minimap_location(self.image.crop(GSFInterface("Default").get_map_coordinates()))
-        print(cds)
-
-
-
-
-
-
-
-
+    def test_get_minimap_position(self):
+        coords = self.gui_parser.get_minimap_coordinates()
+        print("[TESTS] Coordinates:", coords)
+        result = vision.get_minimap_location(self.image.crop(coords))
+        print("[TESTS] Minimap location:", result)
+        self.assertIsInstance(result, tuple)

@@ -177,8 +177,8 @@ class RealTimeParser(Thread):
         file_name = self._character_db[self._character_data]["GUI"]
         self._interface = GSFInterface(file_name)
         self._coordinates = {
-            "power_mgmt": self._interface.get_ship_powermgmt_coordinates(),
-            "health": self._interface.get_ship_health_coordinates()
+            "health": self._interface.get_ship_health_coordinates(),
+            "minimap": self._interface.get_minimap_coordinates()
         }
         self._pixels_per_degree = self._interface.get_pixels_per_degree()
 
@@ -499,6 +499,12 @@ class RealTimeParser(Thread):
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+
+        """
+        Minimap
+        """
+        if "Minimap Location" in self._screen_parsing_features:
+            minimap = screenshot.crop()
 
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict

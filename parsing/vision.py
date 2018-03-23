@@ -8,10 +8,10 @@ import os
 import math
 import operator
 from PIL import Image
-import cv2  # OpenCV 3 required
 import numpy
 from utils.directories import get_assets_directory
-from parsing.imageops import get_similarity, get_similarity_pixels, get_brightest_pixel
+from parsing.imageops import \
+    get_similarity, get_similarity_pixels, get_brightest_pixel, get_brightest_pixel_loc
 
 colors = {
     "blue": (2, 95, 133),
@@ -140,7 +140,7 @@ def get_ship_health_shields(image, coordinates):
 
     for element, coord in generator:
         rgb = image.getpixel(coord)
-        print(coord, rgb)
+        print("[VISION] Ship health:", coord, rgb)
         for name, color in colors.items():
             if get_similarity_pixels(color, rgb) >= 80:
                 results[element] = name
@@ -155,14 +155,9 @@ def get_minimap_location(minimap: Image.Image):
     minimap image. Uses pixel matching to determine the brightest green spot
     in the minimap image.
     """
-    # minimap = minimap.convert("RGB")  # Image might be RGBA
-    pixels = minimap.load()
-    for i in range(minimap.size[0]):
-        for j in range(minimap.size[1]):
-            red, green, blue = pixels[i, j]
-            if green >= 240 and red <= 30 and blue <= 30:
-                return i + 1, j + 1
-    return None, None
+    # All pixels except the green ones are now ignored
+    minimap.show()
+    return get_brightest_pixel_loc(minimap, 1)
 
 
 def image_to_opencv(image: Image.Image):
