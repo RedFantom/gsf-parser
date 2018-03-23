@@ -55,13 +55,13 @@ class BootSplash(tk.Toplevel):
         screen_res = utilities.get_screen_resolution()
         self.update()
         req_size = (self.winfo_width(), self.winfo_height())
-        self.wm_geometry("+{0}+{1}".format(int((screen_res[0] - req_size[0]) / 2),
-                                           int((screen_res[1] - req_size[1]) / 2)))
+        self.wm_geometry("+{0}+{1}".format(
+            int((screen_res[0] - req_size[0]) / 2), int((screen_res[1] - req_size[1]) / 2)))
         self.progress_bar["value"] = 0
         self.update()
 
     def update_progress(self, amount):
-        self.label_var.set("Parsing the files...")
+        self.label_var.set("Parsing files...")
         self.amount.set(amount)
         self.progress_bar.update_idletasks()
 
