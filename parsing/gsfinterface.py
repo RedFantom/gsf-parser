@@ -9,7 +9,7 @@ from parsing.guiparsing import GUIParser
 
 
 class GSFInterface(GUIParser):
-    def __init__(self, file_name, target_items=None):
+    def __init__(self, file_name: str, target_items: dict=None):
         if target_items is None:
             target_items = {
                 "FreeFlightQuickBar": (230, 70),

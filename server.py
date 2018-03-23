@@ -4,8 +4,8 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-from network.sharing_server import SharingServer
-from datetime import datetime
+from network.sharing.server import SharingServer
+from network.minimap.server import MiniMapServer
 import argparse
 
 """
@@ -39,9 +39,9 @@ if __name__ == '__main__':
     parser.add_argument(
         "-c", type=str, nargs=1, help="Maximum amount of Clients to allow on the Server simultaneously",
         default=DEFAULT_CLIENTS)
-    # Time
+    # Type
     parser.add_argument(
-        "-t", type=int, nargs=1, help="Amount of time in minutes to run the network for", default=DEFAULT_TIME)
+        "-t", type=str, nargs=1, help="Server type (sharing, minimap)", default="sharing")
 
     args = parser.parse_args()
 
@@ -52,21 +52,24 @@ if __name__ == '__main__':
         (args.a if args.a == DEFAULT_ADDRESS else args.a[0])
     port = int(args.p[0] if args.p != DEFAULT_PORT else DEFAULT_PORT)
     clients = int(args.c[0] if isinstance(args.c, list) else args.c)
-    time = int(args.t[0] if isinstance(args.t, list) else args.t)
+    type = args.t[0] if isinstance(args.t, list) else args.t
 
     """
     Start the network
     """
-    server = SharingServer(address=(address, port), max_clients=clients)
+    if type == "sharing":
+        server = SharingServer(address=(address, port), max_clients=clients)
+    elif type == "minimap":
+        server = MiniMapServer(address, port)
+    else:
+        raise ValueError("Invalid server type: {}".format(type))
     server.start()
 
-    if time > 0:
-        start_time = datetime.now()
-        try:
-            while divmod((datetime.now() - start_time).total_seconds(), 60)[0] < time:
-                pass
-        except KeyboardInterrupt:
-            print("[Server] Actions interrupted by user.")
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
         server.stop()
     exit()
+
 

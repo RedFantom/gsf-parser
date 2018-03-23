@@ -10,11 +10,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
+from ttkwidgets.frames import Balloon
 # Other
 import sys
 import os
 from variables import settings, colors
-from widgets import VerticalScrollFrame, HoverInfo
+from widgets import VerticalScrollFrame
 from toplevels.colors import EventColors
 from utils.utilities import get_screen_resolution
 from collections import OrderedDict
@@ -54,7 +55,7 @@ class SettingsFrame(ttk.Frame):
         self.gui_event_colors_checkbox = ttk.Checkbutton(
             self.gui_frame, text="Use Advanced Event Color Scheme", variable=self.gui_event_colors_type,
             command=self.save_settings)
-        HoverInfo(
+        Balloon(
             self.gui_event_colors_checkbox,
             text="The Advanced Color Scheme offers more colors to distinguish between more different types of events.")
         # Event color scheme
@@ -135,7 +136,7 @@ class SettingsFrame(ttk.Frame):
                     "corner of the screen."
         for widget in [self.realtime_overlay_position_x_label, self.realtime_overlay_position_y_label,
                        self.realtime_overlay_position_y, self.realtime_overlay_position_x]:
-            HoverInfo(widget, text=help_text)
+            Balloon(widget, text=help_text, width=350)
         self.realtime_overlay_position_y.bind("<Key>", self.save_settings_delayed)
         self.realtime_overlay_position_x.bind("<Key>", self.save_settings_delayed)
         # Disable overlay when not in match
@@ -166,7 +167,7 @@ class SettingsFrame(ttk.Frame):
         # Screen parsing features
         self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
         self.screen_features = [
-            "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer", "MiniMap"
+            "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer", "MiniMap Location"
         ]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
@@ -348,7 +349,7 @@ class SettingsFrame(ttk.Frame):
         """
         if get_screen_resolution() not in timer_boxes:
             self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-            HoverInfo(
+            Balloon(
                 self.screen_checkboxes["Spawn Timer"],
                 text="Your monitor resolution is not supported by this feature. If you would like "
                      "for your resolution to be supported, please send RedFantom a screenshot of the "
@@ -356,8 +357,8 @@ class SettingsFrame(ttk.Frame):
         if sys.platform == "linux":
             self.realtime_overlay_experimental.set(False)
             self.realtime_overlay_experimental_checkbox.config(state=tk.DISABLED)
-            HoverInfo(self.realtime_overlay_experimental_checkbox,
-                      text="This feature is only available on Windows due to API differences.")
+            Balloon(self.realtime_overlay_experimental_checkbox,
+                    text="This feature is only available on Windows due to API differences.")
         return
 
     def save_settings(self, *args):

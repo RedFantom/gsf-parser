@@ -1,0 +1,166 @@
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
+import tkinter as tk
+from tkinter import ttk
+from tkinter import messagebox as mb
+from ttkwidgets.autocomplete import AutocompleteCombobox
+from utils.utilities import map_names
+from utils.directories import get_assets_directory
+from network.minimap.client import MiniMapClient
+from PIL import Image, ImageTk
+import os
+from ast import literal_eval
+
+
+class MiniMap(tk.Toplevel):
+    """
+    Show a MiniMap with control widgets on which allied players can be
+    displayed. Offers the following controls:
+    - List of players currently logged in to the server
+    - Map Selection dropdown
+    # TODO: Map magnification factor
+    """
+
+    DIAMETER = 4
+
+    def __init__(self, *args, **kwargs):
+        tk.Toplevel.__init__(self, *args, **kwargs)
+        self.wm_title("GSF Parser: MiniMap Sharing")
+        self.wm_resizable(False, False)
+
+        # Attributes
+        self._items = dict()
+        self._client = None
+        self.after_id = None
+        self._users = list()
+
+        # Widget Creation
+        self._canvas = tk.Canvas(self)
+        self._map = tk.StringVar()
+        self._map_dropdown = ttk.OptionMenu(self, self._map, "Choose Environment", *tuple(map_names.keys()))
+        self._map_update = ttk.Button(self, text="Update", command=self.set_map)
+        self._users_list = tk.Listbox(self, height=12, width=20)
+        self._magnification = tk.StringVar()
+        self._magnification_dropdown = ttk.OptionMenu(
+            self, self._magnification, "1", "2", "4", "8")
+
+        # Finish up
+        self.setup_widgets()
+        self.grid_widgets()
+
+    def setup_widgets(self):
+        """Configure widget contents"""
+        self._canvas.config(width=800, height=800)
+
+    def grid_widgets(self):
+        """Put the widgets in their place"""
+        self._canvas.grid(row=0, column=0, sticky="nswe", rowspan=4, padx=5, pady=5)
+        self._map_update.grid(row=1, column=1, sticky="nswe", padx=(0, 5), pady=(0, 5))
+        self._map_dropdown.grid(row=0, column=1, sticky="nswe", padx=(0, 5), pady=5)
+        self._users_list.grid(row=2, column=1, sticky="nswe", padx=(0, 5), pady=(0, 5))
+        self._magnification_dropdown.grid(row=3, column=1, sticky="nswe", padx=(0, 5), pady=(0, 5))
+
+    def set_map(self):
+        """Update map background"""
+        map_name = self._map.get()
+        if map_name not in map_names:
+            mb.showerror("Error", "Invalid map entered.")
+            return
+        file_name = map_names[map_name]
+        file_path = os.path.join(get_assets_directory(), "maps", file_name + ".jpg")
+        size = self._canvas.winfo_width(), self._canvas.winfo_height()
+        image = Image.open(file_path).resize(size, Image.ANTIALIAS)
+        image = ImageTk.PhotoImage(image)
+        if "map" in self._items:
+            self._canvas.delete(self._items["map"])
+        self._items["map"] = self._canvas.create_image(0, 0, image=image, anchor=tk.W, tag="background")
+        # self._canvas.tag_lower("background")
+        print("[MiniMap] New background: {}: {}, {}".format(self._items["map"], file_name, size))
+        self._canvas.update()
+
+    def update_markers(self):
+        """Update markers by retrieving data from the client"""
+        width, height = self._canvas.winfo_width(), self._canvas.winfo_height()
+        # Receive locations
+        if not isinstance(self._client, MiniMapClient):
+            raise TypeError
+        self._client.receive()
+        while not self._client.message_queue.empty():
+            message = self._client.message_queue.get()
+            if message == "exit":
+                mb.showinfo("Info", "The remote host closed the connection.")
+                self.destroy()
+                return
+
+            # Command
+            elems = message.split("_")
+            command = elems[0]
+
+            if command == "login":
+                """
+                A new user just logged in: login_username
+                """
+                _, name = elems
+                self._items[name] = None, None
+                self._users.append(name)
+                self.update_users_list()
+
+            elif command == "location":
+                """
+                A user sent us location data: location_username_tuple
+                """
+                # Collect data
+                tup = literal_eval(elems[2])
+                name = elems[1]
+                # Calculate item location
+                x, y = int(tup[0] * width), int(tup[1] * height)
+                mark = self._canvas.create_oval(
+                    x, y, x + 4, y + 4, fill="green", tag="mark")
+                text = self._canvas.create_text(
+                    x + 10, y, anchor=tk.NW, text=name, fill="black", tag="name")
+                # Delete old markers, if there are any
+                old_mark, old_text = self._items[name]
+                if old_mark is not None:
+                    self._canvas.delete(old_mark, old_text)
+                # Update items dictionary
+                self._items[name] = (mark, text)
+
+            elif command == "logout":
+                """
+                A user just logged out: logout_username
+                """
+                _, name = elems
+                # Delete markers
+                old_mark, old_text = self._items[name]
+                if old_mark is not None:
+                    self._canvas.delete(old_mark, old_text)
+                # Remove references
+                del self._items[name]
+                self._users.remove(name)
+                self.update_users_list()
+
+        self.after_id = self.after(1000, self.update_markers)
+
+    def update_users_list(self):
+        """Update the users list widget"""
+        self._users_list.delete(0, tk.END)
+        for name in self._users:
+            self._users_list.insert(tk.END, name)
+        return True
+
+    def set_client(self, client: MiniMapClient):
+        """Set the Client for the window and start activities"""
+        self._client = client
+        self.after_id = self.after(1000, self.update_markers)
+
+    def destroy(self):
+        """Override destroy to cancel after task"""
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+        tk.Toplevel.destroy(self)
+
+

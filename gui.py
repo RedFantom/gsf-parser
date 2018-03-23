@@ -188,7 +188,7 @@ class MainWindow(ThemedTk):
         Update the style of the window. This includes theme and text
         colour, but also font.
         """
-        self.set_theme_advanced("arc", brightness=0.9)
+        self.set_theme("arc")
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")

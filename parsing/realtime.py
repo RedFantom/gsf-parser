@@ -28,6 +28,8 @@ from parsing.shipstats import ShipStats
 from data.keys import keys
 from data.abilities import rep_ships
 from time import sleep
+# MiniMap networking
+from network.minimap.client import MiniMapClient
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -82,7 +84,11 @@ class RealTimeParser(Thread):
             screen_parsing_enabled=False,
             screen_parsing_features=None,
             data_queue=None,
-            return_queue=None
+            return_queue=None,
+            minimap_share=False,
+            minimap_user=None,
+            minimap_address: str = None,
+            minimap_window=None
     ):
         """
         :param character_db: Character database
@@ -96,6 +102,9 @@ class RealTimeParser(Thread):
         :param return_queue: Queue to answer queries for data with
         :param exit_queue: Queue to make the RealTimeParser stop activities
         :param character_data: Character tuple with the character name and network to retrieve data with
+        :param minimap_share: Whether to share minimap location with a server
+        :param minimap_address: Address of the MiniMap sharing server
+        :param minimap_user: Username for the MiniMap sharing server
         """
         Thread.__init__(self)
 
@@ -160,6 +169,16 @@ class RealTimeParser(Thread):
         self._spawn_time = None
 
         """
+        MiniMap Sharing
+        """
+        self._username = minimap_user
+        self._minimap = minimap_window
+        self._address = minimap_address
+        self._client = None
+        if minimap_share is True:
+            self.setup_minimap_share()
+
+        """
         Data processing
         """
         self._file_name = os.path.join(get_temp_directory(), "realtime.db")
@@ -167,10 +186,9 @@ class RealTimeParser(Thread):
 
     def setup_screen_parsing(self):
         """
-        If it is enabled, set up the attribute objects with the correct parameters for use in the loop.
+        If it is enabled, set up the attribute objects with the correct
+        parameters for use in the loop.
         """
-        if not self._screen_parsing_enabled:
-            return
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
@@ -182,10 +200,17 @@ class RealTimeParser(Thread):
         }
         self._pixels_per_degree = self._interface.get_pixels_per_degree()
 
+    def setup_minimap_share(self):
+        """Create a MiniMapClient and setup everything to share location"""
+        if "MiniMap Location" not in self._screen_parsing_features:
+            raise ValueError("MiniMap Location parsing not enabled.")
+        print("[RealTimeParser: MiniMap]", self._address)
+        addr, port = self._address.split(":")
+        self._client = MiniMapClient(addr, int(port), self._username)
+        self._minimap.set_client(self._client)
+
     def start_listeners(self):
-        """
-        Start the keyboard and mouse listeners
-        """
+        """Start the keyboard and mouse listeners"""
         if not self._screen_parsing_enabled or "Mouse and Keyboard" not in self._screen_parsing_features:
             return
         print("[RealTimeParser] Mouse and Keyboard parsing enabled.")
@@ -193,9 +218,7 @@ class RealTimeParser(Thread):
         self._ms_listener.start()
 
     def stop_listeners(self):
-        """
-        Stop the keyboard and mouse listeners
-        """
+        """Stop the keyboard and mouse listeners"""
         if not self._screen_parsing_enabled:
             return
         self._kb_listener.stop()
@@ -206,16 +229,12 @@ class RealTimeParser(Thread):
     """
 
     def save_data_dictionary(self):
-        """
-        Save the data dictionary from memory to pickle
-        """
+        """Save the data dictionary from memory to pickle"""
         with open(self._file_name, "wb") as fo:
             pickle.dump(self._realtime_db, fo)
 
     def read_data_dictionary(self, create_new_database=False):
-        """
-        Read the data dictionary with backwards compatibility
-        """
+        """Read the data dictionary with backwards compatibility"""
         if not os.path.exists(self._file_name) or create_new_database is True:
             messagebox.showinfo("Info", "The GSF Parser is creating a new real-time parsing database.")
             self.save_data_dictionary()
@@ -238,9 +257,7 @@ class RealTimeParser(Thread):
     """
 
     def update(self):
-        """
-        Perform all the actions required for a single loop cycle
-        """
+        """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
         # File parsing
         lines = self._stalker.get_new_lines()
@@ -422,6 +439,7 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] Processing screenshot while match is not in DB yet.")
             return
         elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
+            self.create_keys()
             print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
             return
         spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
@@ -495,16 +513,24 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
+            """
             health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+            """
+            pass
 
         """
         Minimap
         """
-        if "Minimap Location" in self._screen_parsing_features:
-            minimap = screenshot.crop()
+        if "MiniMap Location" in self._screen_parsing_features and self._client is not None:
+            if "minimap" not in self._coordinates:
+                self.setup_screen_parsing()
+                self._coordinates["minimap"] = self._interface.get_minimap_coordinates()
+            minimap = screenshot.crop(self._coordinates["minimap"])
+            fracs = vision.get_minimap_location(minimap)
+            self._client.send_location(fracs)
 
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
@@ -663,8 +689,8 @@ class RealTimeParser(Thread):
                  "Damage Taken: {}\n" \
                  "Selfdamage: {}\n" \
                  "Healing Recv: {}\n".format(
-                    self.dmg_d, self.dmg_t, self.dmg_s, self._healing
-                )
+            self.dmg_d, self.dmg_t, self.dmg_s, self._healing
+        )
         return string
 
     def get_timer_string(self):

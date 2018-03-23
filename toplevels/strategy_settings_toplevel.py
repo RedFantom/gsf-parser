@@ -12,8 +12,8 @@ from widgets.snaptoplevel import SnapToplevel
 from tkinter import ttk
 import variables
 from parsing.strategies import StrategyDatabase
-from network.strategy_client import StrategyClient
-from network.strategy_server import StrategyServer
+from network.strategy.client import StrategyClient
+from network.strategy.server import StrategyServer
 from utils.admin import escalate_privileges, check_privileges
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame

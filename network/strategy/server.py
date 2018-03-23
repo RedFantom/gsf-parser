@@ -11,16 +11,17 @@ from queue import Queue
 from datetime import datetime
 from select import select
 # Own modules
-from network.strategy_clienthandler import StrategyClientHandler
+from network.strategy.clienthandler import StrategyClientHandler
 from utils.admin import check_privileges
 from utils.directories import get_temp_directory
 
 
 class StrategyServer(threading.Thread):
     """
-    A Thread that runs a socket.socket network to listen for incoming tools.strategy_client.Client connections to allow
-    the sharing and real-time editing of Strategy objects. Runs in a Thread to minimize performance penalty for the
-    Tkinter mainloop.
+    A Thread that runs a socket.socket network to listen for incoming
+    tools.strategy_client.Client connections to allow the sharing and
+    real-time editing of Strategy objects. Runs in a Thread to minimize
+    performance penalty for the Tkinter mainloop.
     """
     def __init__(self, host, port):
         """
@@ -58,9 +59,11 @@ class StrategyServer(threading.Thread):
 
     def run(self):
         """
-        Loop to provide all the Server functionality. Ends if a True value is found in the exit_queue Queue attribute.
-        Allows for maximum of eighth people to be logged in at the same time. The Server logs to its own log file, which
-        is located in the temporary directory of the GSF Parser.
+        Loop to provide all the Server functionality. Ends if a True
+        value is found in the exit_queue Queue attribute. Allows for
+        maximum of eighth people to be logged in at the same time. The
+        Server logs to its own log file, which is located in the
+        temporary directory of the GSF Parser.
         """
         # TODO: Allow the user to customize the amount of Clients allowed
         self.socket.listen(8)
@@ -110,11 +113,12 @@ class StrategyServer(threading.Thread):
 
     def do_action_for_server_queue(self):
         """
-        Function called by the Server loop if the server_queue is not empty. Does not perform checks, so must only be
-        called after checking that the server_queue is not empty.
+        Function called by the Server loop if the server_queue is not
+        empty. Does not perform checks, so must only be called after
+        checking that the server_queue is not empty.
 
-        Retrieves the command of a ClientHandler from the server_queue and handles it accordingly. See line comments
-        for more details.
+        Retrieves the command of a ClientHandler from the server_queue
+        and handles it accordingly. See line comments for more details.
         """
         message = self.server_queue.get()
         if isinstance(message[0], bytes):
@@ -274,7 +278,8 @@ class StrategyServer(threading.Thread):
     @staticmethod
     def check_host_validity(host, port):
         """
-        Checks if the host and port are valid values, returns True if valid, False if not
+        Checks if the host and port are valid values, returns True if
+        valid, False if not
         """
         # The host should be str type, the port int type
         if not isinstance(host, str) or not isinstance(port, int):
@@ -299,7 +304,8 @@ class StrategyServer(threading.Thread):
     @staticmethod
     def write_log(line):
         """
-        Write a line to the log file, but also check if the log file is not too bit and truncate if required
+        Write a line to the log file, but also check if the log file is
+        not too big and truncate if required
         """
         line = line.strip() + "\n"
         file_name = os.path.join(get_temp_directory(), "strategy_server.log")

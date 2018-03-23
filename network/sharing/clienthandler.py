@@ -7,9 +7,9 @@ Copyright (C) 2016-2018 RedFantom
 from queue import Queue
 import socket
 # Own modules
-from .clienthandler import ClientHandler
-from .database import DatabaseHandler
-from .queries import *
+from network.clienthandler import ClientHandler
+from network.database import DatabaseHandler
+from network.queries import *
 
 
 class SharingClientHandler(ClientHandler):
@@ -43,9 +43,11 @@ class SharingClientHandler(ClientHandler):
 
     def update(self):
         """
-        Function to be called on the ClientHandler by the Server, to update tasks. This means that each Client can
-        execute one instruction on the Server per cycle. The ClientHandler should skip the cycle if it's waiting
-        for data from the database but has not yet received this data.
+        Function to be called on the ClientHandler by the Server, to
+        update tasks. This means that each Client can execute one
+        instruction on the Server per cycle. The ClientHandler should
+        skip the cycle if it's waiting for data from the database but
+        has not yet received this data.
         """
         if self.active is False:
             print("[ClientHandler] In-active handler update() called.")
@@ -141,7 +143,8 @@ class SharingClientHandler(ClientHandler):
 
     def get_name(self, *args):
         """
-        Function to get an *altname* from the database based on the ID number
+        Function to get an *altname* from the database based on the ID
+        number
         """
         if self.state == 1:
             # Generate a query and put it in the queue
@@ -170,9 +173,7 @@ class SharingClientHandler(ClientHandler):
             return
 
     def receive_from_database(self):
-        """
-        Get data back from the database
-        """
+        """Get data back from the database"""
         if self.database_queue.empty():
             return
         results = self.database_queue.get()
@@ -203,15 +204,11 @@ class SharingClientHandler(ClientHandler):
         return True
 
     def process_server_command(self, command):
-        """
-        Function to process command given by the Server
-        """
+        """Function to process command given by the Server"""
         pass
 
     def close_error(self, line=None):
-        """
-        Function to close the ClientHandler because an error occurred
-        """
+        """Function to close the ClientHandler because an error occurred"""
         print("[ClientHandler] {} closing with error", line)
         if line is not None:
             self.write_log(line)
@@ -219,18 +216,14 @@ class SharingClientHandler(ClientHandler):
         self.close()
 
     def ban(self, line):
-        """
-        Function to ban a client for a certain reason
-        """
+        """Function to ban a client for a certain reason"""
         self.send("ban_{}".format(line))
         self.server_queue.put(("ban", self))
         self.write_log("Client with IP {} banned for: {}".format(self.address[0], line))
         self.close()
 
     def close(self):
-        """
-        Function to close
-        """
+        """Close the connection and notify the server"""
         if self.active is False:
             return
         self.active = False
@@ -240,9 +233,7 @@ class SharingClientHandler(ClientHandler):
         self.socket.close()
 
     def next_state(self):
-        """
-        Function to indicate a move to the next state
-        """
+        """Function to indicate a move to the next state"""
         self.state += 1
 
     def reset_state(self):
@@ -250,8 +241,9 @@ class SharingClientHandler(ClientHandler):
 
     def receive(self):
         """
-        Receives data from the Client in a particular format and then puts the separated messages into the
-        message_queue, additionally checks if the data received is allowed.
+        Receives data from the Client in a particular format and then
+        puts the separated messages into the message_queue, additionally
+        checks if the data received is allowed.
         """
         total = b""
         run = True

@@ -13,11 +13,11 @@ import tkinter as tk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
 # Custom Modules
-from network.sharing_client import SharingClient
+from network.sharing.client import SharingClient
 from variables import settings
 from parsing.parser import Parser
 from utils.directories import get_temp_directory
-from network.sharing_data import *
+from network.sharing.data import *
 
 
 def get_connected_client():

@@ -155,9 +155,9 @@ def get_minimap_location(minimap: Image.Image):
     minimap image. Uses pixel matching to determine the brightest green spot
     in the minimap image.
     """
-    # All pixels except the green ones are now ignored
-    minimap.show()
-    return get_brightest_pixel_loc(minimap, 1)
+    x, y = get_brightest_pixel_loc(minimap, 1)
+    width, height = minimap.size
+    return x / width, y / height
 
 
 def image_to_opencv(image: Image.Image):

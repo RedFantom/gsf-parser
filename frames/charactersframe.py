@@ -25,7 +25,7 @@ from variables import settings
 import variables
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
-from network.sharing_data import servers
+from network.sharing.data import servers
 
 
 class CharactersFrame(ttk.Frame):

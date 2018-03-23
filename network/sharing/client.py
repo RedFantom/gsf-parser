@@ -8,7 +8,7 @@ from tkinter import messagebox
 from datetime import datetime
 from queue import Queue
 # Own modules
-from .client import Client
+from network.client import Client
 from variables import settings
 
 

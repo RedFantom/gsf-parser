@@ -11,7 +11,7 @@ from widgets.snaptoplevel import SnapToplevel
 from tkinter import ttk
 # Own modules
 from parsing.strategies import StrategyDatabase
-from network.strategy_client import StrategyClient
+from network.strategy.client import StrategyClient
 
 
 class StrategyShareToplevel(SnapToplevel):

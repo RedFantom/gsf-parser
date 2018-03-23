@@ -8,11 +8,10 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import textwrap
 from os import path
-from PIL import Image as img
-from PIL.ImageTk import PhotoImage as photo
-from widgets import HoverInfo, ToggledFrame
+from widgets import ToggledFrame
 from data.components import component_strings
 from utils.utilities import open_icon
+from ttkwidgets.frames import Balloon
 
 
 class ComponentListFrame(ttk.Frame):
@@ -49,8 +48,9 @@ class ComponentListFrame(ttk.Frame):
                 self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=16,
                 command=lambda name=component_dictionary["Name"]: self.set_component(name), variable=self.variable,
                 value=data_list.index(component_dictionary))
-            self.hover_infos[component_dictionary["Name"]] = HoverInfo(
+            self.hover_infos[component_dictionary["Name"]] = Balloon(
                 self.buttons[component_dictionary["Name"]],
+                headertext="Tooltip", width=350,
                 text=str(component_dictionary["Name"]) + "\n\n" + str(component_dictionary["Description"]))
         self.data = data_list
 
