@@ -409,18 +409,25 @@ class TimeLine(ttk.Frame):
 
         Keyword Arguments:
             Normal state options
-            * str text: a text label to show in the marker, may not be displayed fully if the zoom level does not allow
-                it. Updates when resizing.
+            * str text: a text label to show in the marker, may not be
+                displayed fully if the zoom level does not allow it.
+                Updates when resizing.
             * str background: Tkinter-compatible background color for the marker
             * str foreground: Tkinter-compatible text color for the marker
             * str outline: Tkinter-compatible outline color for the marker
             * int border: The width of the border (with color outline)
-            * tuple font: Tkinter-compatible font tuple to set for the text of the marker
-            * str iid: unique marker identifier used by the internal code. If this is not a unique value, then weird
-                problems such as missing markers may occur. Please use something truly unique.
-            * tuple tags: set of tags to apply to this marker, allowing callbacks to be set and other properties
+            * tuple font: Tkinter-compatible font tuple to set for the
+                text of the marker
+            * str iid: unique marker identifier used by the internal
+                code. If this is not a unique value, then weird problems
+                such as missing markers may occur. Please use something
+                truly unique.
+            * tuple tags: set of tags to apply to this marker, allowing
+                callbacks to be set and other properties
             * bool move: whether the marker is allowed to be moved
-            Additionally, all options with the marker prefix from __init__, but without the prefix
+
+            Additionally, all options with the marker prefix from
+            __init__, but without the prefix
             Active state options: str active_background, str active_foreground, str active_outline, int active_border
             Hover state options: str hover_background, str hover_foreground, str hover_outline, int hover_border
         """

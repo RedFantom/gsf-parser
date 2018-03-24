@@ -71,8 +71,8 @@ class RealtimeFrame(ttk.Frame):
         self.minimap_checkbox = ttk.Checkbutton(self, text="MiniMap Location Sharing", variable=self.minimap_enabled)
         self.minimap_address = tk.StringVar(self, "Address : Port")
         self.minimap_name = tk.StringVar(self, "Username")
-        self.minimap_name_entry = ttk.Entry(self, width=20, textvariable=self.minimap_name)
-        self.minimap_address_entry = ttk.Entry(self, width=20, textvariable=self.minimap_address)
+        self.minimap_name_entry = ttk.Entry(self, width=25, textvariable=self.minimap_name)
+        self.minimap_address_entry = ttk.Entry(self, width=25, textvariable=self.minimap_address)
         self.minimap = None
 
         # Start monitoring CPU usage

@@ -426,7 +426,7 @@ class FileHandler(object):
             if "Weapon_Tracking_Bonus" in primary_weapon_data:
                 stats["upgrade_c"] = primary_weapon_data["Weapon_Tracking_Bonus"]
         # Loop over screen parsing cursor position data
-        for key, value in sorted(screen_dict["curosr_pos"].items()):
+        for key, value in sorted(screen_dict["cursor_pos"].items()):
             degrees = get_tracking_degrees(get_distance_from_center(value))
             degrees = max(min(degrees, stats["firing_arc"]), 1)
             # If tracking penalty constants are available
