@@ -73,8 +73,9 @@ class MiniMap(tk.Toplevel):
         file_name = map_names[map_name]
         file_path = os.path.join(get_assets_directory(), "maps", file_name + ".jpg")
         size = self._canvas.winfo_width(), self._canvas.winfo_height()
-        image = Image.open(file_path).resize(size, Image.ANTIALIAS)
-        image = ImageTk.PhotoImage(image)
+        image = Image.open(file_path).resize((800, 800), Image.ANTIALIAS)
+        print("[MiniMap] Image opened: ", image)
+        image = ImageTk.PhotoImage(master=self, image=image)
         if "map" in self._items:
             self._canvas.delete(self._items["map"])
         self._items["map"] = self._canvas.create_image(0, 0, image=image, anchor=tk.W, tag="background")
@@ -84,7 +85,6 @@ class MiniMap(tk.Toplevel):
 
     def update_markers(self):
         """Update markers by retrieving data from the client"""
-        width, height = self._canvas.winfo_width(), self._canvas.winfo_height()
         # Receive locations
         if not isinstance(self._client, MiniMapClient):
             raise TypeError
@@ -97,7 +97,7 @@ class MiniMap(tk.Toplevel):
                 return
 
             # Command
-            elems = message.split("_")
+            elems = message.decode().split("_")
             command = elems[0]
 
             if command == "login":
@@ -113,21 +113,7 @@ class MiniMap(tk.Toplevel):
                 """
                 A user sent us location data: location_username_tuple
                 """
-                # Collect data
-                tup = literal_eval(elems[2])
-                name = elems[1]
-                # Calculate item location
-                x, y = int(tup[0] * width), int(tup[1] * height)
-                mark = self._canvas.create_oval(
-                    x, y, x + 4, y + 4, fill="green", tag="mark")
-                text = self._canvas.create_text(
-                    x + 10, y, anchor=tk.NW, text=name, fill="black", tag="name")
-                # Delete old markers, if there are any
-                old_mark, old_text = self._items[name]
-                if old_mark is not None:
-                    self._canvas.delete(old_mark, old_text)
-                # Update items dictionary
-                self._items[name] = (mark, text)
+                self.update_location(message)
 
             elif command == "logout":
                 """
@@ -162,5 +148,28 @@ class MiniMap(tk.Toplevel):
         if self.after_id is not None:
             self.after_cancel(self.after_id)
         tk.Toplevel.destroy(self)
+
+    def update_location(self, message):
+        if isinstance(message, bytes):
+            message = message.decode()
+        elems = message.split("_")
+        width, height = self._canvas.winfo_width(), self._canvas.winfo_height()
+        # Collect data
+        tup = literal_eval(elems[2])
+        if tup[0] is None:
+            return
+        name = elems[1]
+        # Calculate item location
+        x, y = int(tup[0] * width), int(tup[1] * height)
+        mark = self._canvas.create_oval(
+            x, y, x + 12, y + 12, fill="green", tag="mark")
+        text = self._canvas.create_text(
+            x + 10, y, anchor=tk.NW, text=name, fill="black", tag="name")
+        # Delete old markers, if there are any
+        if name in self._items and self._items[name] != (None, None):
+            old_mark, old_text = self._items[name]
+            self._canvas.delete(old_mark, old_text)
+        # Update items dictionary
+        self._items[name] = (mark, text)
 
 

@@ -155,7 +155,16 @@ def get_minimap_location(minimap: Image.Image):
     minimap image. Uses pixel matching to determine the brightest green spot
     in the minimap image.
     """
-    x, y = get_brightest_pixel_loc(minimap, 1)
+    result = get_brightest_pixel_loc(minimap, 1)
+    if result is None:
+        return None, None
+    x, y = result
+    pixels = minimap.load()
+    pixels[x, y] = (255, 0, 0)
+    pixels[x+1, y+1] = (255, 0, 0)
+    pixels[x+1, y] = (255, 0, 0)
+    pixels[x, y + 1] = (255, 0, 0)
+    minimap.save("temp.png")
     width, height = minimap.size
     return x / width, y / height
 

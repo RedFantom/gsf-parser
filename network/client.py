@@ -78,7 +78,8 @@ class Client(threading.Thread):
             try:
                 message = self.socket.recv(32)
                 total += message
-                print(total)
+                if len(message) == 0:
+                    break
                 wait = message[-1] != 43
                 if message == b"":
                     break

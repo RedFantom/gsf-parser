@@ -531,6 +531,7 @@ class RealTimeParser(Thread):
             minimap = screenshot.crop(self._coordinates["minimap"])
             fracs = vision.get_minimap_location(minimap)
             self._client.send_location(fracs)
+            self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
 
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict

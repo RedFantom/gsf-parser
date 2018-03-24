@@ -52,7 +52,8 @@ class MiniMapClient(Client):
         """Send a location tuple"""
         assert isinstance(location, tuple)
         assert len(location) == 2
-        assert isinstance(location[0], float) and isinstance(location[1], float)
+        if location[0] is None:
+            return
         self.location_queue.put(location)
 
     def close(self):

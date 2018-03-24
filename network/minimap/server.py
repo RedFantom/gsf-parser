@@ -49,6 +49,7 @@ class MiniMapServer(threading.Thread):
             self.update_clients()
         for client in self.client_sockets:
             client.close("exit")
+        self.socket.close()
 
     def update_clients(self):
         """Get location information from Clients"""
@@ -56,15 +57,12 @@ class MiniMapServer(threading.Thread):
             try:
                 message = client.get_message()
             except socket.timeout:
+                self.logout_client(client)
                 continue
 
             # Logout Clients
             if message == "logout":
-                self.client_sockets.remove(client)
-                name = self.client_names[client]
-                for client_alt in self.client_sockets:
-                    client_alt.send("logout_{}".format(name))
-                del self.client_names[client]
+                self.logout_client(client)
                 continue
 
             # Update location
@@ -100,7 +98,11 @@ class MiniMapServer(threading.Thread):
     def login_client(self, conn, addr):
         """Log a Client into the Server if it gives the right commands"""
         conn = Connection(sock=conn)
-        mess = conn.get_message()
+        try:
+            mess = conn.get_message()
+        except socket.timeout:
+            conn.close()
+            return
         if mess is None:
             return
         elems = mess.split("_")
@@ -114,6 +116,21 @@ class MiniMapServer(threading.Thread):
         # Save connection
         self.client_sockets.append(conn)
         self.client_names[conn] = elems[1]
+        print("[MiniMapServer] Client Login {}".format(elems[1]))
+
+    def logout_client(self, client):
+        """Logout a Client from the Server"""
+        self.client_sockets.remove(client)
+        name = self.client_names[client]
+        for client_alt in self.client_sockets:
+            client_alt.send("logout_{}".format(name))
+        del self.client_names[client]
+        try:
+            client.send("exit")
+        except (OSError, socket.error):
+            pass
+        print("[MiniMapServer] Client logout")
+        client.close()
 
     def stop(self):
         """Stop the Server's activities"""
