@@ -14,8 +14,6 @@ from widgets import VerticalScrollFrame
 # Tools
 from parsing.guiparsing import get_gui_profiles
 from parsing.gsfinterface import GSFInterface
-from utils.directories import get_assets_directory
-from tools.explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix
 from tools import simulator
 # Miscellaneous
@@ -30,8 +28,6 @@ class ToolsFrame(ttk.Frame):
     Tool available:
     - CartelFix
     - Simulator
-    - Splitter
-    - SettingsImporter
     """
 
     def __init__(self, master):
@@ -88,19 +84,6 @@ class ToolsFrame(ttk.Frame):
         self.simulator_button = ttk.Button(
             self.interior_frame.interior, text="Start simulator", command=self.start_simulator, state=tk.DISABLED)
         self.simulator_thread = None
-        """
-        DatabaseExplorer
-        """
-        self.separator_six = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.database_explorer_heading_label = ttk.Label(self.interior_frame.interior, text="Database Explorer",
-                                                         font=("Calibri", 12))
-        self.database_explorer_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="A small utility useful in debugging the GSF Parser. Provides all the data of Screen Parsing in a "
-                 "nice Treeview to make browsing through the data convenient and fast.")
-        self.database_explorer_button = ttk.Button(self.interior_frame.interior, text="Open Database Explorer",
-                                                   command=self.open_database_explorer)
-        self.separator_seven = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
 
     def start_simulator(self):
         """
@@ -124,15 +107,10 @@ class ToolsFrame(ttk.Frame):
 
     def open_cartel_fix(self):
         """
-        Open a CartelFix overlay with the data given by the widgets. Also determines the correct icons to use
-        and calculates the correct position for the CartelFix.
+        Open a CartelFix overlay with the data given by the widgets.
+        Also determines the correct icons to use and calculates the
+        correct position for the CartelFix.
         """
-
-        def generate_icon_path(icon):
-            """
-            Determine the correct path for an icon in the assets directory
-            """
-            return os.path.join(get_assets_directory(), "icons", icon)
         # If a CartelFix is running, then the CartelFix should be closed, as this callback also provides
         # functionality for closing an open CartelFix
         if self.cartelfix:
@@ -192,10 +170,6 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_button.config(text="Close CartelFix")
         self.cartelfix.start_listener()
 
-    @staticmethod
-    def open_database_explorer():
-        DatabaseExplorer(variables.main_window)
-
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=10, sticky="w")
         self.interior_frame.grid(row=1, column=0, columnspan=10, sticky="nswe", pady=5, padx=5)
@@ -214,7 +188,3 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_selection_button.grid(row=13, column=2, sticky="we")
         self.simulator_button.grid(row=13, column=3, sticky="we")
         self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
-        self.database_explorer_heading_label.grid(row=23, column=0, columnspan=10, sticky="w")
-        self.database_explorer_description_label.grid(row=24, column=0, columnspan=10, sticky="w")
-        self.database_explorer_button.grid(row=25, column=0, columnspan=2, sticky="nswe")
-        self.separator_seven.grid(row=26, column=0, columnspan=10, sticky="we", pady=5)
