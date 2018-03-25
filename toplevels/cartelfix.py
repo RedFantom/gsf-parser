@@ -10,15 +10,30 @@ import tkinter as tk
 from tkinter.messagebox import showinfo
 # General imports
 from pynput import keyboard
-from PIL import Image, ImageTk
 import sys
 # Own modules
 import variables
 from utils import admin
 
 
+factions = {
+    "Imperial": "imp",
+    "Republic": "rep"
+}
+
+railguns = {
+    "Slug Railgun": {"imp": "03", "rep": "03"},
+    "Ion Railgun": {"imp": "02", "rep": "01"},
+    "Plasma Railgun": {"imp": "04", "rep": "04"}
+}
+
+
 class CartelFix(tk.Toplevel):
-    def __init__(self, master, first, second, coordinates, scale):
+    """
+    Provide a teensy overlay for Cartel Market Gunships secondary
+    weapon icons.
+    """
+    def __init__(self, master: tk.Tk, first: tk.PhotoImage, second: tk.PhotoImage, coordinates: tuple):
         if not admin.check_privileges():
             if sys.platform == "win32":
                 variables.main_window.destroy()
@@ -30,20 +45,20 @@ class CartelFix(tk.Toplevel):
         tk.Toplevel.__init__(self, master)
         self.label = tk.Label(self)
         self.railgun = 1
-        size = (int(round(45.0 * scale, 0)), int(round(45.0 * scale, 0)))
-        self.first = ImageTk.PhotoImage(Image.open(first).resize(size, Image.ANTIALIAS))
-        self.second = ImageTk.PhotoImage(Image.open(second).resize(size, Image.ANTIALIAS))
+        self.first = first
+        self.second = second
         self.label.config(image=self.first)
         self.label.grid()
         self.listener = keyboard.Listener(on_press=self.switch)
         self.coordinates = coordinates
         self.set_geometry()
 
-    def switch(self, key):
-        # This annoying code path is necessary because pynput does not provide full documentation
-        # key.char is only provided by the pynput library if the key is an alphanumeric key
-        # It is unknown whether key.char is always a str, or can also be int when a numeric key is pressed
-        # The return value of this function is always True to keep the pynput thread running
+    def switch(self, key: keyboard.Key):
+        """
+        Callback for the keyboard press Listener. Only if the pressed
+        key is `1` on the keyboard (either NumPad or numeric row)
+        will the icon switch status.
+        """
         try:
             if int(key.char) != 1:
                 return True
@@ -62,6 +77,7 @@ class CartelFix(tk.Toplevel):
         return True
 
     def set_geometry(self):
+        """Update window geometry and attributes"""
         self.configure(background="white")
         self.wm_attributes("-transparentcolor", "white")
         self.overrideredirect(True)
@@ -70,3 +86,9 @@ class CartelFix(tk.Toplevel):
 
     def start_listener(self):
         self.listener.start()
+
+    @staticmethod
+    def generate_icon_path(faction: str, railgun: str):
+        """Generate the filename for specified railgun for faction"""
+        base = "spvp.{}.gunship.sweapon.{}.jpg"
+        return base.format(factions[faction], railguns[railgun][factions[faction]])

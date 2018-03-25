@@ -16,6 +16,9 @@ from parsing.guiparsing import get_gui_profiles
 from parsing.gsfinterface import GSFInterface
 from toplevels.cartelfix import CartelFix
 from tools import simulator
+from utils.utilities import open_icon_pil
+from PIL.ImageTk import PhotoImage
+from PIL import Image
 # Miscellaneous
 import os
 import variables
@@ -23,7 +26,8 @@ import variables
 
 class ToolsFrame(ttk.Frame):
     """
-    This frame contains widgets to control various tools included with the GSF Parser.
+    This frame contains widgets to control various tools included with
+    the GSF Parser.
 
     Tool available:
     - CartelFix
@@ -132,41 +136,18 @@ class ToolsFrame(ttk.Frame):
             mb.showerror("Error", "Please select the railguns")
             raise ValueError("Error", "Unkown railgun found: {0}, {1}".format(first, second))
         # Determine the icons for the Railguns
-        # TODO: Change into dictionary operation
-        if faction == "Imperial":
-            if first == "Slug Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
-            elif first == "Ion Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
-            elif first == "Plasma Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
-            if second == "Slug Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
-            elif second == "Ion Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
-            elif second == "Plasma Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
-        elif faction == "Republic":
-            if first == "Slug Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
-            elif first == "Ion Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
-            elif first == "Plasma Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
-            if second == "Slug Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
-            elif second == "Ion Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
-            elif second == "Plasma Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
-        else:
-            raise ValueError("Unknown faction value found: {0}".format(faction))
-        # Determine coordinates
         gui_profile = GSFInterface(self.cartelfix_gui_profile.get() + ".xml")
-        x, y = gui_profile.get_secondary_icon_coordinates()
+        first = open_icon_pil(CartelFix.generate_icon_path(faction, first))
+        second = open_icon_pil(CartelFix.generate_icon_path(faction, second))
+        # Scale the images
         scale = gui_profile.get_element_scale(gui_profile.get_element_object("FreeFlightShipAmmo"))
+        size = (int(round(45.0 * scale, 0)), int(round(45.0 * scale, 0)))
+        first = PhotoImage(first.resize(size, Image.ANTIALIAS))
+        second = PhotoImage(second.resize(size, Image.ANTIALIAS))
+        # Determine coordinates
+        x, y = gui_profile.get_secondary_icon_coordinates()
         # Open CartelFix
-        self.cartelfix = CartelFix(variables.main_window, first, second, (x, y), scale)
+        self.cartelfix = CartelFix(variables.main_window, first, second, (x, y))
         self.cartelfix_button.config(text="Close CartelFix")
         self.cartelfix.start_listener()
 
@@ -187,4 +168,3 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_label.grid(row=13, column=0, columnspan=2, sticky="w")
         self.simulator_file_selection_button.grid(row=13, column=2, sticky="we")
         self.simulator_button.grid(row=13, column=3, sticky="we")
-        self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
