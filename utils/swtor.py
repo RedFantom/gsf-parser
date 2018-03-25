@@ -74,8 +74,8 @@ def get_swtor_directory_linux():
 
 def get_swtor_directory():
     """
-    Returns the absolute path to the directory that contains the SWTOR temporary files
-    :return: str
+    Returns the absolute path to the directory that contains the SWTOR
+    temporary files
     """
     if sys.platform == "win32":
         return get_swtor_directory_win32()
@@ -85,7 +85,8 @@ def get_swtor_directory():
 
 def get_swtor_screen_mode():
     """
-    Return the SWTOR Screen Mode as a String, or None if it cannot reliably be determined.
+    Return the SWTOR Screen Mode as a String, or None if it cannot
+    reliably be determined.
     """
     config_path = os.path.join(get_swtor_directory(), "swtor", "settings", "client_settings.ini")
     if not os.path.exists(config_path):

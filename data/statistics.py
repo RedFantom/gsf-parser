@@ -56,7 +56,6 @@ statistics = {
     'Weapon_Damage_Modifier_at_Min_Power': ("Weapons", "Primary Weapon Damage Modifier (Min Power)", "%"),
     'Weapon_Max_Power': ("Weapons", "Weapons Maximum Power", "p"),
     'Yaw': ("Maneuverability", "Yaw Turning Rate", "%"),
-
     'Ammo_Pool_Size': ("Missile", "Ammo", ""),
     'Crit_Chance': ("General", "Critical Hit Chance", "%"),
     'Crit_Damage_Multiplier': ("General", "Critical Damage Multiplier", "%"),

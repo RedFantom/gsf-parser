@@ -1,5 +1,9 @@
-# A new parsing engine built by RedFantom based on principles from parse.py and realtime.py
-# Is capable of parsing files as well as realtime parsing
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import os
 from datetime import datetime
 from data import abilities, effects, durations
@@ -8,9 +12,10 @@ from variables import settings, colors
 
 class Parser(object):
     """
-    A Parsing engine that can sequentially parse CombatLog lines and supports staticmethods for parsing individual
-    spawns and matches to keep some backwards compatibility with the functions found in parse.py. Replaces the Parsing
-    engine found in realtime_alt.py.
+    A Parsing engine that can sequentially parse CombatLog lines and
+    supports staticmethods for parsing individual spawns and matches to
+    keep some backwards compatibility with the functions found in
+    parse.py. Replaces the Parsing engine found in realtime_alt.py.
 
     Capabilities:
     - Determine player name and IDs
@@ -63,7 +68,7 @@ class Parser(object):
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
         if log["ability"].strip() == "":
-            log["ability"] = "Scope Mode"
+            log["ability"] = "Railgun Charge"
         if log["amount"].strip() != "":
             log["amount"] = log["amount"].split(" ")[0]
         if enemies is not None:
@@ -77,8 +82,9 @@ class Parser(object):
     @staticmethod
     def line_to_event_dictionary(line, active_id, lines):
         """
-        Turn a line into a dictionary that makes it suitable for all sorts of operations, including adding an effect to
-        the event and making it easier to sort them into categories. Event structure:
+        Turn a line into a dictionary that makes it suitable for all
+        sorts of operations, including adding an effect to the event and
+        making it easier to sort them into categories. Event structure:
         {
             "line": str line,
             "time": datetime,
@@ -380,14 +386,16 @@ class Parser(object):
     @staticmethod
     def get_amount_enemies(spawn, player_list):
         """
-        Get the amount of enemies for a certain list of lines that describe a spawn
+        Get the amount of enemies for a certain list of lines that
+        describe a spawn
         """
         return len(Parser.get_enemy_id_list(spawn, player_list))
 
     @staticmethod
     def get_ship_for_dict(abilities_dict):
         """
-        Get a list containing the possible ships for a certain abilities dictionary
+        Get a list containing the possible ships for a certain
+        abilities dictionary
         """
         ships_list = abilities.ships
         for ability in abilities_dict.keys():

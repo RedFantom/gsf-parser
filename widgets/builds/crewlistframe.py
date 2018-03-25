@@ -11,8 +11,9 @@ from os import path
 from collections import OrderedDict
 from PIL import Image as img
 from PIL.ImageTk import PhotoImage as photo
-from .toggledframe import ToggledFrame
+from widgets.toggledframe import ToggledFrame
 import variables
+from utils.utilities import open_icon
 
 
 class CrewListFrame(ttk.Frame):
@@ -79,8 +80,7 @@ class CrewListFrame(ttk.Frame):
             self.category_variables[crole] = tk.StringVar()
             for member_dict in category:
                 icon_name = member_dict["Icon"].lower().replace("Crew", "crew")
-                self.member_icons[member_dict["Name"]] = \
-                    photo(img.open(path.join(self.icons_path, icon_name + ".jpg")))
+                self.member_icons[member_dict["Name"]] = open_icon(icon_name)
                 self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(
                     self.category_frames[crole].sub_frame, text=member_dict["Name"], compound=tk.LEFT, width=16,
                     image=self.member_icons[member_dict["Name"]], variable=self.category_variables[crole],
@@ -104,8 +104,7 @@ class CrewListFrame(ttk.Frame):
         self.copilot_icons.clear()
         index = 0
         for category, name in self.copilots.items():
-            self.copilot_icons[name] = \
-                photo(img.open(path.join(self.icons_path, self.copilot_dicts[name]["Icon"].lower() + ".jpg")))
+            self.copilot_icons[name] = open_icon(self.copilot_dicts[name]["Icon"].lower())
             self.copilot_buttons[name] = ttk.Radiobutton(
                 self.category_frames["CoPilot"].sub_frame, width=16, variable=self.copilot_variable, value=name,
                 text=name, compound=tk.LEFT, image=self.member_icons[name],

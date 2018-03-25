@@ -230,9 +230,7 @@ class TimeLine(ttk.Frame):
     """
 
     def grid_widgets(self):
-        """
-        Put all the child widgets of this super-widget in place
-        """
+        """Put all the child widgets of this super-widget in place"""
         # Categories
         for index, label in enumerate(self._category_labels.values()):
             label.grid(column=0, row=index, padx=5, sticky="nw", pady=(1, 0) if index == 0 else 0)
@@ -276,7 +274,8 @@ class TimeLine(ttk.Frame):
 
     def generate_timeline_contents(self):
         """
-        Generate all the contents of the Canvas, including time tick markers and all markers in the categories
+        Generate all the contents of the Canvas, including time tick
+        markers and all markers in the categories
         """
         # Configure the canvas
         self.clear_timeline()
@@ -304,7 +303,8 @@ class TimeLine(ttk.Frame):
 
     def create_categories(self):
         """
-        Create the appropriate category labels and update the size of the _canvas_categories
+        Create the appropriate category labels and update the size of
+        the _canvas_categories
         """
         for label in self._category_labels.values():
             label.destroy()
@@ -359,7 +359,8 @@ class TimeLine(ttk.Frame):
 
     def create_separating_lines(self):
         """
-        Create the lines separating the different category rows in the TimeLine's Canvas
+        Create the lines separating the different category rows in the
+        TimeLine's Canvas
         """
         total = 1
         self._timeline.create_line((0, 1, self.pixel_width, 1))
@@ -373,7 +374,8 @@ class TimeLine(ttk.Frame):
 
     def create_markers(self, markers=None):
         """
-        Create all the markers in a given category dictionary, as in the markers property
+        Create all the markers in a given category dictionary, as in the
+        markers property
         """
         self._canvas_markers.clear()
         for marker in markers.values() if markers is not None else self.markers.values():
@@ -390,15 +392,16 @@ class TimeLine(ttk.Frame):
     """
     Marker creation
 
-    Functions to add new markers to the TimeLine, as well as edit and remove them
+    Functions to add new markers to the TimeLine, as well as edit and 
+    remove them
     """
 
     def create_marker(self, category, start, finish, marker=None, **kwargs):
         """
         Create a new marker in the TimeLine with the specified properties
 
-        For the *args, _v appendixes are used in order not to conflict with a marker dictionary as found in
-        self._markers
+        For the *args, _v appendixes are used in order not to conflict
+        with a marker dictionary as found in self._markers
 
         :param category: Category identifier (not text!)
         :param start: Start time for the marker
@@ -409,18 +412,25 @@ class TimeLine(ttk.Frame):
 
         Keyword Arguments:
             Normal state options
-            * str text: a text label to show in the marker, may not be displayed fully if the zoom level does not allow
-                it. Updates when resizing.
+            * str text: a text label to show in the marker, may not be
+                displayed fully if the zoom level does not allow it.
+                Updates when resizing.
             * str background: Tkinter-compatible background color for the marker
             * str foreground: Tkinter-compatible text color for the marker
             * str outline: Tkinter-compatible outline color for the marker
             * int border: The width of the border (with color outline)
-            * tuple font: Tkinter-compatible font tuple to set for the text of the marker
-            * str iid: unique marker identifier used by the internal code. If this is not a unique value, then weird
-                problems such as missing markers may occur. Please use something truly unique.
-            * tuple tags: set of tags to apply to this marker, allowing callbacks to be set and other properties
+            * tuple font: Tkinter-compatible font tuple to set for the
+                text of the marker
+            * str iid: unique marker identifier used by the internal
+                code. If this is not a unique value, then weird problems
+                such as missing markers may occur. Please use something
+                truly unique.
+            * tuple tags: set of tags to apply to this marker, allowing
+                callbacks to be set and other properties
             * bool move: whether the marker is allowed to be moved
-            Additionally, all options with the marker prefix from __init__, but without the prefix
+
+            Additionally, all options with the marker prefix from
+            __init__, but without the prefix
             Active state options: str active_background, str active_foreground, str active_outline, int active_border
             Hover state options: str hover_background, str hover_foreground, str hover_outline, int hover_border
         """

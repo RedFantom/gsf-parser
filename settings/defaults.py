@@ -30,7 +30,9 @@ defaults = {
         # Faction to use images and names of
         "faction": "empire",
         # Whether DebugWindow is enabled
-        "debug": False
+        "debug": False,
+        # Text color
+        "color": "#2f77d0"
     },
     # File parsing settings
     "parsing": {

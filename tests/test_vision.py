@@ -5,10 +5,10 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 from unittest import TestCase
-from parsing import vision
 from PIL import Image
 from utils.directories import get_assets_directory
 from parsing.gsfinterface import GSFInterface
+from parsing import vision
 from os import path
 
 
@@ -38,11 +38,11 @@ class TestVision(TestCase):
     def test_get_ship_health_shields(self):
         coords = self.gui_parser.get_ship_health_coordinates()
         result = vision.get_ship_health_shields(self.image, coords)
-        print(result)
+        print("[TESTS] Ship health:", result)
 
-
-
-
-
-
-
+    def test_get_minimap_position(self):
+        coords = self.gui_parser.get_minimap_coordinates()
+        print("[TESTS] Coordinates:", coords)
+        result = vision.get_minimap_location(self.image.crop(coords))
+        print("[TESTS] Minimap location:", result)
+        self.assertIsInstance(result, tuple)

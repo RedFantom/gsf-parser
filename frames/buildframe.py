@@ -4,11 +4,13 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+from os import path
 from frames.shipstatsframe import ShipStatsFrame
 from data.ships import companion_indices
 from data.components import components
 from parsing.ships import Ship, Component
 from widgets import *
+from utils.directories import get_assets_directory
 
 
 class BuildsFrame(ttk.Frame):
@@ -27,16 +29,13 @@ class BuildsFrame(ttk.Frame):
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         # Open all required databases
         self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "ships.db")),
-                  "rb") as f:
+        with open(path.join(get_assets_directory(), "ships.db"), "rb") as f:
             # Contains data on the components
             self.ships_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "categories.db")),
-                  "rb") as f:
+        with open(path.join(get_assets_directory(), "categories.db"), "rb") as f:
             # Contains data on the ships (specifically descriptions and the like)
             self.categories_data = pickle.load(f)
-        with open(path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "companions.db")),
-                  "rb") as f:
+        with open(path.join(get_assets_directory(), "companions.db"), "rb") as f:
             # Contains data on the Crew members
             self.companions_data = pickle.load(f)
         # ScrollFrame to contain the component lists (ToggledFrames) and the CrewSelectFrame
@@ -218,9 +217,7 @@ class BuildsFrame(ttk.Frame):
         self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):
-        """
-        Puts all the widgets in the correct place for this Frame.
-        """
+        """Puts all the widgets in the correct place for this Frame"""
         self.grid_forget_widgets()
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky="nswe", padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
@@ -273,9 +270,7 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
 
     def save_ship_data(self):
-        """
-        Saves the modified Ship instance to the CharacterDatabase.
-        """
+        """Saves the modified Ship instance to the CharacterDatabase"""
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
         self.window.characters_frame.save_button.invoke()
 
@@ -302,7 +297,6 @@ class BuildsFrame(ttk.Frame):
         Callback for ToggledFrame in order to close all the open frames
         upon opening a new one so only a single frame is open at the
         any given moment.
-
         """
         if open is False:
             return

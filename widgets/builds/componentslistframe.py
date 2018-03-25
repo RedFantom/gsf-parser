@@ -6,16 +6,28 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
 import tkinter.ttk as ttk
-from os import path
-from PIL import Image as img
-from PIL.ImageTk import PhotoImage as photo
-from widgets import HoverInfo, ToggledFrame
 import textwrap
+from os import path
+from widgets import ToggledFrame
 from data.components import component_strings
+from utils.utilities import open_icon
+from ttkwidgets.frames import Balloon
 
 
 class ComponentListFrame(ttk.Frame):
+    """
+    Frame to contain a list of all components found for a certain ship in a
+    given category. Contains a ToggledFrame to support wrapping the different
+    Buttes for each of the components in a single, expandable Frame.
+    """
     def __init__(self, parent, category, data_list, callback, toggle_callback):
+        """
+        :param parent: master widget
+        :param category: category to create Widgets for
+        :param data_list: ships_db[ship_name][category_name] list of components
+        :param callback: callback to call when a component is selected
+        :param toggle_callback: callback to call when ToggledFrame is toggled
+        """
         ttk.Frame.__init__(self, parent)
         self.category = category
         self.callback = callback
@@ -28,39 +40,26 @@ class ComponentListFrame(ttk.Frame):
         self.hover_infos = {}
         self.variable = tk.IntVar()
         self.variable.set(-1)
-        if type(data_list) != list:
-            raise ValueError("data_list should be a list, but it is {0}".format(type(data_list)))
-        for component in data_list:
-            component_dictionary = None
-            if isinstance(component, tuple):
-                for item in component:
-                    if isinstance(item, dict):
-                        component_dictionary = item
-                        break
-                if not component_dictionary:
-                    raise ValueError("component_dictionary not set: {0}".format(category))
-            else:
-                component_dictionary = component
-            try:
-                name = component_dictionary["Name"]
-                icon = component_dictionary["Icon"]
-                self.icons[name] = photo(img.open(path.join(self.icons_path, icon + ".jpg")))
-            except IOError:
-                self.icons[component_dictionary["Name"]] = photo(img.open(path.join(self.icons_path, "imperial_l.png")))
+        for component_dictionary in data_list:
+            name = component_dictionary["Name"]
+            self.icons[name] = open_icon(component_dictionary["Icon"])
             name = textwrap.fill(component_dictionary["Name"], 20)
             self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(
                 self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=16,
                 command=lambda name=component_dictionary["Name"]: self.set_component(name), variable=self.variable,
                 value=data_list.index(component_dictionary))
-            self.hover_infos[component_dictionary["Name"]] = HoverInfo(
+            self.hover_infos[component_dictionary["Name"]] = Balloon(
                 self.buttons[component_dictionary["Name"]],
+                headertext="Tooltip", width=350,
                 text=str(component_dictionary["Name"]) + "\n\n" + str(component_dictionary["Description"]))
         self.data = data_list
 
     def set_component(self, component):
+        """Callback for Component Button pressed"""
         self.callback(self.category, component)
 
     def grid_widgets(self):
+        """Put the component Buttons in place"""
         self.toggled_frame.grid(row=0, column=0, sticky="nswe")
         set_row = 0
         for button in self.buttons.values():

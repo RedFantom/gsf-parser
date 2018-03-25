@@ -76,7 +76,8 @@ class FileFrame(ttk.Frame):
     @staticmethod
     def filters():
         """
-        Opens Toplevel to enable filters and then adds the filtered CombatLogs to the Listboxes
+        Opens Toplevel to enable filters and then adds the filtered
+        CombatLogs to the Listboxes
         """
         Filters()
 
@@ -92,17 +93,17 @@ class FileFrame(ttk.Frame):
 
     def flip_sorting(self):
         """
-        Flip the sorting of the files in the Treeview (callback for the Treeview header button)
-        :return: None
+        Flip the sorting of the files in the Treeview (callback for the
+        Treeview header button)
         """
         self.ascending = not self.ascending
         self.add_files()
 
     def add_files(self, silent=False):
         """
-        Function that checks files found in the in the settings specified folder for
-        GSF matches and if those are found in a file, it gets added to the listbox
-        :return: None
+        Function that checks files found in the in the settings
+        specified folder for GSF matches and if those are found in a
+        file, it gets added to the listbox. Provides error handling.
         """
         self.file_tree.delete(*self.file_tree.get_children())
         self.clear_data_widgets()
@@ -153,9 +154,9 @@ class FileFrame(ttk.Frame):
 
     def insert_file(self, file_string):
         """
-        Insert a file into the Treeview list of files and links it to an entrey in self.file_string_dict
+        Insert a file into the Treeview list of files and links it to
+        an entry in self.file_string_dict
         :param file_string: string representing the file in the list
-        :return:
         """
         if file_string in self.file_string_dict:
             file_name = self.file_string_dict[file_string]
@@ -184,8 +185,9 @@ class FileFrame(ttk.Frame):
     def update_widgets(self, abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                        enemydamaget, uncounted):
         """
-        This function can update the dta widgets for files, matches and folders by updating the widgets of statsframe
-        and shipsframe according to the data received from parsing
+        This function can update the dta widgets for files, matches and folders
+        by updating the widgets of statsframe and shipsframe according to the
+        data received from parsing
         :param abilities_dict: abilities dictionary with abilities as keys and amounts as values
         :param statistics_string: string to set in the statistics tab
         :param shipsdict: dictionary with ships as keys and amounts as values
@@ -193,7 +195,6 @@ class FileFrame(ttk.Frame):
         :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
         :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
         :param uncounted: amount of uncounted ship occurrences
-        :return: None
         """
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
         for key, value in abilities_dict.items():
@@ -252,10 +253,9 @@ class FileFrame(ttk.Frame):
 
     def update_parse(self, *args):
         """
-        Callback for the Treeview widget that calls the correct function to load a file, match or spawn depending on
-        which is selected.
+        Callback for the Treeview widget that calls the correct function to load
+        a file, match or spawn depending on which is selected.
         :param args: Tkinter event
-        :return: None
         """
         try:
             selection = self.file_tree.selection()[0]
@@ -283,11 +283,11 @@ class FileFrame(ttk.Frame):
 
     def parse_file(self, file_name):
         """
-        Function either sets the file and calls add_matches to add the matches found in the file
-        to the matches_listbox, or starts the parsing of all files found in the specified folder
-        and displays the results in the other frames.
+        Function either sets the file and calls add_matches to add the matches
+        found in the file to the matches_listbox, or starts the parsing of all
+        files found in the specified folder and displays the results in the
+        other frames.
         :param file_name:
-        :return:
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -300,9 +300,9 @@ class FileFrame(ttk.Frame):
 
     def parse_folder(self):
         """
-        Function that initiates the parsing of a whole folder by calling the folder_statistics() function and updates
-        the widgets by calling the self.update_widgets function accordingly.
-        :return: None
+        Function that initiates the parsing of a whole folder by calling the
+        folder_statistics() function and updates the widgets by calling the
+        self.update_widgets function accordingly.
         """
         self.clear_data_widgets()
         results = folderstats.folder_statistics()
@@ -310,11 +310,10 @@ class FileFrame(ttk.Frame):
 
     def parse_match(self, elements):
         """
-        Either adds sets the match and calls add_spawns to add the spawns found in the match
-        or starts the parsing of all files found in the specified file and displays the results
-        in the other frames.
+        Either adds sets the match and calls add_spawns to add the spawns found
+        in the match or starts the parsing of all files found in the specified
+        file and displays the results in the other frames.
         :param elements: specifies file and match
-        :return: None
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -329,10 +328,9 @@ class FileFrame(ttk.Frame):
 
     def parse_spawn(self, elements):
         """
-        Either starts the parsing of ALL spawns found in the specified match or just one of them
-        and displays the results in the other frames accordingly
-        :param elements:
-        :return:
+        Either starts the parsing of ALL spawns found in the specified match or
+        just one of them and displays the results in the other frames
+        accordingly.
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -353,10 +351,7 @@ class FileFrame(ttk.Frame):
         )
 
     def clear_data_widgets(self):
-        """
-        Clear the data widgets for parsing results
-        :return: None
-        """
+        """Clear the data widgets for parsing results"""
         self.main_window.middle_frame.abilities_treeview.delete(
             *self.main_window.middle_frame.abilities_treeview.get_children()
         )
@@ -378,7 +373,6 @@ class FileFrame(ttk.Frame):
         :param enemy: ID number/name
         :param enemydamaged: dictionary
         :param enemydamaget: dictionary
-        :return: None
         """
         damage_d = str(enemydamaged[enemy]) if enemy in enemydamaged else 0
         damage_t = str(enemydamaget[enemy]) if enemy in enemydamaget else 0

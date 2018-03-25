@@ -4,7 +4,6 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
 import tkinter as tk
 import tkinter.ttk as ttk
 from widgets.time_view import TimeView

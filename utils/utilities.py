@@ -9,9 +9,10 @@ from os import path
 from PIL import Image
 from PIL.ImageTk import PhotoImage as photo
 from sys import platform
-import tkinter as tk
 from tkinter import messagebox
 from utils.directories import get_assets_directory
+from screeninfo import get_monitors
+
 
 map_dictionary = {
     "tdm": {
@@ -26,11 +27,18 @@ map_dictionary = {
     }
 }
 
+map_names = {
+    "DOM Kuat Mesas": "dom_kuatmesas",
+    "DOM Lost Shipyards": "dom_lostshipyards",
+    "DOM Denon Exosphere": "dom_denon_exosphere",
+    "TDM Kuat Mesas": "tdm_kuatmesas",
+    "TDM Lost Shipyards": "tdm_lostshipyards",
+    "TDM Battle over Iokath": "tdm_iokath"
+}
+
 
 def open_icon_pil(image_name):
-    """
-    Open an image from the assets folder and return a PIL Image
-    """
+    """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
         raise ValueError()
@@ -48,9 +56,7 @@ def open_icon_pil(image_name):
 
 
 def open_icon(image_name):
-    """
-    Open an image from the assets folder
-    """
+    """Open an image from the assets folder"""
     return photo(open_icon_pil(image_name))
 
 
@@ -84,8 +90,7 @@ def get_cursor_position():
         return get_pointer_position_linux()
     elif platform == "darwin":
         raise ValueError("This function does not support macOS")
-    else:
-        raise ValueError("Unknown platform detected")
+    raise ValueError("Unknown platform detected")
 
 
 def get_screen_resolution():
@@ -97,8 +102,5 @@ def get_screen_resolution():
     option
     :return: tuple, (width, height), such as (1920, 1080)
     """
-    root = tk.Tk()
-    width = root.winfo_screenwidth()
-    height = root.winfo_screenheight()
-    root.destroy()
-    return width, height
+    monitors = get_monitors()
+    return monitors[0].width, monitors[1].height

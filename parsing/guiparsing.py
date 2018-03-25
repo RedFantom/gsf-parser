@@ -18,8 +18,8 @@ def get_gui_profiles():
     :return: list
     """
     return [item.replace(".xml", "") for item in
-            os.listdir(os.path.join(get_swtor_directory(),
-                                    "swtor", "settings", "GUIProfiles"))]
+            os.listdir(os.path.join(
+                get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
 
 
 def get_player_guiname(player_name):
@@ -109,7 +109,7 @@ class GUIParser(object):
     Important Note: Not all GUI elements in the SWTOR XML files have
     the same capitalization in their elements. Such as the different
     variants AnchorXOffset, anchorXOffset and even anchorOffsetX! Please
-    check what forrmat your option uses before using it in this class.
+    check what format your option uses before using it in this class.
     """
 
     debug = True
@@ -120,6 +120,8 @@ class GUIParser(object):
         up for access by the user
         :param file_name: a GUI profile file_name, either an absolute
                           path or a plain file_name
+        :param target_items: Dictionary with GUI elements as keys and
+                             size tuples as values
         """
         file_name = os.path.basename(file_name)
         if ".xml" not in file_name:
@@ -262,11 +264,11 @@ class GUIParser(object):
         :return: (x, y, x+~, y+~)
         """
         element = self.get_element_object(element_name)
-        print("Getting data for element: {0}".format(element_name))
+        print("[GUI] Getting data for element: {0}".format(element_name))
         x_offset, y_offset, alpha = self.get_essential_element_values(element)
         scale = self.get_element_scale(element)
         anchor = self.get_element_anchor(element)
-        self.debug_print("element_name, x_offset, y_offset, alpha, scale, anchor: {0}, {1}, {2}, {3}, {4}, {5}".format(
+        print("[GUI] element_name, x_offset, y_offset, alpha, scale, anchor: {0}, {1}, {2}, {3}, {4}, {5}".format(
             element_name, x_offset, y_offset, alpha, scale, anchor))
 
         if anchor is 1:
@@ -344,14 +346,9 @@ class GUIParser(object):
             x_values.append(float(child.find("anchorXOffset").get("Value")))
             y_values.append(float(child.find("anchorYOffset").get("Value")))
         if output:
-            print("Minimum X Value: ", min(x_values), "\nMaximum X Value: ", max(x_values))
-            print("Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
+            print("[GUI] Minimum X Value: ", min(x_values), "\nMaximum X Value: ", max(x_values))
+            print("[GUI] Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
         return min(x_values), max(x_values), min(y_values), max(y_values)
-
-    def debug_print(self, line):
-        if self.debug:
-            print(line)
-        return
 
 
 if __name__ == '__main__':

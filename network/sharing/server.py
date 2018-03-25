@@ -11,7 +11,7 @@ from datetime import datetime
 from select import select
 # Own modules
 from utils.admin import *
-from .sharing_clienthandler import SharingClientHandler
+from network.sharing.clienthandler import SharingClientHandler
 from network.database import DatabaseHandler
 
 

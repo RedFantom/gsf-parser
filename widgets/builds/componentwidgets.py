@@ -6,9 +6,10 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
 import tkinter.ttk as ttk
-from widgets import HoverInfo, VerticalScrollFrame
+from widgets import VerticalScrollFrame
 import variables
 from utils.utilities import open_icon
+from ttkwidgets.frames import Balloon
 
 
 class ComponentWidget(ttk.Frame):
@@ -81,14 +82,14 @@ class MajorComponentWidget(ComponentWidget):
                                                              command=lambda index=i: self.set_level((index, 1)),
                                                              # style="TButton",
                                                              variable=self.boolvars[i][1])])
-                self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
-                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
-                                                        str(data_dictionary["TalentTree"][i][0]["Description"]),
-                                                   width=50),
-                                         HoverInfo(self.upgrade_buttons[i][1],
-                                                   text=str(data_dictionary["TalentTree"][i][1]["Name"]) + "\n\n" +
-                                                        str(data_dictionary["TalentTree"][i][1]["Description"]),
-                                                   width=50)])
+                self.hover_infos.append([Balloon(self.upgrade_buttons[i][0],
+                                                 text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
+                                                      str(data_dictionary["TalentTree"][i][0]["Description"]),
+                                                 width=250),
+                                         Balloon(self.upgrade_buttons[i][1],
+                                                 text=str(data_dictionary["TalentTree"][i][1]["Name"]) + "\n\n" +
+                                                      str(data_dictionary["TalentTree"][i][1]["Description"]),
+                                                 width=250)])
             else:
                 self.boolvars.append(tk.BooleanVar())
                 if self.ship[self.category] is not None:
@@ -99,9 +100,9 @@ class MajorComponentWidget(ComponentWidget):
                 self.upgrade_buttons.append(ttk.Checkbutton(self.interior, image=self.photos[i],
                                                             command=lambda index=i: self.set_level(index),
                                                             variable=self.boolvars[i]))  # , style="TButton"))
-                self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
-                                                  text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
-                                                       str(data_dictionary["TalentTree"][i][0]["Description"])))
+                self.hover_infos.append(Balloon(self.upgrade_buttons[i],
+                                                text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
+                                                     str(data_dictionary["TalentTree"][i][0]["Description"])))
         return
 
     def grid_widgets(self):
@@ -150,14 +151,14 @@ class MiddleComponentWidget(ComponentWidget):
                                                              variable=self.boolvars[i][1])
                                              ])
                 # style="TButton")])
-                self.hover_infos.append([HoverInfo(self.upgrade_buttons[i][0],
-                                                   text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
-                                                        str(data_dictionary["TalentTree"][i][0]["Description"]),
-                                                   width=50),
-                                         HoverInfo(self.upgrade_buttons[i][1],
-                                                   text=str(data_dictionary["TalentTree"][i][1]["Name"]) + "\n\n" +
-                                                        str(data_dictionary["TalentTree"][i][1]["Description"]),
-                                                   width=50)])
+                self.hover_infos.append([Balloon(self.upgrade_buttons[i][0],
+                                                 text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
+                                                      str(data_dictionary["TalentTree"][i][0]["Description"]),
+                                                 width=250),
+                                         Balloon(self.upgrade_buttons[i][1],
+                                                 text=str(data_dictionary["TalentTree"][i][1]["Name"]) + "\n\n" +
+                                                      str(data_dictionary["TalentTree"][i][1]["Description"]),
+                                                 width=250)])
             else:
                 self.boolvars.append(tk.BooleanVar())
                 if self.ship[self.category] is not None:
@@ -169,9 +170,9 @@ class MiddleComponentWidget(ComponentWidget):
                                                             command=lambda index=i: self.set_level(index),
                                                             variable=self.boolvars[i]))
                 # style="TButton"))
-                self.hover_infos.append(HoverInfo(self.upgrade_buttons[i],
-                                                  text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
-                                                       str(data_dictionary["TalentTree"][i][0]["Description"])))
+                self.hover_infos.append(Balloon(self.upgrade_buttons[i],
+                                                text=str(data_dictionary["TalentTree"][i][0]["Name"]) + "\n\n" +
+                                                     str(data_dictionary["TalentTree"][i][0]["Description"])))
         return
 
     def grid_widgets(self):
@@ -220,9 +221,9 @@ class MinorComponentWidget(ComponentWidget):
             self.upgrade_buttons.append(ttk.Checkbutton(self, image=self.icon_photo,
                                                         command=lambda index=i: self.set_level(index),
                                                         variable=self.boolvars[i]))
-            self.hover_infos.append(HoverInfo(self.upgrade_buttons[i], str(data_dictionary["TalentTree"][i][0]["Name"])
-                                              + "\n\n" + str(data_dictionary["TalentTree"][i][0]["Description"]),
-                                              width=50))
+            self.hover_infos.append(Balloon(self.upgrade_buttons[i], str(data_dictionary["TalentTree"][i][0]["Name"])
+                                            + "\n\n" + str(data_dictionary["TalentTree"][i][0]["Description"]),
+                                            width=250))
         self.level = 0
         self.name = data_dictionary["Name"]
 

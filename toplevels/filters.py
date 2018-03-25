@@ -20,9 +20,11 @@ from data import abilities as abls
 
 class Filters(tk.Toplevel):
     """
-    A class for a Toplevel that shows all possible filters that can be applied to CombatLogs. Using expandable frames,
-    the settings in a certain category can be shown or hidden. If all settings are set, the user can click OK and a
-    special function is called passing a dictionary of files.
+    A class for a Toplevel that shows all possible filters that can be
+    applied to CombatLogs. Using expandable frames, the settings in a
+    certain category can be shown or hidden. If all settings are set,
+    the user can click OK and a special function is called passing a
+    dictionary of files.
     """
 
     def __init__(self, window=None):
@@ -170,10 +172,10 @@ class Filters(tk.Toplevel):
 
     def search_files(self):
         """
-        Take the inserted filters and calculate how many files/matches/spawns are found when the filters are applied.
-        Display a tkMessageBox.showinfo() box to show the user how many are found and show a splash screen while
-        searching.
-        :return:
+        Take the inserted filters and calculate how many
+        files/matches/spawns are found when the filters are applied.
+        Display a tkMessageBox.showinfo() box to show the user how many
+        are found and show a splash screen while searching.
         """
         pass
 
@@ -182,11 +184,12 @@ class Filters(tk.Toplevel):
 
     def filter(self, search=False):
         """
-        Go through all file filters and apply them to the list of files in the CombatLogs folder. Insert them into the
-        file_frame file_tree widget when the file passed the filters.
-        :param search: if search is True, the function will calculate the amount of files found and ask the user whether
-                       the results should be displayed first
-        :return: None
+        Go through all file filters and apply them to the list of files
+        in the CombatLogs folder. Insert them into the file_frame
+        file_tree widget when the file passed the filters.
+        :param search: if search is True, the function will calculate
+                       the amount of files found and ask the user
+                       whether the results should be displayed first
         """
         # logs, matches or spawns
         results = []

@@ -17,7 +17,7 @@ class ClientHandler(object):
 
     def __init__(self, sock, address, server_queue, log_file, debug=True):
         """
-        :param socket: socket.socket object
+        :param sock: socket.socket object
         :param address: (ip, id) tuple
         :param server_queue: Queue
         """
@@ -38,22 +38,23 @@ class ClientHandler(object):
         self.log_file = log_file
 
     def update(self):
-        """
-        Function to be called regularly
-        """
+        """Function to be called regularly"""
         self.receive()
 
     def close(self):
-        """
-        Closes the socket
-        """
+        """Closes the socket"""
         self.socket.close()
 
     def receive(self):
         """
-        Receives data from the Client in a particular format and then puts the separated messages into the message_queue
+        Receives data from the Client in a particular format and then
+        puts the separated messages into the message_queue
         """
-        self.socket.setblocking(0)
+        try:
+            self.socket.setblocking(0)
+        except OSError:
+            # Already closed
+            return
         total = b""
         while True:
             try:
@@ -75,12 +76,15 @@ class ClientHandler(object):
 
     def send(self, command):
         """
-        Send data to the Client on the other side of the socket. This function processed the data first, as it must be
-        sent in a certain format. The data must be sent as a bytes object, ending with a '+' to indicate the end of
-        a message to the Client as the socket does *not* separate messages.
+        Send data to the Client on the other side of the socket. This
+        function processed the data first, as it must be sent in a
+        certain format. The data must be sent as a bytes object, ending
+        with a '+' to indicate the end of a message to the Client as the
+        socket does *not* separate messages.
         :param command: data to send
         :return: True if successful, False if not
-        :raises: ValueError if not one (1) b'_' is found in the command to send (both more and less raise an error)
+        :raises: ValueError if not one (1) b'_' is found in the command
+                 to send (both more and less raise an error)
         """
         self.write_log("ClientHandler sending {0}".format(command))
         if isinstance(command, bytes):
@@ -99,9 +103,11 @@ class ClientHandler(object):
 
     def write_log(self, line):
         """
-        Write a line to the log file, but also check if the log file is not too bit and truncate if required
+        Write a line to the log file, but also check if the log file is
+        not too bit and truncate if required.
 
-        Copied from network.strategy_server.write_log(line) but with different file_name
+        Copied from network.strategy_server.write_log(line) but with
+        different file_name
         """
         if not self.debug:
             return

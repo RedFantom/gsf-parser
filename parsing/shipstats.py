@@ -34,7 +34,7 @@ class ShipStats(object):
             with open(os.path.join(get_assets_directory(), "ships.db"), "rb") as fi:
                 ships_data = pickle.load(fi)
         if companions_data is None:
-            with open(os.path.join(get_assets_directory(), "companions.db", "rb")) as fi:
+            with open(os.path.join(get_assets_directory(), "companions.db"), "rb") as fi:
                 companions_data = pickle.load(fi)
         self.ships_data = ships_data.copy()
         self.companions_data = companions_data.copy()

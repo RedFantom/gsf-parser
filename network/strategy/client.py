@@ -9,7 +9,7 @@ from tkinter import messagebox
 from ast import literal_eval
 # Own modules
 from parsing.strategies import Strategy, Item, Phase
-from .client import Client
+from network.client import Client
 
 
 class StrategyClient(Client):
@@ -28,6 +28,7 @@ class StrategyClient(Client):
         :param insertcallback: Callback to call when a command is received
         :param disconnectcallback: Callback to call when disconnect occurs
         """
+        Client.__init__(self, address, port)
         # Queue to send True to if exit is requested
         self.logged_in = False
         self.name = name
@@ -38,7 +39,6 @@ class StrategyClient(Client):
         self.login_callback = logincallback
         self.insert_callback = insertcallback
         self.disconnect_callback = disconnectcallback
-        Client.__init__(self, address, port)
 
     def connect(self):
         """
@@ -61,8 +61,9 @@ class StrategyClient(Client):
 
     def login(self):
         """
-        Send a login request to the ClientHandler and wait for acknowledgement, unless a timeout occurs, then call
-        disconnect procedures.
+        Send a login request to the ClientHandler and wait for
+        acknowledgement, unless a timeout occurs, then call disconnect
+        procedures.
         """
         self.send("login_{0}_{1}".format(self.role.lower(), self.name))
         try:
@@ -86,9 +87,7 @@ class StrategyClient(Client):
         return True
 
     def send_strategy(self, strategy):
-        """
-        Send a Strategy object to the ClientHandler for sharing
-        """
+        """Send a Strategy object to the ClientHandler for sharing"""
         if not self.role == "master":
             return
         if not isinstance(strategy, Strategy):
@@ -98,9 +97,7 @@ class StrategyClient(Client):
 
     @staticmethod
     def build_strategy_string(strategy):
-        """
-        Function to serialize a Strategy object into a string
-        """
+        """Function to serialize a Strategy object into a string"""
         string = "strategy_" + strategy.name + "~" + strategy.description + "~" + str(strategy.map) + "~"
         for phase_name, phase in strategy:
             string += phase.name + "¤" + phase.description + "¤" + str(phase.map) + "¤"
@@ -111,9 +108,7 @@ class StrategyClient(Client):
 
     @staticmethod
     def read_strategy_string(string):
-        """
-        Function to rebuild Strategy object from string
-        """
+        """Function to rebuild Strategy object from string"""
         strategy_elements = string.split("~")
         strategy_name = strategy_elements[0]
         strategy_description = strategy_elements[1]
@@ -145,9 +140,7 @@ class StrategyClient(Client):
         return strategy
 
     def update(self):
-        """
-        Function called by the Thread loop to perform basic functionality
-        """
+        """Update the current state of the Client"""
         # If called when not logged_in, do not do anything
         if not self.logged_in:
             return
@@ -166,8 +159,9 @@ class StrategyClient(Client):
 
     def process_command(self, elements):
         """
-        Process a command received from the ClientHandler. Only performs updates to the database, visual updates to the
-        Map are performed elsewhere.
+        Process a command received from the ClientHandler. Only performs
+        updates to the database, visual updates to the Map are performed
+        elsewhere.
         """
         command = elements[0]
         if command == "add":
@@ -222,14 +216,16 @@ class StrategyClient(Client):
 
     def login_failed(self):
         """
-        Callback for when logging into the network fails, for whatever reason.
+        Callback for when logging into the network fails, for whatever
+        reason.
         """
         self.login_callback(False)
         self.socket.close()
 
     def close(self):
         """
-        Function to close the Client and all its functionality to restore the situation before the Client was opened.
+        Function to close the Client and all its functionality to
+        restore the situation before the Client was opened.
         """
         # The Thread may have already been stopped, but its good to make sure
         self.exit_queue.put(True)
@@ -237,17 +233,19 @@ class StrategyClient(Client):
             # Attempt to send a logout
             self.socket.send(b"logout")
         except OSError:
-            # The error occurs when there's something wrong with the socket, in which case the socket was closed
-            # on the network-side, in which case the event should be properly handled elsewhere (self.send designated for
-            # just that).
+            # The error occurs when there's something wrong with the socket,
+            # in which case the socket was closed on the network-side, in which
+            # case the event should be properly handled elsewhere (self.send
+            # designated for just that).
             pass
         self.socket.close()
         self.logged_in = False
         self.disconnect_callback()
 
     """
-    Functions to process the commands received from the network and update the database accordingly, if possible.
-    Also, these functions call insert_callback for visual processing of the commands.
+    Functions to process the commands received from the network and 
+    update the database accordingly, if possible. Also, these functions 
+    call insert_callback for visual processing of the commands.
     """
 
     def add_item_server(self, strategy, phase, text, font, color):
@@ -330,8 +328,10 @@ class StrategyClient(Client):
 
     def check_strategy_phase(self, strategy, phase):
         """
-        Function to check if a particular strategy and phase are available in the database and give the user feedback
-        if not. Returns True if the code which called the function is clear to move ahead with a database update.
+        Function to check if a particular strategy and phase are
+        available in the database and give the user feedback if not.
+        Returns True if the code which called the function is clear to
+        move ahead with a database update.
         """
         return strategy in self.list.db and phase in self.list.db[strategy]
 

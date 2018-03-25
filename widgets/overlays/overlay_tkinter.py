@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
 from tkinter import ttk
-from widgets.overlay import Overlay
+from widgets.overlays.overlay import Overlay
 from variables import settings
 import sys
 

@@ -9,7 +9,7 @@ import win32con as con
 import win32gui as gui
 from tkinter import StringVar, Tk
 from variables import main_window
-from widgets.overlay import Overlay
+from widgets.overlays.overlay import Overlay
 import random
 
 """

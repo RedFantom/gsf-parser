@@ -6,10 +6,12 @@ Copyright (C) 2016-2018 RedFantom
 """
 import os
 import math
-from PIL import Image
-from utils.directories import get_assets_directory
-from parsing.imageops import get_similarity, get_similarity_pixels, get_brightest_pixel
 import operator
+from PIL import Image
+import numpy
+from utils.directories import get_assets_directory
+from parsing.imageops import \
+    get_similarity, get_similarity_pixels, get_brightest_pixel, get_brightest_pixel_loc
 
 colors = {
     "blue": (2, 95, 133),
@@ -67,7 +69,6 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     :param degrees: The amount of degrees for tracking penalty
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
-    :return:
     """
     return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
 
@@ -139,10 +140,35 @@ def get_ship_health_shields(image, coordinates):
 
     for element, coord in generator:
         rgb = image.getpixel(coord)
-        print(coord, rgb)
+        print("[VISION] Ship health:", coord, rgb)
         for name, color in colors.items():
             if get_similarity_pixels(color, rgb) >= 80:
                 results[element] = name
                 break
     return (health[results["f1"]] + health[results["f2"]],
             health[results["r1"]] + health[results["r2"]])
+
+
+def get_minimap_location(minimap: Image.Image):
+    """
+    Determine the location of a ship on the given (cropped-screenshot)
+    minimap image. Uses pixel matching to determine the brightest green spot
+    in the minimap image.
+    """
+    result = get_brightest_pixel_loc(minimap, 1)
+    if result is None:
+        return None, None
+    x, y = result
+    pixels = minimap.load()
+    pixels[x, y] = (255, 0, 0)
+    pixels[x+1, y+1] = (255, 0, 0)
+    pixels[x+1, y] = (255, 0, 0)
+    pixels[x, y + 1] = (255, 0, 0)
+    minimap.save("temp.png")
+    width, height = minimap.size
+    return x / width, y / height
+
+
+def image_to_opencv(image: Image.Image):
+    """Convert a PIL image into a cv2 compatible array"""
+    return numpy.array(image)[:, :, ::-1].copy()

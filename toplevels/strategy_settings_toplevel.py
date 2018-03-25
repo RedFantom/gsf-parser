@@ -12,8 +12,8 @@ from widgets.snaptoplevel import SnapToplevel
 from tkinter import ttk
 import variables
 from parsing.strategies import StrategyDatabase
-from network.strategy_client import StrategyClient
-from network.strategy_server import StrategyServer
+from network.strategy.client import StrategyClient
+from network.strategy.server import StrategyServer
 from utils.admin import escalate_privileges, check_privileges
 from toplevels.strategy_share_toplevel import StrategyShareToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
@@ -21,14 +21,13 @@ from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 
 class SettingsToplevel(SnapToplevel):
     """
-    Toplevel that contains options to export Strategies, whole StrategyDatabases, or start up a network/connect to one
+    Toplevel that contains options to export Strategies, whole
+    StrategyDatabases, or start up a network/connect to one
     for real-time Strategy sharing.
     """
 
     def __init__(self, *args, **kwargs):
-        """
-        Initialize the toplevel with all its widgets and menus
-        """
+        """Initialize the toplevel with all its widgets and menus"""
         self._callback = kwargs.pop("callback", None)
         self._disconnectcallback = kwargs.pop("disconnect_callback", None)
         self.frame = kwargs.pop("master")
@@ -138,9 +137,7 @@ class SettingsToplevel(SnapToplevel):
         self.grid_widgets()
 
     def grid_widgets(self):
-        """
-        The usual function to put all the widgets in the correct place
-        """
+        """Put all widgets in the grid geometry manager"""
         self.scrolled_frame.grid(row=1, column=1, sticky="nswe")
 
         self.server_section.grid(row=1, column=1, sticky="nswe", padx=(5, 0), pady=(0, 5))
@@ -201,6 +198,7 @@ class SettingsToplevel(SnapToplevel):
             self.server_master_make_master_button.config(state=tk.NORMAL)
 
     def _allow_share(self):
+        """MASTER ONLY: Grant sharing privileges to the selected user"""
         player_name = self.selected_client
         if player_name == self.client.name and self.client.role == "master":
             # The master cannot disallow himself from sharing
@@ -208,10 +206,11 @@ class SettingsToplevel(SnapToplevel):
         allow = not self.client_permissions[player_name][0]
         self.client_permissions[player_name] = (allow, self.client_permissions[player_name][1])
         self.client.allow_share_player(player_name, allow)
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[player_name],
-                                                 values=self.client_permissions[player_name])
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[player_name], values=self.client_permissions[player_name])
 
     def _allow_edit(self):
+        """MASTER ONLY: Grant editing privileges to selected user"""
         player_name = self.selected_client
         if player_name == self.client.name and self.client.role == "master":
             # The master cannot disallow himself from editing
@@ -219,10 +218,11 @@ class SettingsToplevel(SnapToplevel):
         allow = not self.client_permissions[player_name][1]
         self.client_permissions[player_name] = (self.client_permissions[player_name][0], allow)
         self.client.allow_edit_player(player_name, allow)
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[player_name],
-                                                 values=self.client_permissions[player_name])
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[player_name], values=self.client_permissions[player_name])
 
     def _make_master(self):
+        """MASTER ONLY: Make the selected user the new master"""
         player_name = self.selected_client
         if player_name is None:
             return
@@ -237,6 +237,7 @@ class SettingsToplevel(SnapToplevel):
         self.master_client = player_name
 
     def _kick(self):
+        """MASTER ONLY: Kick selected user from the server"""
         print("Kick client")
         player_name = self.selected_client
         if player_name is None:
@@ -244,13 +245,20 @@ class SettingsToplevel(SnapToplevel):
         self.client.kick_player(player_name)
 
     def _ban(self):
-        print("Ban client")
+        """MASTER ONLY: Ban selected user from the server"""
+        print("[StrategySettingsToplevel] Ban client")
         player_name = self.selected_client
         if player_name is None:
             return
         self.client.ban_player(player_name)
 
     def _login_callback(self, player_name, role):
+        """
+        Insert a new user into the Treeview and the data attributes upon
+        login of user.
+        :param player_name: name of the new user
+        :param role: role of the new user
+        """
         if player_name in self.client_permissions:
             return
         if role == "master":
@@ -267,6 +275,11 @@ class SettingsToplevel(SnapToplevel):
         self.client_permissions[player_name] = permissions
 
     def _logout_callback(self, player_name):
+        """
+        Removes a given user from the Treeview and data attributes after
+        logout.
+        :param player_name: Name of the user that has logged out
+        """
         reverse = self.reverse_name_dictionary
         if isinstance(player_name, list):
             _, player_name = player_name
@@ -279,13 +292,13 @@ class SettingsToplevel(SnapToplevel):
         self.client_permissions.pop(player_name)
 
     def new_master(self, name):
-        """
-        Callback for when a new master is selected for the Server
-        """
+        """Callback for when a new master is selected for the Server"""
         reverse = self.reverse_name_dictionary
         if name not in reverse:
-            print("Name not found in client names/Treeview dictionary: {}".format(name))
-            print("names/Treeview dictionary: {}".format(reverse))
+            print("[StrategySettingsToplevel] Name not found in client names/"
+                  "Treeview dictionary: {}".format(name))
+            print("[StrategySettingsToplevel] names/Treeview dictionary: "
+                  "{}".format(reverse))
             return
         self.server_master_clients_treeview.item(reverse[name], tags=("master",))
         if self.master_client is not None:
@@ -294,8 +307,10 @@ class SettingsToplevel(SnapToplevel):
 
     def start_server(self, *args):
         """
-        Start a new Strategy Server. User must be an admin user to start a network (as the binding to an address
-        requires privileges to create a port in the Windows Firewall).
+        Start a new Strategy Server. User must be an admin user to start
+        a network (as the binding to an address requires privileges to
+        create a port in the Windows Firewall) if the port number
+        is higher than 1000.
         """
         if not check_privileges():
             # If the user is not an admin, making a hole in the firewall to receive connections is not possible
@@ -319,10 +334,11 @@ class SettingsToplevel(SnapToplevel):
             self.server = StrategyServer(self.server_address_entry.get(), int(self.server_port_entry.get()))
         # Handle any errors the Server initialization may throw by showing a messagebox to the user
         except RuntimeError:
-            messagebox.showerror("Error", "Starting the network failed due to a RuntimeError, which probably means that "
-                                          "binding to the port and host name failed. If you did not expect this, "
-                                          "please file a bug report in the GitHub repository and include any debug "
-                                          "output.")
+            messagebox.showerror("Error",
+                                 "Starting the network failed due to a RuntimeError, which probably means that "
+                                 "binding to the port and host name failed. If you did not expect this, "
+                                 "please file a bug report in the GitHub repository and include any debug "
+                                 "output.")
             return
         except ValueError:
             messagebox.showerror("Error", "The host and/or port values you have entered are not valid. Currently, only "
@@ -351,8 +367,9 @@ class SettingsToplevel(SnapToplevel):
 
     def deminimize(self, event):
         """
-        Callback for the <Map> event generated by Tkinter. Deminimizes the window if the Strategies tab is selected
-        and the <Map> event is generated.
+        Callback for the <Map> event generated by Tkinter. Deminimizes
+        the window if the Strategies tab is selected and the <Map> event
+        is generated.
         """
         # Check if the window is destroyed first to prevent a TclError (bad window path name, you can't call
         # deiconify on a window that has been destroyed)
@@ -365,9 +382,7 @@ class SettingsToplevel(SnapToplevel):
         tk.Toplevel.deiconify(self)
 
     def stop_server(self):
-        """
-        Stop a running Strategy Server. Resets all widgets that were altered.
-        """
+        """Stop the server, indicate with ClosingToplevel and reset UI"""
         for _ in range(5):
             self.server.exit_queue.put(True)
         closing = ClosingToplevel()
@@ -383,78 +398,89 @@ class SettingsToplevel(SnapToplevel):
 
     def connect_client(self, *args):
         """
-        Create a new connection to a client
+        Create a new StrategyClient instance to connect to a
+        StrategyServer at address given in the control widgets.
         """
-        self.client = StrategyClient(self.client_address_entry.get(), int(self.client_port_entry.get()),
-                                     self.client_name_entry.get(), self.client_role.get(), self.list, self.login_callback,
-                                     self.frame.insert_callback, self.disconnect_client)
+        self.client = StrategyClient(
+            self.client_address_entry.get(), int(self.client_port_entry.get()),
+            self.client_name_entry.get(), self.client_role.get(), self.list,
+            self.login_callback,
+            self.frame.insert_callback, self.disconnect_client)
         if self.client.role.lower() == "client":
-            print("Setting map to be readonly")
+            print("[StrategySettingsToplevel] Setting map to be readonly")
             for map in self.frame.maps:
                 map.set_readonly(True)
         else:
-            print("Role is not 'client', but {0}, so not setting readonly".format(self.client.role.lower()))
+            print("[StrategySettingsToplevel] Role is not 'client', "
+                  "but {0}, so not setting readonly".format(self.client.role.lower()))
         if self.client.role == "master":
             self.master_client = self.client.name
             self.unlock_master_control_widgets()
-        return
 
-    def update_edit(self, name, allowed):
+    def update_edit(self, name: str, allowed: bool):
         """
-        Function called by the insert_callback of StrategiesFrame in order to update the editing right of a user
-        in the Treeview
+        Update indication of editing privileges for a given user in the
+        Treeview.
+        :param name: User name
+        :param allowed: Whether this user has editing privileges
         """
         self.client_permissions[name] = (self.client_permissions[name][0], allowed)
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[name],
-                                                 values=self.client_permissions[name])
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[name], values=self.client_permissions[name])
 
-    def update_share(self, name, allowed):
+    def update_share(self, name: str, allowed: bool):
         """
-        Function called by the insert_callback of StrategiesFrame to update the sharing right of a user in the Treeview
+        Update indication of sharing privileges for a given user in the
+        Treeview.
+        :param name: User name
+        :param allowed: Whether this user has sharing privileges.
         """
         if not isinstance(allowed, bool):
             allowed = literal_eval(allowed)
         self.client_permissions[name] = (allowed, self.client_permissions[name][1])
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[name],
-                                                 values=self.client_permissions[name])
-        print("Updating allow_share for {} to {}".format(name, allowed))
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[name], values=self.client_permissions[name])
+        print("[StrategySettingsToplevel] Updating allow_share for {} to {}".format(name, allowed))
         if name != self.client.name:
             return
         if allowed:
-            print("Now opening share_toplevel")
+            print("[StrategySettingsToplevel] Opening StrategyShareToplevel")
             if self.share_toplevel:
                 return
-            self.share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=270,
-                                                        height=425, resizable=False)
+            self.share_toplevel = StrategyShareToplevel(
+                self, self.client, self.frame.list.db, self.frame,
+                width=270, height=425, resizable=False)
         elif not allowed and self.share_toplevel is not None:
             self.share_toplevel.destroy()
             self.share_toplevel = None
-        else:
-            return
 
     def update_master(self):
         """
-        Function for the Client to call when the user is granted Master control over the Server
+        Callback for the Client instance when the user running this
+        instance is granted Master control privileges.
+
+        Updates UI elements to indicate new master privileges.
         """
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[self.master_client], tags=(),
-                                                 values=("False", "False"))
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[self.master_client], tags=(), values=("False", "False"))
         self.master_client = self.client.name
-        self.server_master_clients_treeview.item(self.reverse_name_dictionary[self.master_client], tags=("master",),
-                                                 values=("Master", "Master"))
+        self.server_master_clients_treeview.item(
+            self.reverse_name_dictionary[self.master_client], tags=("master",), values=("Master", "Master"))
         self.unlock_master_control_widgets()
 
     def login_callback(self, success):
         """
-        Callback for a newly created Client object to call to indicate whether logging into the network was successful.
+        Callback for a newly created Client object to call to indicate
+        whether logging into the network was successful. If not
+        successful in logging in, updates UI to retry. Otherwise
+        modifies UI for connection.
         :param success: False if not successful, True if successful
-        :return: None
         """
-        if success:
-            self.client_button.config(text="Disconnect", command=self.disconnect_client)
-        else:
+        if success is False:
             self.client_button.config(text="Retry connection")
             self.client = None
             return
+        self.client_button.config(text="Disconnect", command=self.disconnect_client)
         self.protocol("WM_DELETE_WINDOW", self.destroy_redirect)
         self.after(200, self.call_master_login_callback)
         self.client_name_entry.config(state=tk.DISABLED)
@@ -464,22 +490,26 @@ class SettingsToplevel(SnapToplevel):
 
     def call_master_login_callback(self):
         """
-        A delayed callback so the Client object is fully setup before it is passed back to the master StrategiesFrame
-        for further processing (StrategiesFrame passes the object on to its child widgets).
+        Delayed callback so the Client object is fully setup before
+        it is passed back to the master StrategiesFrame for further
+        processing (StrategiesFrame passes the object on to its child
+        widgets).
         """
         if self.client is not None and self.client.logged_in:
             self.frame.client_connected(self.client)
 
     def disconnect_client(self):
         """
-        Callback to close the active Strategy Client and reset the widgets to their normal state
+        Callback to close the active Strategy Client and reset the
+        widgets to their normal state.
         """
         if not self.client:
             return
         if self.client.logged_in:
             self.client.close()
         if not self.server:
-            self.protocol("WM_DESTROY_WINDOW", self.destroy)
+            # Remove destroy_redirect as WM_DESTROY_WINDOW protocol handler
+            self.protocol("WM_DELETE_WINDOW", self.destroy)
         self.client_button.config(text="Connect", command=self.connect_client)
         self.client_name_entry.config(state=tk.NORMAL)
         self.client_role_dropdown.config(state=tk.NORMAL)
@@ -494,13 +524,19 @@ class SettingsToplevel(SnapToplevel):
 
     def destroy_redirect(self):
         """
-        Function to prevent the destruction of the SettingsToplevel while either a Server or Client is running.
+        Redirect of WM_DELETE_WINDOW protocol. Prevents closing of the
+        Strategies Toplevel while running a server.
         """
-        messagebox.showinfo("Info", "You cannot close this window while you are connected to a strategy network or "
-                                    "running one.")
+        messagebox.showinfo("Info", "You cannot close this window while "
+                                    "you are connected to a strategy "
+                                    "network or running one.")
         self.lift()
 
     def destroy(self):
+        """
+        Redirect of WM_DELETE_WINDOW protocol. Destroys the
+        StrategySharingToplevel if it exists, then destroys itself.
+        """
         if self.share_toplevel:
             self.share_toplevel.destroy()
             self.share_toplevel = None
@@ -510,10 +546,12 @@ class SettingsToplevel(SnapToplevel):
 
     def open_strategy(self):
         """
-        Callback of the filemenu to import a Strategy into the database from a pickle file
+        Callback for Menu command.
+        Import a single Strategy from a pickle file and save to database
         """
-        file_name = filedialog.askopenfilename(filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
-                                               title="GSF Strategy Manager: Open a strategy")
+        file_name = filedialog.askopenfilename(
+            filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
+            title="GSF Strategy Manager: Open a strategy")
         if file_name == "" or file_name is None:
             return
         with open(file_name, "rb") as fi:
@@ -521,18 +559,14 @@ class SettingsToplevel(SnapToplevel):
         self.list.db[strategy.name] = strategy
         self.list.update_tree()
 
-    def save_strategy(self):
-        """
-        Alt for save_strategy_as. #TODO: Implement this as its own function
-        """
-        self.save_strategy_as()
-
     def save_strategy_as(self):
         """
-        Save the strategy to a pickle file so it can be imported in another copy of the GSF Parser
+        Save the strategy to a pickle file so it can be imported in
+        another copy of the GSF Parser.
         """
-        file_name = filedialog.asksaveasfilename(filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
-                                                 title="GSF Strategy Manager: Save a strategy")
+        file_name = filedialog.asksaveasfilename(
+            filetypes=[("GSF Strategy", ".str")], defaultextension=".str",
+            title="GSF Strategy Manager: Save a strategy")
         if file_name == "" or file_name is None:
             return
         strategy = self.list.db[self.list.selected_strategy]
@@ -547,57 +581,64 @@ class SettingsToplevel(SnapToplevel):
 
     def _import(self):
         """
-        Callback for the menu to import a whole new StrategyDatabase. The new database is merged in, and does not remove
-        current Strategies, though it does update them if they have the same name. The database is imported from a
-        pickle.
+        Callback for the menu to import a whole new StrategyDatabase.
+        The new database is merged in, and does not remove current
+        Strategies, though it does update them if they have the same
+        name. The database is imported from a pickle.
         """
-        file_name = filedialog.askopenfilename(filetypes=[".db"], defaultextension=".db",
-                                               title="GSF Strategy Manger: Import a database")
-        if file_name == "" or file_name is None:
+        file_name = filedialog.askopenfilename(
+            filetypes=[".db"], defaultextension=".db",
+            title="GSF Strategy Manger: Import a database")
+        if file_name == "" or file_name is None:  # Cancelled by user
             return
         self.list.db.merge_database(StrategyDatabase(file_name=file_name))
         self.list.update_tree()
 
     def _export(self):
         """
-        Callback for the menu to export the whole StrategyDatabase of the instance to a pickle file in a custom location
-        so it can be imported in another copy of the GSF Parser.
+        Callback for the menu to export the whole StrategyDatabase of
+        the instance to a pickle file in a custom location so it can be
+        imported in another copy of the GSF Parser.
         """
-        file_name = filedialog.asksaveasfilename(filetypes=[".db"], defaultextension=".db",
-                                                 title="GSF Strategy Manager: Export the database")
-        if file_name == "" or file_name is None:
+        file_name = filedialog.asksaveasfilename(
+            filetypes=[".db"], defaultextension=".db",
+            title="GSF Strategy Manager: Export the database")
+        if file_name == "" or file_name is None:  # Cancelled by user
             return
         self.list.db.save_database_as(file_name)
 
     def lock_master_control_widgets(self):
         """
-        Function to lock all master control widgets by setting them to a DISABLED state
+        Lock all master control widgets and close StrategyShareToplevel
+        if one is open.
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.DISABLED)
-        if self.share_toplevel:
+        if self.share_toplevel is not None:
             self.share_toplevel.destroy()
             self.share_toplevel = None
-        return
 
     def unlock_master_control_widgets(self):
         """
-        Function to unlock all master control widgets by setting them to a NORMAL state
+        Unlock all master control widgets by setting them to a NORMAL
+        state. Creates a StrategyShareToplevel for sharing Strategies
+        with other users.
         """
         for widget in self.master_control_widgets:
             widget.config(state=tk.NORMAL)
-        self.share_toplevel = StrategyShareToplevel(self, self.client, self.frame.list.db, self.frame, width=270,
-                                                    height=425)
-        return
+        self.share_toplevel = StrategyShareToplevel(
+            self, self.client, self.frame.list.db, self.frame, width=270, height=425)
 
     @property
     def reverse_name_dictionary(self):
+        """Create a dictionary that reverses self.client_names"""
         return {value: key for key, value in self.client_names.items()}
 
 
 class ClosingToplevel(tk.Toplevel):
     """
-    Simple Toplevel to indicate that the user has to wait while the Server is stopping its activities.
+    Simple Toplevel to indicate that the user has to wait while the
+    Server is stopping its activities.
     """
 
     def __init__(self, *args, **kwargs):

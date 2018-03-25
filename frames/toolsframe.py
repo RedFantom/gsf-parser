@@ -14,10 +14,11 @@ from widgets import VerticalScrollFrame
 # Tools
 from parsing.guiparsing import get_gui_profiles
 from parsing.gsfinterface import GSFInterface
-from utils.directories import get_assets_directory
-from tools.explorer import DatabaseExplorer
 from toplevels.cartelfix import CartelFix
 from tools import simulator
+from utils.utilities import open_icon_pil
+from PIL.ImageTk import PhotoImage
+from PIL import Image
 # Miscellaneous
 import os
 import variables
@@ -25,13 +26,12 @@ import variables
 
 class ToolsFrame(ttk.Frame):
     """
-    This frame contains widgets to control various tools included with the GSF Parser.
+    This frame contains widgets to control various tools included with
+    the GSF Parser.
 
     Tool available:
     - CartelFix
     - Simulator
-    - Splitter
-    - SettingsImporter
     """
 
     def __init__(self, master):
@@ -88,31 +88,6 @@ class ToolsFrame(ttk.Frame):
         self.simulator_button = ttk.Button(
             self.interior_frame.interior, text="Start simulator", command=self.start_simulator, state=tk.DISABLED)
         self.simulator_thread = None
-        """
-        Splitter
-        """
-        self.separator_four = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.splitting_heading_label = ttk.Label(
-            self.interior_frame.interior, text="CombatLogs Splitting", font=("Calibri", 12))
-        self.splitting_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="This tools splits your CombatLogs into separate files that contain a single match each without the "
-                 "non-match lines. You can choose the directory to put them in yourself.")
-        self.splitting_button = ttk.Button(self.interior_frame.interior, text="Start splitter",
-                                           command=self.start_splitter)
-        """
-        DatabaseExplorer
-        """
-        self.separator_six = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.database_explorer_heading_label = ttk.Label(self.interior_frame.interior, text="Database Explorer",
-                                                         font=("Calibri", 12))
-        self.database_explorer_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
-            text="A small utility useful in debugging the GSF Parser. Provides all the data of Screen Parsing in a "
-                 "nice Treeview to make browsing through the data convenient and fast.")
-        self.database_explorer_button = ttk.Button(self.interior_frame.interior, text="Open Database Explorer",
-                                                   command=self.open_database_explorer)
-        self.separator_seven = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
 
     def start_simulator(self):
         """
@@ -128,16 +103,7 @@ class ToolsFrame(ttk.Frame):
         self.simulator_thread.start()
         self.simulator_button.config(text="Stop simulator")
 
-    @staticmethod
-    def start_splitter():
-        """
-        This is a stand-alone tool, so simply importing will start this tool.
-        """
-
     def set_simulator_file(self):
-        """
-        Callback for the
-        """
         file_name = askopenfilename()
         self.simulator_file = file_name
         self.simulator_button.config(state=tk.NORMAL)
@@ -145,15 +111,10 @@ class ToolsFrame(ttk.Frame):
 
     def open_cartel_fix(self):
         """
-        Open a CartelFix overlay with the data given by the widgets. Also determines the correct icons to use
-        and calculates the correct position for the CartelFix.
+        Open a CartelFix overlay with the data given by the widgets.
+        Also determines the correct icons to use and calculates the
+        correct position for the CartelFix.
         """
-
-        def generate_icon_path(icon):
-            """
-            Determine the correct path for an icon in the assets directory
-            """
-            return os.path.join(get_assets_directory(), "icons", icon)
         # If a CartelFix is running, then the CartelFix should be closed, as this callback also provides
         # functionality for closing an open CartelFix
         if self.cartelfix:
@@ -175,47 +136,20 @@ class ToolsFrame(ttk.Frame):
             mb.showerror("Error", "Please select the railguns")
             raise ValueError("Error", "Unkown railgun found: {0}, {1}".format(first, second))
         # Determine the icons for the Railguns
-        # TODO: Change into dictionary operation
-        if faction == "Imperial":
-            if first == "Slug Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
-            elif first == "Ion Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
-            elif first == "Plasma Railgun":
-                first = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
-            if second == "Slug Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.03.jpg")
-            elif second == "Ion Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.02.jpg")
-            elif second == "Plasma Railgun":
-                second = generate_icon_path("spvp.imp.gunship.sweapon.04.jpg")
-        elif faction == "Republic":
-            if first == "Slug Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
-            elif first == "Ion Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
-            elif first == "Plasma Railgun":
-                first = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
-            if second == "Slug Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.03.jpg")
-            elif second == "Ion Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.01.jpg")
-            elif second == "Plasma Railgun":
-                second = generate_icon_path("spvp.rep.gunship.sweapon.04.jpg")
-        else:
-            raise ValueError("Unknown faction value found: {0}".format(faction))
-        # Determine coordinates
         gui_profile = GSFInterface(self.cartelfix_gui_profile.get() + ".xml")
-        x, y = gui_profile.get_secondary_icon_coordinates()
+        first = open_icon_pil(CartelFix.generate_icon_path(faction, first))
+        second = open_icon_pil(CartelFix.generate_icon_path(faction, second))
+        # Scale the images
         scale = gui_profile.get_element_scale(gui_profile.get_element_object("FreeFlightShipAmmo"))
+        size = (int(round(45.0 * scale, 0)), int(round(45.0 * scale, 0)))
+        first = PhotoImage(first.resize(size, Image.ANTIALIAS))
+        second = PhotoImage(second.resize(size, Image.ANTIALIAS))
+        # Determine coordinates
+        x, y = gui_profile.get_secondary_icon_coordinates()
         # Open CartelFix
-        self.cartelfix = CartelFix(variables.main_window, first, second, (x, y), scale)
+        self.cartelfix = CartelFix(variables.main_window, first, second, (x, y))
         self.cartelfix_button.config(text="Close CartelFix")
         self.cartelfix.start_listener()
-
-    @staticmethod
-    def open_database_explorer():
-        DatabaseExplorer(variables.main_window)
 
     def grid_widgets(self):
         self.description_label.grid(row=0, column=0, columnspan=10, sticky="w")
@@ -234,12 +168,3 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_label.grid(row=13, column=0, columnspan=2, sticky="w")
         self.simulator_file_selection_button.grid(row=13, column=2, sticky="we")
         self.simulator_button.grid(row=13, column=3, sticky="we")
-        self.separator_four.grid(row=14, column=0, columnspan=10, sticky="we", pady=5)
-        self.splitting_heading_label.grid(row=15, column=0, columnspan=10, sticky="w")
-        self.splitting_description_label.grid(row=16, column=0, columnspan=10, sticky="w")
-        self.splitting_button.grid(row=17, column=0, columnspan=2, sticky="we")
-        self.separator_six.grid(row=22, column=0, columnspan=10, sticky="we", pady=5)
-        self.database_explorer_heading_label.grid(row=23, column=0, columnspan=10, sticky="w")
-        self.database_explorer_description_label.grid(row=24, column=0, columnspan=10, sticky="w")
-        self.database_explorer_button.grid(row=25, column=0, columnspan=2, sticky="nswe")
-        self.separator_seven.grid(row=26, column=0, columnspan=10, sticky="we", pady=5)

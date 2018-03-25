@@ -7,12 +7,14 @@ Copyright (C) 2016-2018 RedFantom
 import socket
 import threading
 from queue import Queue
+from datetime import datetime
 
 
 class Client(threading.Thread):
     """
-    Parent class for all GSF Parser Client classes. Provides base functionality, including sending and receiving
-    messages in a more stream-lines way than can be achieved with plain sockets.
+    Parent class for all GSF Parser Client classes. Provides base
+    functionality, including sending and receiving messages in a more
+    stream-lines way than can be achieved with plain sockets.
     """
     def __init__(self, host, port):
         threading.Thread.__init__(self)
@@ -24,8 +26,9 @@ class Client(threading.Thread):
 
     def connect(self):
         """
-        Function to connect to the specified network. Can be overridden to additionally perform error handling or perhaps
-        some sort of login functionality.
+        Function to connect to the specified network. Can be overridden
+        to additionally perform error handling or perhaps some sort of
+        login functionality.
         """
         timeout = self.socket.gettimeout()
         self.socket.settimeout(4)
@@ -45,30 +48,29 @@ class Client(threading.Thread):
 
     def update(self):
         """
-        Function to be implemented by a child class to perform the functionality it's made for
+        Function to be implemented by a child class to perform the
+        functionality it's made for
         """
         self.receive()
 
     def close(self):
         """
-        Function that can be overriden by a child class to perform additional functionality, such as sending a
-        logout message.
+        Function that can be overriden by a child class to perform
+        additional functionality, such as sending a logout message.
         """
         self.exit_queue.put(True)
 
-    def send(self, string):
-        """
-        Send a command to a ClientHandler and end with a b"+"
-        """
+    def send(self, string, separator="+"):
+        """Send a command to a ClientHandler and end with a b"+"""
         if not isinstance(string, str):
             string = string.decode()
-        return self.socket.send((string + "+").encode())
+        return self.socket.send((string + separator).encode())
 
     def receive(self):
         """
-        Function to receive and separate messages received from the ClientHandler
+        Function to receive and separate messages received from the
+        ClientHandler
         """
-        print("Starting receive")
         self.socket.setblocking(False)
         total = b""
         wait = False
@@ -76,7 +78,8 @@ class Client(threading.Thread):
             try:
                 message = self.socket.recv(32)
                 total += message
-                print(total)
+                if len(message) == 0:
+                    break
                 wait = message[-1] != 43
                 if message == b"":
                     break
@@ -85,7 +88,7 @@ class Client(threading.Thread):
                     continue
                 else:
                     break
-        print("[Client] received message: ", total, wait)
+        # print("[Client] received message: ", total, wait)
         elements = total.split(b"+")
         for elem in elements:
             try:
@@ -95,3 +98,12 @@ class Client(threading.Thread):
                 pass
             self.message_queue.put(elem)
         return
+
+    def get_message(self, timeout=4):
+        """Return a message from the message queue"""
+        start = datetime.now()
+        while self.message_queue.empty() and (datetime.now() - start).total_seconds() < timeout:
+            self.receive()
+        if self.message_queue.empty():
+            return None
+        return self.message_queue.get().decode()
