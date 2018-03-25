@@ -50,7 +50,11 @@ class ClientHandler(object):
         Receives data from the Client in a particular format and then
         puts the separated messages into the message_queue
         """
-        self.socket.setblocking(0)
+        try:
+            self.socket.setblocking(0)
+        except OSError:
+            # Already closed
+            return
         total = b""
         while True:
             try:

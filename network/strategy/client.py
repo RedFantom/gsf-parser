@@ -28,6 +28,7 @@ class StrategyClient(Client):
         :param insertcallback: Callback to call when a command is received
         :param disconnectcallback: Callback to call when disconnect occurs
         """
+        Client.__init__(self, address, port)
         # Queue to send True to if exit is requested
         self.logged_in = False
         self.name = name
@@ -38,7 +39,6 @@ class StrategyClient(Client):
         self.login_callback = logincallback
         self.insert_callback = insertcallback
         self.disconnect_callback = disconnectcallback
-        Client.__init__(self, address, port)
 
     def connect(self):
         """

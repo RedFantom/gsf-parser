@@ -31,7 +31,7 @@ class StrategyServer(threading.Thread):
         :raises: RuntimeError if the binding to the hostname and port fails
         :raises: ValueError if the host and/or port are found to be invalid values
         """
-        if not check_privileges():
+        if not check_privileges() and port < 1000:
             raise RuntimeError("Attempted to open a network while user is not admin.")
         threading.Thread.__init__(self)
         # Create a non-blocking socket to provide the best performance in the loop
@@ -287,17 +287,17 @@ class StrategyServer(threading.Thread):
         # The host should be an IP-address, thus four numbers separated by a .
         # IPv6 is not supported!
         elements = host.split(".")
-        if not len(elements) == 4 and host != "":
+        if not len(elements) == 4 and host != "" and host != "localhost":
             return False
         # All of the four elements should be translatable to an int number
-        if host != "":
+        if host != "" and host != "localhost":
             for item in elements:
                 try:
                     int(item)
                 except (TypeError, ValueError):
                     return False
-        # The maximum port number allowed is 9998
-        if not port < 9999:
+        # The maximum port number allowed is 65535
+        if not port < 65535:
             return False
         return True
 
@@ -324,6 +324,10 @@ class StrategyServer(threading.Thread):
         with open(file_name, "w") as fo:
             fo.writelines(lines)
         return
+
+    def stop(self):
+        """Stop the StrategyServer, may take some time to execute"""
+        self.exit_queue.put(True)
 
 
 if __name__ == '__main__':
