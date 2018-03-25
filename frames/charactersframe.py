@@ -332,6 +332,7 @@ class CharactersFrame(ttk.Frame):
         self.window.realtime_frame.update_characters()
         self.update_tree()
         self.window.builds_frame.ship_select_frame.update_characters()
+        self.window.realtime_frame.update_characters()
 
     def set_character_faction(self, faction: str):
         """

@@ -272,9 +272,11 @@ class RealtimeFrame(ttk.Frame):
 
     def update_characters(self, *args):
         """Update the characters shown in the character dropdown"""
-        if len(args) != 1:
+        if len(args) == 0:
             return
         server = args[0]
+        if "Choose" in server:
+            return
         self.character_dropdown["menu"].delete(0, tk.END)
         characters = ["Choose Character"]
         if server not in self.window.characters_frame.servers.values():
