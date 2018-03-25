@@ -327,6 +327,10 @@ class RealTimeParser(Thread):
             self.lines.clear()
             # Spawn timer
             self._spawn_time = None  # if-statement is slower than just calling this always
+            # Reset match statistics
+            self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
+            self.abilities.clear()
+            self.active_id = ""
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -428,9 +432,7 @@ class RealTimeParser(Thread):
     """
 
     def process_screenshot(self, screenshot, screenshot_time):
-        """
-        Analyze a screenshot and take the data to save it
-        """
+        """Analyze a screenshot and take the data to save it"""
         now = datetime.now()
         if self._stalker.file not in self._realtime_db:
             print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
@@ -513,13 +515,11 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            """
-            health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
+            # TODO: Finish hull health implementation
+            # health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
-            self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
-            """
-            pass
+            self.set_for_current_spawn("health", now, (None, health_shields_f, health_shields_r))
 
         """
         Minimap

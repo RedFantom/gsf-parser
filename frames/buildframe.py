@@ -217,9 +217,7 @@ class BuildsFrame(ttk.Frame):
         self.window.characters_frame.save_button.invoke()
 
     def grid_widgets(self):
-        """
-        Puts all the widgets in the correct place for this Frame.
-        """
+        """Puts all the widgets in the correct place for this Frame"""
         self.grid_forget_widgets()
         self.ship_select_frame.grid(row=0, column=0, rowspan=2, sticky="nswe", padx=1, pady=1)
         self.ship_select_frame.grid_widgets()
@@ -272,9 +270,7 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
 
     def save_ship_data(self):
-        """
-        Saves the modified Ship instance to the CharacterDatabase.
-        """
+        """Saves the modified Ship instance to the CharacterDatabase"""
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
         self.window.characters_frame.save_button.invoke()
 

@@ -76,8 +76,8 @@ class FileFrame(ttk.Frame):
     @staticmethod
     def filters():
         """
-        Opens Toplevel to enable filters and then adds the filtered CombatLogs
-        to the Listboxes
+        Opens Toplevel to enable filters and then adds the filtered
+        CombatLogs to the Listboxes
         """
         Filters()
 
@@ -101,9 +101,9 @@ class FileFrame(ttk.Frame):
 
     def add_files(self, silent=False):
         """
-        Function that checks files found in the in the settings specified folder
-        for GSF matches and if those are found in a file, it gets added to the
-        listbox
+        Function that checks files found in the in the settings
+        specified folder for GSF matches and if those are found in a
+        file, it gets added to the listbox. Provides error handling.
         """
         self.file_tree.delete(*self.file_tree.get_children())
         self.clear_data_widgets()
@@ -154,8 +154,8 @@ class FileFrame(ttk.Frame):
 
     def insert_file(self, file_string):
         """
-        Insert a file into the Treeview list of files and links it to an entry
-        in self.file_string_dict
+        Insert a file into the Treeview list of files and links it to
+        an entry in self.file_string_dict
         :param file_string: string representing the file in the list
         """
         if file_string in self.file_string_dict:

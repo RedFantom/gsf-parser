@@ -21,8 +21,17 @@ from parsing.parser import Parser
 
 class GraphsFrame(ttk.Frame):
     """
-    A frame containing a place for a graph where the user can view his/her
+    A frame containing a place for a graph where the user can view
     performance over time.
+
+    |--------------------------------|
+    | Descriptor                     |
+    | o matches     |---------------||
+    | o healing     |           /   ||
+    | o etc.        |     _    /    ||
+    | o ...         | ___/ \__/     ||
+    | Update_Button |/______________||
+    |________________________________|
     """
 
     graph_options = {
