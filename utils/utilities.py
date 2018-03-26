@@ -10,6 +10,7 @@ from PIL import Image
 from PIL.ImageTk import PhotoImage as photo
 from sys import platform
 from tkinter import messagebox
+import tkinter as tk
 from utils.directories import get_assets_directory
 from screeninfo import get_monitors
 
@@ -95,12 +96,19 @@ def get_cursor_position():
 
 def get_screen_resolution():
     """
-    Cross-platform way to get the screen resolution using Tkinter.
-    Alternative methods include using GetSystemMetrics with win32api
-    for Windows and screen_width()/screen_height() from the gtk.gdk
-    module on Linux. For now, it seems best to use a cross-platform
-    option
+    Uses screeninfo or alternatively Tkinter to determine screen
+    resolution as reported by OS. On some Linux window managers the
+    result of Tkinter is that of all monitors combined. On Windows,
+    Tkinter reports the primary monitor resolution.
+    Screeninfo returns a list of monitors of which the resolution of
+    the primary monitor is extracted.
     :return: tuple, (width, height), such as (1920, 1080)
     """
-    monitors = get_monitors()
-    return monitors[0].width, monitors[1].height
+    try:  # Not supported on Travis-CI
+        monitors = get_monitors()
+        return monitors[0].width, monitors[1].height
+    except NotImplementedError:
+        window = tk.Tk()
+        width, height = window.winfo_screenwidth(), window.winfo_screenheight()
+        window.destroy()
+        return width, height
