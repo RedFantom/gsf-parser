@@ -18,7 +18,7 @@ from screeninfo import get_monitors
 from utils.directories import get_assets_directory
 
 
-def open_icon_pil(image_name):
+def open_icon_pil(image_name, size=None):
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
@@ -33,12 +33,15 @@ def open_icon_pil(image_name):
                      "with the name {}. Please report this error if you did not modify the "
                      "assets folder.".format(image_name))
         filename = path.join(icons_path, "imperial.png")
-    return Image.open(filename)
+    image = Image.open(filename)
+    if size is not None:
+        image = image.resize(size)
+    return image
 
 
-def open_icon(image_name):
+def open_icon(image_name, size=None):
     """Open an image from the assets folder"""
-    return Photo(open_icon_pil(image_name))
+    return Photo(open_icon_pil(image_name, size=size))
 
 
 def get_pointer_position_win32():
