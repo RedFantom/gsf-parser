@@ -15,29 +15,6 @@ from utils.directories import get_assets_directory
 from screeninfo import get_monitors
 
 
-map_dictionary = {
-    "tdm": {
-        "km": "kuatmesas",
-        "ls": "lostshipyards",
-        "io": "iokath"
-    },
-    "dom": {
-        "km": "kuatmesas",
-        "ls": "lostshipyards",
-        "de": "denonexosphere"
-    }
-}
-
-map_names = {
-    "DOM Kuat Mesas": "dom_kuatmesas",
-    "DOM Lost Shipyards": "dom_lostshipyards",
-    "DOM Denon Exosphere": "dom_denon_exosphere",
-    "TDM Kuat Mesas": "tdm_kuatmesas",
-    "TDM Lost Shipyards": "tdm_lostshipyards",
-    "TDM Battle over Iokath": "tdm_iokath"
-}
-
-
 def open_icon_pil(image_name):
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion

@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from utils.utilities import map_names
+from data.maps import map_names
 from utils.directories import get_assets_directory
 from network.minimap.client import MiniMapClient
 from PIL import Image, ImageTk
