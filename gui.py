@@ -9,7 +9,7 @@ import os
 import sys
 from sys import exit
 from datetime import datetime
-# UI imports
+# UI Libraries
 from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -20,7 +20,7 @@ from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
-# Own modules
+# Project Modules
 import variables
 from utils.directories import get_temp_directory, get_assets_directory
 from utils.update import check_update

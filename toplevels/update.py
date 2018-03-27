@@ -10,7 +10,11 @@ import webbrowser
 
 
 class UpdateWindow(tk.Toplevel):
-    def __init__(self, master, version):
+    """
+    Small window to provide an update message and button to download the
+    update from GitHub based on version tag.
+    """
+    def __init__(self, master: tk.Tk, version: str):
         tk.Toplevel.__init__(self, master)
         self.explanation_label = ttk.Label(
             self, text="A new version for the GSF Parser is available! You can now "

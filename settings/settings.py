@@ -4,10 +4,10 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# General imports
+# Standard Library
 import os
 import configparser
-# Own modules
+# Project Modules
 from utils import directories
 from settings.defaults import defaults
 from settings.eval import config_eval

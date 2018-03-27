@@ -10,7 +10,7 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
-# Own modules
+# Project Modules
 from network.strategy.clienthandler import StrategyClientHandler
 from utils.admin import check_privileges
 from utils.directories import get_temp_directory

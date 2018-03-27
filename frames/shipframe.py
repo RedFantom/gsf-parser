@@ -4,13 +4,13 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 # Standard library
 import os
 from PIL import Image, ImageTk
-# Custom modules
+# Project Modules
 from variables import settings
 from utils.directories import get_assets_directory
 from data.abilities import rep_ships

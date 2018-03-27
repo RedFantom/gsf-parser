@@ -5,12 +5,12 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI Imports
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from ttkwidgets.color import askcolor
-# Custom Modules
+# Project Modules
 from utils.colors import color_background
 from utils import directories
 from data import colors

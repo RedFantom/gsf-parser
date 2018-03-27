@@ -9,7 +9,7 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
-# Own modules
+# Project Modules
 from utils.admin import *
 from network.sharing.clienthandler import SharingClientHandler
 from network.database import DatabaseHandler

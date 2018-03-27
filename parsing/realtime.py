@@ -4,9 +4,9 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 from tkinter import messagebox
-# Own modules
+# Project Modules
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread

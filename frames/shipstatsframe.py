@@ -4,12 +4,12 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
-# General imports
+# Standard Library
 import textwrap
-# Own modules
+# Project Modules
 from parsing.shipstats import ShipStats
 from data.components import components, component_strings
 from data.statistics import categories as statistic_categories, statistics as statistic_strings

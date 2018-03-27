@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 from semantic_version import Version
 from github import Github, GithubException
 import socket
-# Custom modules
+# Project Modules
 from variables import settings
 from toplevels.update import UpdateWindow
 

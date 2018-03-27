@@ -1,8 +1,9 @@
-# This file contains utility code NOT written by RedFantom or Daethyra, though it may have been edited to suit a
-# particular purpose better. This code was written by others. For the credits, see the block-comment in each class.
-# This file is excluded from the copyright of RedFantom, Daethyra and Sprigellania, but the code in this file
-# IS redistributed under the license found in LICENSE.md, so you only have to accept one License when using the
-# software.
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 import tkinter.ttk as ttk
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -30,9 +31,10 @@ class ToggledFrame(ttk.Frame):
         self._closed = ImageTk.PhotoImage(closed_img)
         open_img = Image.open(os.path.join(get_assets_directory(), "gui", "open.png"))
         self._open = ImageTk.PhotoImage(open_img)
-        self.toggle_button = ttk.Checkbutton(self.title_frame, width=labelwidth, image=self._closed,
-                                             command=self.toggle, variable=self.show, style='Toolbutton',
-                                             text=text, compound=tk.LEFT)
+        self.toggle_button = ttk.Checkbutton(
+            self.title_frame, width=labelwidth, image=self._closed,
+            command=self.toggle, variable=self.show, style='Toolbutton',
+            text=text, compound=tk.LEFT)
         self.toggle_button.grid(sticky="nswe", padx=5, pady=(0, 5))
         self.sub_frame = tk.Frame(self, relief="sunken", borderwidth=1)
         self.interior = self.sub_frame

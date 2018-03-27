@@ -9,7 +9,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from ast import literal_eval
 import sys
-# Own modules
+# Project Modules
 from widgets.strategies.strategy_list import StrategiesList
 from widgets.strategies.strategy_map import Map
 from toplevels.strategy_settings_toplevel import SettingsToplevel

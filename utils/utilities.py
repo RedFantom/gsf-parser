@@ -4,15 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-
-from os import path
-from PIL import Image
-from PIL.ImageTk import PhotoImage as photo
+# Standard Library
 from sys import platform
+from os import path
+# UI Libraries
 from tkinter import messagebox
 import tkinter as tk
-from utils.directories import get_assets_directory
+# Packages
+from PIL import Image
+from PIL.ImageTk import PhotoImage as Photo
 from screeninfo import get_monitors
+# Project Modules
+from utils.directories import get_assets_directory
 
 
 def open_icon_pil(image_name):
@@ -35,7 +38,7 @@ def open_icon_pil(image_name):
 
 def open_icon(image_name):
     """Open an image from the assets folder"""
-    return photo(open_icon_pil(image_name))
+    return Photo(open_icon_pil(image_name))
 
 
 def get_pointer_position_win32():

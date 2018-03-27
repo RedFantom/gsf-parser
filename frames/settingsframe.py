@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI imports
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog

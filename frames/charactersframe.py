@@ -4,7 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mb
@@ -13,7 +13,7 @@ import os
 import sys
 import pickle as pickle
 from collections import OrderedDict
-# Custom modules
+# Project Modules
 from data import ships as ships_data
 from utils import directories
 from utils.directories import get_assets_directory

@@ -8,7 +8,7 @@ import time
 import psutil
 import os
 import sys
-# UI imports
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox

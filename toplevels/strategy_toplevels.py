@@ -4,10 +4,11 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-# Own modules
+# Project Modules
 from parsing.strategies import StrategyDatabase, Strategy
 from widgets.strategies.strategy_map import Map
 

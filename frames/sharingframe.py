@@ -7,12 +7,12 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import os
 import shelve
-# UI imports
+# UI Libraries
 import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
-# Custom Modules
+# Project Modules
 from network.sharing.client import SharingClient
 from variables import settings
 from parsing.parser import Parser

@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from queue import Queue
 import socket
-# Own modules
+# Project Modules
 from network.clienthandler import ClientHandler
 from network.database import DatabaseHandler
 from network.queries import *

@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI imports
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as mb

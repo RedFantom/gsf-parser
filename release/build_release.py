@@ -9,7 +9,7 @@ import sys
 import pip
 from shutil import rmtree, move, copytree, copyfile, make_archive
 import subprocess
-# Own modules
+# Project Modules
 from settings.defaults import defaults
 from utils import admin
 from setup_script import script

@@ -4,13 +4,16 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
 import _pickle as pickle
-import tkinter as tk
 from ast import literal_eval
-from tkinter import messagebox, filedialog
-from widgets.snaptoplevel import SnapToplevel
+# UI Libraries
 from tkinter import ttk
+from tkinter import messagebox, filedialog
+import tkinter as tk
+# Project Modules
 import variables
+from widgets.snaptoplevel import SnapToplevel
 from parsing.strategies import StrategyDatabase
 from network.strategy.client import StrategyClient
 from network.strategy.server import StrategyServer

@@ -8,7 +8,7 @@ import configparser
 import collections
 import os
 from tkinter import messagebox
-# Custom modules
+# Project Modules
 from utils import directories
 from data.colors import default_colors, pastel_colors
 from settings.eval import config_eval
