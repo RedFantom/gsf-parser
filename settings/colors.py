@@ -70,15 +70,18 @@ class ColorScheme(object):
         else:
             raise ValueError("Expected default, pastel or custom, got %s" % name)
 
-    def write_custom(self):
+    def write_custom(self, custom: dict=None, file_name=None):
         """
         Writes the current_scheme instance attribute to the
         configuration file in the temporary directory.
         """
-        custom_file = os.path.join(directories.get_temp_directory(), "event_colors.ini")
+        if custom is not None:
+            self.current_scheme.update(custom)
+        if file_name is None:
+            file_name = os.path.join(directories.get_temp_directory(), "event_colors.ini")
         cp = configparser.RawConfigParser()
         cp.add_section("colors")
         for key, value in list(self.current_scheme.items()):
             cp.set('colors', key, value)
-        with open(custom_file, "w") as file_obj:
+        with open(file_name, "w") as file_obj:
             cp.write(file_obj)

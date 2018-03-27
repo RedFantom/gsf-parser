@@ -4,19 +4,17 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-
-# Own modules
+# Standard Library
+from pynput.mouse import Button
+import pickle as pickle
+from datetime import datetime
+# Project Modules
 from utils.directories import get_temp_directory
-# General imports
+from utils.colors import *
 from parsing.parser import Parser
 from parsing.vision import *
 from data import abilities
 from parsing.shipstats import ShipStats
-# General imports
-from pynput.mouse import Button
-import pickle as pickle
-import os
-from datetime import datetime
 
 
 class FileHandler(object):
@@ -186,9 +184,7 @@ class FileHandler(object):
 
     @staticmethod
     def get_data_dictionary(name="realtime.db"):
-        """
-        Read the real-time parsing data dictionary from
-        """
+        """Read the real-time parsing data dictionary from"""
         file_name = os.path.join(get_temp_directory(), name)
         if not os.path.exists(file_name):
             return {}
@@ -401,8 +397,8 @@ class FileHandler(object):
         ship statistics if possible.
         """
         # Color Processing
-        base_color = FileHandler.color_hex_to_tuple(FileHandler.colors["tracking"])
-        tuple_to_hex = FileHandler.color_tuple_to_hex
+        base_color = color_hex_to_tuple(FileHandler.colors["tracking"])
+        tuple_to_hex = color_tuple_to_hex
         # This dictionary will store the markers in an array for easy
         # processing in the calling function.
         results = {"tracking": []}
@@ -436,11 +432,11 @@ class FileHandler(object):
                 tracking_penalty = get_tracking_penalty(
                     degrees, stats["penalty"], stats["upgrade_c"], stats["firing_arc"])
                 # Tracking penalty is now a float (percentage / 100)
-                darkened = FileHandler.color_darken(base_color, tracking_penalty)
+                darkened = color_darken(base_color, tracking_penalty)
                 background = tuple_to_hex(darkened)
             else:
                 # Base the marker on the degrees from center instead
-                darkened = FileHandler.color_darken(
+                darkened = color_darken(
                     base_color, stats["firing_arc"] / degrees)
                 background = tuple_to_hex(darkened)
             # Create the marker data
@@ -511,30 +507,11 @@ class FileHandler(object):
 
     @staticmethod
     def datetime_to_float(date_time_obj):
-        """
-        Convert a datetime object to a float value
-        """
+        """Convert a datetime object to a float value"""
         if not isinstance(date_time_obj, datetime):
             raise TypeError("date_time_obj not of datetime type but {}".format(repr(date_time_obj)))
         return float(
             "{}.{}{}".format(date_time_obj.minute, (int((date_time_obj.second / 60) * 100)), date_time_obj.microsecond))
-
-    @staticmethod
-    def color_darken(rgb, factor):
-        darkened = tuple(max(int(item * factor), 0) for item in rgb)
-        print("Darkening {} to {} with factor {}".format(rgb, darkened, factor))
-        return darkened
-
-    @staticmethod
-    def color_tuple_to_hex(rgb):
-        rgb = tuple(int(round(item)) for item in rgb)
-        hex = "#" + format(rgb[0] << 16 | rgb[1] << 8 | rgb[2], '06x')
-        print("Converted {} to {}".format(rgb, hex))
-        return hex
-
-    @staticmethod
-    def color_hex_to_tuple(hex):
-        return tuple(int(hex.replace("#", "")[i:i + 2], 16) for i in (0, 2, 4))
 
     @staticmethod
     def screen_dict_keys_generator(screen_dict):
