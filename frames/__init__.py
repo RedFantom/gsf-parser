@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from frames.builds import BuildsFrame
 from frames.characters import CharactersFrame
-from frames.fileframe import FileFrame
+from frames.file import FileFrame
 from frames.graphsframe import GraphsFrame
 from frames.realtimeframe import RealtimeFrame
 from frames.resourcesframe import ResourcesFrame
