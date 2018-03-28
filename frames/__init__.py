@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 from frames.builds import BuildsFrame
 from frames.characters import CharactersFrame
 from frames.file import FileFrame
-from frames.graphsframe import GraphsFrame
+from frames.graphs import GraphsFrame
 from frames.realtimeframe import RealtimeFrame
 from frames.resourcesframe import ResourcesFrame
 from frames.settingsframe import SettingsFrame
