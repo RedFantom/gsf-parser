@@ -4,21 +4,20 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI Libraries
-import tkinter as tk
-import tkinter.ttk as ttk
-from tkinter import messagebox as mb
 # Standard Library
 import os
 import sys
 import pickle as pickle
 from collections import OrderedDict
+# UI Libraries
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import messagebox as mb
 # Project Modules
 from data import ships as ships_data
 from utils import directories
-from utils.directories import get_assets_directory
+from utils import utilities
 from widgets import VerticalScrollFrame
-from PIL import Image, ImageTk
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
@@ -95,10 +94,8 @@ class CharactersFrame(ttk.Frame):
         self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
         self.delete_button = ttk.Button(self, text="Delete", command=self.delete_character)
 
-        self.republic_logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(get_assets_directory(), "icons", "republic_s.png")))
-        self.imperial_logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(get_assets_directory(), "icons", "imperial_s.png")))
+        self.republic_logo = utilities.open_icon("republic_s", ext=".png")
+        self.imperial_logo = utilities.open_icon("imperial_s", ext=".png")
 
         width = 35 if sys.platform != "linux" else 27
         """

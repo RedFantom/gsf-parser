@@ -18,14 +18,14 @@ from screeninfo import get_monitors
 from utils.directories import get_assets_directory
 
 
-def open_icon_pil(image_name, size=None):
+def open_icon_pil(image_name, size=None, ext=".jpg"):
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
         raise ValueError()
     icons_path = path.join(get_assets_directory(), "icons")
-    if not image_name.endswith(".jpg"):
-        image_name += ".jpg"
+    if not image_name.endswith(ext):
+        image_name += ext
     filename = path.join(icons_path, image_name)
     if not path.exists(filename):
         messagebox.showinfo(
@@ -39,9 +39,9 @@ def open_icon_pil(image_name, size=None):
     return image
 
 
-def open_icon(image_name, size=None):
+def open_icon(*args, **kwargs):
     """Open an image from the assets folder"""
-    return Photo(open_icon_pil(image_name, size=size))
+    return Photo(open_icon_pil(*args, **kwargs)
 
 
 def get_pointer_position_win32():
