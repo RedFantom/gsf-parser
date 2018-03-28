@@ -4,6 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
 import time
 import psutil
 import os
@@ -12,13 +13,11 @@ import sys
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-# Custom widgets
+# Project Modules
 from widgets.time_view import TimeView
 from toplevels.minimap import MiniMap
-# Parsing
 from parsing.realtime import RealTimeParser
 from queue import Queue
-# Miscellaneous
 from variables import settings
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
@@ -26,7 +25,8 @@ from utils.admin import check_privileges
 
 class RealtimeFrame(ttk.Frame):
     """
-    A Frame that contains all the necessary widgets to control a RealTimeParser
+    A Frame that contains all the necessary widgets to control a
+    RealTimeParser instance.
     """
     def __init__(self, master, window):
         ttk.Frame.__init__(self, master)
@@ -201,6 +201,7 @@ class RealtimeFrame(ttk.Frame):
         self.time_view.yview_moveto(1.0)
 
     def update_cpu_usage(self):
+        """Update the CPU usage Label every two seconds"""
         string = "CPU usage: {}%".format(self.process.cpu_percent())
         self.after(2000, self.update_cpu_usage)
         if self.parser is not None and self.parser.diff is not None:
@@ -300,6 +301,3 @@ class RealtimeFrame(ttk.Frame):
         server = reverse_servers[self.server.get()]
         return server, self.character.get()
 
-    """
-    MiniMap Client
-    """
