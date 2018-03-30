@@ -115,6 +115,12 @@ class MiniMapServer(threading.Thread):
         # Login succeed
         for client in self.client_sockets:
             client.send(mess)  # login_username
+        # Send current users to newly logged in Client
+        iterator = self.client_sockets.copy()
+        iterator.remove(conn)
+        for client in iterator:
+            client.send("login_{}".format(self.client_names[conn]))
+        return True
 
     def logout_client(self, client):
         """Logout a Client from the Server"""
