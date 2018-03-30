@@ -12,7 +12,7 @@ from frames.realtime import RealtimeFrame
 from frames.resourcesframe import ResourcesFrame
 from frames.settings import SettingsFrame
 from frames.sharing import SharingFrame
-from frames.shipframe import ShipFrame
+from frames.ship import ShipFrame
 from frames.shipstatsframe import ShipStatsFrame
 from frames.statsframe import StatsFrame
 from frames.strategiesframe import StrategiesFrame
