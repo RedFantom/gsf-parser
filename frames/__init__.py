@@ -10,8 +10,8 @@ from frames.file import FileFrame
 from frames.graphs import GraphsFrame
 from frames.realtime import RealtimeFrame
 from frames.resourcesframe import ResourcesFrame
-from frames.settingsframe import SettingsFrame
-from frames.sharingframe import SharingFrame
+from frames.settings import SettingsFrame
+from frames.sharing import SharingFrame
 from frames.shipframe import ShipFrame
 from frames.shipstatsframe import ShipStatsFrame
 from frames.statsframe import StatsFrame
