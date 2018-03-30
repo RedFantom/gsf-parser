@@ -49,8 +49,12 @@ def get_swtor_directory_linux():
             if bottle is None or not os.path.exists(bottle):
                 messagebox.showerror("Error", "This is not a valid Bottle location.")
                 raise ValueError("Invalid SWTOR Bottle location")
-        swtor_path = os.path.join(bottle, "drive_c", "Program Files (x86)", "Electronic Arts", "BioWare",
-                                  "Star Wars - The Old Republic")
+        swtor_path = "None"
+        for program_files in ("Program Files (x86)", "Program Files"):
+            swtor_path = os.path.join(bottle, "drive_c", program_files, "Electronic Arts", "BioWare",
+                                      "Star Wars - The Old Republic")
+            if os.path.exists(swtor_path):
+                break
         if not os.path.exists(swtor_path):
             messagebox.showerror("Error", "Could not find SWTOR in the default installation directory.")
             raise ValueError("SWTOR install path not found: {}".format(swtor_path))
@@ -79,8 +83,7 @@ def get_swtor_directory():
     """
     if sys.platform == "win32":
         return get_swtor_directory_win32()
-    else:
-        return get_swtor_directory_linux()
+    return get_swtor_directory_linux()
 
 
 def get_swtor_screen_mode():

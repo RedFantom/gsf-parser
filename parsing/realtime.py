@@ -150,10 +150,10 @@ class RealTimeParser(Thread):
         """
         Screen parsing
         """
+        self._screen_parsing_setup = False
         self._mss = None
         self._kb_listener = None
         self._ms_listener = None
-        self.setup_screen_parsing()
         self.ship = None
         self.ship_stats = None
         resolution = get_screen_resolution()
@@ -194,9 +194,11 @@ class RealTimeParser(Thread):
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
-            "minimap": self._interface.get_minimap_coordinates()
+            "minimap": self._interface.get_minimap_coordinates(),
+            "hull": self._interface.get_ship_hull_box_coordinates(),
         }
         self._pixels_per_degree = self._interface.get_pixels_per_degree()
+        self._screen_parsing_setup = True
 
     def setup_minimap_share(self):
         """Create a MiniMapClient and setup everything to share location"""
@@ -430,6 +432,10 @@ class RealTimeParser(Thread):
 
     def process_screenshot(self, screenshot, screenshot_time):
         """Analyze a screenshot and take the data to save it"""
+
+        if self._screen_parsing_setup is False:
+            self.setup_screen_parsing()
+
         now = datetime.now()
         if self._stalker.file not in self._realtime_db:
             print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
@@ -512,11 +518,10 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            # TODO: Finish hull health implementation
-            # health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
+            health_hull = vision.get_ship_health_hull(screenshot.crop(self._coordinates["hull"]))
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
-            self.set_for_current_spawn("health", now, (None, health_shields_f, health_shields_r))
+            self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
 
         """
         Minimap
@@ -550,7 +555,10 @@ class RealTimeParser(Thread):
         else:  # self.scope_mode is False
             weapon_key = primaries[int(self.primary_weapon)]
         if weapon_key not in self.ship_stats:
-            print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(weapon_key, self.ship))
+            print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(
+                weapon_key, self.ship))
+            messagebox.showinfo("User Warning", "The ship you have currently selected has not "
+                                                "been properly configured in the BuildsFrame.")
             return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
         tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]

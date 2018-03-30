@@ -432,19 +432,17 @@ class CharactersFrame(ttk.Frame):
         character is returned. If there is no character in the Treeview
         selected, None is returned.
         """
-        if character is not None:
-            server, name = character
-        else:
+        if character is None:
             character = self.characters_list.selection()
             if character == ():
                 return
-            server, name = character[0].split(";")
+            character = tuple(character[0].split(";"))
         self.clear_character_data()
         if character not in self.characters:
             mb.showerror("Error", "The character {0} was not found in the internal character database. Please report "
-                                  "this error with debug output in the GitHub repository.".format((server, name)))
-            raise ValueError("Character not found {0} in {1}".format((server, name), self.characters))
-        return self.characters[(server, name)]
+                                  "this error with debug output in the GitHub repository.".format(character))
+            raise ValueError("Character not found {0} in {1}".format(character, self.characters))
+        return self.characters[character]
 
     def set_character(self, set=True, *args):
         """
