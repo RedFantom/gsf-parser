@@ -41,7 +41,7 @@ def open_icon_pil(image_name, size=None, ext=".jpg"):
 
 def open_icon(*args, **kwargs):
     """Open an image from the assets folder"""
-    return Photo(open_icon_pil(*args, **kwargs)
+    return Photo(open_icon_pil(*args, **kwargs))
 
 
 def get_pointer_position_win32():
