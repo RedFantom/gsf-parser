@@ -16,4 +16,4 @@ from frames.ship import ShipFrame
 from frames.shipstats import ShipStatsFrame
 from frames.stats import StatsFrame
 from frames.strategies import StrategiesFrame
-from frames.toolsframe import ToolsFrame
+from frames.tools import ToolsFrame
