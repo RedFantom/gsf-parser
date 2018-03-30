@@ -12,7 +12,7 @@ import _pickle as pickle
 import tkinter as tk
 from tkinter import ttk
 # Project Modules
-from frames.shipstatsframe import ShipStatsFrame
+from frames.shipstats import ShipStatsFrame
 from data.ships import companion_indices
 from data.components import components
 from parsing.ships import Ship, Component

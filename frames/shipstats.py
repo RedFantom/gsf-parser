@@ -18,8 +18,9 @@ from data.statistics import weapon_categories as weapon_statistic_categories
 
 class ShipStatsFrame(ttk.Frame):
     """
-    A Toplevel that shows the statistics for a certain ship in an organized manner, categorized and in alphabetical
-    order where applicable, in human readable format.
+    A Toplevel that shows the statistics for a certain ship in an
+    organized manner, categorized and in alphabetical order where
+    applicable, in human readable format.
     """
 
     def __init__(self, master, ship, ships_data, companions_data):
@@ -46,9 +47,7 @@ class ShipStatsFrame(ttk.Frame):
         self.grid_widgets()
 
     def update_tree(self):
-        """
-        Update the Treeview with the data in the ShipStats instance
-        """
+        """Update the Treeview with the data in the ShipStats instance"""
         self.stats_treeview.delete(*self.stats_treeview.get_children())
         # First insert the header items for Ship statistics
         self.stats_treeview.insert("", tk.END, iid="Ship", tags=("category",), text="Ship")
@@ -92,7 +91,8 @@ class ShipStatsFrame(ttk.Frame):
 
     def insert_into_treeview(self, category, statistic, value):
         """
-        Insert a statistic into the treeview. Parent categories should already be in place.
+        Insert a statistic into the treeview. Parent categories should
+        already be in place.
         """
         if statistic not in statistic_strings:
             print("Skipping insertion of {}".format(statistic))
@@ -122,9 +122,7 @@ class ShipStatsFrame(ttk.Frame):
         self.stats_scrollbar.grid_forget()
 
     def setup_treeview(self):
-        """
-        Sets up the Treeview with columns and headings
-        """
+        """Sets up the Treeview with columns and headings"""
         self.stats_treeview.heading("#0", text="Statistic")
         self.stats_treeview.heading("value", text="Value")
         self.stats_treeview.column("value", anchor=tk.E, width=55)

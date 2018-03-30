@@ -13,7 +13,7 @@ from frames.resourcesframe import ResourcesFrame
 from frames.settings import SettingsFrame
 from frames.sharing import SharingFrame
 from frames.ship import ShipFrame
-from frames.shipstatsframe import ShipStatsFrame
+from frames.shipstats import ShipStatsFrame
 from frames.statsframe import StatsFrame
 from frames.strategiesframe import StrategiesFrame
 from frames.toolsframe import ToolsFrame
