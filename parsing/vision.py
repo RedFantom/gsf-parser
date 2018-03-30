@@ -4,11 +4,14 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
 import os
 import math
 import operator
+# Packages
 from PIL import Image
 import numpy
+# Project Modules
 from utils.directories import get_assets_directory
 from parsing.imageops import \
     get_similarity, get_similarity_pixels, \
@@ -46,7 +49,7 @@ def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
     of the targeting pointer
     :param coordinates: coordinates of the **middle** of the targeting pointer
     :param resolution: tuple of resolution
-    :return:
+    :return: distance in pixels from center
     """
     middle_screen = (resolution[0] / 2, resolution[1] / 2)
     a_squared = math.pow(abs(coordinates[0] - middle_screen[0]), 2)

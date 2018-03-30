@@ -129,9 +129,7 @@ class Parser(object):
 
     @staticmethod
     def get_abilities_dict(lines: list):
-        """
-        Get the abilities dict for a list of lines
-        """
+        """Get the abilities dict for a list of lines"""
         abilities = {}
         for line in lines:
             if not isinstance(line, dict):
@@ -193,9 +191,11 @@ class Parser(object):
     @staticmethod
     def get_effects_eligible(line_dict, lines, active_id):
         """
-        Determine whether or not this event is eligible for having events. Only abilities that are applied to more
-        than a single target or that are applied for a certain time are eligible by default. A special exclusion
-        is set up for the activation of secondary weapons (launching projectiles)
+        Determine whether or not this event is eligible for having
+        events. Only abilities that are applied to more than a single
+        target or that are applied for a certain time are eligible by
+        default. A special exclusion is set up for the activation of
+        secondary weapons (launching projectiles)
         """
         # Exclusion for launching projectiles, only hits have effects
         if line_dict["ability"] in abilities.secondaries and "AbilityActivate" in line_dict["effect"]:
@@ -307,7 +307,8 @@ class Parser(object):
     @staticmethod
     def get_effect_allied(ability):
         """
-        Determine whether an ability is an allied (positive) one or an enemy (negative) one.
+        Determine whether an ability is an allied (positive) one or an
+        enemy (negative) one.
         :param ability: ability str
         :return: True if allied, False if enemy
         """
@@ -321,7 +322,8 @@ class Parser(object):
     @staticmethod
     def split_combatlog_file(file_name, player_id_list=None):
         """
-        Split a CombatLog into matches and spawns with a file name and an optional player id number list
+        Split a CombatLog into matches and spawns with a file name and
+        an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
         combatlogs_path = settings["parsing"]["path"]
@@ -334,9 +336,7 @@ class Parser(object):
 
     @staticmethod
     def get_player_id_list(lines):
-        """
-        Get a list of player ID numbers for a certain list of lines
-        """
+        """Get a list of player ID numbers for a certain list of lines"""
         if not isinstance(lines[0], dict):
             lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
@@ -350,9 +350,7 @@ class Parser(object):
 
     @staticmethod
     def get_player_name(lines):
-        """
-        Get the character name for a set of lines
-        """
+        """Get the character name for a set of lines"""
         for line in lines:
             if "@" not in line:
                 continue
@@ -409,9 +407,7 @@ class Parser(object):
 
     @staticmethod
     def get_gsf_in_file(file_name):
-        """
-        Get a boolean of whether there are GSF matches in a file
-        """
+        """Get a boolean of whether there are GSF matches in a file"""
         combatlogs_path = settings["parsing"]["path"]
         abs_path = os.path.join(combatlogs_path, file_name)
         if not os.path.exists(abs_path):
@@ -425,9 +421,7 @@ class Parser(object):
 
     @staticmethod
     def parse_filename(file_name):
-        """
-        Get datetime object for a filename
-        """
+        """Get datetime object for a filename"""
         try:
             return datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
         except ValueError:
