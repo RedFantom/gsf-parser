@@ -4,14 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
 import os
 import math
 import operator
+# Packages
 from PIL import Image
 import numpy
+# Project Modules
 from utils.directories import get_assets_directory
 from parsing.imageops import \
-    get_similarity, get_similarity_pixels, get_brightest_pixel, get_brightest_pixel_loc
+    get_similarity, get_similarity_pixels, \
+    get_brightest_pixel, get_brightest_pixel_loc
 
 colors = {
     "blue": (2, 95, 133),
@@ -45,7 +49,7 @@ def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
     of the targeting pointer
     :param coordinates: coordinates of the **middle** of the targeting pointer
     :param resolution: tuple of resolution
-    :return:
+    :return: distance in pixels from center
     """
     middle_screen = (resolution[0] / 2, resolution[1] / 2)
     a_squared = math.pow(abs(coordinates[0] - middle_screen[0]), 2)
@@ -94,13 +98,11 @@ def get_timer_status(source, treshold=15.0):
     return int(min(image_similarity.items(), key=operator.itemgetter(1))[0])
 
 
-def get_ship_health_hull(image, coordinates):
+def get_ship_health_hull(image):
     """
-    Uses the PIL library to determine the color of the ship icon in the UI
-    to make an approximation of the ship hull health.
+    Uses the PIL library to determine the color of the ship icon in the
+    UI to make an approximation of the ship hull health.
     """
-    x, y = coordinates
-    image = image.crop((*coordinates, x + 20, y + 20))
     rgb = get_brightest_pixel(image)
     health = {
         "red": 25,
@@ -118,12 +120,12 @@ def get_ship_health_hull(image, coordinates):
 
 def get_ship_health_shields(image, coordinates):
     """
-    Uses the PIL library to determine the color of the ship icon in the UI
-    to make an approximation of the ship shield health.
+    Uses the PIL library to determine the color of the ship icon in the
+    UI to make an approximation of the ship shield health.
 
     Two elements, each with their own color. Each color represents 10%
-    Red, orange, yellow, green, bright green and blue when power to shields
-    is enabled to make for total of 112.5% shield power.
+    Red, orange, yellow, green, bright green and blue when power to
+    shields is enabled to make for total of 112.5% shield power.
     """
     elements = ["f1", "f2", "r1", "r2"]
     generator = zip(elements, coordinates)
@@ -152,8 +154,8 @@ def get_ship_health_shields(image, coordinates):
 def get_minimap_location(minimap: Image.Image):
     """
     Determine the location of a ship on the given (cropped-screenshot)
-    minimap image. Uses pixel matching to determine the brightest green spot
-    in the minimap image.
+    minimap image. Uses pixel matching to determine the brightest green
+    spot in the minimap image.
     """
     result = get_brightest_pixel_loc(minimap, 1)
     if result is None:
@@ -164,7 +166,6 @@ def get_minimap_location(minimap: Image.Image):
     pixels[x+1, y+1] = (255, 0, 0)
     pixels[x+1, y] = (255, 0, 0)
     pixels[x, y + 1] = (255, 0, 0)
-    minimap.save("temp.png")
     width, height = minimap.size
     return x / width, y / height
 

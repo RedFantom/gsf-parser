@@ -5,17 +5,12 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 from unittest import TestCase
-from collections import OrderedDict
 import mock
 from data import colors
 from settings.colors import ColorScheme
 
 
 class TestColors(TestCase):
-    def test_color_schemes(self):
-        self.assertIsInstance(colors.default_colors, OrderedDict)
-        self.assertIsInstance(colors.pastel_colors, OrderedDict)
-
     def test_color_scheme(self):
         color_scheme = ColorScheme()
         for key1, key2 in zip(color_scheme.current_scheme.keys(), colors.default_colors.keys()):

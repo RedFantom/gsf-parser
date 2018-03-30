@@ -4,13 +4,24 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
 from os import path
-from frames.shipstatsframe import ShipStatsFrame
+from collections import OrderedDict
+import _pickle as pickle
+# UI Libraries
+import tkinter as tk
+from tkinter import ttk
+# Project Modules
+from frames.shipstats import ShipStatsFrame
 from data.ships import companion_indices
 from data.components import components
 from parsing.ships import Ship, Component
-from widgets import *
 from utils.directories import get_assets_directory
+from utils.utilities import open_icon
+from widgets import \
+    VerticalScrollFrame, ToggledFrame,\
+    CrewAbilitiesFrame, CrewListFrame, ComponentListFrame, ShipSelectFrame,\
+    MinorComponentWidget, MiddleComponentWidget, MajorComponentWidget
 
 
 class BuildsFrame(ttk.Frame):
@@ -21,9 +32,9 @@ class BuildsFrame(ttk.Frame):
     ships.
     """
 
-    def __init__(self, master):
+    def __init__(self, master, main_window):
         ttk.Frame.__init__(self, master)
-        self.window = variables.main_window
+        self.window = main_window
         self.major_components = ["PrimaryWeapon", "PrimaryWeapon2", "SecondaryWeapon", "SecondaryWeapon2", "Systems"]
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
@@ -49,8 +60,9 @@ class BuildsFrame(ttk.Frame):
         self.character = None
         self.ship_name = None
         # Header above the Components ToggledFrames
-        self.components_lists_header_label = ttk.Label(self.components_lists_frame.interior, text="Components",
-                                                       justify=tk.LEFT, font=("Calibiri", 12))
+        self.components_lists_header_label = ttk.Label(
+            self.components_lists_frame.interior, text="Components",
+            justify=tk.LEFT, font=("Calibiri", 12))
         for category in components:
             # Bloodmark is the default around which the widgets are created
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
@@ -61,16 +73,17 @@ class BuildsFrame(ttk.Frame):
                     self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component,
                     self.toggle_callback)
         self.component_frame = ttk.Frame(self)
-        self.current_component = MajorComponentWidget(self.component_frame,
-                                                      self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
-                                                      self.ship, "PrimaryWeapon")
-        self.crew_select_frame = CrewListFrame(self.components_lists_frame.interior, self.faction,
-                                               self.companions_data[self.faction], self.set_crew_member)
+        self.current_component = MajorComponentWidget(
+            self.component_frame, self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
+            self.ship, "PrimaryWeapon")
+        self.crew_select_frame = CrewListFrame(
+            self.components_lists_frame.interior, self.faction,
+            self.companions_data[self.faction], self.set_crew_member)
         # Image for on the ShipStats button
-        self.ship_stats_image = photo(Image.open(
-            os.path.join(get_assets_directory(), "icons", "spvp_targettracker.jpg")).resize((49, 49), Image.ANTIALIAS))
-        self.ship_stats_button = ttk.Button(self, text="Show ship statistics", command=self.show_ship_stats,
-                                            image=self.ship_stats_image, compound=tk.LEFT)
+        self.ship_stats_image = open_icon("spvp_targettracker", (49, 49))
+        self.ship_stats_button = ttk.Button(
+            self, text="Show ship statistics", command=self.show_ship_stats,
+            image=self.ship_stats_image, compound=tk.LEFT)
         self.reset()
 
     def set_crew_member(self, member):

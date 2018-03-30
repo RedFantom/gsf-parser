@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
 from tkinter import ttk
-# Own modules
+# Project Modules
 from parsing.strategies import *
 from toplevels.strategy_toplevels import AddStrategy, AddPhase
 

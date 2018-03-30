@@ -4,7 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 import tkinter as tk
 from tkinter import messagebox as mb
 import tkinter.ttk as ttk
@@ -15,7 +15,7 @@ from collections import OrderedDict
 # Packages
 from PIL.ImageTk import PhotoImage
 from ttkwidgets.frames import Balloon
-# Custom modules
+# Project Modules
 import variables
 from widgets import ToggledFrame, VerticalScrollFrame
 from parsing import ships

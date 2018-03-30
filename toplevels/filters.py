@@ -4,17 +4,19 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import os
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
-import os
-# Own modules
+# Project Modules
 import widgets
 import variables
 from parsing.parser import Parser
 from widgets.verticalscrollframe import VerticalScrollFrame
 from widgets import ScaleEntry
-from . import splashscreens
+from toplevels import splashscreens
 from data import abilities as abls
 
 
@@ -249,7 +251,7 @@ class Filters(tk.Toplevel):
 
             if self.filter_type_vars["Date"].get() is True:
                 print("Date filters are enabled")
-                date = Parser.parse_file(file_name)
+                date = Parser.parse_filename(file_name)
                 if not date:
                     print("Continuing in file {0} because the filename could not be parsed".format(file_name))
                     continue

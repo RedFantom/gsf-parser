@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 import socket
 from tkinter import messagebox
 from ast import literal_eval
-# Own modules
+# Project Modules
 from parsing.strategies import Strategy, Item, Phase
 from network.client import Client
 

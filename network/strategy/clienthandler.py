@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import queue
 from os import path
-# Own modules
+# Project Modules
 from network.clienthandler import ClientHandler
 from utils.directories import get_temp_directory
 

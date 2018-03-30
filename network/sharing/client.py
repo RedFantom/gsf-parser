@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 from tkinter import messagebox
 from datetime import datetime
 from queue import Queue
-# Own modules
+# Project Modules
 from network.client import Client
 from variables import settings
 

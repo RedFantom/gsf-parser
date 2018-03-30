@@ -26,11 +26,8 @@ def get_temp_directory():
 
 
 def get_assets_directory():
-    """
-    Returns the absolute path to the assets directory of the GSF Parser
-    """
-    path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
-    return path
+    """Return the absolute path to the assets directory"""
+    return os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "assets"))
 
 
 def get_combatlogs_folder():
@@ -40,5 +37,4 @@ def get_combatlogs_folder():
     """
     relative_path = os.path.join("Documents", "Star Wars - The Old Republic", "CombatLogs")
     user_path = os.path.expanduser("~")
-    path = os.path.realpath(os.path.join(user_path, relative_path))
-    return path
+    return os.path.realpath(os.path.join(user_path, relative_path))

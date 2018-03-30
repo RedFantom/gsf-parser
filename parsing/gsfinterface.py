@@ -56,6 +56,18 @@ class GSFInterface(GUIParser):
         back_two = temp_cds[0] + int(40 * temp_scale), temp_cds[1] + int(120 * temp_scale)
         return front_one, front_two, back_one, back_two
 
+    def get_ship_hull_coordinates(self):
+        """Return tuple coordinates to ship hull box start"""
+        x, y, _, _ = self.get_box_coordinates("FreeFlightShipStatus")
+        scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
+        return x + int(60 * scale), y + int(60 * scale)
+
+    def get_ship_hull_box_coordinates(self):
+        """Return box coordinates to ship hull box"""
+        x, y = self.get_ship_hull_coordinates()
+        scale = self.get_element_scale(self.get_element_object("FreeFlightShipStatus"))
+        return x, y, x + int(65 * scale), y + int(70 * scale)
+
     def get_ship_buffs_coordinates(self):
         """Return tuple of coordinates to ship buffs bar"""
         return self.get_box_coordinates("FreeFlightPlayerStatusEffects")

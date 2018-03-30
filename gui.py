@@ -9,7 +9,7 @@ import os
 import sys
 from sys import exit
 from datetime import datetime
-# UI imports
+# UI Libraries
 from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
@@ -20,7 +20,7 @@ from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
-# Own modules
+# Project Modules
 import variables
 from utils.directories import get_temp_directory, get_assets_directory
 from utils.update import check_update
@@ -77,7 +77,7 @@ class MainWindow(ThemedTk):
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
         self.resources_frame = ResourcesFrame(self.notebook, self)
-        self.builds_frame = BuildsFrame(self.notebook)
+        self.builds_frame = BuildsFrame(self.notebook, self)
         self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place

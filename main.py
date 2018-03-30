@@ -41,9 +41,7 @@ def create_window():
 
 
 def setup_tkinter():
-    """
-    Fixes bug in PyInstaller, see issue #17.
-    """
+    """Fixes bug in PyInstaller, see issue #17"""
     if "Windows-7" not in platform.platform():
         return
     try:

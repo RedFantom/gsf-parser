@@ -4,16 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
-# UI Imports
-import tkinter as tk
-import tkinter.ttk as ttk
+# Standard Library
 import platform
 import os
+# UI Libraries
+import tkinter as tk
+import tkinter.ttk as ttk
+# Packages
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+# Project Modules
 from variables import settings
 from toplevels.splashscreens import SplashScreen
 from parsing.parser import Parser
@@ -193,9 +195,7 @@ class GraphsFrame(ttk.Frame):
             raise NotImplementedError()
 
     def grid_widgets(self):
-        """
-        Put all widgets in the right place
-        """
+        """Put all widgets in the right place"""
         self.graph_label.grid(column=0, row=0, rowspan=1, columnspan=2, sticky="w", pady=5)
         row = 1
         for radio in self.graph_radios.values():

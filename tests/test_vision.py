@@ -40,6 +40,12 @@ class TestVision(TestCase):
         result = vision.get_ship_health_shields(self.image, coords)
         print("[TESTS] Ship health:", result)
 
+    def test_get_ship_health_hull(self):
+        coords = self.gui_parser.get_ship_hull_box_coordinates()
+        image = self.image.crop(coords)
+        result = vision.get_ship_health_hull(image)
+        print("[TESTS] Ship Hull Health:", result)
+
     def test_get_minimap_position(self):
         coords = self.gui_parser.get_minimap_coordinates()
         print("[TESTS] Coordinates:", coords)

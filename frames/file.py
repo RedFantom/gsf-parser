@@ -5,15 +5,15 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI imports
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox
 import tkinter.filedialog
-# General imports
+# Standard Library
 import operator
 import os
-# Own modules
+# Project Modules
 import variables
 from parsing import folderstats, filestats, matchstats, spawnstats
 from data import abilities

@@ -14,6 +14,13 @@ class MiniMapClient(Client):
     a server. Uses a callback that can be called to put a location
     in the queue to be sent.
     """
+
+    supported_commands = [
+        "login",
+        "logout",
+        "location"
+    ]
+
     def __init__(self, host: str, port: int, username: str):
         """Sets up the client, connects and logs into the server"""
         Client.__init__(self, host, port)
@@ -33,12 +40,6 @@ class MiniMapClient(Client):
     def update(self):
         """Periodically send the location to the server"""
         self.receive()
-        if not self.message_queue.empty():
-            message = self.message_queue.get()
-            if message == "exit":
-                self.close()
-            else:
-                raise RuntimeError("Unsupported message: {}".format(message))
         if self.location_queue.empty():
             return
         location = None

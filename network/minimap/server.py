@@ -75,9 +75,7 @@ class MiniMapServer(threading.Thread):
             assert isinstance(tup, tuple)
             assert len(tup) == 2
             # Send location update to other clients
-            iterator = self.client_sockets.copy()
-            iterator.remove(client)
-            for other in iterator:
+            for other in self.client_sockets:
                 other.send(message)
         # Done
         return True
@@ -109,14 +107,20 @@ class MiniMapServer(threading.Thread):
         # elems: ("login", username: str)
         if len(elems) != 2 or elems[0] != "login" or elems[1] in self.client_names.values():
             conn.close("exit")
-        # Login succeed
-        for client in self.client_sockets:
-            client.send(mess)  # login_username
-        conn.send("login")  # Confirmation
         # Save connection
+        conn.send("login")  # Confirmation
         self.client_sockets.append(conn)
         self.client_names[conn] = elems[1]
         print("[MiniMapServer] Client Login {}".format(elems[1]))
+        # Login succeed
+        for client in self.client_sockets:
+            client.send(mess)  # login_username
+        # Send current users to newly logged in Client
+        iterator = self.client_sockets.copy()
+        iterator.remove(conn)
+        for client in iterator:
+            client.send("login_{}".format(self.client_names[conn]))
+        return True
 
     def logout_client(self, client):
         """Logout a Client from the Server"""

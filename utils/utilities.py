@@ -4,47 +4,28 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-
-from os import path
-from PIL import Image
-from PIL.ImageTk import PhotoImage as photo
+# Standard Library
 from sys import platform
+from os import path
+# UI Libraries
 from tkinter import messagebox
-from utils.directories import get_assets_directory
+import tkinter as tk
+# Packages
+from PIL import Image
+from PIL.ImageTk import PhotoImage as Photo
 from screeninfo import get_monitors
+# Project Modules
+from utils.directories import get_assets_directory
 
 
-map_dictionary = {
-    "tdm": {
-        "km": "kuatmesas",
-        "ls": "lostshipyards",
-        "io": "iokath"
-    },
-    "dom": {
-        "km": "kuatmesas",
-        "ls": "lostshipyards",
-        "de": "denonexosphere"
-    }
-}
-
-map_names = {
-    "DOM Kuat Mesas": "dom_kuatmesas",
-    "DOM Lost Shipyards": "dom_lostshipyards",
-    "DOM Denon Exosphere": "dom_denon_exosphere",
-    "TDM Kuat Mesas": "tdm_kuatmesas",
-    "TDM Lost Shipyards": "tdm_lostshipyards",
-    "TDM Battle over Iokath": "tdm_iokath"
-}
-
-
-def open_icon_pil(image_name):
+def open_icon_pil(image_name, size=None, ext=".jpg"):
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
         raise ValueError()
     icons_path = path.join(get_assets_directory(), "icons")
-    if not image_name.endswith(".jpg"):
-        image_name += ".jpg"
+    if not image_name.endswith(ext):
+        image_name += ext
     filename = path.join(icons_path, image_name)
     if not path.exists(filename):
         messagebox.showinfo(
@@ -52,12 +33,15 @@ def open_icon_pil(image_name):
                      "with the name {}. Please report this error if you did not modify the "
                      "assets folder.".format(image_name))
         filename = path.join(icons_path, "imperial.png")
-    return Image.open(filename)
+    image = Image.open(filename)
+    if size is not None:
+        image = image.resize(size)
+    return image
 
 
-def open_icon(image_name):
+def open_icon(*args, **kwargs):
     """Open an image from the assets folder"""
-    return photo(open_icon_pil(image_name))
+    return Photo(open_icon_pil(*args, **kwargs))
 
 
 def get_pointer_position_win32():
@@ -95,12 +79,19 @@ def get_cursor_position():
 
 def get_screen_resolution():
     """
-    Cross-platform way to get the screen resolution using Tkinter.
-    Alternative methods include using GetSystemMetrics with win32api
-    for Windows and screen_width()/screen_height() from the gtk.gdk
-    module on Linux. For now, it seems best to use a cross-platform
-    option
+    Uses screeninfo or alternatively Tkinter to determine screen
+    resolution as reported by OS. On some Linux window managers the
+    result of Tkinter is that of all monitors combined. On Windows,
+    Tkinter reports the primary monitor resolution.
+    Screeninfo returns a list of monitors of which the resolution of
+    the primary monitor is extracted.
     :return: tuple, (width, height), such as (1920, 1080)
     """
-    monitors = get_monitors()
-    return monitors[0].width, monitors[1].height
+    try:  # Not supported on Travis-CI
+        monitors = get_monitors()
+        return monitors[0].width, monitors[1].height
+    except (NotImplementedError, ValueError):
+        window = tk.Tk()
+        width, height = window.winfo_screenwidth(), window.winfo_screenheight()
+        window.destroy()
+        return width, height

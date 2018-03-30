@@ -5,13 +5,13 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI imports
+# UI Libraries
 import tkinter as tk
 from tkinter.messagebox import showinfo
-# General imports
+# Standard Library
 from pynput import keyboard
 import sys
-# Own modules
+# Project Modules
 import variables
 from utils import admin
 

@@ -7,12 +7,12 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import os
 import shelve
-# UI imports
+# UI Libraries
 import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
-# Custom Modules
+# Project Modules
 from network.sharing.client import SharingClient
 from variables import settings
 from parsing.parser import Parser
@@ -42,10 +42,11 @@ def get_connected_client():
 
 class SharingFrame(ttk.Frame):
     """
-    A Frame to contain widgets to allow uploading of CombatLogs to the network
-    and viewing leaderboards that keep track of individual player performance
-    on different fronts. A connection to the network is required, and as the
-    GSF Server is not done yet, this Frame is still empty.
+    A Frame to contain widgets to allow uploading of CombatLogs to the
+    network and viewing leaderboards that keep track of individual
+    player performance on different fronts. A connection to the network
+    is required, and as the GSF Server is not done yet, this Frame is
+    still empty.
     """
 
     def __init__(self, root_frame, window):
@@ -76,18 +77,14 @@ class SharingFrame(ttk.Frame):
         self.bind("<F5>", self.update_tree)
 
     def grid_widgets(self):
-        """
-        The usual for putting the widgets into their correct positions
-        """
+        """Put widgets into the grid geometry manager"""
         self.file_tree.grid(row=1, column=1, columnspan=4, padx=5, pady=5, sticky="nswe")
         self.file_tree_scroll.grid(row=1, column=5, padx=(0, 5), pady=5, sticky="ns")
         self.progress_bar.grid(row=2, column=1, columnspan=3, padx=5, pady=5, sticky="we")
         self.synchronize_button.grid(row=2, column=4, columnspan=2, padx=(0, 5), pady=5, sticky="nswe")
 
     def setup_treeview(self):
-        """
-        Setup the Treeview with column names and headings
-        """
+        """Setup the Treeview with column names and headings"""
         self.file_tree_scroll.config(command=self.file_tree.yview)
 
         self.file_tree.column("#0", width=180, stretch=False, anchor=tk.E)
@@ -112,7 +109,11 @@ class SharingFrame(ttk.Frame):
 
     def synchronize(self):
         """
-        Function for the sync_button to call when pressed. Connects to the network.
+        Callback to synchronize_button Button widget.
+
+        Sets up a connection and starts sharing the ID-name combinations
+        with the server. Also downloads ID-name combinations with the
+        server and saves them to the ID-name databases.
         """
         print("[SharingFrame] Starting synchronization")
         # Connect to the network
@@ -162,7 +163,19 @@ class SharingFrame(ttk.Frame):
         self.update_tree()
         self.progress_bar["value"] = 0
 
-    def send_player_id_list(self, id_list, character_data, server, player_name, file_name, client):
+    def send_player_id_list(self, id_list: list, character_data: dict, server: str,
+                            player_name: str, file_name: str, client: SharingClient):
+        """
+        Send the player-name ID combinations found in the CombatLogs
+        of the current user using a connected SharingClient.
+        :param id_list: List of ID numbers for the user
+        :param character_data: CharacterDatabase containing the
+            character details
+        :param server: Three-letter server code
+        :param player_name: Name of the player who owns these ID numbers
+        :param file_name: Name of the file containing these IDs
+        :param client: Connected SharingClient instance
+        """
         for player_id in id_list:
             print("[SharingFrame] Sharing ID '{}' for name '{}'".format(player_id, player_name))
             legacy_name = character_data[(server, player_name)]["Legacy"]
@@ -174,7 +187,15 @@ class SharingFrame(ttk.Frame):
             self.sharing_db[file_name]["player_sync"] += 1
         return True
 
-    def retrieve_enemy_id_list(self, enemy_id_list, server, file_name, client):
+    def retrieve_enemy_id_list(self, enemy_id_list: list, server: str, file_name: str, client: SharingClient):
+        """
+        Attempt to download enemy names for ID numbers of the enemies
+        for a given file and server.
+        :param enemy_id_list: list of ID numbers
+        :param server: three-letter server name code
+        :param file_name: Name of the file to download IDs for
+        :param client: Connected and set-up SharingClient instance
+        """
         for enemy_id in enemy_id_list:
             result = client.get_name_id(server, enemy_id)
             if result is None or result == "none":

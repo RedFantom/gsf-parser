@@ -4,14 +4,15 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# UI Libraries
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
-from widgets.snaptoplevel import SnapToplevel
-from tkinter import ttk
-# Own modules
+# Project Modules
 from parsing.strategies import StrategyDatabase
 from network.strategy.client import StrategyClient
+from widgets.snaptoplevel import SnapToplevel
 
 
 class StrategyShareToplevel(SnapToplevel):

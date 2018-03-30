@@ -4,21 +4,20 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
-import tkinter as tk
-import tkinter.ttk as ttk
-from tkinter import messagebox as mb
 # Standard Library
 import os
 import sys
 import pickle as pickle
 from collections import OrderedDict
-# Custom modules
+# UI Libraries
+import tkinter as tk
+import tkinter.ttk as ttk
+from tkinter import messagebox as mb
+# Project Modules
 from data import ships as ships_data
 from utils import directories
-from utils.directories import get_assets_directory
+from utils import utilities
 from widgets import VerticalScrollFrame
-from PIL import Image, ImageTk
 from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
@@ -95,10 +94,8 @@ class CharactersFrame(ttk.Frame):
         self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
         self.delete_button = ttk.Button(self, text="Delete", command=self.delete_character)
 
-        self.republic_logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(get_assets_directory(), "icons", "republic_s.png")))
-        self.imperial_logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(get_assets_directory(), "icons", "imperial_s.png")))
+        self.republic_logo = utilities.open_icon("republic_s", ext=".png")
+        self.imperial_logo = utilities.open_icon("imperial_s", ext=".png")
 
         width = 35 if sys.platform != "linux" else 27
         """
@@ -435,19 +432,17 @@ class CharactersFrame(ttk.Frame):
         character is returned. If there is no character in the Treeview
         selected, None is returned.
         """
-        if character is not None:
-            server, name = character
-        else:
+        if character is None:
             character = self.characters_list.selection()
             if character == ():
                 return
-            server, name = character[0].split(";")
+            character = tuple(character[0].split(";"))
         self.clear_character_data()
         if character not in self.characters:
             mb.showerror("Error", "The character {0} was not found in the internal character database. Please report "
-                                  "this error with debug output in the GitHub repository.".format((server, name)))
-            raise ValueError("Character not found {0} in {1}".format((server, name), self.characters))
-        return self.characters[(server, name)]
+                                  "this error with debug output in the GitHub repository.".format(character))
+            raise ValueError("Character not found {0} in {1}".format(character, self.characters))
+        return self.characters[character]
 
     def set_character(self, set=True, *args):
         """

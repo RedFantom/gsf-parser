@@ -4,15 +4,15 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-
-# UI modules
+# Standard Library
+import os
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
-# General modules
+# Packages
 from PIL import Image
 from PIL.ImageTk import PhotoImage
-import os
-# Own modules
+# Project Modules
 from parsing.parser import Parser
 from data.icons import icons
 from data.effects import all_effects

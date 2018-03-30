@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 
-# UI imports
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -16,7 +16,7 @@ import sys
 import os
 from variables import settings, colors
 from widgets import VerticalScrollFrame
-from toplevels.colors import EventColors
+from toplevels.event_colors import EventColors
 from utils.utilities import get_screen_resolution
 from collections import OrderedDict
 from parsing.vision import timer_boxes

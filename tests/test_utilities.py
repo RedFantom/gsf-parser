@@ -6,6 +6,8 @@ Copyright (C) 2016-2018 RedFantom
 """
 from unittest import TestCase
 from PIL.ImageTk import PhotoImage
+
+import data.maps
 from utils import utilities
 import tkinter as tk
 import mock
@@ -25,10 +27,10 @@ class TestUtilities(TestCase):
         self.assertEqual(len(resolution), 2)
 
     def test_map_dictionary(self):
-        self.assertIsInstance(utilities.map_dictionary, dict)
+        self.assertIsInstance(data.maps.map_dictionary, dict)
         for mode in self.GAME_MODES:
-            self.assertTrue(mode in utilities.map_dictionary)
-            self.assertIsInstance(utilities.map_dictionary[mode], dict)
+            self.assertTrue(mode in data.maps.map_dictionary)
+            self.assertIsInstance(data.maps.map_dictionary[mode], dict)
         return
 
     def test_open_icon(self):

@@ -4,13 +4,14 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
-import tkinter as tk
-import tkinter.ttk as ttk
 # Standard library
 import os
+# UI Libraries
+import tkinter as tk
+import tkinter.ttk as ttk
+# Packages
 from PIL import Image, ImageTk
-# Custom modules
+# Project Modules
 from variables import settings
 from utils.directories import get_assets_directory
 from data.abilities import rep_ships
@@ -47,9 +48,7 @@ class ShipFrame(ttk.Frame):
         self.pic = None  # Variable for the PhotoImage
 
     def grid_widgets(self):
-        """
-        Put the widgets in the right place
-        """
+        """Put the widgets in the right place"""
         self.ship_image.grid(column=0, row=0, sticky="nswe")
         self.ship_label.grid(column=0, row=1, sticky="nswe", padx=5)
         self.remove_image()
@@ -83,9 +82,7 @@ class ShipFrame(ttk.Frame):
         self.ship_image.config(image=self.pic)
 
     def remove_image(self):
-        """
-        Set the default image
-        """
+        """Set the default image"""
         self.set_default()
 
     def set_default(self):

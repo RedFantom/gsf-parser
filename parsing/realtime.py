@@ -4,9 +4,9 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# UI imports
+# UI Libraries
 from tkinter import messagebox
-# Own modules
+# Project Modules
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from threading import Thread
@@ -39,8 +39,6 @@ Dictionary structure:
 data_dictionary[filename] = file_dictionary
 file_dictionary[datetime_obj] = match_dictionary
 match_dictionary[datetime_obj] = spawn_dictionary
-spawn_dictionary["power_mgmt"] = power_mgmt_dict
-    power_mgmt_dict[datetime_obj] = integer
 spawn_dictionary["cursor_pos"] = cursor_pos_dict
     cursor_pos_dict[datetime_obj] = (x, y)
 spawn_dictionary["tracking"] = tracking_dict
@@ -152,17 +150,17 @@ class RealTimeParser(Thread):
         """
         Screen parsing
         """
+        self._screen_parsing_setup = False
         self._mss = None
         self._kb_listener = None
         self._ms_listener = None
-        self.setup_screen_parsing()
         self.ship = None
         self.ship_stats = None
         resolution = get_screen_resolution()
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
         self._interface = None
         self._coordinates = {}
-        self.screen_data = {"tracking": "", "health": (None, None, None), "power_mgmt": 4}
+        self.screen_data = {"tracking": "", "health": (None, None, None)}
         self._resolution = resolution
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
@@ -196,9 +194,11 @@ class RealTimeParser(Thread):
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
-            "minimap": self._interface.get_minimap_coordinates()
+            "minimap": self._interface.get_minimap_coordinates(),
+            "hull": self._interface.get_ship_hull_box_coordinates(),
         }
         self._pixels_per_degree = self._interface.get_pixels_per_degree()
+        self._screen_parsing_setup = True
 
     def setup_minimap_share(self):
         """Create a MiniMapClient and setup everything to share location"""
@@ -317,7 +317,6 @@ class RealTimeParser(Thread):
                     "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
                         self._character_data[1], self.player_name
                     ))
-            self.process_login()
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")
@@ -433,6 +432,10 @@ class RealTimeParser(Thread):
 
     def process_screenshot(self, screenshot, screenshot_time):
         """Analyze a screenshot and take the data to save it"""
+
+        if self._screen_parsing_setup is False:
+            self.setup_screen_parsing()
+
         now = datetime.now()
         if self._stalker.file not in self._realtime_db:
             print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
@@ -515,11 +518,10 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            # TODO: Finish hull health implementation
-            # health_hull = vision.get_ship_health_hull(screenshot, self._coordinates["hull"])
+            health_hull = vision.get_ship_health_hull(screenshot.crop(self._coordinates["hull"]))
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
-            self.set_for_current_spawn("health", now, (None, health_shields_f, health_shields_r))
+            self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
 
         """
         Minimap
@@ -553,7 +555,10 @@ class RealTimeParser(Thread):
         else:  # self.scope_mode is False
             weapon_key = primaries[int(self.primary_weapon)]
         if weapon_key not in self.ship_stats:
-            print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(weapon_key, self.ship))
+            print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(
+                weapon_key, self.ship))
+            messagebox.showinfo("User Warning", "The ship you have currently selected has not "
+                                                "been properly configured in the BuildsFrame.")
             return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
         tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
@@ -675,8 +680,7 @@ class RealTimeParser(Thread):
         overlay_string = ""
         tracking = self.get_tracking_string()
         parsing = self.get_parsing_string()
-        power = self.get_power_mgmt_string()
-        for string in [parsing, tracking, power]:
+        for string in [parsing, tracking]:
             overlay_string += string
         return overlay_string
 
@@ -701,8 +705,5 @@ class RealTimeParser(Thread):
             divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
         )
 
-    def get_power_mgmt_string(self):
-        return ""
-
     def get_health_string(self):
-        pass
+        return ""
