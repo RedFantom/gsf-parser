@@ -143,7 +143,8 @@ class StatsFrame(ttk.Frame):
 
     def setup_timeline(self):
         """
-        Setup the TimeLine widget
+        Configure the TimeLine widget with categories and create Balloon
+        help widgets with help text
         """
         labels = self.time_line._category_labels
         Balloon(labels["primaries"],
@@ -169,9 +170,7 @@ class StatsFrame(ttk.Frame):
                                            "time, and the darker markers indicate a switch in power management mode.")
 
     def setup_enemy_treeview(self):
-        """
-        Setup the enemies treeview
-        """
+        """Configure columns and options for enemies Treeview"""
         self.enemies_treeview.config(yscrollcommand=self.enemies_scrollbar.set)
         self.enemies_treeview.config(columns=("Damage dealt", "Damage taken"))
         self.enemies_treeview["show"] = ("tree", "headings")
@@ -187,9 +186,7 @@ class StatsFrame(ttk.Frame):
         self.enemies_treeview.config(height=14)
 
     def setup_ability_treeview(self):
-        """
-        Setup the abilities treeview
-        """
+        """Configure columns and options for abilities Treeview"""
         self.abilities_treeview.config(yscrollcommand=self.abilities_scrollbar.set)
         self.abilities_treeview.config(columns=("Times used",))
         self.abilities_treeview["show"] = ("tree", "headings")
@@ -202,9 +199,7 @@ class StatsFrame(ttk.Frame):
         self.abilities_treeview.heading("#0", text="Ability", command=command)
 
     def grid_widgets(self):
-        """
-        Put all widgets in the right place
-        """
+        """Put all widgets in the right place"""
         self.abilities_treeview.grid(column=0, row=0, pady=5, padx=5)
         self.abilities_scrollbar.grid(column=1, row=0, sticky="ns", pady=5)
         self.abilities_label.grid(column=2, row=0, sticky="nwe", padx=5, pady=5)
@@ -247,7 +242,8 @@ class StatsFrame(ttk.Frame):
 
     def update_timeline(self, file, match, spawn, match_timings, spawn_timings, file_cube):
         """
-        Update the TimeLine with the results of parsing the file and the screen parsing data
+        Update the TimeLine with the results of parsing the file and
+        the screen parsing data
         """
         # Get start and end times of the spawn
         start = FileHandler.datetime_to_float(Parser.line_to_dictionary(file_cube[match][spawn][0])["time"])

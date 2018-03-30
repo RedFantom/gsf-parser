@@ -14,6 +14,6 @@ from frames.settings import SettingsFrame
 from frames.sharing import SharingFrame
 from frames.ship import ShipFrame
 from frames.shipstats import ShipStatsFrame
-from frames.statsframe import StatsFrame
+from frames.stats import StatsFrame
 from frames.strategiesframe import StrategiesFrame
 from frames.toolsframe import ToolsFrame
