@@ -90,7 +90,7 @@ def get_screen_resolution():
     try:  # Not supported on Travis-CI
         monitors = get_monitors()
         return monitors[0].width, monitors[1].height
-    except NotImplementedError:
+    except (NotImplementedError, ValueError):
         window = tk.Tk()
         width, height = window.winfo_screenwidth(), window.winfo_screenheight()
         window.destroy()
