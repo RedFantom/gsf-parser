@@ -104,7 +104,6 @@ def get_ship_health_hull(image):
     UI to make an approximation of the ship hull health.
     """
     rgb = get_brightest_pixel(image)
-    print("[VISION] Ship Hull brightest pixel:", rgb)
     health = {
         "red": 25,
         "orange": 50,
