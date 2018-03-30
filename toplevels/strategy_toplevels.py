@@ -54,9 +54,7 @@ class AddStrategy(tk.Toplevel):
         self.grid_widgets()
 
     def grid_widgets(self):
-        """
-        The usual function to setup the geometry of the Toplevel
-        """
+        """The usual function to setup the geometry of the Toplevel"""
         self.name_entry.grid(row=0, column=0, columnspan=2, sticky="nswe", padx=5, pady=5)
         self.map_dropdown.grid(row=1, column=0, columnspan=2, sticky="nswe", padx=5, pady=(0, 5))
         self.add_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=(0, 5))
@@ -64,7 +62,8 @@ class AddStrategy(tk.Toplevel):
 
     def entry_callback(self, event):
         """
-        Callback to remove the placeholder from the strategy name entry when clicked
+        Callback to remove the placeholder from the strategy name entry
+        when clicked
         """
         if self.name_entry.get() == "Strategy name...":
             self.name_entry.delete(0, tk.END)
@@ -72,8 +71,9 @@ class AddStrategy(tk.Toplevel):
 
     def add(self):
         """
-        Function called by the Add-button to actually add the Strategy. Destroys the Toplevel after the Strategy is
-        saved to the database.
+        Function called by the Add-button to actually add the Strategy.
+        Destroys the Toplevel after the Strategy is saved to the
+        database.
         """
         name = self.name_entry.get()
         if not self.check_widgets():
@@ -87,8 +87,9 @@ class AddStrategy(tk.Toplevel):
 
     def check_widgets(self):
         """
-        Performs checks on the widgets in order to check if the data the user entered was valid. If not, the user is
-        shown an information message. Currently checks:
+        Performs checks on the widgets in order to check if the data
+        the user entered was valid. If not, the user is shown an
+        information message. Currently checks:
         - Strategy name exists in database
         - Strategy name does not contain invalid characters
         - Map entered is valid
@@ -111,11 +112,13 @@ class AddStrategy(tk.Toplevel):
 
 class AddPhase(tk.Toplevel):
     """
-    Toplevel to show widgets for entering the data required to create a new Phase.
+    Toplevel to show widgets for entering the data required to create
+    a new Phase.
     """
     def __init__(self, *args, **kwargs):
         """
-        :param callback: Function to call when the Phase is created, arguments: *(phase_name)
+        :param callback: Function to call when the Phase is created,
+            arguments: *(phase_name)
         """
         self._callback = kwargs.pop("callback", None)
         tk.Toplevel.__init__(self, *args, **kwargs)
@@ -128,9 +131,7 @@ class AddPhase(tk.Toplevel):
         self.grid_widgets()
 
     def grid_widgets(self):
-        """
-        The usual function to setup the geometry of the Toplevel
-        """
+        """The usual function to setup the geometry of the Toplevel"""
         self._entry.grid(row=0, column=0, columnspan=2, sticky="nswe", padx=5, pady=5)
         self._cancel_button.grid(row=1, column=0, sticky="nswe", padx=5, pady=5)
         self._add_button.grid(row=1, column=1, sticky="nswe", padx=5, pady=5)
@@ -139,7 +140,6 @@ class AddPhase(tk.Toplevel):
         """
         Function to call the callback when the phase is created
         :param args: For Tkinter <Return> event, not used
-        :return: None
         """
         if not self.check_widgets():
             return
@@ -161,9 +161,8 @@ class AddPhase(tk.Toplevel):
 
 
 class MapToplevel(tk.Toplevel):
-    """
-    Toplevel to show a large version of the Map widget.
-    """
+    """Toplevel to show a large version of the Map widget"""
+
     def __init__(self, *args, **kwargs):
         """
         :param frame: StrategiesFrame instance
@@ -192,7 +191,8 @@ class MapToplevel(tk.Toplevel):
 
     def move_item_phase(self, *args, **kwargs):
         """
-        Custom callback to also update the map inside the StrategiesFrame when an item is moved in the Phase
+        Custom callback to also update the map inside the
+        StrategiesFrame when an item is moved in the Phase
         """
         self.frame.list.move_item_phase(*args, **kwargs)
         if self.frame.list.selected_phase is not None:
@@ -205,7 +205,8 @@ class MapToplevel(tk.Toplevel):
 
     def add_item_to_phase(self, *args, **kwargs):
         """
-        Custom callback to also update the map inside the StrategiesFrame when an item is added to the Phase
+        Custom callback to also update the map inside the
+        StrategiesFrame when an item is added to the Phase
         """
         self.frame.list.add_item_to_phase(*args, **kwargs)
         if self.frame.list.selected_phase is not None:
@@ -217,7 +218,8 @@ class MapToplevel(tk.Toplevel):
 
     def del_item_phase(self, item, rectangle, text):
         """
-        Custom callback to also update the map inside the StrategiesFrame when an item is deleted form the Phase
+        Custom callback to also update the map inside the
+        StrategiesFrame when an item is deleted form the Phase
         """
         print("Deleting item {0}".format(text))
         del self.frame.list.db[self.frame.list.selected_strategy][self.frame.list.selected_phase][text]
@@ -229,9 +231,10 @@ class MapToplevel(tk.Toplevel):
 
     def close(self):
         """
-        Callback for the WM_DELETE_WINDOW event (when the red X is pressed on the window) to restore the situation from
-        before __init__ was run, unless a Client is connected with client role, in which case the Map should still be
-        readonly.
+        Callback for the WM_DELETE_WINDOW event (when the red X is
+        pressed on the window) to restore the situation from before
+        __init__ was run, unless a Client is connected with client role,
+        in which case the Map should still be readonly.
         """
         self.frame.map = self.frame.in_map
         if not self.frame.map:
