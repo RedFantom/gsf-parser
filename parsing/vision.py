@@ -161,11 +161,6 @@ def get_minimap_location(minimap: Image.Image):
     if result is None:
         return None, None
     x, y = result
-    pixels = minimap.load()
-    pixels[x, y] = (255, 0, 0)
-    pixels[x+1, y+1] = (255, 0, 0)
-    pixels[x+1, y] = (255, 0, 0)
-    pixels[x, y + 1] = (255, 0, 0)
     width, height = minimap.size
     return x / width, y / height
 
