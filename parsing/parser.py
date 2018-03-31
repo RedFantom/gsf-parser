@@ -55,7 +55,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         if len(elements) != 6:
-            return None
+            raise ValueError("Invalid event: {}".format(line))
         log = {
             "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
             "source": elements[1],
@@ -349,16 +349,14 @@ class Parser(object):
         return player_list
 
     @staticmethod
-    def get_player_name(lines):
+    def get_player_name(lines: list):
         """Get the character name for a set of lines"""
+        lines = [Parser.line_to_dictionary(line) for line in lines]
         for line in lines:
-            if "@" not in line:
+            if "@" not in line["source"] or ":" in line["source"]:
                 continue
-            dictionary = Parser.line_to_dictionary(line)
-            if ":" in dictionary["source"]:
-                continue
-            if dictionary["source"] == dictionary["target"]:
-                return dictionary["source"].replace("@", "")
+            if line["source"] == line["target"]:
+                return line["source"].replace("@", "")
         return None
 
     @staticmethod
