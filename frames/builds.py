@@ -20,8 +20,8 @@ from utils.directories import get_assets_directory
 from utils.utilities import open_icon
 from widgets import \
     VerticalScrollFrame, ToggledFrame,\
-    CrewAbilitiesFrame, CrewListFrame, ComponentListFrame, ShipSelectFrame,\
-    MinorComponentWidget, MiddleComponentWidget, MajorComponentWidget
+    CrewAbilitiesFrame, CrewListFrame, ShipSelectFrame,\
+    ComponentWidget, ComponentListFrame
 
 
 class BuildsFrame(ttk.Frame):
@@ -73,7 +73,7 @@ class BuildsFrame(ttk.Frame):
                     self.ships_data["Imperial_S-SC4_Bloodmark"][category], self.set_component,
                     self.toggle_callback)
         self.component_frame = ttk.Frame(self)
-        self.current_component = MajorComponentWidget(
+        self.current_component = ComponentWidget(
             self.component_frame, self.ships_data["Imperial_S-SC4_Bloodmark"]["PrimaryWeapon"][0],
             self.ship, "PrimaryWeapon")
         self.crew_select_frame = CrewListFrame(
@@ -184,27 +184,18 @@ class BuildsFrame(ttk.Frame):
         self.current_component.destroy()
         print("set_component(%s, %s)" % (category, component))
         # To update the data, we need the index of the component in the list of dictionaries in the category
-        indexing = -1
-        for index, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
+        index = -1
+        for i, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
             if component == dictionary["Name"]:
-                indexing = index
+                index = i
                 break
         # Create a tuple of arguments for the new Component widget
-        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][indexing], self.ship, category)
+        args = (self.component_frame, self.ships_data[self.ship.ship_name][category][index], self.ship, category)
         # Create an appropriate ComponentWidget
-        if category in self.minor_components:
-            self.current_component = MinorComponentWidget(*args)
-        elif category in self.middle_components:
-            self.current_component = MiddleComponentWidget(*args)
-        elif category in self.major_components:
-            self.current_component = MajorComponentWidget(*args)
-        else:
-            # For debugging purposes
-            raise ValueError("Component category not found: %s" % category)
+        self.current_component = ComponentWidget(*args)
         # Create a new Component object
-        new_component = Component(self.ships_data[self.ship.ship_name][category][indexing],
-                                  indexing,
-                                  category)
+        new_component = Component(
+            self.ships_data[self.ship.ship_name][category][index], index, category)
         # Transfer the upgrades of the currently selected component on the ship to the new Component
         if self.ship[category] is not None:
             new_component.upgrades = self.ship[category].upgrades
@@ -299,11 +290,8 @@ class BuildsFrame(ttk.Frame):
         for frame in self.crew_select_frame.category_frames.values():
             frame.toggle_button.config(state=tk.DISABLED)
         for button in self.current_component.upgrade_buttons:
-            if isinstance(button, list):
-                button[0].config(state=tk.DISABLED)
-                button[1].config(state=tk.DISABLED)
-                continue
-            button.config(state=tk.DISABLED)
+            for i in range(len(button)):
+                button[i].config(state=tk.DISABLED)
 
     def toggle_callback(self, frame, open):
         """
