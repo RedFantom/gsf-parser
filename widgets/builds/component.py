@@ -9,7 +9,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
 # Project Modules
-from variables import main_window
+import variables
 from widgets import VerticalScrollFrame
 from utils.utilities import open_icon
 
@@ -34,7 +34,7 @@ class ComponentWidget(ttk.Frame):
         self.vars = list()  # Contains upgrades
         self.ship = ship
         self.name = data_dictionary["Name"]
-        self.window = main_window
+        self.window = variables.main_window
         self.category = category
 
         """
@@ -76,19 +76,20 @@ class ComponentWidget(ttk.Frame):
         """
         # Two-choice upgrade level
         if isinstance(index, tuple):
-            # index = level - 1
             index, choice = index[0], index[1]
             item = self.vars[index][choice]  # item: tk.BooleanVar
             # Disable other choice if it was selected
-            if choice == 0 and self.vars[index][0].get() is True:
-                self.vars[index][0].set(False)
-            elif choice == 0 and self.vars[index][1].get() is True:
-                self.vars[index][1].set(False)
+            print("[ComponentWidget] Toggling {} from {} to {}".format((index, choice), item.get(), not item.get()))
+            if item.get() is True and self.vars[index][not choice].get() is True:
+                self.vars[index][not choice].set(False)
+                self.ship[self.category][index, not choice] = False
+                print("[ComponentWidget] Disabled alternative choice")
             # Update Ship instance with new upgrade
+            print("[ComponentWidget] Updating Ship upgrade level for {}".format(self.category))
             self.ship[self.category][(index, choice)] = item.get()
         # Simple upgrade level
         else:
-            item = self.vars[index]
+            item = self.vars[index][0]
             self.ship[self.category][index] = item.get()
         # Access CharacterDatabase managed by CharactersFrame
         self.window.characters_frame.characters[self.window.builds_frame.character]["Ship Objects"][
@@ -131,11 +132,9 @@ class ComponentWidget(ttk.Frame):
         if self.ship[self.category] is None:
             return
         for index in range(len(self.vars)):
-            if isinstance(self.vars[index], list):
-                for choice in range(2):
-                    self.vars[index][choice].set(self.ship[self.category][index][choice])
-                continue
-            self.vars[index].set(self.ship[self.category][index])
+            for choice in range(len(self.vars[index])):
+                boolean = (index, choice) if len(self.vars[index]) == 2 else index
+                self.vars[index][choice].set(self.ship[self.category][boolean])
 
     def grid_widgets(self):
         """

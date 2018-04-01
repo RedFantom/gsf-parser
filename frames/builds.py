@@ -211,11 +211,8 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid(sticky="nswe")
         # Unlock all the upgrade buttons
         for button in self.current_component.upgrade_buttons:
-            if isinstance(button, list):
-                button[0].config(state=tk.NORMAL)
-                button[1].config(state=tk.NORMAL)
-                continue
-            button.config(state=tk.NORMAL)
+            for i in range(len(button)):
+                button[i].config(state=tk.NORMAL)
         # Save the altered ship
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
         self.window.characters_frame.save_button.invoke()
