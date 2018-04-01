@@ -13,4 +13,3 @@ from widgets.builds.component_list import *
 from widgets.builds.component import *
 from .scaleentry import ScaleEntry
 from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
-from ttkwidgets import Calendar

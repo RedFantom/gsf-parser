@@ -4,12 +4,15 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+from collections import OrderedDict
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
-from widgets.time_view import TimeView
-from widgets.timeline import TimeLine
-from collections import OrderedDict
 from ttkwidgets.frames import Balloon
+from ttkwidgets import TimeLine
+# Project Modules
+from widgets.time_view import TimeView
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
 
