@@ -73,6 +73,8 @@ class FileFrame(ttk.Frame):
         self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files)
         self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
 
+        self.sharing_db = self.main_window.sharing_frame.sharing_db
+
     @staticmethod
     def filters():
         """
@@ -232,7 +234,6 @@ class FileFrame(ttk.Frame):
         :param enemies: list of enemy ID numbers
         :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
         :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
-        :return: None
         """
         for key, value in abilitiesdict.items():
             self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
@@ -287,7 +288,6 @@ class FileFrame(ttk.Frame):
         found in the file to the matches_listbox, or starts the parsing of all
         files found in the specified folder and displays the results in the
         other frames.
-        :param file_name:
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -295,7 +295,7 @@ class FileFrame(ttk.Frame):
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
         file_cube, _, _ = Parser.split_combatlog(lines, player_list)
-        results = filestats.file_statistics(file_name, file_cube)
+        results = filestats.file_statistics(file_name, self.sharing_db)
         self.update_widgets(*results)
 
     def parse_folder(self):
@@ -323,7 +323,7 @@ class FileFrame(ttk.Frame):
         player_list = Parser.get_player_id_list(lines)
         file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
         match = file_cube[match_index]
-        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index])
+        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index], self.sharing_db)
         self.update_widgets(*results)
 
     def parse_spawn(self, elements):
@@ -341,30 +341,26 @@ class FileFrame(ttk.Frame):
         file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
         match = file_cube[match_index]
         spawn = match[spawn_index]
-        results = spawnstats.spawn_statistics(file_name, spawn, spawn_timings[match_index][spawn_index])
+        results = spawnstats.spawn_statistics(
+            file_name, spawn, spawn_timings[match_index][spawn_index], self.sharing_db)
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
         string = FileHandler.get_features_string(*arguments)
         self.main_window.middle_frame.screen_label_var.set(string)
         self.main_window.middle_frame.update_timeline(
-            file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube
-        )
+            file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube)
 
     def clear_data_widgets(self):
         """Clear the data widgets for parsing results"""
         self.main_window.middle_frame.abilities_treeview.delete(
-            *self.main_window.middle_frame.abilities_treeview.get_children()
-        )
+            *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
-            *self.main_window.middle_frame.enemies_treeview.get_children()
-        )
+            *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         self.main_window.middle_frame.screen_label_var.set(
-            "Please select an available spawn for screen parsing information"
-        )
+            "Please select an available spawn for screen parsing information")
         self.main_window.middle_frame.time_view.delete(
-            *self.main_window.middle_frame.time_view.get_children()
-        )
+            *self.main_window.middle_frame.time_view.get_children())
         self.main_window.middle_frame.time_line.delete_marker(tk.ALL)
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):

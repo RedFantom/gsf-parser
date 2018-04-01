@@ -9,18 +9,22 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from utils.directories import get_assets_directory
 import os
+import sys
 
 
 class ToggledFrame(ttk.Frame):
     """
-    A frame with a toggle button to show or hide the contents. Edited by RedFantom for image support instead of a '+'
-    or '-' and other toggling options.
+    A frame with a toggle button to show or hide the contents. Edited
+    by RedFantom for image support instead of a '+' or '-' and other
+    toggling options.
     Author: Onlyjus
     License: None
     Source: http://stackoverflow.com/questions/13141259
     """
 
-    def __init__(self, parent, text="", labelwidth=25, callback=None, **options):
+    def __init__(self, parent, text="", labelwidth=None, callback=None, **options):
+        if labelwidth is None:
+            labelwidth = 25 if sys.platform == "win32" else 18
         ttk.Frame.__init__(self, parent, **options)
         self.show = tk.BooleanVar()
         self.show.set(False)

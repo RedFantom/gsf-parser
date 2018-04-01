@@ -1,17 +1,19 @@
-# Daethyra, Squadron Leader of Thranta Squadron and Sprigellania, Ace of Thranta Squadron
-# Thranta Squadron GSF CombatLog Parser, Copyright (C) 2016 by RedFantom, Daethyra and Sprigellania
-# All additions are under the copyright of their respective authors
-# For license see LICENSE.md
+"""
+Author: RedFantom
+Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
+License: GNU GPLv3 as in LICENSE
+Copyright (C) 2016-2018 RedFantom
+"""
 from parsing.parser import Parser
 from data import abilities
 
 
-def spawn_statistics(file_name, spawn, spawn_timing):
+def spawn_statistics(file_name, spawn, spawn_timing, sharing_db=None):
     """
     Build strings to show in the StatsFrame
     """
     # Retrieve required data
-    lines = Parser.read_file(file_name)
+    lines = Parser.read_file(file_name, sharing_db)
     player_numbers = Parser.get_player_id_list(lines)
     (abilities_dict, dmg_t, dmg_d, healing, dmg_s, enemies, critcount,
      crit_luck, hitcount, ships_list, enemy_dmg_d, enemy_dmg_t) = \

@@ -4,63 +4,79 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# UI Libraries
 import tkinter as tk
 from tkinter import ttk
+from tkinter.simpledialog import askstring
 # Project Modules
 from parsing.strategies import *
 from toplevels.strategy_toplevels import AddStrategy, AddPhase
+from network.strategy.client import StrategyClient
 
 
 class StrategiesList(ttk.Frame):
     """
-    Frame that shows the Strategies found in the StrategyDatabase in the default location in a Treeview list. Also
-    provides buttons with various functions.
+    Frame that shows the Strategies found in the StrategyDatabase in
+    the default location in a Treeview list. Also provides buttons with
+    to manipulate the Strategies in the StrategyDatabase.
     """
 
     def __init__(self, *args, **kwargs):
         """
-        :param callback: Callback to call when a Phase is selected (to allow StrategiesFrame to update the Map
-        :param settings_callback: Callback to call when the user preses the settings_button
+        :param callback: Callback to call when a Phase is selected (to
+            allow StrategiesFrame to update the Map)
+        :param settings_callback: Callback to call when the user presses
+            the settings_button
         """
+        # Arguments and Attributes
         self._callback = kwargs.pop("callback", None)
         self._settings_callback = kwargs.pop("settings_callback", None)
         self._frame = kwargs.pop("frame", None)
         self.client = None
         self.role = None
-        ttk.Frame.__init__(self, *args, **kwargs)
         self.db = StrategyDatabase()
         self.phase = None
-        self._phase_menu = tk.Menu(self, tearoff=0)
-        self._phase_menu.add_command(label="Rename", command=self.edit_phase)
-        self._phase_menu.add_command(label="Delete", command=self.del_phase)
-        self._strategy_menu = tk.Menu(self, tearoff=0)
-        self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
+
+        ttk.Frame.__init__(self, *args, **kwargs)
+
+        """Widget Creation"""
+        self._phase_menu = tk.Menu(self, tearoff=False)
+        self._strategy_menu = tk.Menu(self, tearoff=False)
         self.tree = ttk.Treeview(self, height=7)
         self.scrollbar = ttk.Scrollbar(self, command=self.tree.yview, orient=tk.VERTICAL)
-        self.tree.config(yscrollcommand=self.scrollbar.set)
-        self.tree.bind("<Button-3>", self._right_click)
-        self.tree.bind("<Double-1>", self._select)
-        self.tree.heading("#0", text="Strategies")
-        self.tree.column("#0", width=150)
         self.new_button = ttk.Button(self, text="New strategy", command=self.new_strategy)
         self.del_button = ttk.Button(self, text="Delete strategy", command=self.del_strategy)
         self.edit_button = ttk.Button(self, text="Edit strategy", command=self.edit_strategy, state=tk.DISABLED)
         self.settings_button = ttk.Button(self, text="Settings", command=self._settings_callback)
         self.show_large_button = ttk.Button(self, text="Show large", command=self.master.show_large)
+
+        self.setup_menus()
+        self.setup_treeview()
         self.grid_widgets()
 
-    def client_connected(self, client):
-        """
-        Callback for when a Client is connected to a ClientHandler
-        """
-        print("Connected!")
+    def setup_menus(self):
+        """Configure the various menus with their commands"""
+        self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
+        self._phase_menu.add_command(label="Rename", command=self.edit_phase)
+        self._phase_menu.add_command(label="Delete", command=self.del_phase)
+
+    def setup_treeview(self):
+        """Configure columns and bindings of the Treeview"""
+        self.tree.config(yscrollcommand=self.scrollbar.set)
+        self.tree.bind("<Button-3>", self._right_click)
+        self.tree.bind("<Double-1>", self._select)
+        self.tree.heading("#0", text="Strategies")
+        self.tree.column("#0", width=150)
+
+    def client_connected(self, client: StrategyClient):
+        """Callback for when a Client is connected to a ClientHandler"""
+        print("[StrategiesList] Successfully connect to server")
         self.client = client
         self.role = client.role
 
     def grid_widgets(self):
         """
-        The usual function for gridding the widgets
-
+        Configure widgets in grid geometry manager
 
         _______________________________
         | Treeview                    |
@@ -86,13 +102,12 @@ class StrategiesList(ttk.Frame):
 
     def add_item_to_phase(self, item, box, text, font, color):
         """
-        Callback to add an item to the currently selected Phase
+        Callback to save a new item to the currently selected Phase
         :param item: item name
         :param box: (x, y) coordinates
         :param text: item text
         :param font: item font tuple
         :param color: item color hex value
-        :return: None
         """
         item_obj = Item(text, box[0], box[1], color, font)
         if self.selected_phase:
@@ -105,11 +120,10 @@ class StrategiesList(ttk.Frame):
 
     def move_item_phase(self, text, x, y):
         """
-        Callback to update the location of an item in the database
+        Callback to save the updated location of an item in the database
         :param text: item name
         :param x: item x coordinate
         :param y: item y coordinate
-        :return: None
         """
         if self.selected_phase:
             self.db[self.selected_strategy][self.selected_phase][text]["x"] = x
@@ -122,9 +136,7 @@ class StrategiesList(ttk.Frame):
         self.db.save_database()
 
     def update_tree(self):
-        """
-        Function to update the contents of the Treeview with the Strategies and Phases found in the StrategyDatabase
-        """
+        """Update list of Strategies and Phases in Treeview"""
         self.tree.delete(*self.tree.get_children())
         iterator = self.db
         for strategy, content in iterator:
@@ -154,7 +166,8 @@ class StrategiesList(ttk.Frame):
 
     def _left_click(self, event):
         """
-        Callback for Button-1 Tkinter event so the user does not have to double-click on phases
+        Callback for Button-1 Tkinter event so the user does not have
+        to double-click on phases
         """
         if self.selected_phase:
             self.phase = self.selected_phase
@@ -162,17 +175,13 @@ class StrategiesList(ttk.Frame):
         return
 
     def new_strategy(self):
-        """
-        Callback for the new strategy button to open an AddStrategy Toplevel
-        """
+        """Open an AddStrategy Toplevel and wait to finish"""
         window = AddStrategy(db=self.db)
         window.wait_window()
         self.update_tree()
 
     def del_strategy(self):
-        """
-        Callback for the delete strategy button
-        """
+        """Delete the selected strategy from the StrategyDatabase"""
         selection = self.tree.selection()
         if len(selection) is 0:
             return
@@ -183,45 +192,51 @@ class StrategiesList(ttk.Frame):
         self.update_tree()
 
     def add_phase(self):
-        """
-        Callback for the add phase button
-        """
+        """Open an AddPhase Toplevel and wait to finish"""
         window = AddPhase(callback=self._new_phase)
         window.wait_window()
 
     def del_phase(self):
-        """
-        Callback for the del phase button
-        """
+        """Delete the selected phase from the selected Strategy"""
+        if self.selected_phase is None:
+            return
         del self.db[self.selected_strategy][self.selected_phase]
         self.db.save_database()
         self.update_tree()
 
     def edit_phase(self):
-        """
-        Callback for the edit phase button
-        """
-        # TODO: Implement phase name changing
-        pass
+        """Take user input to change the name of the selected Phase"""
+        if self.selected_phase is None:
+            return
+        current = self.selected_phase
+        string = askstring("GSF Parser: Phase Name", "Enter new name for {} Phase".format(current))
+        if string is None or string == current:  # Cancelled by user
+            return
+        self.db[self.selected_strategy][string] = self.db[self.selected_strategy][current]
+        del self.db[self.selected_strategy][current]
+        self.update_tree()
 
-    def _new_phase(self, title):
+    def _new_phase(self, title: str):
         """
-        Callback for the AddPhase Toplevel to create a new phase in the database
+        Callback for AddPhase Toplevel
+
+        Create a new Phase in the Database with name title
         """
         self.db[self.selection][title] = Phase(title, self.db[self.selected_strategy].map)
         self.update_tree()
         self.db.save_database()
 
     def edit_strategy(self):
-        """
-        Callback for the edit strategy button
-        """
+        """Callback for the edit strategy button"""
         # TODO: Implement name and map changing for Strategy
         pass
 
     def _select(self, event):
         """
-        Callback for a double-click event to select an item from the Treeview
+        Callback for a double-click event to select an item from the
+        Treeview.
+
+        Updates UI and calls callback for updating Map
         """
         if self.selected_phase:
             self._phase_selected()
@@ -238,23 +253,20 @@ class StrategiesList(ttk.Frame):
             self._strategy_selected()
 
     def _strategy_selected(self):
-        """
-        Function to update widgets when a Strategy is selected
-        """
+        """Callback to update widgets when a Strategy is selected"""
         self.new_button.config(text="New strategy", command=self.new_strategy)
         self.del_button.config(text="Delete strategy", command=self.del_strategy)
         self.edit_button.config(text="Add phase", command=self.add_phase, state=tk.NORMAL)
 
     def _phase_selected(self):
-        """
-        Function to update widgets when a Phase is selected
-        """
+        """Callback to update widgets when a Phase is selected"""
         # self.new_button.config(text="New strategy", state=tk.DISABLED)
         self.del_button.config(text="Delete phase", command=self.del_phase)
         self.edit_button.config(text="Edit phase", command=self.edit_phase, state=tk.DISABLED)
 
     @property
     def selection(self):
+        """Return selection str instead of Treeview tuple"""
         selection = self.tree.selection()
         if len(selection) is 0:
             return None
@@ -262,6 +274,7 @@ class StrategiesList(ttk.Frame):
 
     @property
     def selected_strategy(self):
+        """Return name of selected Strategy in Treeview"""
         selection = self.selection
         if not selection:
             return None
@@ -272,6 +285,7 @@ class StrategiesList(ttk.Frame):
 
     @property
     def selected_phase(self):
+        """Return name of selected Phase in Treeview"""
         selection = self.selection
         if not selection:
             return None

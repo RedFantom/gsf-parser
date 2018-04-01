@@ -7,15 +7,17 @@ Copyright (C) 2016-2018 RedFantom
 from parsing.parser import Parser
 
 
-def file_statistics(file_name, file_cube):
+def file_statistics(file_name, sharing_db=None):
     """
-    Puts the statistics found in a file_cube from Parser.split_combatlog() into a
-    format that is usable by the file_frame to display them to the user
+    Puts the statistics found in a file_cube from
+    Parser.split_combatlog() into a format that is usable by the
+    FileFrame to display them to the user
     """
     lines = Parser.read_file(file_name)
     player_list = Parser.get_player_id_list(lines)
     file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
-    lines = Parser.read_file(file_name)
+    # Read sharing_db
+    lines = Parser.read_file(file_name, sharing_db)
     name = Parser.get_player_name(lines)
     (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
      crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted) = \

@@ -117,7 +117,7 @@ class Component(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, tuple):
-            tier, upgrade = key
+            tier, upgrade = map(int, key)
             if upgrade is 0:
                 if self[(tier, 1)]:
                     self.upgrades[(tier, 1)] = False

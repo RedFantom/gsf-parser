@@ -10,12 +10,12 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
+from ttkwidgets import Calendar, ScaleEntry
 # Project Modules
 import widgets
 import variables
 from parsing.parser import Parser
 from widgets.verticalscrollframe import VerticalScrollFrame
-from widgets import ScaleEntry
 from toplevels import splashscreens
 from data import abilities as abls
 
@@ -54,8 +54,8 @@ class Filters(tk.Toplevel):
                                           justify=tk.CENTER)
         self.end_date_label = ttk.Label(self.dateframe.sub_frame, text="End date", font=("default", 12),
                                         justify=tk.CENTER)
-        self.start_date_widget = widgets.Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = widgets.Calendar(self.dateframe.sub_frame)
+        self.start_date_widget = Calendar(self.dateframe.sub_frame)
+        self.end_date_widget = Calendar(self.dateframe.sub_frame)
         print("[DEBUG] Setting up components filters")
         self.components_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Components", labelwidth=90)
         self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries", labelwidth=90)

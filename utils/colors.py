@@ -8,7 +8,7 @@ Copyright (C) 2016-2018 RedFantom
 
 def color_darken(rgb: tuple, factor: float):
     """Reduce the brightness by 1 - factor"""
-    return tuple(max(int(item * factor), 0) for item in rgb)
+    return tuple(min(max(int(item * factor), 0), 255) for item in rgb)
 
 
 def color_tuple_to_hex(rgb: tuple):

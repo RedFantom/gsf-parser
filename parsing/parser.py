@@ -35,7 +35,7 @@ class Parser(object):
     LINE_EFFECT = "effect"
 
     @staticmethod
-    def line_to_dictionary(line, enemies=None):
+    def line_to_dictionary(line, enemies: dict=None):
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
@@ -55,7 +55,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         if len(elements) != 6:
-            return None
+            raise ValueError("Invalid event: {}".format(line))
         log = {
             "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
             "source": elements[1],
@@ -349,16 +349,14 @@ class Parser(object):
         return player_list
 
     @staticmethod
-    def get_player_name(lines):
+    def get_player_name(lines: list):
         """Get the character name for a set of lines"""
+        lines = [Parser.line_to_dictionary(line) for line in lines]
         for line in lines:
-            if "@" not in line:
+            if "@" not in line["source"] or ":" in line["source"]:
                 continue
-            dictionary = Parser.line_to_dictionary(line)
-            if ":" in dictionary["source"]:
-                continue
-            if dictionary["source"] == dictionary["target"]:
-                return dictionary["source"].replace("@", "")
+            if line["source"] == line["target"]:
+                return line["source"].replace("@", "")
         return None
 
     @staticmethod
@@ -520,7 +518,7 @@ class Parser(object):
         return file_cube, match_timings, spawn_timings
 
     @staticmethod
-    def read_file(file_name: str, sharing_db=None):
+    def read_file(file_name: str, sharing_db: dict=None):
         """
         Read a file with the given filename in a safe and error handled
         manner. All attempts at reading GSF CombatLogs should use this

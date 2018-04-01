@@ -7,11 +7,11 @@ Copyright (C) 2016-2018 RedFantom
 from parsing.parser import Parser
 
 
-def match_statistics(file_name, match, match_timing):
+def match_statistics(file_name, match, match_timing, sharing_db=None):
     """
     Return a formatted string with all the statistics for a match
     """
-    lines = Parser.read_file(file_name)
+    lines = Parser.read_file(file_name, sharing_db)
     name = Parser.get_player_name(lines)
     id_list = Parser.get_player_id_list(lines)
 

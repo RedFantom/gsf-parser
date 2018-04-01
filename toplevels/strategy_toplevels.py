@@ -10,7 +10,7 @@ from tkinter import ttk
 from tkinter import messagebox
 # Project Modules
 from parsing.strategies import StrategyDatabase, Strategy
-from widgets.strategies.strategy_map import Map
+from widgets.strategy.map import Map
 
 
 class AddStrategy(tk.Toplevel):

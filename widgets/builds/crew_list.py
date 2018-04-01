@@ -4,39 +4,40 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+from collections import OrderedDict
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
-from os import path
-from collections import OrderedDict
-from PIL import Image as img
-from PIL.ImageTk import PhotoImage as photo
-from widgets.toggledframe import ToggledFrame
+# Project Modules
 import variables
+from widgets.toggledframe import ToggledFrame
 from utils.utilities import open_icon
 
 
 class CrewListFrame(ttk.Frame):
     """
-    A Frame containing a ToggledFrame for each companion category, of which each in turn contains a list of Radiobuttons
-    for each of the companions in that category
+    A Frame containing a ToggledFrame for each companion category, of
+    which each in turn contains a list of Radiobuttons for each of the
+    companions in that category
     """
 
     def __init__(self, parent, faction, data_dictionary, callback):
         """
         :param parent: parent widget
         :param faction: faction
-        :param data_dictionary: companion data dictionary (companions.db) with *the correct faction*, so
-                                companions_db[faction] (is a dictionary)
+        :param data_dictionary: companion data dictionary
+            (companions.db) with *the correct faction*, so
+            companions_db[faction] (is a dictionary)
         :param callback: Callback for when a new crew member is selected
         """
         ttk.Frame.__init__(self, parent)
         self.callback = callback
         self.window = variables.main_window
-        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         self.data = data_dictionary
         self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
-        self.header_label = ttk.Label(self, text="Crew", font=("Calibiri", 12), justify=tk.LEFT)
+        self.header_label = ttk.Label(self, text="Crew", font=("default", 12), justify=tk.LEFT)
         self.category_frames = OrderedDict()
         self.member_buttons = OrderedDict()
         self.member_icons = OrderedDict()
@@ -71,7 +72,7 @@ class CrewListFrame(ttk.Frame):
             # The CoPilot role is a special case
             if crole == "CoPilot":
                 for member_dict in category:
-                    self.category_frames[crole] = ToggledFrame(self, text=crole, labelwidth=26)
+                    self.category_frames[crole] = ToggledFrame(self, text=crole)
                     self.copilot_dicts[member_dict["Name"]] = member_dict
                 continue
             elif crole == "":
@@ -82,7 +83,7 @@ class CrewListFrame(ttk.Frame):
                 icon_name = member_dict["Icon"].lower().replace("Crew", "crew")
                 self.member_icons[member_dict["Name"]] = open_icon(icon_name)
                 self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(
-                    self.category_frames[crole].sub_frame, text=member_dict["Name"], compound=tk.LEFT, width=16,
+                    self.category_frames[crole].sub_frame, text=member_dict["Name"], compound=tk.LEFT, width=12,
                     image=self.member_icons[member_dict["Name"]], variable=self.category_variables[crole],
                     value=member_dict["Name"],
                     command=lambda i=(faction, crole, member_dict["Name"]): self.set_crew_member(i))
@@ -133,7 +134,7 @@ class CrewListFrame(ttk.Frame):
 
     def toggle_callback(self, frame, open):
         """
-        Callback for the ToggledFrames so only one of them is openat a time.
+        Callback for the ToggledFrames so only one of them is open at a time.
         """
         if open is False:
             return
