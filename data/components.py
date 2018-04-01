@@ -20,6 +20,9 @@ component_types = {
     "thrusters": "Thruster",
     "capacitor": "Capacitor"
 }
+
+component_types_reverse = {value: key for key, value in component_types.items()}
+
 component_strings = {
     "PrimaryWeapon": "Primary Weapon",
     "PrimaryWeapon2": "Primary Weapon II",
@@ -35,6 +38,7 @@ component_strings = {
     "Thruster": "Thrusters",
     "Capacitor": "Capacitor"
 }
+
 components = [
     "PrimaryWeapon",
     "PrimaryWeapon2",

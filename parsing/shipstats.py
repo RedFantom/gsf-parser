@@ -4,13 +4,14 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from data.components import component_types, components
-from parsing.ships import Ship, Component
-from pprint import pprint
-from utils.directories import get_assets_directory
+# Standard Library
 import os
 import _pickle as pickle
-component_types_reverse = {value: key for key, value in component_types.items()}
+from pprint import pprint
+# Project Modules
+from data.components import component_types, component_types_reverse, components
+from parsing.ships import Ship, Component
+from utils.directories import get_assets_directory
 
 
 class ShipStats(object):
@@ -41,9 +42,7 @@ class ShipStats(object):
         self.calculate_ship_statistics()
 
     def calculate_ship_statistics(self):
-        """
-        Calculate the statistics of the Ship Object
-        """
+        """Calculate the statistics of the Ship Object"""
         self.stats.clear()
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
@@ -51,7 +50,7 @@ class ShipStats(object):
             category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
-                print("Category not found: {}".format(category))
+                print("[ShipStats] Category not found: {}".format(category))
                 continue
             component = self.ship.components[category]
             # If component is None, then the component is not correctly set
@@ -62,7 +61,7 @@ class ShipStats(object):
             category = component_types[category]
             # Get the data belonging to the component
             component_data = self.ships_data[self.ship.ship_name][category][component.index].copy()
-            print("Retrieved component data for {} in category {}".format(component_data["Name"], category))
+            print("[ShipStats] Retrieved component data for {} in category {}".format(component_data["Name"], category))
             # Go over the upgrades for the component first
             base_stats = component_data["Base"]["Stats"].copy()
             if base_stats == {}:
@@ -93,21 +92,21 @@ class ShipStats(object):
                 for stat, value in upgrade_data["Stats"].items():
                     statistic, multiplicative = ShipStats.is_multiplicative(stat)
                     if upgrade_data["Target"] == "":
-                        print("Updating statistic {} with target None".format(statistic))
+                        print("[ShipStats] Updating statistic {} with target None".format(statistic))
                         base_stats = ShipStats.update_statistic(
                             base_stats, statistic, multiplicative, value
                         )
                     elif upgrade_data["Target"] == "Self":
-                        print("Updating statistic {} with target Self".format(statistic))
+                        print("[ShipStats] Updating statistic {} with target Self".format(statistic))
                         self.stats[category] = ShipStats.update_statistic(
                             self.stats[category], statistic, multiplicative, value
                         )
                     elif upgrade_data["Target"] == "PrimaryWeapons" or upgrade_data["Target"] == "SecondaryWeapons":
-                        print("Updating statistic {} with target {}".format(statistic, upgrade_data["Target"]))
+                        print("[ShipStats] Updating statistic {} with target {}".format(statistic, upgrade_data["Target"]))
                         key = upgrade_data["Target"][:-1]
                         for key in (key, key+"2"):
                             if key not in self.stats:
-                                print("Key {} was not found in statistics.".format(key))
+                                print("[ShipStats] Key {} was not found in statistics.".format(key))
                                 continue
                             self.stats[key] = ShipStats.update_statistic(
                                 self.stats[key], statistic, multiplicative, value
@@ -116,7 +115,6 @@ class ShipStats(object):
                         raise ValueError("Unknown upgrade target found: {}".format(upgrade_data["Target"]))
             # These are the statistics to go over
             component_stats = base_stats
-            print(component_stats)
             for stat, value in component_stats.items():
                 if not isinstance(value, (int, float)):
                     continue
@@ -196,9 +194,7 @@ class ShipStats(object):
         return item in self.stats
 
     def __iter__(self):
-        """
-        Iterator for all of the statistics and their values
-        """
+        """Iterator for all of the statistics and their values"""
         for key, value in self.stats.items():
             yield key, value
 
