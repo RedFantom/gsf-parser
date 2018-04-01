@@ -105,9 +105,10 @@ class ComponentWidget(ttk.Frame):
         # data["TalentTree"] contains component upgrades
         for index in range(len(data["TalentTree"])):
             button, photo, balloon, var = list(), list(), list(), list()
+            two_choice = len(data["TalentTree"][index]) == 2
             for choice in range(len(data["TalentTree"][index])):
                 upgrade = data["TalentTree"][index][choice]
-                elements = self.build_upgrade_widgets(upgrade, (index, choice))
+                elements = self.build_upgrade_widgets(upgrade, (index, choice) if two_choice else index)
                 for elem, lst in zip(elements, (button, photo, balloon, var)):
                     lst.append(elem)
             for master, child in zip((buttons, photos, balloons, bools), (button, photo, balloon, var)):
