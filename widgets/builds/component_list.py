@@ -33,9 +33,8 @@ class ComponentListFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent)
         self.category = category
         self.callback = callback
-        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         self.toggled_frame = ToggledFrame(
-            self, text=component_strings[category], labelwidth=26, callback=toggle_callback)
+            self, text=component_strings[category], callback=toggle_callback)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}
@@ -45,9 +44,9 @@ class ComponentListFrame(ttk.Frame):
         for component_dictionary in data_list:
             name = component_dictionary["Name"]
             self.icons[name] = open_icon(component_dictionary["Icon"])
-            name = textwrap.fill(component_dictionary["Name"], 20)
+            name = textwrap.fill(component_dictionary["Name"], 16)
             self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(
-                self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=16,
+                self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=12,
                 command=lambda name=component_dictionary["Name"]: self.set_component(name), variable=self.variable,
                 value=data_list.index(component_dictionary))
             self.hover_infos[component_dictionary["Name"]] = Balloon(
