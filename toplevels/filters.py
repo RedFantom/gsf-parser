@@ -10,13 +10,12 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
-from ttkwidgets import Calendar
+from ttkwidgets import Calendar, ScaleEntry
 # Project Modules
 import widgets
 import variables
 from parsing.parser import Parser
 from widgets.verticalscrollframe import VerticalScrollFrame
-from widgets import ScaleEntry
 from toplevels import splashscreens
 from data import abilities as abls
 
