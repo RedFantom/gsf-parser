@@ -41,7 +41,7 @@ defaults = {
         # Sharing Server address
         "address": "parser.thrantasquadron.tk",
         # Sharing Server port
-        "port": 83
+        "port": 65088
     },
     # Real-time parsing settings
     "realtime": {
