@@ -20,7 +20,7 @@ class StrategyDatabase(object):
         :param file_name: Path (absolute or relative) to the file where the strategy database should be saved. If not
                           set, then the default is used in a temporary directory.
         """
-        self._file_name = kwargs.pop("file_name", os.path.join(get_temp_directory(), "strategies.db"))
+        self._file_name = kwargs.pop("file_name", os.path.join(get_temp_directory(), "strategy.db"))
         self.data = {}
         if not os.path.exists(self._file_name):
             self.save_database()

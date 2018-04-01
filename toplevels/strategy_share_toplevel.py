@@ -17,7 +17,7 @@ from widgets.snaptoplevel import SnapToplevel
 
 class StrategyShareToplevel(SnapToplevel):
     """
-    Toplevel to display a list of strategies with checkboxes to allow selecting which should be shared.
+    Toplevel to display a list of strategy with checkboxes to allow selecting which should be shared.
     """
     def __init__(self, master, client, database, strategy_frame, **kwargs):
         if not isinstance(database, StrategyDatabase) or not isinstance(client, StrategyClient):

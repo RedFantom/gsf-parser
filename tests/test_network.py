@@ -8,7 +8,7 @@ from unittest import TestCase
 from network import MiniMapServer, MiniMapClient
 from network import StrategyServer, StrategyClient
 from network import SharingServer, SharingClient
-from widgets.strategies import StrategiesList
+from widgets.strategy import StrategiesList
 import tkinter as tk
 import random
 import time
