@@ -4,14 +4,16 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import textwrap
+# UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
-import textwrap
-from os import path
+from ttkwidgets.frames import Balloon
+# Project Modules
 from widgets import ToggledFrame
 from data.components import component_strings
 from utils.utilities import open_icon
-from ttkwidgets.frames import Balloon
 
 
 class ComponentListFrame(ttk.Frame):
