@@ -40,17 +40,19 @@ class SharingServer(threading.Thread):
         Setup the socket to bind and then listen for clients
         :raises: RuntimeError if executed as non-admin
         """
-        if not check_privileges():
+        if not check_privileges() and self._address[1] <= 1000:
             escalate_privileges()
         self._socket.bind(self._address)
         drop_privileges()
-        print("SharingServer bound to addres:", self._address)
+        print("[SharingServer] bound to address:", self._address)
 
     def run(self):
         """
-        Loop to provide all the Server functionality. Ends if a True value is found in the exit_queue Queue attribute.
-        Allows for maximum of eighth people to be logged in at the same time. The Server logs to its own log file, which
-        is located in the temporary directory of the GSF Parser.
+        Loop to provide all the Server functionality. Ends if a True
+        value is found in the exit_queue Queue attribute. Allows for
+        maximum of eighth people to be logged in at the same time. The
+        Server logs to its own log file, which is located in the
+        temporary directory of the GSF Parser.
         """
         self.setup_socket()
         self._socket.listen(self._max_clients)
@@ -90,7 +92,7 @@ class SharingServer(threading.Thread):
             # be checked for problems first, unless the problem in loop code is apparent.
             for client_handler in self.client_handlers:
                 if client_handler.active is False:
-                    print("Inactive ClientHandler:", repr(client_handler))
+                    print("[SharingServer] Inactive ClientHandler:", repr(client_handler))
                     continue
                 if result is True:
                     print("[SharingServer] Updating")
@@ -105,18 +107,19 @@ class SharingServer(threading.Thread):
         # The loop is broken because an exit was requested. All ClientHandlers are requested to close their
         # their functionality (and sockets)
         SharingServer.write_log("Server closing ClientHandlers")
-        print("SharingServer closing ClientHandlers.")
+        print("[SharingServer] closing ClientHandlers.")
         for client_handler in self.client_handlers:
             client_handler.close()
             SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
         SharingServer.write_log("Sharing network is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self._socket.close()
-        print("SharingServer closed.")
+        print("[SharingServer] closed.")
 
     def do_action_for_server_queue(self):
         """
-        Function to execute when one of the ClientHandlers needs something done
+        Function to execute when one of the ClientHandlers needs
+        something done
         """
         print("[SharingServer] Performing action for network Queue.")
         command, handler = self.server_queue.get()
@@ -132,7 +135,8 @@ class SharingServer(threading.Thread):
     @staticmethod
     def write_log(line):
         """
-        Write a line to the log file, but also check if the log file is not too bit and truncate if required
+        Write a line to the log file, but also check if the log file is
+        not too bit and truncate if required
         """
         line = line.strip() + "\n"
         file_name = "sharing_server.log"
