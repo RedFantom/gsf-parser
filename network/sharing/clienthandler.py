@@ -198,7 +198,7 @@ class SharingClientHandler(ClientHandler):
                 self.close_error("Internal queue of ClientHandler empty while a function was expected")
                 return False
             func, args = self.internal_queue.get()
-            args = args + data
+            args = args + (data,)
             func(*args)
         self.waiting_for_database = False
         return True
