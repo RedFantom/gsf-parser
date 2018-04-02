@@ -6,8 +6,9 @@ Copyright (C) 2016-2018 RedFantom
 """
 import sqlite3 as sql
 import threading
-import queue as Queue
+import queue
 import time
+import logging
 import network.queries as queries
 
 
@@ -30,29 +31,23 @@ class DatabaseHandler(threading.Thread):
 
     def __init__(self, db_name="parser.db", logfile="database_%s.log" % time.strftime("%Y-%m-%d")):
         """
-        Sets up all required variables for the thread to run correctly
+        :param db_name: Name for the database file
         """
         threading.Thread.__init__(self)
         self.db_done = False
-        self.log_file = open(logfile, "a")
-        self.db_queue = Queue.Queue()
-        self.exit_queue = Queue.Queue()
+        self.log_file = logging.getLogger(__name__)
+        handler = logging.FileHandler(logfile)
+        self.log_file.addHandler(handler)
+        self.log_file.addFilter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)"))
+        self.db_queue = queue.Queue()
+        self.exit_queue = queue.Queue()
         self.db_name = db_name
         self.database = None
         self.cursor = None
 
     def log(self, line):
-        """
-        Log a line to a file with a time-stamp
-        :param line:
-        :return:
-        """
-        if not line.endswith("\n"):
-            line += "\n"
-        self.log_file.write("[%s] %s" % (time.strftime("%H:%M:%S"), line))
-
-    def __enter__(self):
-        return self
+        """Log a line to the log file"""
+        self.log_file.info(line)
 
     def __exit__(self):
         self.close()
@@ -72,7 +67,6 @@ class DatabaseHandler(threading.Thread):
         """
         Upon execution of start(), the database is prepared with the
         default first queries found in queries.py
-        :return:
         """
         self.command_handler(queries.create_tb_server)
         self.command_handler(queries.create_tb_combatlogs)
@@ -89,9 +83,8 @@ class DatabaseHandler(threading.Thread):
         """
         Main loop to run and check for commands in the Queue objects
         Execute queries and commands and return the results if necessary
-        Alternates one command for the Shelf and one command for the database
-        Extensive error-handling included
-        :return:
+        Alternates one command for the Shelf and one command for the
+        database.
         """
         if not self.db_done:
             self.database = sql.connect(self.db_name)
@@ -149,8 +142,6 @@ class DatabaseHandler(threading.Thread):
         """
         Execute a query on the database and return the data that is selected
         All possible errors for sqlite3 can be caught and logged
-        :param query:
-        :return:
         """
         # Execute the query on the database
         try:
@@ -168,8 +159,6 @@ class DatabaseHandler(threading.Thread):
         If the command fails, log it and rollback the changes made
         to the database in the process of executing the command
         else, commit the changes and return to mainloop
-        :param command:
-        :return:
         """
         try:
             self.cursor.execute(command)
