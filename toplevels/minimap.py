@@ -39,6 +39,7 @@ class MiniMap(tk.Toplevel):
         self._items = dict()
         self._client = None
         self.after_id = None
+        self._background = None
         self._users = list()
         self._health = dict()
 
@@ -79,10 +80,10 @@ class MiniMap(tk.Toplevel):
         size = self._canvas.winfo_width(), self._canvas.winfo_height()
         image = Image.open(file_path).resize((800, 800), Image.ANTIALIAS)
         print("[MiniMap] Image opened: ", image)
-        image = ImageTk.PhotoImage(master=self, image=image)
+        self._background = ImageTk.PhotoImage(master=self, image=image)
         if "map" in self._items:
             self._canvas.delete(self._items["map"])
-        self._items["map"] = self._canvas.create_image(0, 0, image=image, anchor=tk.W, tag="background")
+        self._items["map"] = self._canvas.create_image(0, 0, image=self._background, anchor=tk.W, tag="background")
         # self._canvas.tag_lower("background")
         print("[MiniMap] New background: {}: {}, {}".format(self._items["map"], file_name, size))
         self._canvas.update()
@@ -182,5 +183,3 @@ class MiniMap(tk.Toplevel):
             self._canvas.delete(old_mark, old_text)
         # Update items dictionary
         self._items[name] = (mark, text)
-
-
