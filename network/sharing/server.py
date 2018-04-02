@@ -9,6 +9,7 @@ import threading
 from queue import Queue
 from datetime import datetime
 from select import select
+import logging
 # Project Modules
 from utils.admin import *
 from network.sharing.clienthandler import SharingClientHandler
@@ -20,7 +21,7 @@ class SharingServer(threading.Thread):
     Server for long awaited features. Complete rewritten, without any legacy code, using a new method of accepting
     clients (specifically mirroring the StrategyServer) and with new, easier protocol messages.
     """
-    def __init__(self, address=("127.0.0.1", 83), max_clients=16):
+    def __init__(self, address=("127.0.0.1", 65088), max_clients=16):
         self._address = address
         self._max_clients = max_clients
         threading.Thread.__init__(self)
@@ -30,6 +31,10 @@ class SharingServer(threading.Thread):
         self.server_queue = Queue()
         self.banned = []
         self.client_handlers = []
+        self.log_file = logging.Logger(__name__)
+        handler = logging.FileHandler(os.path.join("var", "log", "sharing", "server.log"))
+        self.log_file.addHandler(handler)
+        self.log_file.addFilter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)"))
 
     @property
     def database(self):
@@ -64,13 +69,13 @@ class SharingServer(threading.Thread):
             # Check if the Server should exit its loop
             if not self.exit_queue.empty() and self.exit_queue.get():
                 print("SharingServer stopping activities...")
-                SharingServer.write_log("Sharing network is exiting loop")
+                self.write_log("Sharing network is exiting loop")
                 break
             # The select.select function is used so the Server can immediately continue with its operations if there are
             # no new clients. This could also be done with a try/except socket.error block, but this would introduce
             # a rather high performance penalty, so the select function is used.
             if self._socket in select([self._socket], [], [], 0)[0]:
-                SharingServer.write_log("network ready to accept")
+                self.write_log("network ready to accept")
                 print("[SharingServer] Accepting new client.")
                 connection, address = self._socket.accept()
                 # Check if the IP is banned
@@ -106,12 +111,12 @@ class SharingServer(threading.Thread):
             # This is the end of a cycle
         # The loop is broken because an exit was requested. All ClientHandlers are requested to close their
         # their functionality (and sockets)
-        SharingServer.write_log("Server closing ClientHandlers")
+        self.write_log("Server closing ClientHandlers")
         print("[SharingServer] closing ClientHandlers.")
         for client_handler in self.client_handlers:
             client_handler.close()
-            SharingServer.write_log("Server closed ClientHandler {0}".format(client_handler.name))
-        SharingServer.write_log("Sharing network is returning from run()")
+            self.write_log("Server closed ClientHandler {0}".format(client_handler.name))
+        self.write_log("Sharing network is returning from run()")
         # Last but not least close the listening socket to release the bind on the address
         self._socket.close()
         print("[SharingServer] closed.")
@@ -130,31 +135,14 @@ class SharingServer(threading.Thread):
         elif command == "ban":
             self.banned.append(handler.address[0])
         else:
-            SharingServer.write_log("SharingServer received unkown command: {}".format(command))
+            self.write_log("SharingServer received unkown command: {}".format(command))
 
-    @staticmethod
-    def write_log(line):
+    def write_log(self, line):
         """
         Write a line to the log file, but also check if the log file is
         not too bit and truncate if required
         """
-        line = line.strip() + "\n"
-        file_name = "sharing_server.log"
-        if not os.path.exists(file_name):
-            with open(file_name, "w") as fo:
-                fo.write("")
-        # First read the current contents of the file
-        with open(file_name, "r") as fi:
-            lines = fi.readlines()
-        # Add the line that should be written to the file
-        lines.append("[{0}] {1}".format(datetime.now().strftime("%H:%M:%S"), line))
-        # Limit the file size to a 1000 lines, and truncate to 800 lines if limit is reached
-        if len(lines) > 1000:
-            lines = lines[len(lines) - 200:]
-        # Write the new contents of the file
-        with open(file_name, "w") as fo:
-            fo.writelines(lines)
-        return
+        self.log_file.info(line)
 
     def stop(self):
         self.exit_queue.put(True)

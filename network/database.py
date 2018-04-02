@@ -9,6 +9,7 @@ import threading
 import queue
 import time
 import logging
+import os
 import network.queries as queries
 
 
@@ -36,7 +37,7 @@ class DatabaseHandler(threading.Thread):
         threading.Thread.__init__(self)
         self.db_done = False
         self.log_file = logging.getLogger(__name__)
-        handler = logging.FileHandler(logfile)
+        handler = logging.FileHandler(os.path.join("var", "log", "sharing", logfile))
         self.log_file.addHandler(handler)
         self.log_file.addFilter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)"))
         self.db_queue = queue.Queue()
