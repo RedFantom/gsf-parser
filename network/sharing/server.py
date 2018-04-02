@@ -32,7 +32,7 @@ class SharingServer(threading.Thread):
         self.banned = []
         self.client_handlers = []
         self.log_file = logging.Logger(__name__)
-        handler = logging.FileHandler(os.path.join("var", "log", "sharing", "server.log"))
+        handler = logging.FileHandler(os.path.join("/", "var", "log", "sharing", "server.log"))
         self.log_file.addHandler(handler)
         self.log_file.addFilter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)"))
 
