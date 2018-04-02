@@ -12,6 +12,9 @@ from ast import literal_eval
 from network.connection import Connection
 
 
+SUPPORTED_COMMANDS = ["location", "health", "logout", "login"]
+
+
 class MiniMapServer(threading.Thread):
     """
     Server for MiniMap location sharing. Passes on all locations
@@ -67,7 +70,7 @@ class MiniMapServer(threading.Thread):
 
             # Update location
             elems = message.split("_")
-            if len(elems) != 3 or elems[0] != "location":
+            if len(elems) != 3 or elems[0] not in SUPPORTED_COMMANDS:
                 raise RuntimeError("Unsupported command: {}".format(message))
             _, name, location_tuple = elems
             # Safely evaluate location_tuple

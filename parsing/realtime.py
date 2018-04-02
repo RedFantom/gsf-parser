@@ -522,14 +522,17 @@ class RealTimeParser(Thread):
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
                 screenshot, self._coordinates["health"])
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+            if "minimap" in self._screen_parsing_features and self._client is not None:
+                self._client.send_health(int(health_hull))
 
         """
         Minimap
+        
+        Determines the location of the player marker on the MiniMap for 
+        a given screenshot. The screenshot is cropped to the MiniMap
+        location and then the vision module gets the location.
         """
         if "MiniMap Location" in self._screen_parsing_features and self._client is not None:
-            if "minimap" not in self._coordinates:
-                self.setup_screen_parsing()
-                self._coordinates["minimap"] = self._interface.get_minimap_coordinates()
             minimap = screenshot.crop(self._coordinates["minimap"])
             fracs = vision.get_minimap_location(minimap)
             self._client.send_location(fracs)
