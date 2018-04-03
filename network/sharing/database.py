@@ -10,7 +10,7 @@ import queue
 import time
 import logging
 import os
-import network.queries as queries
+import network.sharing.queries as queries
 
 
 class DatabaseHandler(threading.Thread):
@@ -56,7 +56,6 @@ class DatabaseHandler(threading.Thread):
     def close(self):
         """
         Close the databases and wrap up
-        :return:
         """
         self.exit_queue.put(True)
         self.log("Database closed.")

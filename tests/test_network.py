@@ -5,9 +5,12 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 from unittest import TestCase
-from network import MiniMapServer, MiniMapClient
-from network import StrategyServer, StrategyClient
-from network import SharingServer, SharingClient
+from network.minimap.server import MiniMapServer
+from network.minimap.client import MiniMapClient
+from network.strategy.server import StrategyServer
+from network.strategy.client import StrategyClient
+from network.sharing.server import SharingServer
+from network.sharing.client import SharingClient
 from widgets.strategy import StrategiesList
 import tkinter as tk
 import random

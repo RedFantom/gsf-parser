@@ -13,7 +13,7 @@ import logging
 # Project Modules
 from utils.admin import *
 from network.sharing.clienthandler import SharingClientHandler
-from network.database import DatabaseHandler
+from network.sharing.database import DatabaseHandler
 
 
 class SharingServer(threading.Thread):
