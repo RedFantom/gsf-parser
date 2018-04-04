@@ -7,12 +7,12 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import os
 from ast import literal_eval
-# Packages
-from PIL import Image, ImageTk
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mb
+# Packages
+from PIL import Image, ImageTk
 # Project Modules
 from data.maps import map_names
 from utils.directories import get_assets_directory
@@ -28,7 +28,7 @@ class MiniMap(tk.Toplevel):
     # TODO: Map magnification factor
     """
 
-    DIAMETER = 4
+    DIAMETER = 14
 
     def __init__(self, *args, **kwargs):
         tk.Toplevel.__init__(self, *args, **kwargs)
@@ -39,7 +39,9 @@ class MiniMap(tk.Toplevel):
         self._items = dict()
         self._client = None
         self.after_id = None
+        self._background = None
         self._users = list()
+        self._health = dict()
 
         # Widget Creation
         self._canvas = tk.Canvas(self)
@@ -78,10 +80,10 @@ class MiniMap(tk.Toplevel):
         size = self._canvas.winfo_width(), self._canvas.winfo_height()
         image = Image.open(file_path).resize((800, 800), Image.ANTIALIAS)
         print("[MiniMap] Image opened: ", image)
-        image = ImageTk.PhotoImage(master=self, image=image)
+        self._background = ImageTk.PhotoImage(master=self, image=image)
         if "map" in self._items:
             self._canvas.delete(self._items["map"])
-        self._items["map"] = self._canvas.create_image(0, 0, image=image, anchor=tk.W, tag="background")
+        self._items["map"] = self._canvas.create_image(0, 0, image=self._background, anchor=tk.W, tag="background")
         # self._canvas.tag_lower("background")
         print("[MiniMap] New background: {}: {}, {}".format(self._items["map"], file_name, size))
         self._canvas.update()
@@ -104,24 +106,23 @@ class MiniMap(tk.Toplevel):
             command = elems[0]
 
             if command == "login":
-                """
-                A new user just logged in: login_username
-                """
+                """A new user just logged in: login_username"""
                 _, name = elems
                 self._items[name] = None, None
+                self._health[name] = "blue"
                 self._users.append(name)
                 self.update_users_list()
 
             elif command == "location":
-                """
-                A user sent us location data: location_username_tuple
-                """
+                """A user sent us location data: location_username_tuple"""
                 self.update_location(message)
 
+            elif command == "health":
+                """A user sent us health data: location_username_color"""
+                self._health[elems[1]] = elems[2]
+
             elif command == "logout":
-                """
-                A user just logged out: logout_username
-                """
+                """A user just logged out: logout_username"""
                 _, name = elems
                 # Delete markers
                 old_mark, old_text = self._items[name]
@@ -129,6 +130,7 @@ class MiniMap(tk.Toplevel):
                     self._canvas.delete(old_mark, old_text)
                 # Remove references
                 del self._items[name]
+                del self._health[name]
                 self._users.remove(name)
                 self.update_users_list()
 
@@ -152,7 +154,11 @@ class MiniMap(tk.Toplevel):
             self.after_cancel(self.after_id)
         tk.Toplevel.destroy(self)
 
-    def update_location(self, message):
+    def update_location(self, message: str):
+        """
+        Update the location of a given user. Message:
+        location_username_(x_float, y_float)
+        """
         if isinstance(message, bytes):
             message = message.decode()
         elems = message.split("_")
@@ -162,17 +168,18 @@ class MiniMap(tk.Toplevel):
         if tup[0] is None:
             return
         name = elems[1]
+        if name not in self._items or name not in self._health:
+            return
+        health = self._health[name]
         # Calculate item location
         x, y = int(tup[0] * width), int(tup[1] * height)
         mark = self._canvas.create_oval(
-            x, y, x + 12, y + 12, fill="green", tag="mark")
+            x, y, x + self.DIAMETER, y + self.DIAMETER, fill=health, tag="mark")
         text = self._canvas.create_text(
-            x + 10, y, anchor=tk.NW, text=name, fill="black", tag="name")
+            x + self.DIAMETER + 2, y, anchor=tk.NW, text=name, fill="black", tag="name")
         # Delete old markers, if there are any
         if name in self._items and self._items[name] != (None, None):
             old_mark, old_text = self._items[name]
             self._canvas.delete(old_mark, old_text)
         # Update items dictionary
         self._items[name] = (mark, text)
-
-

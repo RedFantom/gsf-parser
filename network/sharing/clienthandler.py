@@ -8,13 +8,14 @@ from queue import Queue
 import socket
 # Project Modules
 from network.clienthandler import ClientHandler
-from network.database import DatabaseHandler
-from network.queries import *
+from network.sharing.database import DatabaseHandler
+from network.sharing.queries import *
 
 
 class SharingClientHandler(ClientHandler):
     """
-    ClientHandler to handle exactly one Sharing Client and provide services to that single Client.
+    ClientHandler to handle exactly one Sharing Client and provide
+    services to that single Client.
     """
 
     excluded = ["select", "where", "insert", "create", "table"]
@@ -74,9 +75,7 @@ class SharingClientHandler(ClientHandler):
         return self.process_command(command)
 
     def process_command(self, command):
-        """
-        Function to process command given by the Client
-        """
+        """Function to process command given by the Client"""
         print("[ClientHandler] Processing command")
         if not isinstance(command, bytes):
             self.close_error("process_command does not support other data types than bytes")
@@ -110,9 +109,7 @@ class SharingClientHandler(ClientHandler):
         return
 
     def store_name(self, *args):
-        """
-        Function to store name in database
-        """
+        """Function to store name in database"""
         print("[ClientHandler] {} storing name".format(self.address))
         server, faction, mainname, altname, id_number = args
         primealt = 1 if mainname == altname else 0
@@ -193,12 +190,14 @@ class SharingClientHandler(ClientHandler):
                 self.close_error()
         else:
             # Not a tuple, so a successful query
+            if isinstance(results, (list, tuple)) and len(results) == 0:
+                results = None
             data = (results, )
             if self.internal_queue.empty():
                 self.close_error("Internal queue of ClientHandler empty while a function was expected")
                 return False
             func, args = self.internal_queue.get()
-            args = args + data
+            args = args + (data,)
             func(*args)
         self.waiting_for_database = False
         return True

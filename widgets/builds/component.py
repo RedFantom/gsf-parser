@@ -138,7 +138,7 @@ class ComponentWidget(ttk.Frame):
 
     def grid_widgets(self):
         """
-        Configure wigets in grid geometry manager
+        Configure widgets in grid geometry manager
 
         Two columns. Each of the simple upgrade buttons is put in the
         middle (half in both rows), each of the two-choice upgrade

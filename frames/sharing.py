@@ -121,7 +121,7 @@ class SharingFrame(ttk.Frame):
         if client is None:
             return
         character_data = self.window.characters_frame.characters
-        character_names = self.window.characters_frame.get_player_servers()
+        character_names = character_data.get_player_servers()
         skipped = []
         completed = []
         self.synchronize_button.config(text="Cancel", command=self.cancel_synchronize)
@@ -145,9 +145,11 @@ class SharingFrame(ttk.Frame):
             if player_name not in character_names:
                 skipped.append(file_name)
                 print("[SharingFrame] Skipping file:", file_name)
+                messagebox.showinfo(
+                    "Info", "Cannot share {}. Character name not one of own characters.".format(file_name))
                 continue
             server = character_names[player_name]
-            self.sharing_db[file_name] = 0
+            self.sharing_db[file_name]["player_sync"] = 0
             # Actually start synchronizing
             print("[ShareFrame] Sending player ID list")
             result = self.send_player_id_list(id_list, character_data, server, player_name, file_name, client)

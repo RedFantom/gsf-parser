@@ -4,32 +4,38 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# UI Libraries
-from tkinter import messagebox
-# Project Modules
-from parsing.parser import Parser
-from parsing.logstalker import LogStalker
-from threading import Thread
-from utils.utilities import get_screen_resolution
-from utils.directories import get_temp_directory
-from variables import settings
-# File parsing
+# Standard Library
 import os
 import _pickle as pickle  # known as cPickle
-# Screen parsing
+from datetime import datetime, timedelta
+from time import sleep
+from itertools import tee
+from threading import Thread
+# UI Libraries
+from tkinter import messagebox
+# Packages
 import mss
 import pynput
 from PIL import Image
-from datetime import datetime, timedelta
+# Project Modules
+from parsing.parser import Parser
+from parsing.logstalker import LogStalker
 from parsing.gsfinterface import GSFInterface
 from parsing import vision
-from utils.utilities import get_cursor_position
 from parsing.shipstats import ShipStats
+from utils.utilities import get_screen_resolution
+from utils.directories import get_temp_directory
+from utils.utilities import get_cursor_position
+from utils.window import Window
+from variables import settings
 from data.keys import keys
 from data.abilities import rep_ships
-from time import sleep
-# MiniMap networking
 from network.minimap.client import MiniMapClient
+
+
+def pair_wise(iterable: (list, tuple)):
+    """Create generator to loop over iterable in pairs"""
+    return zip(tee(iterable))
 
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
@@ -86,7 +92,8 @@ class RealTimeParser(Thread):
             minimap_share=False,
             minimap_user=None,
             minimap_address: str = None,
-            minimap_window=None
+            minimap_window=None,
+            dynamic_window=False,
     ):
         """
         :param character_db: Character database
@@ -103,6 +110,7 @@ class RealTimeParser(Thread):
         :param minimap_share: Whether to share minimap location with a server
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
+        :param dynamic_window: Whether Dynamic Window Location is enabled
         """
         Thread.__init__(self)
 
@@ -165,6 +173,7 @@ class RealTimeParser(Thread):
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
         self._spawn_time = None
+        self._window = Window("swtor.exe") if dynamic_window else None
 
         """
         MiniMap Sharing
@@ -518,19 +527,22 @@ class RealTimeParser(Thread):
         Ship Health
         """
         if "Ship health" in self._screen_parsing_features:
-            health_hull = vision.get_ship_health_hull(screenshot.crop(self._coordinates["hull"]))
+            health_hull = vision.get_ship_health_hull(screenshot.crop(self.get_coordinates("hull")))
             (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
-                screenshot, self._coordinates["health"])
+                screenshot, self.get_coordinates("health"))
             self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+            if "minimap" in self._screen_parsing_features and self._client is not None:
+                self._client.send_health(int(health_hull))
 
         """
         Minimap
+        
+        Determines the location of the player marker on the MiniMap for 
+        a given screenshot. The screenshot is cropped to the MiniMap
+        location and then the vision module gets the location.
         """
         if "MiniMap Location" in self._screen_parsing_features and self._client is not None:
-            if "minimap" not in self._coordinates:
-                self.setup_screen_parsing()
-                self._coordinates["minimap"] = self._interface.get_minimap_coordinates()
-            minimap = screenshot.crop(self._coordinates["minimap"])
+            minimap = screenshot.crop(self.get_coordinates("minimap"))
             fracs = vision.get_minimap_location(minimap)
             self._client.send_location(fracs)
             self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
@@ -538,6 +550,27 @@ class RealTimeParser(Thread):
         # Finally, save data
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
         self.save_data_dictionary()
+
+    def get_coordinates(self, key: str):
+        """
+        Return coordinates for a given key corrected for dynamic window
+        location.
+        """
+        if self._window is None:
+            return self._coordinates[key]
+        x1, y1, x2, y2 = self._window.get_rectangle(0)
+        w, h = x2 - x1, y2 - y1
+        wo, ho = self._resolution
+        coords = self._coordinates[key]
+        corrected = list()
+        for x, y in pair_wise(coords):  # Support 2 and 4 coord tuples
+            x, y = x / wo * w + x1, y / ho * h + y1  # Correct for size and offset
+            corrected.append(x)
+            corrected.append(y)
+        corrected = tuple(map(int, corrected))
+        print("[RealTimeParser/Window] Corrected coordinates for {}: {} -> {}".format(
+            key, coords, corrected))
+        return corrected
 
     def get_tracking_penalty(self):
         """

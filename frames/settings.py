@@ -4,21 +4,21 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
+# Standard Library
+import sys
+import os
+from collections import OrderedDict
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 from ttkwidgets.frames import Balloon
-# Other
-import sys
-import os
+# Project Modules
 from variables import settings, colors
 from widgets import VerticalScrollFrame
 from toplevels.event_colors import EventColors
 from utils.utilities import get_screen_resolution
-from collections import OrderedDict
 from parsing.vision import timer_boxes
 
 
@@ -169,12 +169,24 @@ class SettingsFrame(ttk.Frame):
         self.screen_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer", "MiniMap Location"
         ]
+        beta = ["MiniMap Location", "Spawn Timer"]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
         for feature in self.screen_features:
             self.screen_variables[feature] = tk.BooleanVar()
+            text = feature if feature not in beta else "{} (bèta)".format(feature)
             self.screen_checkboxes[feature] = ttk.Checkbutton(
-                self.screen_frame, text=feature, variable=self.screen_variables[feature], command=self.save_settings)
+                self.screen_frame, text=text, variable=self.screen_variables[feature], command=self.save_settings)
+        # Dynamic Window Location Support
+        self.screen_dynamic_window = tk.BooleanVar()
+        self.screen_dynamic_window_checkbox = ttk.Checkbutton(
+            self.screen_frame, text="Enable Dynamic SWTOR Window Location Support (bèta)", command=self.save_settings,
+            variable=self.screen_dynamic_window)
+        Balloon(
+            self.screen_dynamic_window_checkbox,
+            text="Dynamic SWTOR Window Location Support enables routines that makes GUI Parsing and thus Screen "
+                 "Parsing work when SWTOR runs in Windowed mode. This introduces additional overhead, as the location "
+                 "of the SWTOR window is determined every Screen Parsing cycle.")
 
         """
         Miscellaneous
@@ -228,6 +240,7 @@ class SettingsFrame(ttk.Frame):
         self.separator.grid(row=1, column=0, **padding_default, sticky="we")
         self.credits_frame.grid(row=2, column=0, **padding_default, **sticky_default)
         self.credits_label.grid(row=0, column=0, **padding_default, **sticky_default)
+
         """
         UI settings
         """
@@ -247,6 +260,7 @@ class SettingsFrame(ttk.Frame):
         self.gui_check_updates_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Debug Window
         self.gui_debug_window_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
+
         """
         Parsing settings
         """
@@ -264,6 +278,7 @@ class SettingsFrame(ttk.Frame):
         self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
         self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
         self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
+
         """
         RealTime settings
         """
@@ -303,6 +318,8 @@ class SettingsFrame(ttk.Frame):
             row += 1
         # Screen parsing overlay
         self.screen_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
+        # Screen Dynamic Window Location
+        self.screen_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
@@ -343,6 +360,7 @@ class SettingsFrame(ttk.Frame):
         self.screen_overlay.set(settings["realtime"]["screen_overlay"])
         for feature in self.screen_features:
             self.screen_variables[feature].set(feature in settings["realtime"]["screen_features"])
+        self.screen_dynamic_window.set(settings["realtime"]["window"])
 
         """
         Widget states
@@ -397,6 +415,7 @@ class SettingsFrame(ttk.Frame):
                 "screenparsing": self.screen_enabled.get(),
                 "screen_overlay": self.screen_overlay.get(),
                 "screen_features": [key for key, value in self.screen_variables.items() if value.get() is True],
+                "window": self.screen_dynamic_window.get(),
             }
         }
         settings.write_settings(dictionary)

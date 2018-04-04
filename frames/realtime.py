@@ -9,6 +9,7 @@ import time
 import psutil
 import os
 import sys
+from queue import Queue
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -17,7 +18,6 @@ from tkinter import messagebox
 from widgets.time_view import TimeView
 from toplevels.minimap import MiniMap
 from parsing.realtime import RealTimeParser
-from queue import Queue
 from variables import settings
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
@@ -140,7 +140,8 @@ class RealtimeFrame(ttk.Frame):
             "minimap_share": self.minimap_enabled.get(),
             "minimap_user": self.minimap_name.get(),
             "minimap_address": self.minimap_address.get(),
-            "minimap_window": self.minimap
+            "minimap_window": self.minimap,
+            "dynamic_window": settings["realtime"]["window"],
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)
