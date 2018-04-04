@@ -4,29 +4,39 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import sys
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
 # Project Modules
-from parsing.strategies import StrategyDatabase
-from network.strategy.client import StrategyClient
 from widgets.snaptoplevel import SnapToplevel
 
+Parent = SnapToplevel if sys.platform == "win32" else tk.Toplevel
 
-class StrategyShareToplevel(SnapToplevel):
+
+class StrategyShareToplevel(Parent):
     """
-    Toplevel to display a list of strategy with checkboxes to allow selecting which should be shared.
+    Toplevel to display a list of strategy with checkboxes to allow
+    selecting which should be shared.
     """
     def __init__(self, master, client, database, strategy_frame, **kwargs):
-        if not isinstance(database, StrategyDatabase) or not isinstance(client, StrategyClient):
-            raise ValueError()
+        """
+        :param master: master widget
+        :param client: network.strategy.client.StrategyClient
+        :param database: parsing.strategies.StrategyDataBase
+        :param strategy_frame: frames.strategy.StrategyFrame
+        :param kwargs: SnapToplevel keyword arguments
+        """
+        resizable = kwargs.pop("resizable", False)
         self._client = client
         self._database = database
         self._frame = strategy_frame
-        SnapToplevel.__init__(self, master, **kwargs)
+        Parent.__init__(self, master, **kwargs)
         self.wm_title("GSF Parser: Strategy Sharing")
+        self.wm_resizable(resizable, resizable)
         # Configure the Treeview
         self.tree = CheckboxTreeview(master=self, height=16)
         self.tree.column("#0", width=200)

@@ -10,7 +10,8 @@ from tkinter import ttk
 from tkinter.simpledialog import askstring
 # Project Modules
 from parsing.strategies import *
-from toplevels.strategy_toplevels import AddStrategy, AddPhase
+from toplevels.strategy.add_phase import AddPhase
+from toplevels.strategy.add_strategy import AddStrategy
 from network.strategy.client import StrategyClient
 
 

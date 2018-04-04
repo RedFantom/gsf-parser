@@ -14,8 +14,8 @@ from tkinter import messagebox
 # Project Modules
 from widgets.strategy.list import StrategiesList
 from widgets.strategy.map import Map
-from toplevels.strategy_settings_toplevel import SettingsToplevel
-from toplevels.strategy_toplevels import MapToplevel
+from toplevels.strategy.settings import SettingsToplevel
+from toplevels.strategy.map import MapToplevel
 
 
 class StrategiesFrame(ttk.Frame):
