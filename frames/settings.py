@@ -169,12 +169,14 @@ class SettingsFrame(ttk.Frame):
         self.screen_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer", "MiniMap Location"
         ]
+        beta = ["MiniMap Location", "Spawn Timer"]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
         for feature in self.screen_features:
             self.screen_variables[feature] = tk.BooleanVar()
+            text = feature if feature not in beta else "{} (bèta)".format(feature)
             self.screen_checkboxes[feature] = ttk.Checkbutton(
-                self.screen_frame, text=feature, variable=self.screen_variables[feature], command=self.save_settings)
+                self.screen_frame, text=text, variable=self.screen_variables[feature], command=self.save_settings)
         # Dynamic Window Location Support
         self.screen_dynamic_window = tk.BooleanVar()
         self.screen_dynamic_window_checkbox = ttk.Checkbutton(
