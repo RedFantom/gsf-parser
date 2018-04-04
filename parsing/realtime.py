@@ -10,7 +10,7 @@ import _pickle as pickle  # known as cPickle
 from datetime import datetime, timedelta
 from time import sleep
 from itertools import tee
-from threading import Thread
+from threading import Thread, Lock
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -174,6 +174,8 @@ class RealTimeParser(Thread):
         self._waiting_for_timer = False
         self._spawn_time = None
         self._window = Window("swtor.exe") if dynamic_window else None
+        self.setup_screen_parsing()
+        self._lock = Lock()
 
         """
         MiniMap Sharing
@@ -240,7 +242,9 @@ class RealTimeParser(Thread):
     def save_data_dictionary(self):
         """Save the data dictionary from memory to pickle"""
         with open(self._file_name, "wb") as fo:
+            self._lock.acquire(timeout=4)
             pickle.dump(self._realtime_db, fo)
+            self.release()
 
     def read_data_dictionary(self, create_new_database=False):
         """Read the data dictionary with backwards compatibility"""
@@ -456,7 +460,9 @@ class RealTimeParser(Thread):
             self.create_keys()
             print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
             return
+        self.acquire()
         spawn_dict = self._realtime_db[self._stalker.file][self.start_match][self.start_spawn]
+        self.release()
 
         """
         TimerParser
@@ -548,7 +554,9 @@ class RealTimeParser(Thread):
             self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
 
         # Finally, save data
+        self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
+        self.release()
         self.save_data_dictionary()
 
     def get_coordinates(self, key: str):
@@ -665,21 +673,28 @@ class RealTimeParser(Thread):
     """
 
     def file_callback(self, *args):
+        self.acquire()
         self._realtime_db[self._stalker.file] = {}
+        self.release()
         self._file_callback(*args)
 
     def match_callback(self):
+        self.acquire()
         self._realtime_db[self._stalker.file][self.start_match] = {}
+        self.release()
         if callable(self._match_callback):
             self._match_callback()
 
     def spawn_callback(self):
+        self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {}
+        self.release()
         self.create_keys()
         if callable(self._spawn_callback):
             self._spawn_callback()
 
     def create_keys(self):
+        self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {
             "keys": {},
             "clicks": {},
@@ -693,14 +708,25 @@ class RealTimeParser(Thread):
             "ship": None,
             "ship_name": None
         }
+        self.release()
 
     def set_for_current_spawn(self, *args):
+        self.acquire()
         if len(args) == 2:
             self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]] = args[1]
         elif len(args) == 3:
             self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][args[0]][args[1]] = args[2]
         else:
             raise ValueError()
+        self.release()
+
+    def acquire(self):
+        print("[RealTimeParser] Acquiring Lock")
+        self._lock.acquire()
+
+    def release(self):
+        print("[RealTimeParser] Releasing Lock")
+        self._lock.release()
 
     """
     String manipulation

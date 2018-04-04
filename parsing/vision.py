@@ -142,7 +142,6 @@ def get_ship_health_shields(image, coordinates):
 
     for element, coord in generator:
         rgb = image.getpixel(coord)
-        print("[VISION] Ship health:", coord, rgb)
         for name, color in colors.items():
             if get_similarity_pixels(color, rgb) >= 80:
                 results[element] = name
