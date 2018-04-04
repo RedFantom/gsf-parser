@@ -567,7 +567,10 @@ class RealTimeParser(Thread):
             x, y = x / wo * w + x1, y / ho * h + y1  # Correct for size and offset
             corrected.append(x)
             corrected.append(y)
-        return tuple(map(int, corrected))
+        corrected = tuple(map(int, corrected))
+        print("[RealTimeParser/Window] Corrected coordinates for {}: {} -> {}".format(
+            key, coords, corrected))
+        return corrected
 
     def get_tracking_penalty(self):
         """

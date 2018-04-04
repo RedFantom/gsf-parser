@@ -56,11 +56,15 @@ class Window(object):
     def get_rectangle(self, index=0):
         """Return the rectangle coordinates"""
         handle = self.handles[index]
+        print("[Window] Window handle:", handle)
         if platform == Window.WIN32:
-            return self.get_rectangle_win32(handle)
+            coords = self.get_rectangle_win32(handle)
         elif platform == Window.LINUX:
-            return self.get_rectangle_linux(handle)
-        raise NotImplementedError()
+            coords = self.get_rectangle_linux(handle)
+        else:
+            raise NotImplementedError()
+        print("[Window] Coordinates of window:", coords)
+        return coords
 
     @staticmethod
     def get_rectangle_win32(handle: (int, str)):
@@ -161,7 +165,3 @@ class Window(object):
     @property
     def handles(self):
         return self._w_handles
-
-
-if __name__ == '__main__':
-    print(get_window_location("spotify"))
