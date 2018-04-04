@@ -60,6 +60,8 @@ defaults = {
         # List of enabled screen parsing features
         "screen_features": ["Tracking penalty", "Ship health", "Power management"],
         # Whether to use the experimental WindowsOverlay
-        "overlay_experimental": False
+        "overlay_experimental": False,
+        # Whether to enable experimental Dynamic Window Location
+        "window": False,
     },
 }
