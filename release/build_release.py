@@ -157,7 +157,6 @@ if __name__ == '__main__':
     copytree(os.path.join(site_packages, "ttkthemes"), os.path.join(build_dir, "ttkthemes"))
     copytree(os.path.join(site_packages, "ttkwidgets"), os.path.join(build_dir, "ttkwidgets"))
     copytree("../tools", os.path.join(build_dir, "tools"))
-    copytree("../archive", os.path.join(build_dir, "archive"))
     copytree("../assets", os.path.join(build_dir, "assets"))
     copyfile("../README.md", os.path.join(build_dir, "README.md"))
     copyfile("../LICENSE.md", os.path.join(build_dir, "LICENSE.md"))
