@@ -320,16 +320,8 @@ class RealTimeParser(Thread):
 
             # Perform error handling. Using real-time parsing with a
             # different character name is not possible for screen parsing
-            # To be consistent, it is never allowed.
             if self.player_name != self._character_data[1]:
-                messagebox.showerror(
-                    "Error",
-                    "Another character name than the one provided was detected. The GSF Parser cannot continue."
-                )
-                raise ValueError(
-                    "Invalid character name in CombatLog. Expected: {}, Received: {}".format(
-                        self._character_data[1], self.player_name
-                    ))
+                print("[RealTimeParser] WARNING: Different character name")
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")

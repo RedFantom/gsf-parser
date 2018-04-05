@@ -149,6 +149,25 @@ class SettingsFrame(ttk.Frame):
         self.realtime_overlay_experimental_checkbox = ttk.Checkbutton(
             self.realtime_frame, text="Enable experimental high-performance overlay",
             variable=self.realtime_overlay_experimental)
+        # EventOverlay
+        self.realtime_event_overlay = tk.BooleanVar()
+        self.realtime_event_overlay_checkbox = ttk.Checkbutton(
+            self.realtime_frame, text="Enable EventOverlay", variable=self.realtime_event_overlay,
+            command=self.save_settings)
+        Balloon(
+            self.realtime_event_overlay_checkbox,
+            text="The EventOverlay shows the last few events in the CombatLog in a certain set of categories. This "
+                 "feature can be useful for streamers to indicate the enemy weapons or other non-obvious events.")
+        # EventOverlay position
+        self.realtime_event_position_frame = ttk.Frame(self.realtime_frame)
+        self.realtime_event_position_label = ttk.Label(
+            self.realtime_event_position_frame, text="EventOverlay position:")
+        self.realtime_event_position_x_label = ttk.Label(self.realtime_event_position_frame, text="X Coordinate:")
+        self.realtime_event_position_x = ttk.Entry(self.realtime_event_position_frame, width=4)
+        self.realtime_event_position_y_label = ttk.Label(self.realtime_event_position_frame, text="Y Coordinate:")
+        self.realtime_event_position_y = ttk.Entry(self.realtime_event_position_frame, width=4)
+        self.realtime_event_position_y.bind("<Key>", self.save_settings_delayed)
+        self.realtime_event_position_x.bind("<Key>", self.save_settings_delayed)
 
         """
         Screen parsing settings
@@ -301,7 +320,15 @@ class SettingsFrame(ttk.Frame):
         self.realtime_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Experimental Win32 Overlay
         self.realtime_overlay_experimental_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
-
+        # EventOverlay
+        self.realtime_event_overlay_checkbox.grid(row=5, column=0, **padding_label, **sticky_default, **checkbox)
+        # EventOverlay Position
+        self.realtime_event_position_frame.grid(row=6, column=0, columnspan=4, **padding_label, **sticky_default)
+        self.realtime_event_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
+        self.realtime_event_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.realtime_event_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
+        self.realtime_event_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.realtime_event_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         """
         Screen parsing settings
         """
@@ -340,7 +367,6 @@ class SettingsFrame(ttk.Frame):
         self.parsing_path.set(settings["parsing"]["path"])
         self.parsing_sharing_port.set(settings["parsing"]["port"])
         self.parsing_sharing_address.set(settings["parsing"]["address"])
-    
         """
         Real-time Settings
         """
@@ -353,6 +379,13 @@ class SettingsFrame(ttk.Frame):
         self.realtime_overlay_position_x.insert(tk.END, x[1:])
         self.realtime_overlay_position_y.insert(tk.END, y)
         self.realtime_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
+        # EventOverlay
+        self.realtime_event_overlay.set(settings["realtime"]["event_overlay"])
+        self.realtime_event_position_x.delete(0, tk.END)
+        self.realtime_event_position_y.delete(0, tk.END)
+        x, y = settings["realtime"]["event_location"].split("y")
+        self.realtime_event_position_x.insert(tk.END, x[1:])
+        self.realtime_event_position_y.insert(tk.END, y)
         """
         Screen Parsing settings
         """
@@ -361,7 +394,6 @@ class SettingsFrame(ttk.Frame):
         for feature in self.screen_features:
             self.screen_variables[feature].set(feature in settings["realtime"]["screen_features"])
         self.screen_dynamic_window.set(settings["realtime"]["window"])
-
         """
         Widget states
         """
@@ -416,6 +448,9 @@ class SettingsFrame(ttk.Frame):
                 "screen_overlay": self.screen_overlay.get(),
                 "screen_features": [key for key, value in self.screen_variables.items() if value.get() is True],
                 "window": self.screen_dynamic_window.get(),
+                "event_overlay": self.realtime_event_overlay.get(),
+                "event_location": "x{}y{}".format(
+                    self.realtime_event_position_x.get(), self.realtime_event_position_y.get()),
             }
         }
         settings.write_settings(dictionary)
@@ -441,6 +476,11 @@ class SettingsFrame(ttk.Frame):
         y = self.realtime_overlay_position_y.get()
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
+            return False
+        # EventOverlay Position
+        x, y = self.realtime_event_position_x.get(), self.realtime_event_position_y.get()
+        if not x.isdigit() or not y.isdigit():
+            messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
             return False
         # Port
         if not self.parsing_sharing_port.get().isdigit():

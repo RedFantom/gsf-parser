@@ -236,7 +236,7 @@ class Parser(object):
         return colors[category][1]
 
     @staticmethod
-    def get_event_category(line_dict, active_id):
+    def get_event_category(line_dict: dict, active_id: (list, str)):
         """
         Get the correct category for an event
         :param line_dict: line dictionary

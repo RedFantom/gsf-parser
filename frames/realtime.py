@@ -17,6 +17,7 @@ from tkinter import messagebox
 # Project Modules
 from widgets.time_view import TimeView
 from toplevels.minimap import MiniMap
+from toplevels.event_overlay import EventOverlay
 from parsing.realtime import RealTimeParser
 from variables import settings
 from utils.swtor import get_swtor_screen_mode
@@ -43,6 +44,7 @@ class RealtimeFrame(ttk.Frame):
         self.overlay_after_id = None
         self.overlay_string = None
         self.data_after_id = None
+        self._event_overlay = None
         """
         Widget creation
         """
@@ -156,6 +158,7 @@ class RealtimeFrame(ttk.Frame):
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
         self.open_overlay()
+        self.open_event_overlay()
         self.update_data_string()
         # Start the parser
         self.parser.start()
@@ -177,6 +180,7 @@ class RealtimeFrame(ttk.Frame):
         self.watching_stringvar.set("Watching no file...")
         self.parser = None
         self.close_overlay()
+        self.close_event_overlay()
 
     def file_callback(self, file_name):
         """
@@ -200,6 +204,8 @@ class RealtimeFrame(ttk.Frame):
         """
         self.time_view.insert_event(event, player_name, active_ids, start_time)
         self.time_view.yview_moveto(1.0)
+        if self._event_overlay is not None:
+            self._event_overlay.process_event(event, active_ids)
 
     def update_cpu_usage(self):
         """Update the CPU usage Label every two seconds"""
@@ -236,6 +242,22 @@ class RealtimeFrame(ttk.Frame):
                          "\n\n{}.".format(e))
             raise
         self.update_overlay()
+
+    def open_event_overlay(self):
+        """Open an EventOverlay if it is enabled in settings"""
+        if settings["realtime"]["event_overlay"] is False:
+            return
+        x, y = settings["realtime"]["event_location"].split("y")
+        x, y = int(x[1:]), int(y)
+        self._event_overlay = EventOverlay(self.window, location=(x, y))
+
+    def close_event_overlay(self):
+        """Close the EventOverlay is one is open"""
+        if self._event_overlay is None:
+            return
+        self._event_overlay.match_end()
+        self._event_overlay.destroy()
+        self._event_overlay = None
 
     def update_data_string(self):
         if self.parser is None:

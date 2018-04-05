@@ -53,6 +53,10 @@ defaults = {
         "overlay_position": "x0y0",
         # Whether the Overlay hides outside of GSF
         "overlay_when_gsf": True,
+        # Whether to enable EventOverlay
+        "event_overlay": False,
+        # Location of EventOverlay
+        "event_location": "x0y0",
         # Whether screen parsing is enabled
         "screenparsing": True,
         # Whether screen parsing data is in the Overlay
