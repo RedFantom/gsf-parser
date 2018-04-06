@@ -176,6 +176,7 @@ class RealTimeParser(Thread):
         self._window = Window("swtor.exe") if dynamic_window else None
         self.setup_screen_parsing()
         self._lock = Lock()
+        self._configured_flag = False
 
         """
         MiniMap Sharing
@@ -590,8 +591,10 @@ class RealTimeParser(Thread):
         if weapon_key not in self.ship_stats:
             print("[RealTimeParser] Failed to retrieve statistics for weapon '{}' on {}".format(
                 weapon_key, self.ship))
-            messagebox.showinfo("User Warning", "The ship you have currently selected has not "
-                                                "been properly configured in the BuildsFrame.")
+            if self._configured_flag is False:
+                messagebox.showinfo("User Warning", "The ship you have currently selected has not "
+                                                    "been properly configured in the BuildsFrame.")
+                self._configured_flag = True
             return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
         tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
