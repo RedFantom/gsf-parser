@@ -10,7 +10,7 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
-from ttkwidgets import TimeLine
+from widgets.timeline import TimeLine
 # Project Modules
 from widgets.time_view import TimeView
 from parsing.filehandler import FileHandler
@@ -271,7 +271,12 @@ class StatsFrame(ttk.Frame):
                     print("[TimeLine] Marker creation failed: '{}', '{}', '{}', '{}': {}".format(
                         args[0], args[1], args[2], kwargs["background"], repr(e))
                     )
-                    continue
+                    if isinstance(e, ValueError):
+                        pass
+                    elif isinstance(e, TypeError):
+                        raise
+                    else:
+                        raise
                 print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
                     args[0], args[1], args[2], kwargs["background"]))
         return

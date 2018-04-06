@@ -370,7 +370,7 @@ class FileHandler(object):
                 category, mode = result
                 if power_mode == mode:
                     continue
-                args = ("power_mgmt", previous, time)
+                args = ("power_mgmt", FileHandler.datetime_to_float(previous), FileHandler.datetime_to_float(time))
                 previous = time
                 kwargs = {"background": FileHandler.power_mgmt_colors[power_mode]}
                 power_mode = mode
@@ -500,7 +500,7 @@ class FileHandler(object):
                 start = time
                 continue
             # pressed is False
-            args = ("boosting", start, time)
+            args = ("boosting", FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(time))
             kwargs = {"background": FileHandler.colors["engines"]}
             results["boosting"].append((args, kwargs))
         return results

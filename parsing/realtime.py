@@ -713,11 +713,11 @@ class RealTimeParser(Thread):
         self.release()
 
     def acquire(self):
-        print("[RealTimeParser] Acquiring Lock")
+        # print("[RealTimeParser] Acquiring Lock")
         self._lock.acquire()
 
     def release(self):
-        print("[RealTimeParser] Releasing Lock")
+        # print("[RealTimeParser] Releasing Lock")
         self._lock.release()
 
     """

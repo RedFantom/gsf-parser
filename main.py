@@ -9,6 +9,8 @@ from os.path import dirname, join, basename, exists
 import sys
 import shutil
 import platform
+import traceback
+from utils.directories import get_temp_directory
 
 
 def create_window():
@@ -21,18 +23,21 @@ def create_window():
     try:
         main_window = gui.MainWindow()
     except Exception as e:
+        trace = traceback.format_exc()
+        with open(join(get_temp_directory(), "debug.txt"), "w") as fo:
+            fo.write(trace)
         if exists("development"):
             raise
         save = messagebox.askyesno(
             "Error", "The GSF Parser window failed to correctly initialize. Please report this "
                      "error along with the debug output below.\n\n{}\n\nWould you like to "
-                     "save the debug output to a file?".format(repr(e), e))
+                     "save the debug output to a file?".format(trace))
         if save is True:
             filename = filedialog.asksaveasfilename()
             if filename is None:
                 raise ValueError("Invalid filename provided")
             with open(filename, "w") as fo:
-                fo.write(repr(e))
+                fo.write(repr(trace))
         raise
     try:
         main_window.mainloop()

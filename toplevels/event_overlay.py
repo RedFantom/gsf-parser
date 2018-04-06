@@ -23,7 +23,7 @@ class EventOverlay(tk.Toplevel):
     Overlay with shifting events view of certain types of events that can be
     observed during the match.
     """
-    def __init__(self, master, timeout=4, types=None, bg="darkblue", location=(0, 0)):
+    def __init__(self, master, timeout=4, types=None, bg="darkblue", location=(0, 0), after=100):
         """
         :param master: master widget
         :param timeout: Amount of time an event is displayed in seconds
@@ -35,14 +35,18 @@ class EventOverlay(tk.Toplevel):
         if types is None:
             types = ["selfheal", "healing", "dmgt_sec", "dmgt_pri", "selfdmg"]
 
-        # Attributes
+        # Arguments
         self._types = types
         self._background = bg
         self._timeout = timeout
         self._location = location
+        self._after = after
+        # Attributes
         self._labels = OrderedDict()
         self._queue = Queue()
         self._icons = {name: open_icon(path) for name, path in icons.items()}
+        self._destroyed = False
+        self._after_id = None
 
         self._parent = tk.Frame(self, background=self._background)
 
@@ -86,6 +90,8 @@ class EventOverlay(tk.Toplevel):
 
     def update_events(self):
         """Update the events shown in the Overlay"""
+        if self._destroyed is True:
+            return False
         while not self._queue.empty():
             event, label = self._queue.get()
             self._labels[event] = label
@@ -98,6 +104,8 @@ class EventOverlay(tk.Toplevel):
         # Grid the events
         for index, label in enumerate(self._labels.values()):
             label.grid(row=index, column=0, sticky="nsw", padx=5, pady=(0, 5))
+        # Create after command
+        self._after_id = self.after(self._after, self.update_events)
 
     def match_end(self):
         """Clear all widgets"""
@@ -113,4 +121,9 @@ class EventOverlay(tk.Toplevel):
             text="{} - {}".format(event["ability"].ljust(24), event["amount"].ljust(4)),
             background=self._background, foreground=variables.colors[event_type])
 
-
+    def destroy(self):
+        """Set destroyed attribute and destroy"""
+        self._destroyed = True
+        if self._after_id is not None:
+            self.after_cancel(self._after_id)
+        tk.Toplevel.destroy(self)
