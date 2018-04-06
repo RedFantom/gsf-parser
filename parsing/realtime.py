@@ -37,6 +37,7 @@ def pair_wise(iterable: (list, tuple)):
     """Create generator to loop over iterable in pairs"""
     return zip(tee(iterable))
 
+
 """
 These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
 dictionary contains all the data acquired by screen parsing and is stored with the following structure:
