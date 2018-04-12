@@ -20,8 +20,8 @@ import variables
 
 class EventOverlay(tk.Toplevel):
     """
-    Overlay with shifting events view of certain types of events that can be
-    observed during the match.
+    Overlay with shifting events view of certain types of events that
+    can be observed during the match.
     """
     def __init__(self, master, timeout=4, types=None, bg="darkblue", location=(0, 0), after=100):
         """
@@ -118,8 +118,9 @@ class EventOverlay(tk.Toplevel):
         """Build a abel widget for an event"""
         return tk.Label(
             self, image=self._icons[event["ability"]], compound=tk.LEFT,
-            text="{} - {}".format(event["ability"].ljust(24), event["amount"].ljust(4)),
-            background=self._background, foreground=variables.colors[event_type])
+            text="{:<16} - {}".format(event["ability"], event["amount"].ljust(4)),
+            background=self._background, foreground=variables.colors[event_type],
+            font=("Consolas", 11))
 
     def destroy(self):
         """Set destroyed attribute and destroy"""
