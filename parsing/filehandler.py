@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from pynput.mouse import Button
 import pickle as pickle
 from datetime import datetime
+# Packages
+from pynput.mouse import Button
 # Project Modules
 from utils.directories import get_temp_directory
 from utils.colors import *

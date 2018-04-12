@@ -31,6 +31,8 @@ class SharingClient(Client):
         self.send("storename_{}_{}_{}_{}_{}".format(server, faction, mainname, altname, id))
         print("[SharingClient] Awaiting result.")
         message = self.get_message()
+        if isinstance(message, bytes):
+            message = message.decode()
         if message == "saved":
             print("[SharingClient] Saved successfully.")
             return True

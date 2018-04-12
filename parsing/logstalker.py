@@ -44,9 +44,7 @@ class LogStalker(object):
         self._watching_callback(self.file)
 
     def get_new_lines(self):
-        """
-        Read the new lines in the file and return them as a list.
-        """
+        """Read the new lines in the file and return them as a list"""
         self.update_file()
         with open(os.path.join(self._folder, self.file), "rb") as fi:
             lines = fi.readlines()[self._read_so_far:]

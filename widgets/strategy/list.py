@@ -223,7 +223,9 @@ class StrategiesList(ttk.Frame):
 
         Create a new Phase in the Database with name title
         """
-        self.db[self.selection][title] = Phase(title, self.db[self.selected_strategy].map)
+        self.db[self.selected_strategy][title] = Phase(title, self.db[self.selected_strategy].map)
+        if self.selected_phase is not None:
+            self.db[self.selected_strategy][title].items = self.db[self.selected_strategy][self.selected_phase].items
         self.update_tree()
         self.db.save_database()
 
@@ -263,7 +265,7 @@ class StrategiesList(ttk.Frame):
         """Callback to update widgets when a Phase is selected"""
         # self.new_button.config(text="New strategy", state=tk.DISABLED)
         self.del_button.config(text="Delete phase", command=self.del_phase)
-        self.edit_button.config(text="Edit phase", command=self.edit_phase, state=tk.DISABLED)
+        # self.edit_button.config(text="Edit phase", command=self.edit_phase, state=tk.DISABLED)
 
     @property
     def selection(self):

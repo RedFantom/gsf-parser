@@ -149,7 +149,6 @@ class SharingFrame(ttk.Frame):
                     "Info", "Cannot share {}. Character name not one of own characters.".format(file_name))
                 continue
             server = character_names[player_name]
-            self.sharing_db[file_name]["player_sync"] = 0
             # Actually start synchronizing
             print("[ShareFrame] Sending player ID list")
             result = self.send_player_id_list(id_list, character_data, server, player_name, file_name, client)
@@ -185,8 +184,13 @@ class SharingFrame(ttk.Frame):
             print("[SharingFrame] Sending data: {}, {}, {}".format(player_id, legacy_name, server))
             result = client.send_name_id(server, factions_dict[faction], legacy_name, player_name, player_id)
             if result is False:
+                print("[SharingFrame] Sending ID failed.")
                 return False
-            self.sharing_db[file_name]["player_sync"] += 1
+            player_sync = self.sharing_db[file_name]["player_sync"]
+            self.sharing_db[file_name]["player_sync"] = player_sync + 1
+            print("[SharingFrame] Successfully shared ID. Total count:", player_sync + 1)
+            self.save_database()
+            self.update()
         return True
 
     def retrieve_enemy_id_list(self, enemy_id_list: list, server: str, file_name: str, client: SharingClient):
@@ -204,10 +208,12 @@ class SharingFrame(ttk.Frame):
                 continue
             self.sharing_db[file_name]["enemies"][enemy_id] = result
             self.sharing_db[file_name]["enemy_sync"] += 1
+            self.save_database()
+            self.update()
         return True
 
     @staticmethod
-    def show_confirmation_dialog(skipped, completed):
+    def show_confirmation_dialog(skipped: list, completed: list):
         """
         Show a confirmation dialog listing the skipped and completed
         files during synchronization.
@@ -273,7 +279,7 @@ class SharingFrame(ttk.Frame):
         return
 
     @staticmethod
-    def read_file(file_name):
+    def read_file(file_name: str):
         path = os.path.join(settings["parsing"]["path"], file_name)
         with open(path, "rb") as fi:
             lines = []
@@ -292,7 +298,7 @@ class SharingFrame(ttk.Frame):
     """
 
     def save_database(self):
-        self.sharing_db.close()
+        self.sharing_db.sync()
 
     def get_amount_synchronized(self, file_name, player_ids, enemy_ids):
         """
@@ -301,9 +307,11 @@ class SharingFrame(ttk.Frame):
         """
         # First open the file to determine the amount of IDs
         if file_name not in self.sharing_db:
+            print("[SharingFrame] Adding to Sharing DB:", file_name)
             self.sharing_db[file_name] = {"player_sync": 0, "enemy_sync": 0, "enemies": {}}
         player_sync = self.sharing_db[file_name]["player_sync"]
         enemy_sync = self.sharing_db[file_name]["enemy_sync"]
+        print("[SharingFrame] {}: player_sync: {}, enemy_sync: {}".format(file_name, player_sync, enemy_sync))
         result = ("Complete" if player_sync == len(player_ids) else player_sync,
                   "Complete" if enemy_sync == len(enemy_ids) else enemy_sync)
         return result

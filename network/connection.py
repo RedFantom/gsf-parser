@@ -151,7 +151,7 @@ class Connection(object):
         return self.message_queue.get()
 
     def close(self, message=None):
-        """Closes the Connection."""
+        """Closes the Connection"""
         self.socket_lock.acquire()
         if message is not None:
             self.send(message)

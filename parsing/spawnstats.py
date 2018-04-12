@@ -9,9 +9,7 @@ from data import abilities
 
 
 def spawn_statistics(file_name, spawn, spawn_timing, sharing_db=None):
-    """
-    Build strings to show in the StatsFrame
-    """
+    """Build strings to show in the StatsFrame"""
     # Retrieve required data
     lines = Parser.read_file(file_name, sharing_db)
     player_numbers = Parser.get_player_id_list(lines)

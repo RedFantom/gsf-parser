@@ -33,13 +33,17 @@ class DatabaseHandler(threading.Thread):
     def __init__(self, db_name="parser.db", logfile="database_%s.log" % time.strftime("%Y-%m-%d")):
         """
         :param db_name: Name for the database file
+        :param logfile: File name of the log file to open in temporary
+            directory
         """
         threading.Thread.__init__(self)
         self.db_done = False
+        # Initialize Logger
         self.log_file = logging.getLogger(__name__)
         handler = logging.FileHandler(os.path.join("/", "var", "log", "sharing", logfile))
         self.log_file.addHandler(handler)
         handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)"))
+        # Initialize database and attributes
         self.db_queue = queue.Queue()
         self.exit_queue = queue.Queue()
         self.db_name = db_name
@@ -54,20 +58,20 @@ class DatabaseHandler(threading.Thread):
         self.close()
 
     def close(self):
-        """
-        Close the databases and wrap up
-        """
+        """Close the databases and wrap up"""
         self.exit_queue.put(True)
         self.log("Database closed.")
         print("[DEBUG] Database object has cleaned up.")
         self.log("Database thread closed.")
         return 0
 
-    def setup(self):
-        """
-        Upon execution of start(), the database is prepared with the
-        default first queries found in queries.py
-        """
+    def initialize_database(self):
+        """Initialize the database connection"""
+        self.database = sql.connect(self.db_name)
+        self.cursor = self.database.cursor()
+        self.initialize_tables()
+
+    def initialize_tables(self):
         self.command_handler(queries.create_tb_server)
         self.command_handler(queries.create_tb_combatlogs)
         self.command_handler(queries.create_tb_id)
@@ -89,7 +93,7 @@ class DatabaseHandler(threading.Thread):
         if not self.db_done:
             self.database = sql.connect(self.db_name)
             self.cursor = self.database.cursor()
-            self.setup()
+            self.initialize_database()
             self.db_done = True
         print("[DatabaseHandler] DatabaseHandler starting activities.")
         while self.exit_queue.empty():
@@ -140,8 +144,9 @@ class DatabaseHandler(threading.Thread):
 
     def query_handler(self, query):
         """
-        Execute a query on the database and return the data that is selected
-        All possible errors for sqlite3 can be caught and logged
+        Execute a query on the database and return the data that is
+        selected. All possible errors for sqlite3 can be caught and
+        logged.
         """
         # Execute the query on the database
         try:
@@ -170,5 +175,15 @@ class DatabaseHandler(threading.Thread):
         self.log("Command was executed successfully: %s" % command)
         return 0
 
-    def put_command_in_queue(self, return_queue, command, query=False):
+    def put_command_in_queue(self, return_queue: queue.Queue, command: str, query=False):
+        """
+        Insert a new command into the attribute db_queue to schedule
+        execution on the SQLite Database.
+        :param return_queue: Queue to insert the result of the command
+            in. Contains query results if query is True.
+        :param command: Command/Query to execute on the database
+        :param query: if True, the database will expect results and
+            return them. Otherwise, only whether the query was
+            successful will be indicate in the return_queue.
+        """
         self.db_queue.put((return_queue, command, query))

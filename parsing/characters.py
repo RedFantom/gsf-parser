@@ -30,10 +30,8 @@ class CharacterDatabase(dict):
             "GUI": "Default"
         }
 
-    def update_servers(self, trans):
-        """
-        Update the character database to a new set of servers
-        """
+    def update_servers(self, trans: dict):
+        """Update the character database to a new set of servers"""
         updated = {}
         for character, data in self.items():
             character = list(character)
@@ -45,9 +43,7 @@ class CharacterDatabase(dict):
         self.update(updated)
 
     def get_player_servers(self):
-        """
-        Get a dictionary of name: network
-        """
+        """Get a dictionary of player_name: network"""
         character_names = {}
         names = []
         for server, name in self.keys():
@@ -61,9 +57,7 @@ class CharacterDatabase(dict):
         return character_names
 
     def get_player_legacies(self):
-        """
-        Get a dictionary name: legacy
-        """
+        """Get a dictionary player_name: legacy_name"""
         character_legacies = {}
         names = []
         for server, name in self.keys():

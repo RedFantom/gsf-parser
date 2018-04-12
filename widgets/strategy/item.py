@@ -71,10 +71,10 @@ class CreateItem(tk.Toplevel):
             return
         if callable(self.callback):
             if not self.font_select_frame._family:
-                print("No font family selected.")
+                print("[CreateItem] No font family selected.")
             font = self.font_select_frame.font if self.font_select_frame.font is not None else ("default", 12)
             if font == ("default", 12):
-                print("Default font selected")
+                print("[CreateItem] Default font selected")
             self.callback(self.text.get(), font, color=self.background_color.get())
         self.destroy()
 
