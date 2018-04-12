@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from data import ships
 from variables import settings
-from .ships import Ship
+from parsing.ships import Ship
 
 
 class CharacterDatabase(dict):
@@ -17,10 +17,29 @@ class CharacterDatabase(dict):
     database.
     """
 
+    # Provides a translation dictionary for updating old character
+    # databases to the SWTOR United Forces server merges
+    UNITED_FORCES = {
+        "TRE": "DM",
+        "PRG": "DM",
+        "TFN": "DM",
+        "JCO": "SF",
+        "SHA": "SF",
+        "EBH": "SF",
+        "PRF": "SF",
+        "JUN": "SF",
+        "MFR": "TL",
+        "BMD": "TL",
+        "NTH": "TL",
+        "T3M": "TH",
+        "VCH": "TH",
+        "JKS": "TH"
+    }
+
     def __init__(self):
         dict.__init__(self)
         self.version = settings["misc"]["patch_level"]
-        self[("TRE", "Example")] = {
+        self[("DM", "Example")] = {
             "Server": "DM",
             "Faction": "Imperial",
             "Name": "Example",

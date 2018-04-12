@@ -38,25 +38,6 @@ class CharactersFrame(ttk.Frame):
     - GUI Profile name
     """
 
-    # Provides a translation dictionary for updating old character
-    # databases to the SWTOR United Forces server merges
-    united_forces = {
-        "TRE": "DM",
-        "PRG": "DM",
-        "TFN": "DM",
-        "JCO": "SF",
-        "SHA": "SF",
-        "EBH": "SF",
-        "PRF": "SF",
-        "JUN": "SF",
-        "MFR": "TL",
-        "BMD": "TL",
-        "NTH": "TL",
-        "T3M": "TH",
-        "VCH": "TH",
-        "JKS": "TH"
-    }
-
     def __init__(self, parent, main_window):
         """
         Initializes the class instance and sets up all instance variables
@@ -224,7 +205,7 @@ class CharactersFrame(ttk.Frame):
                     "database must be updated. This process is non-destructive, meaning you should be able to keep "
                     "all your characters, as long as the names do not conflict."
                 )
-                self.characters.update_servers(self.united_forces)
+                self.characters.update_servers(CharacterDatabase.UNITED_FORCES)
                 self.save_character_data()
             try:
                 self.characters_list.insert(
