@@ -290,7 +290,7 @@ class Parser(object):
         raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
 
     @staticmethod
-    def compare_ids(id, active_ids):
+    def compare_ids(id: str, active_ids: (list, str)):
         """
         Compare an ID to either a single active ID or a list of IDs
         :param id: id to compare
@@ -328,8 +328,6 @@ class Parser(object):
         # Check if file exists, else add the combatlogs folder to it
         combatlogs_path = settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
-        if not os.path.exists(file_name):
-            raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
         # Execute the splitting
         lines = Parser.read_file(file_name)
         return Parser.split_combatlog(lines, player_id_list)
