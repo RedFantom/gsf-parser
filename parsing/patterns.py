@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
-from datetime import timedelta
+from datetime import timedelta, datetime
 # Project modules
 from data.patterns import Patterns
+from data import abilities
 from parsing.ships import Ship, Component
 
 
@@ -85,3 +86,69 @@ class PatternParser(object):
             if event["time"] > limit_h:
                 break
         return result
+
+    @staticmethod
+    def get_screen_subsection(data: dict, category: str, origin: datetime, span: tuple):
+        """Get a subsection of the screen data dictionary of a match"""
+        sub = data[category]
+        low, high = origin + timedelta(seconds=span[0]), origin + timedelta(seconds=span[1])
+        results = dict()
+        for time, data in sub.items():
+            if low <= time <= high:
+                results[time] = data
+        return results
+
+    @staticmethod
+    def get_ship_from_screen_data(data: dict):
+        """Return the Ship object contained in the spawn data"""
+        if "ship" not in data:  # Older versions
+            return None
+        ship = data["ship"]
+        if not isinstance(ship, Ship):
+            print("[PatternParser] Unexpected data type found for ship key: {}".format(ship))
+        return ship
+
+    @staticmethod
+    def get_component_in_ship(ship: Ship, component: (str, Component)):
+        """Return whether a component is found within a Ship instance"""
+        if ship is None:
+            return False  # Ship option not available at parsing time
+        if isinstance(component, Component):
+            name, category = component.name, component.category
+        else:  # str
+            name = component
+            category = PatternParser.get_component_category(component)
+        if category not in ship.components:
+            return False  # Configured improperly at parsing time
+        categories = (category,)
+        if "Weapon" in category:  # Extend to double primaries/secondaries
+            categories += (category[0] + "2",)
+        # Loop over categories
+        result = False
+        for category in categories:
+            if category not in ship:  # Double primaries/secondaries
+                continue
+            component = ship.components[category]
+            if not isinstance(component, Component):  # Improper config
+                print("[PatternParser] Improperly configured Ship instance:", ship, component)
+                continue
+            if component.name == name:
+                result = True
+                break
+            continue
+        return result
+
+    @staticmethod
+    def get_component_category(component: str)->str:
+        """Return the category of a given component"""
+        if component in abilities.primaries:
+            return "PrimaryWeapon"
+        if component in abilities.secondaries:
+            return "SecondaryWeapon"
+        if component in abilities.engines:
+            return "Engine"
+        if component in abilities.systems:
+            return "Systems"
+        if component in abilities.shields:
+            return "ShieldProjector"
+        raise ValueError("Invalid component type given:", component)
