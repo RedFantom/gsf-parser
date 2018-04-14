@@ -46,9 +46,9 @@ class Filters(tk.Toplevel):
             self.filter_type_vars[type] = tk.BooleanVar()
             self.filter_type_checkbuttons.append(
                 ttk.Checkbutton(self.scroll_frame.interior, text=type, variable=self.filter_type_vars[type]))
-        print("[DEBUG] Setting up Type filters")
+        print("[Filters] Setting up Type filters")
         self.type_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Type", labelwidth=90)
-        print("[DEBUG] Setting up date filters")
+        print("[Filters] Setting up date filters")
         self.dateframe = widgets.ToggledFrame(self.scroll_frame.interior, text="Date", labelwidth=90)
         self.start_date_label = ttk.Label(self.dateframe.sub_frame, text="Start date", font=("default", 12),
                                           justify=tk.CENTER)
@@ -56,7 +56,7 @@ class Filters(tk.Toplevel):
                                         justify=tk.CENTER)
         self.start_date_widget = Calendar(self.dateframe.sub_frame)
         self.end_date_widget = Calendar(self.dateframe.sub_frame)
-        print("[DEBUG] Setting up components filters")
+        print("[Filters] Setting up components filters")
         self.components_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Components", labelwidth=90)
         self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries", labelwidth=90)
         self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries",
@@ -169,7 +169,7 @@ class Filters(tk.Toplevel):
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
         self.search_button = ttk.Button(self, text="Search", command=self.search)
-        print("[DEBUG] Gridding widgets")
+        print("[Filters] Gridding widgets")
         self.grid_widgets()
 
     def search_files(self):

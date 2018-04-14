@@ -99,7 +99,7 @@ class Patterns:
         MISTAKE_GUNSHIP_EVASION,
         MISTAKE_MISSILE_HIT,
     ]
-    
+
     ALL_PATTERNS = [
         MISTAKE_GUNSHIP_EVASION,
         MISTAKE_MISSILE_HIT,

@@ -61,7 +61,7 @@ class DatabaseHandler(threading.Thread):
         """Close the databases and wrap up"""
         self.exit_queue.put(True)
         self.log("Database closed.")
-        print("[DEBUG] Database object has cleaned up.")
+        print("[DatabaseHandler] Database object has cleaned up.")
         self.log("Database thread closed.")
         return 0
 

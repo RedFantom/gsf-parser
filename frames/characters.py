@@ -344,7 +344,7 @@ class CharactersFrame(ttk.Frame):
 
     def save_character_data(self):
         """Save CharacterDatabase to a file in the temporary dir"""
-        print("[DEBUG] Saving character database")
+        print("[CharactersFrame] Saving character database")
         if self.character_data is not None:
             self.character_data["GUI"] = self.gui_profile.get()
             server = self.character_data["Server"]

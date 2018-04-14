@@ -110,6 +110,7 @@ icons = {
     "Invulnerable": "spvp_aoedefensiveboost",  # Tutorial Effect
     "Tutorial": "spvp_hardreset",  # Tutorial Effect
     "Railgun Charge": "spvp_hyperspacebeacon",  # Custom Effect
+    "Lingering Damage": "spvp_damageovertime",  # Lingering Effect
     # Default
     "default": "republic.png"
 }

@@ -71,7 +71,6 @@ class ResourcesFrame(ttk.Frame):
         self.resource_labels = []
         self.resource_description_labels = {}
         set_row = 0
-        print("[DEBUG] Creating labels")
         self.label_style = ttk.Style()
         self.label_style.configure("Resource.TLabel", foreground="#0000EE")
         for resource in resources:

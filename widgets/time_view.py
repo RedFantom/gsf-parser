@@ -85,7 +85,7 @@ class TimeView(ttk.Treeview):
         )
         tag = Parser.get_event_category(line_dict, active_ids)
         if line_dict["ability"] not in self.icons:
-            print("Icon for ability '{}' is missing.".format(line_dict["ability"]))
+            print("[TimeView] Icon for ability '{}' is missing.".format(line_dict["ability"]))
             image = self.icons["default"]
         else:
             image = self.icons[line_dict["ability"]]
