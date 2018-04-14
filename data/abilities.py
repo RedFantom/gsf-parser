@@ -333,3 +333,14 @@ cooldowns = {
     "Primary Weapon Swap": 0,
     "Secondary Weapon Swap": 0,
 }
+
+missiles = (
+    "Proton Torpedo",
+    "Concussion Missile",
+    "Thermite Torpedo",
+    "Cluster Missiles",
+    "Seeker Mine",
+    "Rocket Pod",
+    "EMP Missile",
+    "Ion Missile",
+)

@@ -4,6 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+from data import abilities
 
 
 class Patterns:
@@ -56,16 +57,15 @@ class Patterns:
     # Individual Patterns
     MISTAKE_GUNSHIP_EVASION = {
         "name": "Gunship Evasion",
-        "description": "When this pattern is detected, you were hit by "
-                       "a Gunship and did not perform an evasive "
-                       "manoeuvre to prevent getting hit again.",
+        "description": "You were hit by a Gunship and did not perform "
+                       "an evasive manoeuvre to prevent getting hit "
+                       "again, even though one was available.",
         "trigger": (
             {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Slug Railgun"},
             {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Ion Railgun"},
             {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Plasma Railgun"},
         ),
         "events": [
-            ((0, 0), (SHIP, "type", "Gunship"), 1),
             ((0, 0), (SHIP, "ability", "Running Interference", True), 2),
             ((0, 0), (SHIP, "ability", "Distortion Field", True), 2),
             (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Running Interference"}, 3),
@@ -75,15 +75,32 @@ class Patterns:
         "tag": "mistake_gunship_evasion"
     }
 
+    MISTAKE_MISSILE_HIT = {
+        "name": "Missile Hit",
+        "description": "You were hit by a missile while your engine "
+                       "ability was available. It is advised to work "
+                       "on your reflexes.",
+        "trigger": tuple(
+            {"self": False, "damage": "{} > 0", "enemy": True, "ability": missile}
+            for missile in abilities.missiles
+        ),
+        "events": (
+            ((-20, 0), (FILE, {"ability": "engines", "occurred": False}), 1),
+            ((0, 0), (SHIP, "ability", "engines", True), 1),
+        ),
+        "color": "brown",
+        "tag": "missile_hit",
+    }
+
     """
     Iteration
     """
+    MISTAKES = [
+        MISTAKE_GUNSHIP_EVASION,
+        MISTAKE_MISSILE_HIT,
+    ]
+    
     ALL_PATTERNS = [
         MISTAKE_GUNSHIP_EVASION,
-
+        MISTAKE_MISSILE_HIT,
     ]
-
-    @staticmethod
-    def __iter__():
-        return Patterns.ALL_PATTERNS
-

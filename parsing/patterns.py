@@ -6,7 +6,6 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
 from datetime import timedelta, datetime
-from ast import literal_eval
 # Project modules
 from data.patterns import Patterns
 from data import abilities
@@ -108,9 +107,11 @@ class PatternParser(object):
         event_type = event[0]
         # File Event: (FILE, event_compare: dict)
         if event_type == Patterns.FILE:
+            _, (span, reference), _ = event
+            occurred = reference.pop("occurred", True)
             line_sub = PatternParser.get_lines_subsection(lines, line, span)
             for line in line_sub:
-                if PatternParser.compare_events(line, event[1]) is False:
+                if PatternParser.compare_events(line, reference) is not occurred:
                     continue
                 return True
         # Screen Event: (SCREEN, category: str, compare: callable, args: tuple)
@@ -168,9 +169,13 @@ class PatternParser(object):
     def compare_events(superset: dict, subset: dict):
         """Compare two line event dictionaries for subset"""
         for key, value in subset.items():
-            if key == "amount":
+            if key in ("amount", "damage"):
                 string = subset[key].format(superset[key])
-                if literal_eval(string) is False:
+                if eval(string) is False:
+                    return False
+                continue
+            if key in ("ability",) and hasattr(abilities, value):
+                if superset[key] not in getattr(abilities, value):
                     return False
                 continue
             if superset[key] != subset[key]:
