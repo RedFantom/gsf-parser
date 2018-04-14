@@ -41,12 +41,15 @@ class PatternParser(object):
         Then returns a set of markers suitable for displaying on a
         TimeLine, a lot like the FileHandler supports.
         """
+        print("[PatternParser] Parsing Patterns.")
         markers = list()
-        for line in lines:
-            line["enemy"] = line["source"] not in active_ids
-            for pattern in patterns:
+        for pattern in patterns:
+            print("[PatternParser] Parsing pattern:", pattern["name"])
+            for line in lines:
+                line["enemy"] = line["source"] not in active_ids
                 result = PatternParser.parse_pattern(pattern, line, lines, screen)
                 if result is True:
+                    print("[PatternParser] Pattern {} detected at {}".format(pattern["name"], lines.index(line)))
                     start = PatternParser.datetime_to_float(line["time"])
                     end = PatternParser.datetime_to_float(line["time"] + timedelta(seconds=1))
                     args = ("patterns", start, end)
@@ -69,10 +72,10 @@ class PatternParser(object):
         :param screen: Screen data dictionary with the data of spawn
         :return: True if pattern is detected for this event, else False
         """
-        trigger = pattern["trigger"]
         # Check if line is a valid trigger line
-        if PatternParser.compare_events(line, trigger) is False:
-            return False
+        for trigger in pattern["trigger"]:
+            if PatternParser.compare_events(line, trigger) is False:
+                return False
         # Check all required events
         events = pattern["events"]
         results = list()
@@ -112,6 +115,8 @@ class PatternParser(object):
                 return True
         # Screen Event: (SCREEN, category: str, compare: callable, args: tuple)
         elif event_type == Patterns.SCREEN:
+            if screen is None:
+                return False
             _, category, func, args = event
             screen_sub = PatternParser.get_screen_subsection(screen, category, line["time"], span)
             for key in sorted(screen_sub.keys()):
@@ -144,7 +149,7 @@ class PatternParser(object):
         if event_type == "component":
             # Component must be selected on the Ship for this spawn
             component, = args
-            return PatternParser.get_component_in_ship(ship, component)
+            return PatternParser.get_component_in_ship(lines, ship, component)
         # Parse Crew selected
         elif event_type == "crew":
             crew, = args
@@ -207,15 +212,18 @@ class PatternParser(object):
         return ship
 
     @staticmethod
-    def get_component_in_ship(ship: Ship, component: (str, Component)):
+    def get_component_in_ship(lines: list, ship: Ship, component: (str, Component)):
         """Return whether a component is found within a Ship instance"""
-        if ship is None:
-            return False  # Ship option not available at parsing time
         if isinstance(component, Component):
             name, category = component.name, component.category
         else:  # str
             name = component
             category = PatternParser.get_component_category(component)
+        abilities = Parser.get_abilities_dict(lines)
+        if name in abilities:
+            return True
+        if ship is None:
+            return False  # Ship option not available at parsing time
         if category not in ship:
             return False  # Configured improperly at parsing time
         categories = (category,)
@@ -281,7 +289,7 @@ class PatternParser(object):
             return False
         _, event_type, (ability, available) = descriptor
         category = PatternParser.get_component_category(ability)
-        if category not in ship or ship[category].name != ability:
+        if ship[category].name != ability:
             return False
         if "Weapon" in ability:  # PrimaryWeapon, SecondaryWeapon
             return True
@@ -301,7 +309,12 @@ class PatternParser(object):
         # The ability was activated in the event result. Now check cooldown of
         # ability and determine if the ability was available yet again
         stats = ShipStats(ship, None, None)
-        cooldown = stats[category]["Cooldown"] if category != "CoPilot" else 60
+        if category == "CoPilot":
+            cooldown = 60
+        elif category in ship:
+            cooldown = stats[category]["Cooldown"]
+        else:
+            cooldown = abilities.cooldowns[ability]
         time_diff = (line["time"] - result["time"]).total_seconds()
         return (time_diff > cooldown) is available
 

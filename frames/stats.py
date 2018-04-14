@@ -15,6 +15,7 @@ from widgets.timeline import TimeLine
 from widgets.time_view import TimeView
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
+from parsing.patterns import PatternParser
 from data.patterns import Patterns
 
 
@@ -265,16 +266,16 @@ class StatsFrame(ttk.Frame):
         self.time_line.config(start=start, finish=finish)
         # Update the TimeLine
         screen_data = FileHandler.get_data_dictionary()
-        if file not in screen_data:
-            return  # File is not found in the screen parsing results dictionary
         screen_dict = FileHandler.get_spawn_dictionary(
             screen_data, file, match_timings[2 * match], spawn_timings[match][spawn]
         )
-        if isinstance(screen_dict, str):
-            return
+        screen_dict = None if isinstance(screen_dict, str) or screen_dict is None else screen_dict
         spawn_list = file_cube[match][spawn]
         active_ids = Parser.get_player_id_list(spawn_list)
-        markers = FileHandler.get_markers(screen_dict, spawn_list, active_ids)
+        markers = dict()
+        if isinstance(screen_dict, dict):
+            markers = FileHandler.get_markers(screen_dict, spawn_list, active_ids)
+        markers["patterns"] = PatternParser.parse_patterns(spawn_list, screen_dict, Patterns.ALL_PATTERNS, active_ids)
         for category, data in markers.items():
             for (args, kwargs) in data:
                 try:

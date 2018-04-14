@@ -139,7 +139,7 @@ class FileHandler(object):
         name, match datetime and spawn datetime. Uses a lot of code to
         make the searching as reliable as possible.
         """
-        print("Spawn data requested for:\n{}\n{}\n{}".format(file_name, match_dt, spawn_dt))
+        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt, spawn_dt))
         # First check if the file_name is available
         if file_name not in data:
             return "Not available for this file.\n\nScreen parsing results are only available for spawns in files " \
@@ -216,7 +216,6 @@ class FileHandler(object):
         results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
         results.update(FileHandler.get_ability_markers(spawn_list, stats))
         results.update(FileHandler.get_engine_boost_markers(screen_dict, start_time))
-        results.update(FileHandler.get_pattern_markers(spawn_list, screen_dict, active_ids))
         return results
 
     @staticmethod
@@ -508,13 +507,6 @@ class FileHandler(object):
             kwargs = {"background": FileHandler.colors["engines"]}
             results["boosting"].append((args, kwargs))
         return results
-
-    @staticmethod
-    def get_pattern_markers(lines, screen_dict, active_ids):
-        return {
-            "patterns": PatternParser.parse_patterns(
-                lines, screen_dict, Patterns.ALL_PATTERNS, active_ids)
-        }
 
     @staticmethod
     def datetime_to_float(date_time_obj):
