@@ -15,6 +15,7 @@ from widgets.timeline import TimeLine
 from widgets.time_view import TimeView
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
+from data.patterns import Patterns
 
 
 class StatsFrame(ttk.Frame):
@@ -135,6 +136,7 @@ class StatsFrame(ttk.Frame):
         # categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         # categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
+        categories["patterns"] = {"text": "Patterns", "foreground": "black", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=0, marker_outline="black",
@@ -171,6 +173,14 @@ class StatsFrame(ttk.Frame):
         #     Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
+
+    def setup_timeline_patterns(self):
+        """Configure the TimeLine for Pattern display"""
+        for pattern in Patterns.ALL_PATTERNS:
+            tag, header, text = pattern["tag"], pattern["name"], pattern["description"]
+            balloon = Balloon(headertext=header, text=text)
+            self.time_line.tag_bind(tag, "<Enter>", balloon._on_enter)
+            self.time_line.tag_bind(tag, "<Leave>", balloon._on_leave)
 
     def setup_enemy_treeview(self):
         """Configure columns and options for enemies Treeview"""
@@ -217,7 +227,7 @@ class StatsFrame(ttk.Frame):
         self.time_scroll.grid(column=1, row=0, sticky="ns", pady=5)
         self.time_line.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
         self.screen_label.grid(column=1, row=2, padx=5, pady=5, sticky="w")
-        self.time_line._scrollbar_vertical.grid_forget()
+        # self.time_line._scrollbar_vertical.grid_forget()
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         """
@@ -262,7 +272,9 @@ class StatsFrame(ttk.Frame):
         )
         if isinstance(screen_dict, str):
             return
-        markers = FileHandler.get_markers(screen_dict, file_cube[match][spawn])
+        spawn_list = file_cube[match][spawn]
+        active_ids = Parser.get_player_id_list(spawn_list)
+        markers = FileHandler.get_markers(screen_dict, spawn_list, active_ids)
         for category, data in markers.items():
             for (args, kwargs) in data:
                 try:

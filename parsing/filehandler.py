@@ -16,6 +16,7 @@ from parsing.parser import Parser
 from parsing.vision import *
 from data import abilities
 from parsing.shipstats import ShipStats
+from parsing.patterns import PatternParser, Patterns
 
 
 class FileHandler(object):
@@ -194,7 +195,7 @@ class FileHandler(object):
         return data
 
     @staticmethod
-    def get_markers(screen_dict, spawn_list):
+    def get_markers(screen_dict: dict, spawn_list: list, active_ids: list):
         """
         Generate a dictionary of markers to insert into the TimeLine
         widget of the StatsFrame. This marker dictionary is built-up
@@ -215,6 +216,7 @@ class FileHandler(object):
         results.update(FileHandler.get_power_mgmt_markers(screen_dict, start_time))
         results.update(FileHandler.get_ability_markers(spawn_list, stats))
         results.update(FileHandler.get_engine_boost_markers(screen_dict, start_time))
+        results.update(FileHandler.get_pattern_markers(spawn_list, screen_dict, active_ids))
         return results
 
     @staticmethod
@@ -451,8 +453,9 @@ class FileHandler(object):
     @staticmethod
     def get_ability_markers(spawn_list, ship_stats):
         """
-        Parse a spawn list of lines and take the Engine, Shield, Systems and CoPilot ability activations and create
-        markers for them to be put in the TimeLine.
+        Parse a spawn list of lines and take the Engine, Shield, Systems
+        and CoPilot ability activations and create markers for them to
+        be put in the TimeLine.
         """
         # TODO: Use ship_statistics to create availability markers
         categories = ["engines", "shields", "copilot", "systems"]
@@ -507,6 +510,13 @@ class FileHandler(object):
         return results
 
     @staticmethod
+    def get_pattern_markers(lines, screen_dict, active_ids):
+        return {
+            "patterns": PatternParser.parse_patterns(
+                lines, screen_dict, Patterns.ALL_PATTERNS, active_ids)
+        }
+
+    @staticmethod
     def datetime_to_float(date_time_obj):
         """Convert a datetime object to a float value"""
         if not isinstance(date_time_obj, datetime):
@@ -524,4 +534,3 @@ class FileHandler(object):
                 pressed = True
             pressed = "pressed" in pressed if isinstance(pressed, str) else pressed
             yield time, (key, pressed)
-

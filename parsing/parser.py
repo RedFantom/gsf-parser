@@ -63,7 +63,7 @@ class Parser(object):
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": elements[4],
             "amount": elements[5],
-            "line": line
+            "line": line,
         }
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
@@ -77,6 +77,10 @@ class Parser(object):
             if log["target"] in enemies:
                 log["target"] = enemies[log["target"]]
         log["destination"] = log["target"]
+        log["self"] = log["source"] == log["target"]
+        amount = log["amount"].replace("*", "")
+        log["damage"] = int(amount) if amount.isdigit() else 0
+        log["crit"] = "*" in log["amount"]
         return log
 
     @staticmethod
@@ -98,8 +102,6 @@ class Parser(object):
             "color": color for this type of event,
             "active_id": id that was activate when this ability was fired
         }
-        :param line: A GSF CombatLog line
-        :return: dictionary
         """
         # Get the base dictionary
         line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
@@ -570,9 +572,7 @@ class Parser(object):
                 event = Parser.line_to_dictionary(event)
             # Get the data into locals
             time, source, target = event["time"], event["source"], event["target"]
-            ability, effect, amount_str = event["ability"], event["effect"], event["amount"]
-            # Process amount, as it is still a str with possibly a "*" for crits in it
-            amount = int(amount_str.replace("*", "")) if amount_str != "" else 0
+            ability, effect, amount = event["ability"], event["effect"], event["damage"]
             # If source is empty, then rename source to ability
             if source == "":
                 source = ability
@@ -596,7 +596,7 @@ class Parser(object):
                     dmg_d += amount
                     # Process hit
                     hitcount += 1
-                    critcount += 1 if "*" in amount_str else 0
+                    critcount += event["crit"]
                     # Process enemy
                     if target not in enemy_dmg_t:
                         enemy_dmg_t[target] = 0

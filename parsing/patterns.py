@@ -6,15 +6,19 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
 from datetime import timedelta, datetime
+from ast import literal_eval
 # Project modules
 from data.patterns import Patterns
 from data import abilities
-from parsing.ships import Ship, Component
+from parsing.ships import Ship, Component, get_ship_category
+from parsing.shipstats import ShipStats
+from parsing.parser import Parser
 
 
-FILE = "file"
-SCREEN = "screen"
-SHIP = "ship"
+class InvalidDescriptor(ValueError):
+    def __init__(self, event_descriptor: tuple):
+        ValueError.__init__(
+            self, "Invalid event descriptor for this function:  {}".format(event_descriptor))
 
 
 class PatternParser(object):
@@ -23,6 +27,33 @@ class PatternParser(object):
     more data from CombatLogs and screen parsing to aggregate data and
     synthesize more useful information for the user.
     """
+
+    @staticmethod
+    def parse_patterns(lines: list, screen: dict, patterns: list, active_ids: list):
+        """
+        Parse a set of patterns over the data for a given spawn. These
+        sets are described in the Patterns class in data/patterns.py .
+
+        For each line, all the patterns are parsed by checking if the
+        line is a valid trigger for a pattern and then checking if the
+        pattern is satisfied by checking the other data available.
+
+        Then returns a set of markers suitable for displaying on a
+        TimeLine, a lot like the FileHandler supports.
+        """
+        markers = list()
+        for line in lines:
+            line["enemy"] = line["source"] not in active_ids
+            for pattern in patterns:
+                result = PatternParser.parse_pattern(pattern, line, lines, screen)
+                if result is True:
+                    start = PatternParser.datetime_to_float(line["time"])
+                    end = PatternParser.datetime_to_float(line["time"] + timedelta(seconds=1))
+                    args = ("patterns", start, end)
+                    kwargs = {"background": pattern["color"], "tags": pattern["tag"]}
+                    markers.append((args, kwargs))
+        return markers
+
     @staticmethod
     def parse_pattern(pattern: dict, line: dict, lines: list, screen: dict):
         """
@@ -44,33 +75,100 @@ class PatternParser(object):
             return False
         # Check all required events
         events = pattern["events"]
+        results = list()
         requirements = list()
         for (span, event, eid) in events:
+            requirements.append(eid)
             # Requirements already satisfied are skipped
-            if eid in requirements:
+            if eid in results:
                 continue
             # Check requirement against given data
-            if event[0] == FILE:
-                line_sub = PatternParser.get_lines_subsection(lines, trigger, span)
-                for line in line_sub:
-                    if PatternParser.compare_events(line, event[1]):
-                        requirements.append(eid)
-                        break
-            elif event[0] == SCREEN:
-                pass
-            elif event[0] == SHIP:
-                pass
-            else:
-                raise ValueError("Invalid event type: ", event)
-        return True
+            if PatternParser.parse_event(line, lines, screen, event, span) is True:
+                results.append(eid)
+        return PatternParser.compare_requirements(set(results), set(requirements))
+
+    @staticmethod
+    def parse_event(line: dict, lines: list, screen: dict, event: tuple, span: tuple):
+        """
+        Parse an event_descriptor over a given set of data.
+
+        :param line: The line to parse the given event_descriptor for
+        :param lines: List of lines for the spawn being parsed
+        :param screen: Screen data dictionary for this spawn
+        :param event: Event descriptor (Patterns docstring)
+        :param span: (lower, higher) spawn tuple (Patterns docstring)
+
+        :return: bool, whether the event was detected in this set
+
+        :raises: ValueError - Invalid event descriptor
+        """
+        event_type = event[0]
+        # File Event: (FILE, event_compare: dict)
+        if event_type == Patterns.FILE:
+            line_sub = PatternParser.get_lines_subsection(lines, line, span)
+            for line in line_sub:
+                if PatternParser.compare_events(line, event[1]) is False:
+                    continue
+                return True
+        # Screen Event: (SCREEN, category: str, compare: callable, args: tuple)
+        elif event_type == Patterns.SCREEN:
+            _, category, func, args = event
+            screen_sub = PatternParser.get_screen_subsection(screen, category, line["time"], span)
+            for key in sorted(screen_sub.keys()):
+                if func(screen_sub[key], args) is False:
+                    continue
+                return True
+        # Ship Requirement, either ability, component, crew
+        elif event_type == Patterns.SHIP:
+            ship = PatternParser.get_ship_from_screen_data(screen)
+            if ship is None:
+                return False
+            return PatternParser.parse_ship_descriptor(ship, line, lines, event)
+        raise InvalidDescriptor(event)
+
+    @staticmethod
+    def parse_ship_descriptor(ship: Ship, line: dict, lines: list, event: tuple):
+        """
+        Parse an event_descriptor of the SHIP type. Supports ability,
+        component and crew type operations.
+        :param ship: Ship instance for the spawn described by lines
+        :param line: Trigger line dictionary
+        :param lines: List of lines in this spawn
+        :param event: Event descriptor tuple (PatternParser docstring)
+        :return: The result of parsing this SHIP event descriptor
+        """
+        if event[0] != Patterns.SHIP:
+            raise InvalidDescriptor(event)
+        _, event_type, args = event  # "ability", "component", "crew"
+        # Parse Component selected
+        if event_type == "component":
+            # Component must be selected on the Ship for this spawn
+            component, = args
+            return PatternParser.get_component_in_ship(ship, component)
+        # Parse Crew selected
+        elif event_type == "crew":
+            crew, = args
+            return PatternParser.get_crew_in_ship(ship, crew)
+        # Parse Ability Available
+        elif event_type == "ability":
+            return PatternParser.parse_ability_availability(line, lines, event, ship)
+        # Parse ship type selected
+        elif event_type == "type":
+            ship_name = ship.name if ship is None else Parser.get_ship_for_dict(Parser.get_abilities_dict(lines))
+            ship_type, = args
+            return get_ship_category(ship_name) == ship_type
+        raise InvalidDescriptor(event)
 
     @staticmethod
     def compare_events(superset: dict, subset: dict):
         """Compare two line event dictionaries for subset"""
         for key, value in subset.items():
-            if key == "source" and (superset["source"] == superset["target"]) is not subset["source"]:
+            if key == "amount":
+                string = subset[key].format(superset[key])
+                if literal_eval(string) is False:
                     return False
-            elif superset[key] != subset[key]:
+                continue
+            if superset[key] != subset[key]:
                 return False
         return True
 
@@ -118,7 +216,7 @@ class PatternParser(object):
         else:  # str
             name = component
             category = PatternParser.get_component_category(component)
-        if category not in ship.components:
+        if category not in ship:
             return False  # Configured improperly at parsing time
         categories = (category,)
         if "Weapon" in category:  # Extend to double primaries/secondaries
@@ -128,7 +226,7 @@ class PatternParser(object):
         for category in categories:
             if category not in ship:  # Double primaries/secondaries
                 continue
-            component = ship.components[category]
+            component = ship[category]
             if not isinstance(component, Component):  # Improper config
                 print("[PatternParser] Improperly configured Ship instance:", ship, component)
                 continue
@@ -137,6 +235,13 @@ class PatternParser(object):
                 break
             continue
         return result
+
+    @staticmethod
+    def get_crew_in_ship(ship: Ship, crew: str):
+        """Return whether a Crew member is found within a Ship instance"""
+        if ship is None:
+            return False  # Ship option not available at parsing time
+        return crew in ship.crew.values()
 
     @staticmethod
     def get_component_category(component: str)->str:
@@ -151,4 +256,59 @@ class PatternParser(object):
             return "Systems"
         if component in abilities.shields:
             return "ShieldProjector"
+        if component in abilities.copilots:
+            return "CoPilot"
         raise ValueError("Invalid component type given:", component)
+
+    @staticmethod
+    def compare_requirements(results: (list, set), requirements: (list, set)):
+        return all(req in results for req in requirements)
+
+    @staticmethod
+    def parse_ability_availability(line: dict, lines: list, descriptor: tuple, ship: Ship):
+        """
+        Return whether the availability of an ability matches the
+        availability required by a SHIP-Ability event descriptor.
+        :param line: Trigger line for Pattern
+        :param lines: List of lines for this spawn
+        :param descriptor: Ship-Ability event descriptor
+        :param ship: Ship instance for this spawn
+        :return: Whether the ability availability of an ability matches
+            the availability described by the SHIP-Ability event
+            descriptor
+        """
+        if ship is None:  # Ship option not available at parsing time
+            return False
+        _, event_type, (ability, available) = descriptor
+        category = PatternParser.get_component_category(ability)
+        if category not in ship or ship[category].name != ability:
+            return False
+        if "Weapon" in ability:  # PrimaryWeapon, SecondaryWeapon
+            return True
+        """
+        In order to determine availability with optimum efficiency, all 
+        lines preceding the trigger are parsed in reverse order to find 
+        the first ability activation to check the availability of the
+        ability as described in the event descriptor.
+        """
+        result = None
+        for event in reversed(lines[0:lines.index(line)]):
+            if event["ability"] == ability and event["effect"] == "AbilityActivate":
+                result = event
+                break
+        if result is None:  # Ability was never activated
+            return available
+        # The ability was activated in the event result. Now check cooldown of
+        # ability and determine if the ability was available yet again
+        stats = ShipStats(ship, None, None)
+        cooldown = stats[category]["Cooldown"] if category != "CoPilot" else 60
+        time_diff = (line["time"] - result["time"]).total_seconds()
+        return (time_diff > cooldown) is available
+
+    @staticmethod
+    def datetime_to_float(date_time_obj):
+        """Convert a datetime object to a float value"""
+        if not isinstance(date_time_obj, datetime):
+            raise TypeError("date_time_obj not of datetime type but {}".format(repr(date_time_obj)))
+        return float(
+            "{}.{}{}".format(date_time_obj.minute, (int((date_time_obj.second / 60) * 100)), date_time_obj.microsecond))
