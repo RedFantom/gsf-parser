@@ -85,7 +85,8 @@ class Ship(object):
             self.components[item] = value
         elif item in self.crew:
             self.crew[item] = value
-        raise ValueError("Invalid key for Ship: {}".format(item))
+        else:
+            raise ValueError("Invalid key for Ship: '{}'".format(item))
 
     def __getitem__(self, item):
         """Returns a Component instance or Crew member name"""
