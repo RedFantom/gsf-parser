@@ -139,8 +139,7 @@ class StrategiesList(ttk.Frame):
     def update_tree(self):
         """Update list of Strategies and Phases in Treeview"""
         self.tree.delete(*self.tree.get_children())
-        iterator = self.db
-        for strategy, content in iterator:
+        for strategy, content in self.db:
             self.tree.insert("", tk.END, iid=strategy, text=strategy)
             for phase in content:
                 self.tree.insert(strategy, tk.END, iid=(content.name, "..", phase[0]), text=phase[0])
