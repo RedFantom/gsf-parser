@@ -7,6 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 from network.sharing.server import SharingServer
 from network.minimap.server import MiniMapServer
 import argparse
+import time
 
 """
 Setup a SharingServer with command-line arguments. Available arguments:
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            pass
+            time.sleep(1)
     except KeyboardInterrupt:
         server.stop()
     exit()

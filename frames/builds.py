@@ -92,18 +92,15 @@ class BuildsFrame(ttk.Frame):
         in the CrewAbilitiesFrame
         :param member: (faction, category, name)
         """
-        print("set_crew_member received member: {0}".format(member))
-        print("Looking for companion {0} in category {1}".format(member[2], member[1]))
+        print("[BuildsFrame] Configuring crew member:", member)
         value = None
         faction, category, name = member
         self.ship.crew[category] = member
         category_index = companion_indices[category]
         for index, companion in enumerate(self.companions_data[faction][category_index][category]):
-            print("Checking companion: {0}".format(companion["Name"]))
+            print("[BuildsFrame] Checking companion: {0}".format(companion["Name"]))
             if name == companion["Name"]:
-                print("Companion is valid!")
                 value = index
-                print("Index was {0}, so value set to {1}".format(index, value))
                 break
         if value is None:
             raise ValueError()
