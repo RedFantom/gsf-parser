@@ -174,14 +174,22 @@ class StatsFrame(ttk.Frame):
         #     Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
+        self.setup_timeline_patterns()
 
     def setup_timeline_patterns(self):
         """Configure the TimeLine for Pattern display"""
+        string = ""
         for pattern in Patterns.ALL_PATTERNS:
             tag, header, text = pattern["tag"], pattern["name"], pattern["description"]
-            balloon = Balloon(headertext=header, text=text)
+            color = pattern["color"]
+            self.time_line.tag_configure(tag)
+            string += "{} - {}\n\n{}\n\n".format(header, color, text)
+            balloon = Balloon(self.time_line._timeline, headertext=header, text=text)
+            self.time_line._timeline.unbind("<Enter>")
+            self.time_line._timeline.unbind("<Leave>")
             self.time_line.tag_bind(tag, "<Enter>", balloon._on_enter)
             self.time_line.tag_bind(tag, "<Leave>", balloon._on_leave)
+        Balloon(self.time_line._category_labels["patterns"], headertext="Patterns", text=string, width=400)
 
     def setup_enemy_treeview(self):
         """Configure columns and options for enemies Treeview"""
@@ -276,6 +284,7 @@ class StatsFrame(ttk.Frame):
         if isinstance(screen_dict, dict):
             markers = FileHandler.get_markers(screen_dict, spawn_list, active_ids)
         markers["patterns"] = PatternParser.parse_patterns(spawn_list, screen_dict, Patterns.ALL_PATTERNS, active_ids)
+        print("[TimeLine] Building {} markers.".format(sum(len(value) for value in markers.values())))
         for category, data in markers.items():
             for (args, kwargs) in data:
                 try:
@@ -290,6 +299,6 @@ class StatsFrame(ttk.Frame):
                         raise
                     else:
                         raise
-                print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
-                    args[0], args[1], args[2], kwargs["background"]))
+                # print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
+                #     args[0], args[1], args[2], kwargs["background"]))
         return

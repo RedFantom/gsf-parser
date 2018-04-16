@@ -4,7 +4,22 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from data import abilities
+from parsing import vision
+
+
+def mistake_off_center_shot(distance: (int, float), threshold: (int, float)):
+    """
+    Pattern match function for screen parsing data for the
+    MISTAKE_OFF_CENTER_SHOT pattern. Compares the tracking distance
+    found in the subsection of the screen parsing data dictionary
+    {datetime: distance_from_center_pixels} to the given treshold,
+    which is in tracking degrees.
+    :param distance: Distance value in the screen dictionary
+    :param threshold: Threshold in degrees constituting and off-center
+        shot.
+    :return: True when off-center, False if not
+    """
+    return vision.get_tracking_degrees(distance) > threshold
 
 
 class Patterns:
@@ -61,15 +76,17 @@ class Patterns:
                        "an evasive manoeuvre to prevent getting hit "
                        "again, even though one was available.",
         "trigger": (
-            {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Slug Railgun"},
-            {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Ion Railgun"},
-            {"self": False, "damage": "{} > 0", "enemy": True, "ability": "Plasma Railgun"},
+            {"self": False, "damage": "{} > 0", "enemy": True, "ability": "railguns"},
         ),
         "events": [
+            # Mitigation availability
             ((0, 0), (SHIP, "ability", "Running Interference", True), 2),
             ((0, 0), (SHIP, "ability", "Distortion Field", True), 2),
-            (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Running Interference"}, 3),
-            (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Distortion Field"}, 3),
+            # Mitigation usage
+            ((-5, 5), (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Running Interference"}), 3),
+            ((-5, 5), (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Distortion Field"}), 3),
+            # Second hit
+            ((0, 10), (FILE, {"self": False, "ability": "railguns", "effect": "ApplyEffect: Damage", "enemy": True}), 1)
         ],
         "color": "#4286f4",
         "tag": "mistake_gunship_evasion"
@@ -80,16 +97,35 @@ class Patterns:
         "description": "You were hit by a missile while your engine "
                        "ability was available. It is advised to work "
                        "on your reflexes.",
-        "trigger": tuple(
-            {"self": False, "damage": "{} > 0", "enemy": True, "ability": missile}
-            for missile in abilities.missiles
+        "trigger": (
+            {"self": False, "damage": "{} > 0", "enemy": True, "ability": "missiles"},
         ),
         "events": (
+            # No engine ability fired while available
             ((-20, 0), (FILE, {"ability": "engines", "occurred": False}), 1),
             ((0, 0), (SHIP, "ability", "engines", True), 1),
+            # No inhibiting effects
+            ((-15, 0), (FILE, {"effect": "ApplyEffect: Engine Ability Disabled", "occurred": False}), 2),
         ),
         "color": "brown",
-        "tag": "missile_hit",
+        "tag": "mistake_missile_hit",
+    }
+
+    MISTAKE_OFF_CENTER_SHOT = {
+        "name": "Off-center Shot",
+        "description": "You made a shot significantly off-center, "
+                       "significantly reducing your chance of hitting "
+                       "the target.",
+        "trigger": (
+            {"enemy": True, "effect": "ApplyEffect: Damage", "ability": "primaries"},
+            {"enemy": True, "effect": "ApplyEffect: Damage", "ability": "railguns"},
+        ),
+        "events": (
+            # Off-center shot
+            ((-0.3, 0.3), (SCREEN, "distance", mistake_off_center_shot, 20), 1),
+        ),
+        "color": "orange",
+        "tag": "mistake_off_center_shot"
     }
 
     """
@@ -98,9 +134,7 @@ class Patterns:
     MISTAKES = [
         MISTAKE_GUNSHIP_EVASION,
         MISTAKE_MISSILE_HIT,
+        MISTAKE_OFF_CENTER_SHOT,
     ]
 
-    ALL_PATTERNS = [
-        MISTAKE_GUNSHIP_EVASION,
-        MISTAKE_MISSILE_HIT,
-    ]
+    ALL_PATTERNS = MISTAKES

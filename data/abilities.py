@@ -344,3 +344,9 @@ missiles = (
     "EMP Missile",
     "Ion Missile",
 )
+
+railguns = (
+    "Slug Railgun",
+    "Ion Railgun",
+    "Plasma Railgun"
+)

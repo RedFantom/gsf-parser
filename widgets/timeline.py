@@ -463,7 +463,7 @@ class TimeLine(ttk.Frame):
         # Calculate pixel positions
         x1 = self.get_time_position(start)
         x2 = max(self.get_time_position(finish), x1 + 1)
-        print("Drawing on {}".format((x1, x2)))
+        # print("Drawing on {}".format((x1, x2)))
         y1, y2 = self._rows[category]
         # Create the rectangle
         rectangle_id = self._timeline.create_rectangle(

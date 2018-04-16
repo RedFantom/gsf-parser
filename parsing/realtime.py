@@ -57,7 +57,7 @@ spawn_dictionary["keys"] = keys_dict
 spawn_dictionary["health"] = health_dict
     health_dict[datetime_obj] = (hull, shieldsf, shieldsr), all ints
 spawn_dictionary["distance"] = distance_dict
-    distance_dict[datetime_obj] = distance, int
+    distance_dict[datetime_obj] = distance, float
 spawn_dictionary["target"] = target_dict
     target_dict[datetime_obj] = (type, name)
 spawn_dictionary["player_name"]

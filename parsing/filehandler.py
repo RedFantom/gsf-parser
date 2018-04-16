@@ -7,6 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import pickle as pickle
 from datetime import datetime
+from pprint import pformat
 # Packages
 from pynput.mouse import Button
 # Project Modules
@@ -16,7 +17,6 @@ from parsing.parser import Parser
 from parsing.vision import *
 from data import abilities
 from parsing.shipstats import ShipStats
-from parsing.patterns import PatternParser, Patterns
 
 
 class FileHandler(object):
@@ -133,13 +133,13 @@ class FileHandler(object):
         return None
 
     @staticmethod
-    def get_spawn_dictionary(data, file_name, match_dt, spawn_dt):
+    def get_spawn_dictionary(data: dict, file_name: str, match_dt: datetime, spawn_dt: datetime):
         """
         Function to get the data dictionary for a spawn based on a file
         name, match datetime and spawn datetime. Uses a lot of code to
         make the searching as reliable as possible.
         """
-        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt, spawn_dt))
+        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt.time, spawn_dt.time))
         # First check if the file_name is available
         if file_name not in data:
             return "Not available for this file.\n\nScreen parsing results are only available for spawns in files " \
@@ -181,7 +181,7 @@ class FileHandler(object):
         if spawn_dict is None:
             return "Not available for this spawn\n\nScreen parsing results are not available for spawns which " \
                    "were not  spawned while screen parsing was enabled and real-time parsing were running."
-        print("Retrieved data: {}".format(spawn_dict))
+        print("[FileHandler] Retrieved a spawn dictionary.")
         return spawn_dict
 
     @staticmethod
@@ -192,6 +192,8 @@ class FileHandler(object):
             return {}
         with open(file_name, "rb") as fi:
             data = pickle.load(fi)
+        with open("realtime.txt", "w") as fo:
+            fo.write(pformat(data))
         return data
 
     @staticmethod

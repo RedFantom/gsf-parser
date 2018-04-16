@@ -52,7 +52,7 @@ class PatternParser(object):
                     start = PatternParser.datetime_to_float(line["time"])
                     end = PatternParser.datetime_to_float(line["time"] + timedelta(seconds=1))
                     args = ("patterns", start, end)
-                    kwargs = {"background": pattern["color"], "tags": pattern["tag"]}
+                    kwargs = {"background": pattern["color"], "tags": (pattern["tag"],)}
                     markers.append((args, kwargs))
         return markers
 
@@ -71,22 +71,32 @@ class PatternParser(object):
         :param screen: Screen data dictionary with the data of spawn
         :return: True if pattern is detected for this event, else False
         """
+        triggered = False
         # Check if line is a valid trigger line
         for trigger in pattern["trigger"]:
-            if PatternParser.compare_events(line, trigger) is False:
-                return False
+            if PatternParser.compare_events(line, trigger) is True:
+                print("[PatternParser] {} triggered at {}.".format(
+                    pattern["name"], line["time"].time()))
+                triggered = True
+                break
+            continue
+        if not triggered:
+            return False
         # Check all required events
         events = pattern["events"]
         results = list()
         requirements = list()
         for (span, event, eid) in events:
             requirements.append(eid)
+            print("[PatternParser] Parsing event {} with eid {}.".format(event, eid))
             # Requirements already satisfied are skipped
             if eid in results:
                 continue
             # Check requirement against given data
             if PatternParser.parse_event(line, lines, screen, event, span) is True:
+                print("[PatternParser] Requirement {} satisfied.".format(eid))
                 results.append(eid)
+        print("[PatternParser] Requirements: {}, Results: {}".format(requirements, results))
         return PatternParser.compare_requirements(set(results), set(requirements))
 
     @staticmethod
@@ -107,23 +117,28 @@ class PatternParser(object):
         event_type = event[0]
         # File Event: (FILE, event_compare: dict)
         if event_type == Patterns.FILE:
-            _, (span, reference), _ = event
+            _, reference = event
             occurred = reference.pop("occurred", True)
             line_sub = PatternParser.get_lines_subsection(lines, line, span)
+            print("[PatternParser] Comparing a file event: {}".format(reference))
             for line in line_sub:
                 if PatternParser.compare_events(line, reference) is not occurred:
                     continue
                 return True
+            return False
         # Screen Event: (SCREEN, category: str, compare: callable, args: tuple)
         elif event_type == Patterns.SCREEN:
             if screen is None:
                 return False
             _, category, func, args = event
             screen_sub = PatternParser.get_screen_subsection(screen, category, line["time"], span)
+            print("[PatternParser] Screen subsection retrieved with length:", len(screen_sub))
             for key in sorted(screen_sub.keys()):
+                print("[PatternParser]     Checking {} against {} function.".format(screen_sub[key], func))
                 if func(screen_sub[key], args) is False:
                     continue
                 return True
+            return False
         # Ship Requirement, either ability, component, crew
         elif event_type == Patterns.SHIP:
             ship = PatternParser.get_ship_from_screen_data(screen)
@@ -193,6 +208,7 @@ class PatternParser(object):
                 result.append(event)
             if event["time"] > limit_h:
                 break
+        print("[LinesSubSection] Created sub-list of {} items between limits {}, {}".format(len(result), limit_l.time(), limit_h.time()))
         return result
 
     @staticmethod
@@ -201,7 +217,9 @@ class PatternParser(object):
         sub = data[category]
         low, high = origin + timedelta(seconds=span[0]), origin + timedelta(seconds=span[1])
         results = dict()
+        low, high = low.time(), high.time()
         for time, data in sub.items():
+            time = time.time()
             if low <= time <= high:
                 results[time] = data
         return results

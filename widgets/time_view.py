@@ -138,10 +138,7 @@ class TimeView(ttk.Treeview):
         :param start_time: time the match or spawn has started
         :return: a formatted string of the time difference
         """
-        delta = time - start_time
-        elapsed = divmod(delta.total_seconds(), 60)
-        string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
-        return string
+        return time.strftime("%H:%M:%S")
 
     @staticmethod
     def get_treeview_values(line_dict, player_name, start_time, active_ids):
@@ -158,9 +155,7 @@ class TimeView(ttk.Treeview):
         return values
 
     def delete(self, *items):
-        """
-        Function redirect to reset the index attribute
-        """
+        """Function redirect to reset the index attribute"""
         ttk.Treeview.delete(self, *items)
         self.index = 0
 
