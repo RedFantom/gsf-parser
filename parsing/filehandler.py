@@ -268,15 +268,14 @@ class FileHandler(object):
             ability = line["ability"]
             # If the ability was self-targeted, then it is not a weapon
             # If the ability was not activated by self, then it is not damage dealt
-            if line["source"] == line["target"] or line["source"] not in player_list:
+            if line["self"] is True or line["target"] not in player_list:
                 continue
             # Determine the category of this ability
             if ability in abilities.primaries:
                 category = "primaries"
             elif ability in abilities.secondaries:
                 category = "secondaries"
-            else:
-                # Ability is not a weapon
+            else:  # Ability is not a weapon
                 continue
             # Generate the arguments for the marker creation
             start = FileHandler.datetime_to_float(line["time"])
@@ -328,9 +327,7 @@ class FileHandler(object):
 
     @staticmethod
     def get_health_markers(screen_dict, start_time):
-        """
-        Return health markers for TimeLine
-        """
+        """Return health markers for TimeLine"""
         if "health" not in screen_dict:
             return {}
         sub_dict = screen_dict["health"]
@@ -505,7 +502,13 @@ class FileHandler(object):
                 start = time
                 continue
             # pressed is False
-            args = ("boosting", FileHandler.datetime_to_float(start), FileHandler.datetime_to_float(time))
+            try:
+                start_dt = FileHandler.datetime_to_float(start)
+                time_dt = FileHandler.datetime_to_float(time)
+            except TypeError as e:
+                print("[FileHandler:BoostMarkers] Failed to convert time to float:", e)
+                continue
+            args = ("boosting", start_dt, time_dt)
             kwargs = {"background": FileHandler.colors["engines"]}
             results["boosting"].append((args, kwargs))
         return results
