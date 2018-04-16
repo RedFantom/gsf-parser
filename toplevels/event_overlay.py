@@ -52,6 +52,7 @@ class EventOverlay(tk.Toplevel):
 
         self.setup_window()
         self.grid_widgets()
+        self.update_events()
 
     def grid_widgets(self):
         """Configure widgets in grid geometry manager"""
@@ -83,6 +84,8 @@ class EventOverlay(tk.Toplevel):
 
     def process_event(self, event: dict, active_id: str):
         """Process a given event dictionary for display"""
+        if event is None:
+            return False
         event_type = Parser.get_event_category(event, active_id)
         if event_type not in self._types:
             return False
@@ -104,6 +107,7 @@ class EventOverlay(tk.Toplevel):
         # Grid the events
         for index, label in enumerate(self._labels.values()):
             label.grid(row=index, column=0, sticky="nsw", padx=5, pady=(0, 5))
+        self.update_geometry()
         # Create after command
         self._after_id = self.after(self._after, self.update_events)
 
@@ -116,11 +120,16 @@ class EventOverlay(tk.Toplevel):
 
     def generate_widget(self, event: dict, event_type: str):
         """Build a abel widget for an event"""
-        return tk.Label(
+        if event["ability"] not in self._icons:
+            print("[EventOverlay] Passing on event: {}".format(event))
+            return
+        label = tk.Label(
             self, image=self._icons[event["ability"]], compound=tk.LEFT,
-            text="{:<16} - {}".format(event["ability"], event["amount"].ljust(4)),
-            background=self._background, foreground=variables.colors[event_type],
+            text="{:<16} - {}".format(event["ability"], event["amount"]),
+            background=self._background, foreground=variables.colors[event_type][0],
             font=("Consolas", 11))
+        print("[EventOverlay] Generated Label for:", event)
+        return label
 
     def destroy(self):
         """Set destroyed attribute and destroy"""

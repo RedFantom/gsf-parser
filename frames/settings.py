@@ -152,7 +152,7 @@ class SettingsFrame(ttk.Frame):
         # EventOverlay
         self.realtime_event_overlay = tk.BooleanVar()
         self.realtime_event_overlay_checkbox = ttk.Checkbutton(
-            self.realtime_frame, text="Enable EventOverlay", variable=self.realtime_event_overlay,
+            self.realtime_frame, text="Enable EventOverlay (bèta)", variable=self.realtime_event_overlay,
             command=self.save_settings)
         Balloon(
             self.realtime_event_overlay_checkbox,

@@ -595,9 +595,7 @@ class TimeLine(ttk.Frame):
         self.generate_timeline_contents()
 
     def set_zoom_factor(self, factor):
-        """
-        Function to manually set the zoom factor
-        """
+        """Function to manually set the zoom factor"""
         self._zoom_factor = factor
         self.generate_timeline_contents()
 

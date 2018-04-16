@@ -277,6 +277,8 @@ class RealTimeParser(Thread):
         # File parsing
         lines = self._stalker.get_new_lines()
         for line in lines:
+            if line is None:
+                continue
             self.process_line(line)
         if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
@@ -599,7 +601,7 @@ class RealTimeParser(Thread):
             return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
         tracking_penalty = self.ship_stats[weapon_key]["trackingAccuracyLoss"]
-        if "Weapon_Tracking_Bonus" not in self.ship_stats[weapon_key]:
+        if "Weapon_Tracking_Bonus" in self.ship_stats[weapon_key]:
             upgrade_constant = self.ship_stats[weapon_key]["Weapon_Tracking_Bonus"]
         else:
             upgrade_constant = 0

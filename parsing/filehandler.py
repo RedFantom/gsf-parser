@@ -192,8 +192,6 @@ class FileHandler(object):
             return {}
         with open(file_name, "rb") as fi:
             data = pickle.load(fi)
-        with open("realtime.txt", "w") as fo:
-            fo.write(pformat(data))
         return data
 
     @staticmethod
