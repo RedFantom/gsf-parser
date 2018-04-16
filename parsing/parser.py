@@ -55,7 +55,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         if len(elements) != 6:
-            raise ValueError("Invalid event: {}".format(line))
+            elements = elements[:6]
         effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
         log = {
             "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
