@@ -48,7 +48,6 @@ class PatternParser(object):
                 line["enemy"] = line["source"] not in active_ids
                 result = PatternParser.parse_pattern(pattern, line, lines, screen)
                 if result is True:
-                    print("[PatternParser] Pattern {} detected at {}".format(pattern["name"], lines.index(line)))
                     start = PatternParser.datetime_to_float(line["time"])
                     end = PatternParser.datetime_to_float(line["time"] + timedelta(seconds=1))
                     args = ("patterns", start, end)

@@ -54,18 +54,20 @@ class Parser(object):
         Valid GSF CombatLog event:
         [time] [source] [target] [ability] [effect] (amount)
         """
-        if len(elements) != 6:
-            elements = elements[:6]
+        log = dict()
+        log["line"] = line
         effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
-        log = {
-            "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
-            "source": elements[1],
-            "target": elements[2], "destination": elements[2],
+        log["time"] = datetime.strptime(elements[0], "%H:%M:%S.%f")
+        log["source"] = elements[1]
+        log["target"] = elements[2]
+        if len(elements) != 6:
+            return log  # Invalid non-GSF CombatLog line
+        log.update({
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
             "amount": elements[5],
-            "line": line,
-        }
+            "destination": log["target"]
+        })
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
         if log["ability"].strip() == "":

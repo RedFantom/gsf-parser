@@ -402,7 +402,7 @@ class FileHandler(object):
         # processing in the calling function.
         results = {"tracking": []}
         stats = {
-            "firing_arc": 40,  # degrees
+            "firing_arc": 32,  # degrees
             "penalty": 0,  # percentpoint per degree
             "upgrade_c": 0  # the upgrade constant
         }
@@ -423,7 +423,7 @@ class FileHandler(object):
         # Loop over screen parsing cursor position data
         for key, value in sorted(screen_dict["cursor_pos"].items()):
             degrees = get_tracking_degrees(get_distance_from_center(value))
-            degrees = max(min(degrees, stats["firing_arc"]), 1)
+            degrees = max(min(degrees, stats["firing_arc"]), 0)
             # If tracking penalty constants are available
             if stats["penalty"] != 0:
                 # Calculate the actual tracking penalty instead of using
@@ -436,7 +436,7 @@ class FileHandler(object):
             else:
                 # Base the marker on the degrees from center instead
                 darkened = color_darken(
-                    base_color, stats["firing_arc"] / degrees)
+                    base_color, degrees / stats["firing_arc"])
                 background = tuple_to_hex(darkened)
             # Create the marker data
             start = FileHandler.datetime_to_float(key)

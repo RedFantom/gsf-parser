@@ -34,11 +34,8 @@ class ShipFrame(ttk.Frame):
     -----------------------------------
     """
 
-    def __init__(self, root_frame):
-        """
-        Create all labels and variables
-        :param root_frame:
-        """
+    def __init__(self, root_frame: tk.Widget):
+        """Create all labels and variables"""
         ttk.Frame.__init__(self, root_frame, width=265, height=410)
         self.ship_label_var = tk.StringVar()
         self.ship_label_var.set("No match or spawn selected yet.")
@@ -53,7 +50,7 @@ class ShipFrame(ttk.Frame):
         self.ship_label.grid(column=0, row=1, sticky="nswe", padx=5)
         self.remove_image()
 
-    def update_ship(self, ships_list):
+    def update_ship(self, ships_list: list):
         """
         Update the picture of the ship by using the ships_list as
         reference. If multiple ships are possible, set the default.
@@ -61,17 +58,22 @@ class ShipFrame(ttk.Frame):
         in the abilities module.
         """
         if len(ships_list) > 1:
-            self.set_image("default.png")
+            self.set_image("default")
+            return
+        elif len(ships_list) == 0:
+            self.set_image("default")
+            print("[ShipFrame] Invalid ships list retrieved.")
             return
         name = ships_list[0] if settings["gui"]["faction"] != "republic" else rep_ships[ships_list[0]]
-        image = name + ".png"
-        self.set_image(image)
+        self.set_image(name)
 
-    def set_image(self, file):
+    def set_image(self, file: str):
         """
         Set the image file, unless there is an IOError, because  then
         the assets folder is not in place
         """
+        if not file.endswith(".png"):
+            file += ".png"
         path = os.path.join(get_assets_directory(), "img", file)
         if not os.path.exists(path):
             print("[ShipFrame] File not found:", path)
@@ -83,7 +85,4 @@ class ShipFrame(ttk.Frame):
 
     def remove_image(self):
         """Set the default image"""
-        self.set_default()
-
-    def set_default(self):
-        self.set_image("default.png")
+        self.set_image("default")
