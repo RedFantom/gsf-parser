@@ -139,7 +139,7 @@ class FileHandler(object):
         name, match datetime and spawn datetime. Uses a lot of code to
         make the searching as reliable as possible.
         """
-        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt.time, spawn_dt.time))
+        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt.time(), spawn_dt.time()))
         # First check if the file_name is available
         if file_name not in data:
             return "Not available for this file.\n\nScreen parsing results are only available for spawns in files " \
@@ -389,7 +389,7 @@ class FileHandler(object):
         return results
 
     @staticmethod
-    def get_tracking_markers(screen_dict, ship_stats):
+    def get_tracking_markers(screen_dict: dict, ship_stats: ShipStats):
         """
         Generates a dictionary of markers that indicate tracking
         penalty. Attempts to read the tracking penalty data from the
@@ -436,7 +436,7 @@ class FileHandler(object):
             else:
                 # Base the marker on the degrees from center instead
                 darkened = color_darken(
-                    base_color, degrees / stats["firing_arc"])
+                    base_color, ((degrees / stats["firing_arc"]) - 1) / 2 + 1)
                 background = tuple_to_hex(darkened)
             # Create the marker data
             start = FileHandler.datetime_to_float(key)
