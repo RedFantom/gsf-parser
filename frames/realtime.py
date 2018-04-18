@@ -111,8 +111,8 @@ class RealtimeFrame(ttk.Frame):
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return
         if (settings["realtime"]["overlay"] or
-                settings["realtime"]["screen_overlay"] or
-                settings["realtime"]["screenparsing"]):
+                settings["screen"]["overlay"] or
+                settings["screen"]["enabled"]):
             if get_swtor_screen_mode() is False:
                 return
         if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
@@ -135,7 +135,7 @@ class RealtimeFrame(ttk.Frame):
             "match_callback": self.match_callback,
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
-            "screen_parsing_enabled": settings["realtime"]["screenparsing"],
+            "screen_parsing_enabled": settings["screen"]["enabled"],
             "screen_parsing_features": settings["realtime"]["screen_features"],
             "data_queue": self.data_queue,
             "return_queue": self.return_queue,
@@ -143,7 +143,7 @@ class RealtimeFrame(ttk.Frame):
             "minimap_user": self.minimap_name.get(),
             "minimap_address": self.minimap_address.get(),
             "minimap_window": self.minimap,
-            "dynamic_window": settings["realtime"]["window"],
+            "dynamic_window": settings["screen"]["window"],
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)
@@ -222,9 +222,9 @@ class RealtimeFrame(ttk.Frame):
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
-        if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
+        if settings["realtime"]["overlay"] is False and settings["screen"]["overlay"] is False:
             return
-        if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
+        if settings["screen"]["experimental"] is True and sys.platform != "linux":
             from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
         else:  # Linux or non-experimental
             from widgets import Overlay

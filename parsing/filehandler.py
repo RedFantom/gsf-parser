@@ -7,7 +7,6 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import pickle as pickle
 from datetime import datetime
-from pprint import pformat
 # Packages
 from pynput.mouse import Button
 # Project Modules

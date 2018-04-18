@@ -57,15 +57,24 @@ defaults = {
         "event_overlay": False,
         # Location of EventOverlay
         "event_location": "x0y0",
-        # Whether screen parsing is enabled
-        "screenparsing": True,
-        # Whether screen parsing data is in the Overlay
-        "screen_overlay": True,
-        # List of enabled screen parsing features
-        "screen_features": ["Tracking penalty", "Ship health", "Power management"],
-        # Whether to use the experimental WindowsOverlay
-        "overlay_experimental": False,
-        # Whether to enable experimental Dynamic Window Location
-        "window": False,
     },
+    "screen": {
+        # Whether screen parsing is enabled
+        "enabled": True,
+        # Whether screen parsing data is in the Overlay
+        "overlay": True,
+        # List of enabled screen parsing features
+        "features": ["Tracking penalty", "Ship health", "Power management"],
+        # Whether to use the experimental WindowsOverlay
+        "experimental": False,
+        # Whether to enable experimental Dynamic Window Location
+        "window": False
+    },
+    "sharing": {
+        "enabled": True,
+        "discord": "",
+        "auth": "",
+        "host": "discord.thrantasquadron.tk",
+        "port": 64731
+    }
 }

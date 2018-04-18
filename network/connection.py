@@ -59,6 +59,10 @@ class Connection(object):
         self.socket_lock = lock
         self.message_queue = queue
 
+    def connect(self, host: str, port: int):
+        """Connect to a server at the given address."""
+        self.socket.connect((host, port))
+
     def send(self, message, error=False):
         """
         Sends a message to the server the Connection is connected to.
