@@ -8,6 +8,8 @@ code to 120 characters.
 """
 # Standard Library
 from datetime import datetime
+# UI Libraries
+from tkinter import messagebox as mb
 # Project Modules
 from network.connection import Connection
 from variables import settings
@@ -35,7 +37,18 @@ class DiscordClient(Connection):
         message = "{}_{}_{}".format(
             settings["sharing"]["discord"], settings["sharing"]["auth"], command)
         self.send(message)
-        return True
+        self.receive()
+        response = self.get_message()
+        if response == "ack":
+            return True
+        elif response == "unauth":
+            mb.showerror("Error", "Invalid Discord Bot Server credentials.")
+            return False
+        elif response == "error":
+            print("[DiscordClient] Command {} failed.".format(message))
+            return False
+        print("[DiscordClient] Invalid server response: {}.".format(response))
+        return False
 
     @staticmethod
     def send_match_start(server: str, start: datetime):
