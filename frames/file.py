@@ -71,8 +71,6 @@ class FileFrame(ttk.Frame):
         self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files)
         self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
 
-        self.sharing_db = self.main_window.sharing_frame.sharing_db
-
     @staticmethod
     def filters():
         """
@@ -293,7 +291,7 @@ class FileFrame(ttk.Frame):
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
         file_cube, _, _ = Parser.split_combatlog(lines, player_list)
-        results = filestats.file_statistics(file_name, self.sharing_db)
+        results = filestats.file_statistics(file_name)
         self.update_widgets(*results)
 
     def parse_folder(self):
@@ -323,7 +321,7 @@ class FileFrame(ttk.Frame):
         file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
         player_name = Parser.get_player_name(lines)
         match = file_cube[match_index]
-        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index], self.sharing_db)
+        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index])
         self.update_widgets(*results)
         match_list = Parser.build_spawn_from_match(match)
         self.main_window.middle_frame.time_view.insert_spawn(match_list, player_name)
@@ -344,7 +342,7 @@ class FileFrame(ttk.Frame):
         match = file_cube[match_index]
         spawn = match[spawn_index]
         results = spawnstats.spawn_statistics(
-            file_name, spawn, spawn_timings[match_index][spawn_index], self.sharing_db)
+            file_name, spawn, spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
         string = FileHandler.get_features_string(*arguments)

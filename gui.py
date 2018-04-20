@@ -15,7 +15,7 @@ import tkinter.ttk as ttk
 from tkinter import messagebox
 # Frames
 from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
-    SettingsFrame, RealtimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
+    SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
     StatsFrame, StrategiesFrame, ToolsFrame
 # Widgets
 from ttkwidgets import DebugWindow
@@ -68,12 +68,11 @@ class MainWindow(ThemedTk):
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.characters_frame = CharactersFrame(self.notebook, self)
-        self.sharing_frame = SharingFrame(self.notebook, self)
         self.file_select_frame = FileFrame(self.file_tab_frame, self)
         self.middle_frame = StatsFrame(self.file_tab_frame, self)
         self.ship_frame = ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
-        self.realtime_frame = RealtimeFrame(self.realtime_tab_frame, self)
+        self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
         self.resources_frame = ResourcesFrame(self.notebook, self)
@@ -124,7 +123,6 @@ class MainWindow(ThemedTk):
         self.toolsframe.grid_widgets()
         self.file_select_frame.clear_data_widgets()
         self.strategies_frame.grid_widgets()
-        self.sharing_frame.grid_widgets()
 
     def setup_notebook(self):
         """Add all created frames to the notebook widget"""
@@ -134,7 +132,6 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.sharing_frame, text="Sharing")
         self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")

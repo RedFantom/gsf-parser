@@ -259,7 +259,7 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
         self.current_component.grid(row=0, rowspan=3, column=2, sticky="nswe")
 
-    def set_faction(self, faction):
+    def set_faction(self, faction: str):
         """
         Sets the faction attribute and calls grid_widgets to update the
         ship widgets that are displayed for the appropriate faction.
@@ -287,7 +287,7 @@ class BuildsFrame(ttk.Frame):
             for i in range(len(button)):
                 button[i].config(state=tk.DISABLED)
 
-    def toggle_callback(self, frame, open):
+    def toggle_callback(self, frame: ToggledFrame, open: bool):
         """
         Callback for ToggledFrame in order to close all the open frames
         upon opening a new one so only a single frame is open at the

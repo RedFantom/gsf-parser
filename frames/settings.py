@@ -441,7 +441,7 @@ class SettingsFrame(ttk.Frame):
         self.screen_enabled.set(settings["screen"]["enabled"])
         self.screen_overlay.set(settings["screen"]["overlay"])
         for feature in self.screen_features:
-            self.screen_variables[feature].set(feature in settings["realtime"]["screen_features"])
+            self.screen_variables[feature].set(feature in settings["screen"]["features"])
         self.screen_dynamic_window.set(settings["screen"]["window"])
         """
         Widget states

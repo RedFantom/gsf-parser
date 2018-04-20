@@ -24,7 +24,7 @@ from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
 
 
-class RealtimeFrame(ttk.Frame):
+class RealTimeFrame(ttk.Frame):
     """
     A Frame that contains all the necessary widgets to control a
     RealTimeParser instance.
@@ -115,7 +115,7 @@ class RealtimeFrame(ttk.Frame):
                 settings["screen"]["enabled"]):
             if get_swtor_screen_mode() is False:
                 return
-        if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
+        if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
             if not check_privileges():
                 messagebox.showinfo(
                     "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
@@ -136,7 +136,7 @@ class RealtimeFrame(ttk.Frame):
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
             "screen_parsing_enabled": settings["screen"]["enabled"],
-            "screen_parsing_features": settings["realtime"]["screen_features"],
+            "screen_parsing_features": settings["screen"]["features"],
             "data_queue": self.data_queue,
             "return_queue": self.return_queue,
             "minimap_share": self.minimap_enabled.get(),

@@ -369,7 +369,8 @@ class Parser(object):
     @staticmethod
     def get_enemy_id_list(lines: list, player_list: list):
         """
-        Get the list of enemies for a certain list of lines that describe a spawn
+        Get the list of enemies for a certain list of lines that
+        describe a spawn
         """
         enemies = []
         for line in lines:

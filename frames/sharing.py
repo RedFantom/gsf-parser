@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 import os
-import shelve
+import _pickle as pickle
 # UI Libraries
 import tkinter.ttk as ttk
 import tkinter as tk
@@ -57,9 +57,10 @@ class SharingFrame(ttk.Frame):
         ttk.Frame.__init__(self, root_frame)
         self.window = window
         self.cancel_sync = False
-        # Open the sharing database
-        sharing_db_path = os.path.join(get_temp_directory(), "share.db")
-        self.sharing_db = shelve.open(sharing_db_path)
+        self.sharing_db = None
+        # Initialize database
+        self.sharing_db_path = os.path.join(get_temp_directory(), "share.db")
+        self.open_database()
         # Initialize SharingClient
         self.client = SharingClient()
         # Initialize CheckboxTreeview
@@ -133,7 +134,7 @@ class SharingFrame(ttk.Frame):
             if self.cancel_sync is True or not client.is_alive():
                 break
             print("[SharingFrame] Synchronizing file '{}'".format(file_name))
-            lines = self.read_file(file_name)
+            lines = Parser.read_file(file_name)
             id_list = Parser.get_player_id_list(lines)
             enemy_ids = Parser.get_enemy_id_list(lines, id_list)
             synchronized = self.get_amount_synchronized(file_name, id_list, enemy_ids)
@@ -177,7 +178,7 @@ class SharingFrame(ttk.Frame):
         :param file_name: Name of the file containing these IDs
         :param client: Connected SharingClient instance
         """
-        for player_id in id_list:
+        for index, player_id in enumerate(id_list):
             print("[SharingFrame] Sharing ID '{}' for name '{}'".format(player_id, player_name))
             legacy_name = character_data[(server, player_name)]["Legacy"]
             faction = character_data[(server, player_name)]["Faction"]
@@ -186,9 +187,8 @@ class SharingFrame(ttk.Frame):
             if result is False:
                 print("[SharingFrame] Sending ID failed.")
                 return False
-            player_sync = self.sharing_db[file_name]["player_sync"]
-            self.sharing_db[file_name]["player_sync"] = player_sync + 1
-            print("[SharingFrame] Successfully shared ID. Total count:", player_sync + 1)
+            self.sharing_db[file_name]["player_sync"] = index + 1
+            print("[SharingFrame] Successfully shared ID. Total count:", self.sharing_db[file_name]["player_sync"])
             self.save_database()
             self.update()
         return True
@@ -261,7 +261,7 @@ class SharingFrame(ttk.Frame):
                 # Renamed CombatLogs are not valid for use
                 continue
             # Read the file
-            lines = self.read_file(item)
+            lines = Parser.read_file(item)
             # Parse the file
             player_name = Parser.get_player_name(lines)
             legacy_name = "" if player_name not in character_names else character_names[player_name]
@@ -278,27 +278,20 @@ class SharingFrame(ttk.Frame):
                 values=(player_name, legacy_name, len(player_ids), player_sync, len(enemy_ids), enemy_sync))
         return
 
-    @staticmethod
-    def read_file(file_name: str):
-        path = os.path.join(settings["parsing"]["path"], file_name)
-        with open(path, "rb") as fi:
-            lines = []
-            for line in fi:
-                try:
-                    lines.append(line.decode())
-                except UnicodeDecodeError:
-                    continue
-        return lines
-
     def __exit__(self):
         self.save_database()
 
-    """
-    The following functions are for database operations.
-    """
-
     def save_database(self):
-        self.sharing_db.sync()
+        with open(self.sharing_db_path, "wb") as fo:
+            pickle.dump(self.sharing_db, fo)
+
+    def open_database(self):
+        # Open the sharing database
+        if not os.path.exists(self.sharing_db_path):
+            self.sharing_db = dict()
+            return
+        with open(self.sharing_db_path, "rb") as fi:
+            self.sharing_db = pickle.load(fi)
 
     def get_amount_synchronized(self, file_name, player_ids, enemy_ids):
         """
