@@ -34,8 +34,10 @@ class DiscordClient(Connection):
         """Send a command to the Discord Server"""
         if settings["sharing"]["enabled"] is False:
             return False
-        message = "{}_{}_{}".format(
-            settings["sharing"]["discord"], settings["sharing"]["auth"], command)
+        tag, auth = settings["sharing"]["discord"], settings["sharing"]["auth"]
+        if self.validate_tag(tag) is False:
+            return False
+        message = "{}_{}_{}".format(tag, auth, command)
         self.send(message)
         self.receive()
         response = self.get_message()
@@ -106,3 +108,19 @@ class DiscordClient(Connection):
     @staticmethod
     def datetime_to_str(dt: datetime):
         return dt.strftime(DiscordClient.DATE_FORMAT)
+
+    @staticmethod
+    def validate_tag(tag: str):
+        if len(tag) == 0:
+            return False
+        if tag[0] != "@":
+            return False
+        elements = tag[1:].split("#")
+        if len(elements) != 2:
+            return False
+        name, discriminator = elements
+        if not len(name) > 4:
+            return False
+        if len(discriminator) != 4:
+            return False
+        return True
