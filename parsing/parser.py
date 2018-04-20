@@ -543,18 +543,14 @@ class Parser(object):
                 lines = fi.readlines()
         except OSError:
             raise PermissionError("Could not read from file '{}'".format(file_name))
-        unicode = False
         lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
             try:
                 line = line.decode()
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
-                unicode = True
                 continue
             lines_decoded.append(line)
-        if unicode is True:
-            print("[Parser] A file contains invalid UTF-8 characters:", file_name)
         enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
         return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
 
