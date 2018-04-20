@@ -14,7 +14,7 @@ from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 # Frames
-from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
+from frames import FileFrame, GraphsFrame, \
     SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
     StatsFrame, StrategiesFrame, ToolsFrame
 # Widgets
@@ -75,7 +75,6 @@ class MainWindow(ThemedTk):
         self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
-        self.resources_frame = ResourcesFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
         self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
@@ -132,7 +131,6 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.resources_frame, text="Resources")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
 
