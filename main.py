@@ -4,13 +4,17 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from tkinter import messagebox, filedialog
+# Standard Library
 from os.path import dirname, join, basename, exists
 import sys
 import shutil
 import platform
 import traceback
+# UI Libraries
+from tkinter import messagebox, filedialog
+# Project Modules
 from utils.directories import get_temp_directory
+from widgets import toplevel
 
 
 def create_window():
