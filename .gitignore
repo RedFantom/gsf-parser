@@ -90,3 +90,6 @@ ENV/
 
 # Development files
 development
+
+# Project Files
+parser.db
