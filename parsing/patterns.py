@@ -226,7 +226,7 @@ class PatternParser(object):
     @staticmethod
     def get_ship_from_screen_data(data: dict):
         """Return the Ship object contained in the spawn data"""
-        if "ship" not in data:  # Older versions
+        if data is None or "ship" not in data:
             return None
         ship = data["ship"]
         if not isinstance(ship, Ship):

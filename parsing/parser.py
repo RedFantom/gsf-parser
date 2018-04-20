@@ -34,6 +34,10 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
+    # Date format
+    TIME_FORMAT = "%H:%M:%S.%f"
+    DATE_FORMAT = ""
+
     @staticmethod
     def line_to_dictionary(line, enemies: dict=None):
         """
@@ -57,7 +61,7 @@ class Parser(object):
         log = dict()
         log["line"] = line
         effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
-        log["time"] = datetime.strptime(elements[0], "%H:%M:%S.%f")
+        log["time"] = datetime.strptime(elements[0], Parser.TIME_FORMAT)
         log["source"] = elements[1]
         log["target"] = elements[2]
         if len(elements) != 6:
@@ -286,6 +290,8 @@ class Parser(object):
                 return "shield"
             elif line_dict["ability"] in abilities.systems:
                 return "system"
+            elif line_dict["ability"] == "Player Death":
+                return "death"
             else:
                 return "other"
         elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
@@ -809,3 +815,28 @@ class Parser(object):
         return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount,
                 critcount, crit_luck, enemies, enemy_dmg_d, enemy_dmg_t,
                 ships, uncounted, deaths, time)
+
+    @staticmethod
+    def build_spawn_from_match(match: list)->list:
+        """Join the spawns of a match together to a single big spawn"""
+        result = list()
+        for spawn in match:
+            result.extend(spawn)
+            id_list = Parser.get_player_id_list(spawn)
+            line = spawn[-1]
+            death_event = "[{}] [{}] [{}] [{}] [{}] ()".format(
+                line["time"].strftime(Parser.TIME_FORMAT),
+                line["source"],
+                Parser.get_player_id_from_line(line, id_list),
+                "Player Death",
+                "ApplyEffect {}: AbilityActivate {}")
+            result.append(Parser.line_to_dictionary(death_event))
+        return result
+
+    @staticmethod
+    def get_player_id_from_line(line: dict, active_id: (str, list)):
+        """Return the active ID of a line based on a single line"""
+        for player_id in (line["source"], line["target"]):
+            if Parser.compare_ids(player_id, active_id) is True:
+                return player_id
+        return None

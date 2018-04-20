@@ -48,11 +48,7 @@ class FileFrame(ttk.Frame):
 
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
-        """
-        Create all widgets and make the links between them
-        :param root_frame:
-        :param main_window:
-        """
+        """Create all widgets and make the links between them"""
         ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
         self.file_tree = ttk.Treeview(self, height=13)
@@ -84,10 +80,7 @@ class FileFrame(ttk.Frame):
         Filters()
 
     def grid_widgets(self):
-        """
-        Put all widgets in the right places
-        :return:
-        """
+        """Configure widgets in grid geometry manager"""
         self.file_tree.grid(column=0, row=0, rowspan=16, sticky="nswe", pady=5, padx=(5, 0))
         self.file_scroll.grid(column=1, row=0, rowspan=16, sticky="ns", pady=5)
         self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe", padx=5)
@@ -308,7 +301,7 @@ class FileFrame(ttk.Frame):
         results = folderstats.folder_statistics()
         self.update_widgets(*results)
 
-    def parse_match(self, elements):
+    def parse_match(self, elements: list):
         """
         Either adds sets the match and calls add_spawns to add the spawns found
         in the match or starts the parsing of all files found in the specified
@@ -322,9 +315,12 @@ class FileFrame(ttk.Frame):
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
         file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
+        player_name = Parser.get_player_name(lines)
         match = file_cube[match_index]
         results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index], self.sharing_db)
         self.update_widgets(*results)
+        match_list = Parser.build_spawn_from_match(match)
+        self.main_window.middle_frame.time_view.insert_spawn(match_list, player_name)
 
     def parse_spawn(self, elements):
         """

@@ -18,8 +18,7 @@ default_colors = {
     'shield':   ['#004d00', '#ffffff'],
     'system':   ['#002db3', '#ffffff'],
     'other':    ['#33adff', '#000000'],
-    'spawn':    ['#000000', '#ffffff'],
-    'match':    ['#000000', '#ffffff'],
+    'death':    ["#ffffff", "#000000"],
     'default':  ['#ffffff', '#000000'],
 }
 # Pastel color scheme
@@ -35,8 +34,7 @@ pastel_colors = {
     'shield': ['#ccffcc', '#000000'],
     'system': ['#668cff', '#000000'],
     'other': ['#80ccff', '#000000'],
-    'spawn': ['#b3b3b3', '#000000'],
-    'match': ['#b3b3b3', '#000000'],
+    'death': ["#ffffff", "#000000"],
     'default': ['#ffffff', '#000000'],
 }
 
@@ -61,7 +59,6 @@ color_descriptions = {
     "shield":   "Activation of shield abilities: ",
     "system":   "Activation of system abilities: ",
     "other":    "Activation of other abilities: ",
-    "spawn":    "End of a spawn: ",
-    "match":    "End of a match: ",
+    "death":    "Player death event: ",
     "default":  "Unmatched categories: ",
 }
