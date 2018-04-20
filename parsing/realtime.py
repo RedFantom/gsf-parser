@@ -204,6 +204,10 @@ class RealTimeParser(Thread):
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
         file_name = self._character_db[self._character_data]["GUI"]
+        if file_name == "Select":
+            messagebox.showerror("Error", "You have not selected a valid "
+                                          "GUI Profile for this character.")
+            raise ValueError("No GUI Profile selected.")
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
