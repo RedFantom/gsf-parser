@@ -87,6 +87,12 @@ class CharactersFrame(ttk.Frame):
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
         self.legacy_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
 
+        self.discord_sharing = tk.BooleanVar()
+        self.discord_sharing_label = ttk.Label(self.options_frame, text="Discord Sharing")
+        self.discord_sharing_checkbox = ttk.Checkbutton(
+            self.options_frame, text="Enable Discord Sharing for this character", variable=self.discord_sharing,
+            command=self.save_character_data)
+
         self.faction = tk.StringVar()
         self.faction.set("Imperial")
         self.faction_label = ttk.Label(self.options_frame, text="Faction")
@@ -153,14 +159,18 @@ class CharactersFrame(ttk.Frame):
         self.character_name_entry.grid(column=0, row=1, sticky="nswe", padx=5, pady=5)
         self.legacy_name_label.grid(column=1, row=0, sticky="nsw", padx=5, pady=5)
         self.legacy_name_entry.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
-        self.faction_label.grid(column=0, row=2, sticky="nsw", padx=5, pady=5)
-        self.faction_republic_radiobutton.grid(column=0, row=3, sticky="nsw", padx=5, pady=5)
-        self.faction_imperial_radiobutton.grid(column=1, row=3, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_label.grid(column=0, row=4, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_dropdown.grid(column=0, row=5, sticky="nswe", padx=5, pady=5)
-        self.gui_profile_detect_button.grid(column=1, row=5, sticky="nswe", padx=5, pady=5)
-        self.lineup_label.grid(column=0, row=6, sticky="nsw", padx=5, pady=5)
-        self.lineup_frame.grid(column=0, row=7, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
+
+        self.discord_sharing_label.grid(column=0, row=2, sticky="nswe", padx=5, pady=5)
+        self.discord_sharing_checkbox.grid(column=0, row=3, sticky="nswe", padx=5, pady=5, columnspan=2)
+
+        self.faction_label.grid(column=0, row=4, sticky="nsw", padx=5, pady=5)
+        self.faction_republic_radiobutton.grid(column=0, row=5, sticky="nsw", padx=5, pady=5)
+        self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
+        self.gui_profile_label.grid(column=0, row=6, sticky="nsw", padx=5, pady=5)
+        self.gui_profile_dropdown.grid(column=0, row=7, sticky="nswe", padx=5, pady=5)
+        self.gui_profile_detect_button.grid(column=1, row=7, sticky="nswe", padx=5, pady=5)
+        self.lineup_label.grid(column=0, row=8, sticky="nsw", padx=5, pady=5)
+        self.lineup_frame.grid(column=0, row=9, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
 
         self.delete_button.grid(column=2, row=1, sticky="nswe", pady=5, padx=5)
         self.discard_button.grid(column=3, row=1, sticky="nswe", pady=5, padx=5)
@@ -278,12 +288,9 @@ class CharactersFrame(ttk.Frame):
         """
         if faction == "Imperial":
             ships = ("Blackbolt", "Rycer")
-            ships_dict = {name: Ship(name) for name in ships_data.sorted_ships.keys()}
-        elif faction == "Republic":
+        else:  # faction == "Republic":
             ships = ("Novadive", "Star Guard")
-            ships_dict = {name: Ship(name) for name in ships_data.sorted_ships.values()}
-        else:
-            raise ValueError("Unknown value for faction found: {0}".format(faction))
+        ships_dict = {name: Ship(name) for name in ships_data.sorted_ships.values()}
         server = self.reverse_servers[server]
         self.characters[(server, name)] = {
             "Server": server,
@@ -292,7 +299,8 @@ class CharactersFrame(ttk.Frame):
             "Legacy": legacy,
             "Ships": ships,
             "Ship Objects": ships_dict,
-            "GUI": "Default"
+            "GUI": "Default",
+            "Discord": True
         }
         self.character_data = self.characters[(server, name)]
         self.clear_character_data()
@@ -340,6 +348,7 @@ class CharactersFrame(ttk.Frame):
             self.character_data["GUI"] = self.gui_profile.get()
             server = self.character_data["Server"]
             name = self.character_data["Name"]
+            self.character_data["Discord"] = self.discord_sharing.get()
             self.characters[(server, name)] = self.character_data
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
@@ -371,7 +380,7 @@ class CharactersFrame(ttk.Frame):
                                       "all your character data, including builds, will be deleted.\n\nThe screen "
                                       "parsing results are not affected.")
             self.new_database()
-        return
+        self.characters.update_database()
 
     def discard_character_data(self):
         """
@@ -434,20 +443,10 @@ class CharactersFrame(ttk.Frame):
         self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
         self.gui_profile.set(character_data["GUI"])
-        if character_data["Faction"] == "Imperial":
-            for name, intvar in self.imp_ship_variables.items():
-                if name in character_data["Ships"]:
-                    intvar.set(1)
-                else:
-                    intvar.set(0)
-        elif character_data["Faction"] == "Republic":
-            for name, intvar in self.rep_ship_variables.items():
-                if name in character_data["Ships"]:
-                    intvar.set(1)
-                else:
-                    intvar.set(0)
-        else:
-            raise ValueError("Unknown faction value found: {0}".format(character_data["Faction"]))
+        iterator = self.imp_ship_variables if character_data["Faction"] == "Imperial" else self.rep_ship_variables
+        for name, intvar in iterator.items():
+            intvar.set(name in character_data["Ships"])
+        self.discord_sharing.set(character_data["Discord"])
         self.character_data = character_data
         self.window.builds_frame.reset()
 

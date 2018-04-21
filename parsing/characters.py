@@ -4,6 +4,9 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Packages
+from semantic_version import Version
+# Project Modules
 from data import ships
 from variables import settings
 from parsing.ships import Ship
@@ -46,8 +49,21 @@ class CharacterDatabase(dict):
             "Legacy": "E_Legacy",
             "Ships": ("Blackbolt", "Rycer"),
             "Ship Objects": {name: Ship(name) for name in ships.sorted_ships.keys()},
-            "GUI": "Default"
+            "GUI": "Default",
+            "Discord": True,
         }
+
+    def update_database(self):
+        """Update the database by checking version numbers"""
+        self.version = str(self.version)
+        if not self.version.endswith(".0"):
+            self.version += ".0"
+        version = Version(self.version)
+        if version < Version("5.6.0"):
+            for character, data in self.items():
+                data.update({"Discord": False})
+                self[character] = data
+        self.version = settings["misc"]["patch_level"]
 
     def update_servers(self, trans: dict):
         """Update the character database to a new set of servers"""
