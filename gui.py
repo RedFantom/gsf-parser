@@ -213,7 +213,6 @@ class MainWindow(ThemedTk):
         screenshot.save(file_name, "PNG")
 
     def destroy(self):
-        self.sharing_frame.save_database()
         if self.strategies_frame.settings is not None:
             if self.strategies_frame.settings.server:
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
