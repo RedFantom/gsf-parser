@@ -168,22 +168,13 @@ class CharactersFrame(ttk.Frame):
 
         set_row = 0
         set_column = 0
-        if self.faction.get() == "Imperial":
-            for item in self.imp_ship_widgets.values():
-                item.grid(row=set_row, column=set_column, padx=5, pady=5, sticky="w")
-                set_row += 1
-                if set_row == 5:
-                    set_column += 1
-                    set_row = 0
-        elif self.faction.get() == "Republic":
-            for item in self.rep_ship_widgets.values():
-                item.grid(row=set_row, column=set_column, pady=5, sticky="w")
-                set_row += 1
-                if set_row == 5:
-                    set_column += 1
-                    set_row = 0
-        else:
-            raise ValueError("Invalid value for faction found: {0}".format(self.faction.get()))
+        iterator = self.imp_ship_widgets if self.faction.get() == "Imperial" else self.rep_ship_widgets
+        for item in iterator.values():
+            item.grid(row=set_row, column=set_column, padx=5, pady=5, sticky="w")
+            set_row += 1
+            if set_row == 5:
+                set_column += 1
+                set_row = 0
 
     def update_tree(self):
         """
