@@ -156,6 +156,7 @@ class RealTimeParser(Thread):
         self.primary_weapon = False
         self.secondary_weapon = False
         self.scope_mode = False
+        self.discord = DiscordClient()
 
         """
         Screen parsing
@@ -343,8 +344,10 @@ class RealTimeParser(Thread):
             # Reset match statistics
             self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
             self.abilities.clear()
+            id_fmt = self.active_id[:8]
             self.active_id = ""
-            DiscordClient.send_match_end(self._character_data["server"], self.start_match, line["time"])
+            server, date, time = self._character_data["server"], line["time"], line["time"]
+            self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -357,7 +360,6 @@ class RealTimeParser(Thread):
                 self.is_match = True
                 # Call the new match callback
                 self.match_callback()
-                DiscordClient.send_match_start(self._character_data["server"], line["time"])
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
             self.active_id = ""

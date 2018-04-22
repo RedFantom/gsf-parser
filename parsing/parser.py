@@ -539,7 +539,8 @@ class Parser(object):
             with open(file_name, "rb") as fi:
                 lines = fi.readlines()
         except OSError:
-            raise PermissionError("Could not read from file '{}'".format(file_name))
+            print("[Parser] Failed to read file: {}".format(os.path.basename(file_name)))
+            raise
         lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
@@ -841,5 +842,12 @@ class Parser(object):
         for file in files:
             if not Parser.get_gsf_in_file(file):
                 continue
-            path = os.path.join(settings["parsing"]["path"])
+            path = os.path.join(settings["parsing"]["path"], file)
             yield path
+
+    @staticmethod
+    def get_id_format(spawn: list):
+        """Return the player ID format of a match or spawn"""
+        id_list = Parser.get_player_id_list(spawn)
+        return id_list[0][:8]
+

@@ -10,6 +10,7 @@ code to 120 characters.
 import os
 import socket
 from datetime import datetime
+import _pickle as pickle
 # UI Libraries
 from tkinter import messagebox as mb
 import tkinter as tk
@@ -27,75 +28,120 @@ class DiscordClient(Connection):
     of the GSF Parser and his environment.
     """
 
-    DATE_FORMAT = "%Y-%m-%d|%H:%M:%S.%f"
+    DATE_FORMAT = "%Y-%m-%d"
+    TIME_FORMAT = "%H:%M"
 
     def __init__(self):
         """Initialize connection"""
-        host, port = settings["sharing"]["host"], settings["sharing"]["port"]
+        self.connected = False
+        self.notified = False
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Connection.__init__(self, sock)
-        try:
-            self.connect(host, port)
-            self.connected = True
-        except socket.error:
-            mb.showwarning("Warning", "Failed to connect to Discord Bot Server.")
-            self.connected = False
         self.files = list()
         self.file = str()
         self.task = None
+        self.db = list()
+        self.open_database()
+
+    def open_database(self):
+        """Open the file database"""
+        path = os.path.join(get_temp_directory(), "files.db")
+        if not os.path.exists(path):
+            self.save_database()
+        with open(path, "rb") as fi:
+            self.db = pickle.load(fi)
+
+    def save_database(self):
+        """Save the file database"""
+        path = os.path.join(get_temp_directory(), "files.db")
+        with open(path, "wb") as fo:
+            pickle.dump(self.db, fo)
+
+    def connect(self, host=None, port=None):
+        """Connect the DiscordClient to the server"""
+        host, port = settings["sharing"]["host"], settings["sharing"]["port"]
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((host, port))
+            self.connected = True
+        except socket.error:
+            self.connected = False
+            if self.notified is False:
+                mb.showwarning("Warning", "Failed to connect to the Discord Bot Server.")
+                self.notified = True
+        return self.connected
 
     def send_command(self, command: str):
         """Send a command to the Discord Server"""
-        if settings["sharing"]["enabled"] is False or self.connected is False:
+        if settings["sharing"]["enabled"] is False:
             return False
+        if self.connect() is False:
+            return
         tag, auth = settings["sharing"]["discord"], settings["sharing"]["auth"]
         if self.validate_tag(tag) is False:
             return False
         message = "{}_{}_{}".format(tag, auth, command)
         self.send(message)
         self.receive()
-        response = self.get_message()
+        response = None
+        try:
+            response = self.get_message(timeout=0.1)
+        except socket.timeout:
+            result = False
+        finally:
+            self.socket.close()
         if response == "ack":
-            return True
+            result = True
         elif response == "unauth":
-            mb.showerror("Error", "Invalid Discord Bot Server credentials.")
-            return False
+            if self.notified is False:
+                mb.showerror("Error", "Invalid Discord Bot Server credentials.")
+                self.notified = True
+            result = False
         elif response == "error":
             print("[DiscordClient] Command {} failed.".format(message))
-            return False
-        print("[DiscordClient] Invalid server response: {}.".format(response))
-        return False
+            result = False
+        else:
+            print("[DiscordClient] Invalid server response: {}.".format(response))
+            result = False
+        return result
 
-    def send_match_start(self, server: str, start: datetime):
+    def send_match_start(self, server: str, date: datetime, start: datetime, id_fmt: str):
         """Notify the server of a start of a match"""
-        string = DiscordClient.datetime_to_str(start)
-        self.send_command("match_{}_{}".format(server, string))
+        date = date.strftime(self.DATE_FORMAT)
+        start = start.strftime(self.TIME_FORMAT)
+        command = "match_{}_{}_{}_{}".format(server, date, start, id_fmt)
+        return self.send_command(command)
 
-    def send_match_end(self, server: str, start: datetime, end: datetime):
+    def send_match_end(self, server: str, date: datetime, start: datetime, id_fmt: str, end: datetime):
         """Notify the server of a match end"""
-        start, end = map(DiscordClient.datetime_to_str, (start, end))
-        self.send_command("end_{}_{}_{}".format(server, start, end))
+        date = DiscordClient.date_to_str(date)
+        start, end = map(DiscordClient.time_to_str, (start, end))
+        command = "end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, end)
+        return self.send_command(command)
 
-    def send_match_score(self, server: str, start: datetime, score: str):
+    def send_match_score(self, server: str, date: datetime, start: datetime, id_fmt: str, score: str):
         """Notify the server of the score of a match"""
-        start = DiscordClient.datetime_to_str(start)
-        self.send_command("score_{}_{}_{}".format(server, start, score))
+        date = DiscordClient.date_to_str(date)
+        start = DiscordClient.time_to_str(start)
+        return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, score))
 
-    def send_match_map(self, server: str, start: datetime, map: tuple):
+    def send_match_map(self, server: str, date: datetime, start: datetime, id_fmt: str, map: tuple):
         """Notify the server of the map detected for a match"""
-        start = DiscordClient.datetime_to_str(start)
-        self.send_command("map_{}_{}_{}".format(server, start, map))
+        date = DiscordClient.date_to_str(date)
+        start = DiscordClient.time_to_str(start)
+        return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
 
-    def send_result(self, server: str, start: datetime, character: str,
-                    assists: int, damage: int, deaths: int):
+    def send_result(self, server: str, date: datetime, start: datetime, id_fmt: str,
+                    character: str, assists: int, damage: int, deaths: int):
         """Notify the server of the result a character obtained"""
-        start = DiscordClient.datetime_to_str(start)
-        self.send_command("result_{}_{}_{}_{}_{}_{}".format(
-            server, start, character, assists, damage, deaths))
+        start = DiscordClient.time_to_str(start)
+        date = DiscordClient.date_to_str(date)
+        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}".format(
+            server, date, start, id_fmt, character, assists, damage, deaths))
 
     def send_character(self, server: str, faction: str, name: str):
         """Notify the server of the existence of a character"""
-        self.send_command("character_{}_{}_{}".format(server, faction, name))
+        return self.send_command("character_{}_{}_{}".format(server, faction, name))
 
     def __enter__(self):
         return self
@@ -108,8 +154,12 @@ class DiscordClient(Connection):
         return settings["sharing"]["enabled"]
 
     @staticmethod
-    def datetime_to_str(dt: datetime):
+    def date_to_str(dt: datetime):
         return dt.strftime(DiscordClient.DATE_FORMAT)
+
+    @staticmethod
+    def time_to_str(dt: datetime):
+        return dt.strftime(DiscordClient.TIME_FORMAT)
 
     @staticmethod
     def validate_tag(tag: str):
@@ -134,7 +184,7 @@ class DiscordClient(Connection):
         self.files = list(Parser.gsf_combatlogs())
         # Send the first file
         self.file = self.files[0]
-        self.send_file(self.file, window)
+        window.after(2000, self.send_file, self.file, window)
 
     def send_file(self, file_name: str, window: tk.Tk):
         """
@@ -142,5 +192,30 @@ class DiscordClient(Connection):
         one by using an after_idle task.
         """
         date = Parser.parse_filename(file_name)
-        _, matches, _ = Parser.split_combatlog_file(file_name)
+        lines = Parser.read_file(file_name)
+        player_name = Parser.get_player_name(lines)
+        server = window.characters_frame.characters.get_server_for_character(player_name)
+        basename = os.path.basename(file_name)
+        self.connect()
+        # Actually send the file data to the server
+        if date is not None and server is not None and basename not in self.db and self.connected is True:
+            print("[DiscordClient] Sending matches for file: {}".format(basename))
+            player_id_list = Parser.get_player_id_list(lines)
+            file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
+            result = True
+            for index, (start, end) in enumerate(zip(matches[::2], matches[1::2])):
+                id_fmt = Parser.get_id_format(file_cube[index][0])
+                start, end = map(lambda time: datetime.combine(date.date(), time.time()), (start, end))
+                result = (self.send_match_start(server, date, start, id_fmt) and result)
+                result = (self.send_match_end(server, date, start, id_fmt, end) and result)
+            print("[DiscordClient] {}: {}".format(basename, result))
+            self.db.append(basename) if result is True else None
+            self.save_database()
+        # Create the task for sending the next file
+        index = self.files.index(self.file)
+        if index == len(self.files) - 1:
+            return
+        index += 1
+        self.file = self.files[index]
+        window.after(2000, self.send_file, self.file, window)
 

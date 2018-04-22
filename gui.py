@@ -21,10 +21,11 @@ from frames import FileFrame, RealTimeFrame, CharactersFrame,\
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
 # Project Modules
-import variables
+from network.discord import DiscordClient
 from utils.directories import get_temp_directory, get_assets_directory
 from utils.update import check_update
 from variables import settings
+import variables
 # Packages
 import pyscreenshot
 from PIL import Image
@@ -55,6 +56,7 @@ class MainWindow(ThemedTk):
         self.set_icon()
         self.set_variables()
         self.update_style()
+        self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
@@ -96,6 +98,7 @@ class MainWindow(ThemedTk):
         self.finished = True
         self.splash.destroy()
         # Start the main loop
+        self.discord.send_files(self)
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
