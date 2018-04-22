@@ -31,6 +31,7 @@ from variables import settings
 from data.keys import keys
 from data.abilities import rep_ships
 from network.minimap.client import MiniMapClient
+from network.discord import DiscordClient
 
 
 def pair_wise(iterable: (list, tuple)):
@@ -343,6 +344,7 @@ class RealTimeParser(Thread):
             self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
             self.abilities.clear()
             self.active_id = ""
+            DiscordClient.send_match_end(self._character_data["server"], self.start_match, line["time"])
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -355,6 +357,7 @@ class RealTimeParser(Thread):
                 self.is_match = True
                 # Call the new match callback
                 self.match_callback()
+                DiscordClient.send_match_start(self._character_data["server"], line["time"])
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
             self.active_id = ""

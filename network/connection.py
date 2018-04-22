@@ -36,7 +36,7 @@ class Connection(object):
       messages by calling the functions upon this class instance.
     """
 
-    def __init__(self, sock=None, separator="+", lock=Lock(), queue=Queue()):
+    def __init__(self, sock, separator="+", lock=Lock(), queue=Queue()):
         """
         :param sock: Socket object to operate with
         :param separator: UTF-8 character that is used to separate

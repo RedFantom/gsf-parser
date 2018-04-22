@@ -104,3 +104,15 @@ class CharacterDatabase(dict):
             character_legacies[name] = legacy
             names.append(name)
         return character_legacies
+
+    def get_server_for_character(self, character: str):
+        """Return the server name for a character"""
+        servers = list()
+        for server, name in self.keys():
+            if character == name:
+                servers.append(server)
+        if len(servers) == 0:
+            return None
+        if len(servers) > 1:
+            return None
+        return servers[0]

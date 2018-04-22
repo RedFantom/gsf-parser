@@ -428,6 +428,7 @@ class Parser(object):
     @staticmethod
     def parse_filename(file_name):
         """Get datetime object for a filename"""
+        file_name = os.path.basename(file_name)
         try:
             return datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
         except ValueError:
@@ -440,13 +441,8 @@ class Parser(object):
         indexing [match][spawn][event]) and provide the same interface
         as the legacy parse.splitter function.
         """
-        # Check if arguments are valid
-        if len(lines) == 0:
-            raise ValueError("Empty file")
-        if isinstance(lines[0], str):
-            raise NotImplementedError()
-        if len(player_list) == 0:
-            raise ValueError("Empty player list")
+        if player_list is None:
+            player_list = Parser.get_player_id_list(lines)
 
         # Data variables
         file_cube = []
@@ -837,3 +833,13 @@ class Parser(object):
             if Parser.compare_ids(player_id, active_id) is True:
                 return player_id
         return None
+
+    @staticmethod
+    def gsf_combatlogs():
+        """Return a list of absolute paths to all files with GSF matches"""
+        files = os.listdir(settings["parsing"]["path"])
+        for file in files:
+            if not Parser.get_gsf_in_file(file):
+                continue
+            path = os.path.join(settings["parsing"]["path"])
+            yield path

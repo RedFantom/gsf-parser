@@ -13,6 +13,7 @@ import tkinter.filedialog
 # Standard Library
 import operator
 import os
+from collections import OrderedDict
 # Project Modules
 import variables
 from parsing import folderstats, filestats, matchstats, spawnstats
@@ -20,7 +21,6 @@ from data import abilities
 from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
-from collections import OrderedDict
 from parsing.filehandler import FileHandler
 
 
@@ -160,22 +160,17 @@ class FileFrame(ttk.Frame):
         else:
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        lines = Parser.read_file(file_name)
-        player_list = Parser.get_player_id_list(lines)
-        if len(player_list) == 0:
-            raise ValueError("Empty player list for file {}".format(file_name))
-        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
+        file_cube, match_timings, spawn_timings = Parser.split_combatlog_file(file_name)
         if len(match_timings) / 2 != len(file_cube):
-            raise ValueError("Invalid results for {}\n{}\n{}".format(file_name, file_cube, match_timings))
-        match_index = 0
-        for match in match_timings[::2]:
+            print("[FileFrame] Uneven results for file {}".format(file_name))
+            return
+        for match_index, match in enumerate(match_timings[::2]):
             self.file_tree.insert(file_name, tk.END, iid=(file_name, match_index), text=match.strftime("%H:%M"))
-            spawn_index = 0
-            for spawn in spawn_timings[match_index]:
-                self.file_tree.insert((file_name, match_index), tk.END, iid=(file_name, match_index, spawn_index),
-                                      text=spawn.strftime("%H:%M:%S"))
-                spawn_index += 1
-            match_index += 1
+            for spawn_index, spawn in enumerate(spawn_timings[match_index]):
+                self.file_tree.insert(
+                    (file_name, match_index), tk.END,
+                    iid=(file_name, match_index, spawn_index),
+                    text=spawn.strftime("%H:%M:%S"))
 
     def update_widgets(self, abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                        enemydamaget, uncounted):
