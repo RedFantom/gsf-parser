@@ -349,14 +349,3 @@ class GUIParser(object):
             print("[GUI] Minimum X Value: ", min(x_values), "\nMaximum X Value: ", max(x_values))
             print("[GUI] Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
         return min(x_values), max(x_values), min(y_values), max(y_values)
-
-
-if __name__ == '__main__':
-    obj = GSFInterface("HUD.xml")
-    print(obj.get_box_coordinates("FreeFlightScorecard"))
-    print(obj.get_element_anchor(obj.get_element_object("FreeFlightScorecard")))
-    from PIL import Image
-
-    print(get_player_guiname("Redfantom"))
-    Image.open(os.path.realpath(os.path.join("..", "assets", "vision", "testing.jpg"))).crop(
-        GSFInterface("HUD.xml").get_box_coordinates("FreeFlightScorecard")).save("image.png")

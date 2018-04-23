@@ -26,10 +26,10 @@ from utils.directories import get_assets_directory
 
 class ShipSelectFrame(ttk.Frame):
     """
-    Frame for four ToggledFrames, one for each ship category. Each of the
-    ToggledFrames contains Buttons to select a ship. Supports setting different
-    Factions, in order to allow selecting republic and imperial ship names and
-    images.
+    Frame for four ToggledFrames, one for each ship category. Each of
+    the ToggledFrames contains Buttons to select a ship. Supports
+    setting different Factions, in order to allow selecting republic
+    and imperial ship names and images.
     """
 
     def __init__(self, parent, callback, faction_callback):
@@ -43,7 +43,7 @@ class ShipSelectFrame(ttk.Frame):
         # Ship properties
         self.faction = "Imperial"
         self.ship = "Bloodmark"
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=222, canvasheight=315, width=240, height=315)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=245, canvasheight=315, width=240, height=315)
         self.frame = self.scroll_frame.interior
         with open(path.join(get_assets_directory(), "categories.db"), "rb") as db:
             self.data = pickle.load(db)
@@ -136,8 +136,8 @@ class ShipSelectFrame(ttk.Frame):
 
     def update_servers(self):
         """
-        Update the server list in the OptionMenu based on the server there are
-        characters for in the CharacterDatabase.
+        Update the server list in the OptionMenu based on the server
+        there are characters for in the CharacterDatabase.
         """
         self.server_dropdown["menu"].delete(0, tk.END)
         self.character_dropdown["menu"].delete(0, tk.END)
@@ -156,8 +156,8 @@ class ShipSelectFrame(ttk.Frame):
 
     def update_characters(self):
         """
-        Update the list of characters in the OptionMenu based on the characters
-        found in the CharacterDatabase.
+        Update the list of characters in the OptionMenu based on the
+        characters found in the CharacterDatabase.
         """
         self.character_dropdown["menu"].delete(0, tk.END)
         characters = ["Choose character"]
@@ -173,9 +173,10 @@ class ShipSelectFrame(ttk.Frame):
 
     def load_character(self):
         """
-        Callback called upon selecting a character in the OptionMenu. Loads
-        the character data from the CharacterDatabase and the ship objects, so
-        the other Widgets of the BuildFrame can manipulate the data.
+        Callback called upon selecting a character in the OptionMenu.
+        Loads the character data from the CharacterDatabase and the ship
+        objects, so the other Widgets of the BuildFrame can manipulate
+        the data.
         """
         server = self.window.characters_frame.reverse_servers[self.server.get()]
         self.character_tuple = (server, self.character.get())

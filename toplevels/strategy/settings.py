@@ -7,22 +7,26 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import _pickle as pickle
 from ast import literal_eval
+import sys
 # UI Libraries
 from tkinter import ttk
 from tkinter import messagebox, filedialog
 import tkinter as tk
 # Project Modules
 import variables
-from widgets.snaptoplevel import SnapToplevel
 from parsing.strategies import StrategyDatabase
 from network.strategy.client import StrategyClient
 from network.strategy.server import StrategyServer
 from utils.admin import escalate_privileges, check_privileges
-from toplevels.strategy_share_toplevel import StrategyShareToplevel
+from toplevels.strategy.share import StrategyShareToplevel
+from widgets.snaptoplevel import SnapToplevel
 from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
 
 
-class SettingsToplevel(SnapToplevel):
+Parent = SnapToplevel if sys.platform == "win32" else tk.Toplevel
+
+
+class SettingsToplevel(Parent):
     """
     Toplevel that contains options to export Strategies, whole
     StrategyDatabases, or start up a network/connect to one
@@ -38,8 +42,13 @@ class SettingsToplevel(SnapToplevel):
         self.new_strategy = self.frame.list.new_strategy
         self._good_geometry = None
         self.destroyed = False
-        SnapToplevel.__init__(self, variables.main_window, border=100, locked=True, resizable=True, wait=0, height=425,
-                              width=355)
+
+        if Parent is SnapToplevel:
+            Parent.__init__(self, variables.main_window, border=100, locked=True,
+                            resizable=True, wait=0, height=425, width=355)
+        else:
+            Parent.__init__(self, variables.main_window, height=425, width=355)
+            self.wm_resizable(False, False)
 
         self.update()
         self.title("GSF Strategy Planner: Settings")
@@ -57,7 +66,8 @@ class SettingsToplevel(SnapToplevel):
         self.menu.add_cascade(label="Database", menu=self.database_menu)
         self.config(menu=self.menu)
 
-        self.scrolled_frame = ScrolledFrame(self, canvaswidth=345, canvasheight=415)
+        width = 345 if sys.platform == "win32" else 375
+        self.scrolled_frame = ScrolledFrame(self, canvaswidth=width, canvasheight=415)
         self.server_client_frame = self.scrolled_frame.interior
         # Server settings section
         self.server_section = ttk.Frame(self.server_client_frame)
@@ -543,7 +553,7 @@ class SettingsToplevel(SnapToplevel):
         if self.share_toplevel:
             self.share_toplevel.destroy()
             self.share_toplevel = None
-        SnapToplevel.destroy(self)
+        Parent.destroy(self)
         self.frame.settings = None
         self.destroyed = True
 

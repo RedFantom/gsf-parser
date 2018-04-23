@@ -37,7 +37,8 @@ class Client(threading.Thread):
 
     def run(self):
         """
-        Loop of the Thread to call self.update() and self.process_command() by extent.
+        Loop of the Thread to call self.update() and
+        self.process_command() by extent.
         """
         while True:
             if not self.exit_queue.empty():
@@ -69,7 +70,9 @@ class Client(threading.Thread):
     def receive(self):
         """
         Function to receive and separate messages received from the
-        ClientHandler
+        ClientHandler. Receives buffers from the socket and provides
+        error handling in order to safely evaluate the short buffers
+        into full messages, appending them to the message_queue.
         """
         self.socket.setblocking(False)
         total = b""
@@ -88,7 +91,6 @@ class Client(threading.Thread):
                     continue
                 else:
                     break
-        # print("[Client] received message: ", total, wait)
         elements = total.split(b"+")
         for elem in elements:
             try:

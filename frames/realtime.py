@@ -17,13 +17,14 @@ from tkinter import messagebox
 # Project Modules
 from widgets.time_view import TimeView
 from toplevels.minimap import MiniMap
+from toplevels.event_overlay import EventOverlay
 from parsing.realtime import RealTimeParser
 from variables import settings
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
 
 
-class RealtimeFrame(ttk.Frame):
+class RealTimeFrame(ttk.Frame):
     """
     A Frame that contains all the necessary widgets to control a
     RealTimeParser instance.
@@ -43,6 +44,7 @@ class RealtimeFrame(ttk.Frame):
         self.overlay_after_id = None
         self.overlay_string = None
         self.data_after_id = None
+        self._event_overlay = None
         """
         Widget creation
         """
@@ -109,11 +111,11 @@ class RealtimeFrame(ttk.Frame):
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return
         if (settings["realtime"]["overlay"] or
-                settings["realtime"]["screen_overlay"] or
-                settings["realtime"]["screenparsing"]):
+                settings["screen"]["overlay"] or
+                settings["screen"]["enabled"]):
             if get_swtor_screen_mode() is False:
                 return
-        if "Mouse and Keyboard" in settings["realtime"]["screen_features"] and sys.platform != "linux":
+        if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
             if not check_privileges():
                 messagebox.showinfo(
                     "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
@@ -133,15 +135,15 @@ class RealtimeFrame(ttk.Frame):
             "match_callback": self.match_callback,
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
-            "screen_parsing_enabled": settings["realtime"]["screenparsing"],
-            "screen_parsing_features": settings["realtime"]["screen_features"],
+            "screen_parsing_enabled": settings["screen"]["enabled"],
+            "screen_parsing_features": settings["screen"]["features"],
             "data_queue": self.data_queue,
             "return_queue": self.return_queue,
             "minimap_share": self.minimap_enabled.get(),
             "minimap_user": self.minimap_name.get(),
             "minimap_address": self.minimap_address.get(),
             "minimap_window": self.minimap,
-            "dynamic_window": settings["realtime"]["window"],
+            "dynamic_window": settings["screen"]["window"],
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)
@@ -156,6 +158,7 @@ class RealtimeFrame(ttk.Frame):
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
         self.open_overlay()
+        self.open_event_overlay()
         self.update_data_string()
         # Start the parser
         self.parser.start()
@@ -177,6 +180,7 @@ class RealtimeFrame(ttk.Frame):
         self.watching_stringvar.set("Watching no file...")
         self.parser = None
         self.close_overlay()
+        self.close_event_overlay()
 
     def file_callback(self, file_name):
         """
@@ -200,6 +204,8 @@ class RealtimeFrame(ttk.Frame):
         """
         self.time_view.insert_event(event, player_name, active_ids, start_time)
         self.time_view.yview_moveto(1.0)
+        if self._event_overlay is not None:
+            self._event_overlay.process_event(event, active_ids)
 
     def update_cpu_usage(self):
         """Update the CPU usage Label every two seconds"""
@@ -216,9 +222,9 @@ class RealtimeFrame(ttk.Frame):
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
-        if settings["realtime"]["overlay"] is False and settings["realtime"]["screen_overlay"] is False:
+        if settings["realtime"]["overlay"] is False and settings["screen"]["overlay"] is False:
             return
-        if settings["realtime"]["overlay_experimental"] is True and sys.platform != "linux":
+        if settings["screen"]["experimental"] is True and sys.platform != "linux":
             from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
         else:  # Linux or non-experimental
             from widgets import Overlay
@@ -236,6 +242,22 @@ class RealtimeFrame(ttk.Frame):
                          "\n\n{}.".format(e))
             raise
         self.update_overlay()
+
+    def open_event_overlay(self):
+        """Open an EventOverlay if it is enabled in settings"""
+        if settings["realtime"]["event_overlay"] is False:
+            return
+        x, y = settings["realtime"]["event_location"].split("y")
+        x, y = int(x[1:]), int(y)
+        self._event_overlay = EventOverlay(self.window, location=(x, y))
+
+    def close_event_overlay(self):
+        """Close the EventOverlay is one is open"""
+        if self._event_overlay is None:
+            return
+        self._event_overlay.match_end()
+        self._event_overlay.destroy()
+        self._event_overlay = None
 
     def update_data_string(self):
         if self.parser is None:

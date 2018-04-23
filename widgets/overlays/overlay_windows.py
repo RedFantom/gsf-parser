@@ -82,9 +82,11 @@ class WindowsOverlay(Overlay):
 
     def initialize_pywin32(self):
         """
-        Initializes a window without borders and transparent background in order to provide an overlay
-        throught the win32API (should be higher performance than the Tkinter ones and also provides the option
-        to remove ANTIALIASING of the text which results in white around the edges of the text)
+        Initializes a window without borders and transparent background
+        in order to provide an overlay through the win32API (should be
+        higher performance than the Tkinter ones and also provides the
+        option to remove ANTIALIASING of the text which results in white
+        around the edges of the text).
         """
         self._h_instance = api.GetModuleHandle()
         self._window_class = gui.WNDCLASS()
@@ -97,17 +99,13 @@ class WindowsOverlay(Overlay):
         self._window_class_atom = gui.RegisterClass(self._window_class)
 
     def initialize_style(self):
-        """
-        Initialize the pywin32 styles
-        """
+        """Initialize the pywin32 styles"""
         self._ex_style = con.WS_EX_COMPOSITED | con.WS_EX_LAYERED | con.WS_EX_NOACTIVATE | \
                          con.WS_EX_TOPMOST | con.WS_EX_TRANSPARENT
         self._style = con.WS_DISABLED | con.WS_POPUP | con.WS_VISIBLE
 
     def initialize_window(self):
-        """
-        Initialize the actual window
-        """
+        """Initialize the actual window"""
         self.init = None
         # Initialize the window object
         self._window = gui.CreateWindowEx(
@@ -150,9 +148,7 @@ class WindowsOverlay(Overlay):
         self.update()
 
     def draw(self, window, message, w_parameter, l_parameter):
-        """
-        Callback for the drawing in the window
-        """
+        """Callback for the drawing in the window"""
         if message == con.WM_PAINT:
             hdc, paint_struct = gui.BeginPaint(window)
             dpi_scale = self.get_dpi_scale(hdc)
@@ -188,9 +184,7 @@ class WindowsOverlay(Overlay):
             return gui.DefWindowProc(window, message, w_parameter, l_parameter)
 
     def get_dpi_scale(self, hdc=None):
-        """
-        Return the DPI scaling value
-        """
+        """Return the DPI scaling value"""
         if main_window is not None:
             return main_window.get_dpi_scaling()
         elif self._master is not None:
@@ -202,6 +196,7 @@ class WindowsOverlay(Overlay):
             raise ValueError("No valid method of determining the DPI scaling found.")
 
     def update(self):
+        """Imitates tk.Widget.update function"""
         if self.init is False:
             self.initialize_window()
         elif self.init is None:
@@ -216,17 +211,13 @@ class WindowsOverlay(Overlay):
             self._after_code = self._master.after(self._wait_time, self.update)
 
     def destroy(self):
-        """
-        Function to send a WM_DESTROY to the window
-        """
+        """Function to send a WM_DESTROY to the window"""
         if self._after_code is not None:
             self._master.after_cancel(self._after_code)
         gui.SendMessage(self._window, con.WM_CLOSE, None, None)
 
     def cget(self, key):
-        """
-        Returns the option for a key
-        """
+        """Returns the option for a key"""
         if key == "position":
             return self._position
         elif key == "wait_time":
@@ -244,7 +235,7 @@ class WindowsOverlay(Overlay):
 
     def config(self, **kwargs):
         """
-        Change the options of the window. Some options cannot be changed.
+        Change the options of the window. Some options cannot be changed
         """
         self._position = kwargs.pop("position", self._position)
         self._wait_time = kwargs.pop("wait_time", self._wait_time)

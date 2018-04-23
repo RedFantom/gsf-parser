@@ -28,6 +28,7 @@ class SnapToplevel(tk.Toplevel):
     # TODO: In spite of the notice above, try to adjust SnapToplevel for the window decorations on at least the most
     # TODO: used window managers.
     # TODO: Adjust SnapToplevel based on Windows DPI scaling
+
     def __init__(self, master, **kwargs):
         """
         :param master: master Tk instance
@@ -124,21 +125,18 @@ class SnapToplevel(tk.Toplevel):
         return
 
     def minimize(self, event):
-        """
-        Callback for an <Unmap> event on the master widget
-        """
+        """Callback for an <Unmap> event on the master widget"""
         self.wm_iconify()
 
     def deminimize(self, event):
-        """
-        Callback for a <Map> event on the master widget
-        """
+        """Callback for a <Map> event on the master widget"""
         self.deiconify()
         self.master.focus_set()
 
     def configure_callback(self, event):
         """
-        The callback for the <Configure> Tkinter event, generated when a window is moved or resized.
+        The callback for the <Configure> Tkinter event, generated when
+        a window is moved or resized.
         """
         if callable(self._configure_function):
             self._configure_function(event)
@@ -161,15 +159,11 @@ class SnapToplevel(tk.Toplevel):
         return
 
     def _unlock(self):
-        """
-        Function to unlock the temporary lock on movement
-        """
+        """Function to unlock the temporary lock on movement"""
         self._temp_lock = False
 
     def set_geometry_self(self):
-        """
-        Set geometry when <Configure> is created with self as widget
-        """
+        """Set geometry when <Configure> is created with self as widget"""
         distance_dictionary = self.get_distance_to_master()
         # If the widget is locked, we want to reset the geometry to match the master widget
         if self._locked or self._temp_lock:
@@ -206,7 +200,8 @@ class SnapToplevel(tk.Toplevel):
 
     def _snap(self):
         """
-        Function to set everything so the window can be snapped into place again
+        Function to set everything so the window can be snapped into
+        place again.
         """
         self._snapped = True
         self._temp_lock = True
@@ -215,7 +210,8 @@ class SnapToplevel(tk.Toplevel):
 
     def get_distance_to_master(self):
         """
-        Return an int value of distance in pixels to the master window for each of the four sides
+        Return an int value of distance in pixels to the master window
+        for each of the four sides.
         """
         # Get the required values
         master_left, master_right, master_top, master_bottom = self.get_points_sides_for_window(self.master)
@@ -247,9 +243,10 @@ class SnapToplevel(tk.Toplevel):
         return int(sqrt(pow(dx, 2) + pow(dy, 2)))
 
     @staticmethod
-    def get_points_sides_for_window(window):
+    def get_points_sides_for_window(window: (tk.Toplevel, tk.Tk)):
         """
-        Get the coordinates of the middle of each of the sides of a tkinter window (Toplevel or Tk)
+        Get the coordinates of the middle of each of the sides of a
+        tkinter window (Toplevel or Tk).
         """
         master_width, master_height = window.winfo_width(), window.winfo_height()
         master_rootx, master_rooty = window.winfo_rootx(), window.winfo_rooty()
@@ -261,7 +258,8 @@ class SnapToplevel(tk.Toplevel):
 
     def set_geometry_master(self):
         """
-        Function to set the new geometry of the window if it is snapped to the master and the master was moved
+        Function to set the new geometry of the window if it is snapped
+        to the master and the master was moved.
         """
         # If the Toplevel is not snapped to the window, we want to do nothing
         if not self.snapped:
@@ -281,9 +279,7 @@ class SnapToplevel(tk.Toplevel):
         self.wm_geometry("{}x{}+{}+{}".format(new_width, new_height, new_x, new_y))
 
     def get_new_geometry_master(self):
-        """
-        Function to calculate the new geometry of the window
-        """
+        """Function to calculate the new geometry of the window"""
         master_x, master_y = self.master.winfo_x(), self.master.winfo_y()
         required_width, required_height = self.winfo_reqwidth(), self.winfo_reqheight()
         master_width, master_height = self.master.winfo_width(), self.master.winfo_height()

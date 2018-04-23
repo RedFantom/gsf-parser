@@ -111,9 +111,9 @@ class SharingClientHandler(ClientHandler):
     def store_name(self, *args):
         """Function to store name in database"""
         print("[ClientHandler] {} storing name".format(self.address))
-        server, faction, mainname, altname, id_number = args
-        primealt = 1 if mainname == altname else 0
         if self.state == 1:
+            server, faction, mainname, altname, id_number = args
+            primealt = 1 if mainname == altname else 0
             # Phase 1: Insert the character into the Alt table
             query = insert_character % (altname, mainname, server, faction, primealt)
             self.database.put_command_in_queue(self.database_queue, query, query=False)
@@ -123,6 +123,12 @@ class SharingClientHandler(ClientHandler):
             # Function will be recalled by receive_from_database
             return
         elif self.state == 2:
+            if len(args) == 5:
+                server, faction, mainname, altname, id_number = args
+            else:
+                print("[ClientHandler] Unexpected data received for store_name state 2:", args)
+                self.send("saved")
+                return
             print("[ClientHandler] Resuming storename.")
             # Phase 2: Insert the character and id into the Id table
             query = insert_id_name % (id_number, server, altname)
@@ -134,7 +140,7 @@ class SharingClientHandler(ClientHandler):
             print("[ClientHandler] Finished storename.")
             return
         else:
-            self.write_log("store_name called while no supported state was detected")
+            self.log_file.error("store_name called while no supported state was detected")
             self.close_error()
             return
 
@@ -155,11 +161,11 @@ class SharingClientHandler(ClientHandler):
         elif self.state == 2:
             # Return the data to the user
             # Results is supposed to be a list with a single name [altname]
-            server, id_number, results = args
-            if results is None:
+            if len(args) == 2 or args[2] is None:
                 self.send("none")
                 print("[ClientHandler] No match found.")
                 return
+            server, id_number, results = args
             print("[ClientHandler] Result:", results)
             self.waiting_for_database = False
             self.send("result_{}".format(results[0]))
@@ -197,7 +203,7 @@ class SharingClientHandler(ClientHandler):
                 self.close_error("Internal queue of ClientHandler empty while a function was expected")
                 return False
             func, args = self.internal_queue.get()
-            args = args + (data,)
+            args = args + data
             func(*args)
         self.waiting_for_database = False
         return True

@@ -52,3 +52,10 @@ class TestVision(TestCase):
         result = vision.get_minimap_location(self.image.crop(coords))
         print("[TESTS] Minimap location:", result)
         self.assertIsInstance(result, tuple)
+
+    def test_get_map(self):
+        result = vision.get_map(self.image.crop(self.gui_parser.get_minimap_coordinates()))
+        print("[TESTS] Map:", result)
+        img2 = Image.open(path.join(get_assets_directory(), "vision", "test_map.png"))
+        result = vision.get_map(img2.crop(self.gui_parser.get_minimap_coordinates()))
+        print("[TESTS] Map 2:", result)

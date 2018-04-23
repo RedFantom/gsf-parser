@@ -13,6 +13,7 @@ import tkinter.filedialog
 # Standard Library
 import operator
 import os
+from collections import OrderedDict
 # Project Modules
 import variables
 from parsing import folderstats, filestats, matchstats, spawnstats
@@ -20,17 +21,18 @@ from data import abilities
 from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
-from collections import OrderedDict
 from parsing.filehandler import FileHandler
 
 
 # Class for the _frame in the fileTab of the parser
 class FileFrame(ttk.Frame):
     """
-    Class for a frame that contains three listboxes, one for files, one for matches and
-    one for spawns, and updates them and other widgets after parsing the files using the
-    methods found in the parse.py module accordingly. This frame controls the whole of file
-    parsing, the other frames only display the results.
+    Class for a frame that contains three listboxes, one for files, one
+    for matches and one for spawns, and updates them and other widgets
+    after parsing the files using the methods found in the parse.py
+    module accordingly. This frame controls the whole of file parsing,
+    the other frames only display the results.
+
     --------------------
     | combatlog_1 | /\ |
     | combatlog_2 | || |
@@ -48,11 +50,7 @@ class FileFrame(ttk.Frame):
 
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
-        """
-        Create all widgets and make the links between them
-        :param root_frame:
-        :param main_window:
-        """
+        """Create all widgets and make the links between them"""
         ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
         self.file_tree = ttk.Treeview(self, height=13)
@@ -73,8 +71,6 @@ class FileFrame(ttk.Frame):
         self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files)
         self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
 
-        self.sharing_db = self.main_window.sharing_frame.sharing_db
-
     @staticmethod
     def filters():
         """
@@ -84,10 +80,7 @@ class FileFrame(ttk.Frame):
         Filters()
 
     def grid_widgets(self):
-        """
-        Put all widgets in the right places
-        :return:
-        """
+        """Configure widgets in grid geometry manager"""
         self.file_tree.grid(column=0, row=0, rowspan=16, sticky="nswe", pady=5, padx=(5, 0))
         self.file_scroll.grid(column=1, row=0, rowspan=16, sticky="ns", pady=5)
         self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe", padx=5)
@@ -167,35 +160,34 @@ class FileFrame(ttk.Frame):
         else:
             raise ValueError("Unsupported file_string received: {0}".format(file_string))
         self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        lines = Parser.read_file(file_name)
-        player_list = Parser.get_player_id_list(lines)
-        if len(player_list) == 0:
-            raise ValueError("Empty player list for file {}".format(file_name))
-        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
+        file_cube, match_timings, spawn_timings = Parser.split_combatlog_file(file_name)
         if len(match_timings) / 2 != len(file_cube):
-            raise ValueError("Invalid results for {}\n{}\n{}".format(file_name, file_cube, match_timings))
-        match_index = 0
-        for match in match_timings[::2]:
+            print("[FileFrame] Uneven results for file {}".format(file_name))
+            return
+        for match_index, match in enumerate(match_timings[::2]):
             self.file_tree.insert(file_name, tk.END, iid=(file_name, match_index), text=match.strftime("%H:%M"))
-            spawn_index = 0
-            for spawn in spawn_timings[match_index]:
-                self.file_tree.insert((file_name, match_index), tk.END, iid=(file_name, match_index, spawn_index),
-                                      text=spawn.strftime("%H:%M:%S"))
-                spawn_index += 1
-            match_index += 1
+            for spawn_index, spawn in enumerate(spawn_timings[match_index]):
+                self.file_tree.insert(
+                    (file_name, match_index), tk.END,
+                    iid=(file_name, match_index, spawn_index),
+                    text=spawn.strftime("%H:%M:%S"))
 
     def update_widgets(self, abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                        enemydamaget, uncounted):
         """
-        This function can update the dta widgets for files, matches and folders
-        by updating the widgets of statsframe and shipsframe according to the
-        data received from parsing
-        :param abilities_dict: abilities dictionary with abilities as keys and amounts as values
+        This function can update the dta widgets for files, matches and
+        folders by updating the widgets of statsframe and shipsframe
+        according to the data received from parsing
+        :param abilities_dict: abilities dictionary with abilities as
+            keys and amounts as values
         :param statistics_string: string to set in the statistics tab
-        :param shipsdict: dictionary with ships as keys and amounts as values
+        :param shipsdict: dictionary with ships as keys and amounts as
+            values
         :param enemies: list of enemy ID numbers
-        :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
-        :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
+        :param enemydamaged: dictionary with enemies as keys and
+            amounts of damage as values
+        :param enemydamaget: dictionary with enemies as keys and
+            amounts of damage as values
         :param uncounted: amount of uncounted ship occurrences
         """
         self.main_window.middle_frame.statistics_numbers_var.set(statistics_string)
@@ -224,16 +216,20 @@ class FileFrame(ttk.Frame):
     def update_widgets_spawn(self, name, spawn, abilitiesdict, statistics_string, ships_list, comps, enemies,
                              enemydamaged, enemydamaget):
         """
-        This function sets the data widgets for the spawn parsing results
+        This function sets the data widgets for the spawn parsing
+        results
         :param name: player name
         :param spawn: section of CombatLog
-        :param abilitiesdict: abilities dictionary with abilities as keys and amounts as values
+        :param abilitiesdict: abilities dictionary with abilities as
+            keys and amounts as values
         :param statistics_string: string to set in the statistics tab
         :param ships_list: list of possible ships
         :param comps: list of ship components
         :param enemies: list of enemy ID numbers
-        :param enemydamaged: dictionary with enemies as keys and amounts of damage as values
-        :param enemydamaget: dictionary with enemies as keys and amounts of damage as values
+        :param enemydamaged: dictionary with enemies as keys and
+            amounts of damage as values
+        :param enemydamaget: dictionary with enemies as keys and
+            amounts of damage as values
         """
         for key, value in abilitiesdict.items():
             self.main_window.middle_frame.abilities_treeview.insert('', tk.END, text=key, values=(value,))
@@ -254,8 +250,8 @@ class FileFrame(ttk.Frame):
 
     def update_parse(self, *args):
         """
-        Callback for the Treeview widget that calls the correct function to load
-        a file, match or spawn depending on which is selected.
+        Callback for the Treeview widget that calls the correct function
+        to load a file, match or spawn depending on which is selected.
         :param args: Tkinter event
         """
         try:
@@ -276,18 +272,13 @@ class FileFrame(ttk.Frame):
         elif len(elements) is 3:
             # Spawn
             self.parse_spawn(elements)
-        else:
-            tkinter.messagebox.showerror("Error", "The following invalid amount of elements was detected: {0}. "
-                                                  "Please report this error in the GitHub "
-                                                  "repository.".format(len(elements)))
-            raise ValueError("Invalid value for elements detected {0}".format(len(elements)))
 
     def parse_file(self, file_name):
         """
-        Function either sets the file and calls add_matches to add the matches
-        found in the file to the matches_listbox, or starts the parsing of all
-        files found in the specified folder and displays the results in the
-        other frames.
+        Function either sets the file and calls add_matches to add the
+        matches found in the file to the matches_listbox, or starts the
+        parsing of all files found in the specified folder and displays
+        the results in the other frames.
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -295,24 +286,25 @@ class FileFrame(ttk.Frame):
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
         file_cube, _, _ = Parser.split_combatlog(lines, player_list)
-        results = filestats.file_statistics(file_name, self.sharing_db)
+        results = filestats.file_statistics(file_name)
         self.update_widgets(*results)
 
     def parse_folder(self):
         """
-        Function that initiates the parsing of a whole folder by calling the
-        folder_statistics() function and updates the widgets by calling the
-        self.update_widgets function accordingly.
+        Function that initiates the parsing of a whole folder by calling
+        the folder_statistics() function and updates the widgets by
+        calling the self.update_widgets function accordingly.
         """
         self.clear_data_widgets()
         results = folderstats.folder_statistics()
         self.update_widgets(*results)
 
-    def parse_match(self, elements):
+    def parse_match(self, elements: list):
         """
-        Either adds sets the match and calls add_spawns to add the spawns found
-        in the match or starts the parsing of all files found in the specified
-        file and displays the results in the other frames.
+        Either adds sets the match and calls add_spawns to add the
+        spawns found in the match or starts the parsing of all files
+        found in the specified file and displays the results in the
+        other frames.
         :param elements: specifies file and match
         """
         self.clear_data_widgets()
@@ -322,15 +314,18 @@ class FileFrame(ttk.Frame):
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
         file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
+        player_name = Parser.get_player_name(lines)
         match = file_cube[match_index]
-        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index], self.sharing_db)
+        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index])
         self.update_widgets(*results)
+        match_list = Parser.build_spawn_from_match(match)
+        self.main_window.middle_frame.time_view.insert_spawn(match_list, player_name)
 
     def parse_spawn(self, elements):
         """
-        Either starts the parsing of ALL spawns found in the specified match or
-        just one of them and displays the results in the other frames
-        accordingly.
+        Either starts the parsing of ALL spawns found in the specified
+        match or just one of them and displays the results in the other
+        frames accordingly.
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
@@ -342,7 +337,7 @@ class FileFrame(ttk.Frame):
         match = file_cube[match_index]
         spawn = match[spawn_index]
         results = spawnstats.spawn_statistics(
-            file_name, spawn, spawn_timings[match_index][spawn_index], self.sharing_db)
+            file_name, spawn, spawn_timings[match_index][spawn_index])
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
         string = FileHandler.get_features_string(*arguments)
@@ -378,7 +373,8 @@ class FileFrame(ttk.Frame):
     def get_spawn(self):
         """
         Get the spawn from the selection in the file_tree
-        :return: list of event strings, player_list, spawn timing and match timing
+        :return: list of event strings, player_list, spawn timing and
+            match timing
         """
         selection = self.file_tree.selection()[0]
         elements = selection.split(" ")

@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from pynput.mouse import Button
 import pickle as pickle
 from datetime import datetime
+# Packages
+from pynput.mouse import Button
 # Project Modules
 from utils.directories import get_temp_directory
 from utils.colors import *
@@ -131,13 +132,13 @@ class FileHandler(object):
         return None
 
     @staticmethod
-    def get_spawn_dictionary(data, file_name, match_dt, spawn_dt):
+    def get_spawn_dictionary(data: dict, file_name: str, match_dt: datetime, spawn_dt: datetime):
         """
         Function to get the data dictionary for a spawn based on a file
         name, match datetime and spawn datetime. Uses a lot of code to
         make the searching as reliable as possible.
         """
-        print("Spawn data requested for:\n{}\n{}\n{}".format(file_name, match_dt, spawn_dt))
+        print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt.time(), spawn_dt.time()))
         # First check if the file_name is available
         if file_name not in data:
             return "Not available for this file.\n\nScreen parsing results are only available for spawns in files " \
@@ -179,7 +180,7 @@ class FileHandler(object):
         if spawn_dict is None:
             return "Not available for this spawn\n\nScreen parsing results are not available for spawns which " \
                    "were not  spawned while screen parsing was enabled and real-time parsing were running."
-        print("Retrieved data: {}".format(spawn_dict))
+        print("[FileHandler] Retrieved a spawn dictionary.")
         return spawn_dict
 
     @staticmethod
@@ -193,7 +194,7 @@ class FileHandler(object):
         return data
 
     @staticmethod
-    def get_markers(screen_dict, spawn_list):
+    def get_markers(screen_dict: dict, spawn_list: list, active_ids: list):
         """
         Generate a dictionary of markers to insert into the TimeLine
         widget of the StatsFrame. This marker dictionary is built-up
@@ -264,15 +265,14 @@ class FileHandler(object):
             ability = line["ability"]
             # If the ability was self-targeted, then it is not a weapon
             # If the ability was not activated by self, then it is not damage dealt
-            if line["source"] == line["target"] or line["source"] not in player_list:
+            if line["self"] is True or line["target"] not in player_list:
                 continue
             # Determine the category of this ability
             if ability in abilities.primaries:
                 category = "primaries"
             elif ability in abilities.secondaries:
                 category = "secondaries"
-            else:
-                # Ability is not a weapon
+            else:  # Ability is not a weapon
                 continue
             # Generate the arguments for the marker creation
             start = FileHandler.datetime_to_float(line["time"])
@@ -324,9 +324,7 @@ class FileHandler(object):
 
     @staticmethod
     def get_health_markers(screen_dict, start_time):
-        """
-        Return health markers for TimeLine
-        """
+        """Return health markers for TimeLine"""
         if "health" not in screen_dict:
             return {}
         sub_dict = screen_dict["health"]
@@ -370,7 +368,7 @@ class FileHandler(object):
                 category, mode = result
                 if power_mode == mode:
                     continue
-                args = ("power_mgmt", previous, time)
+                args = ("power_mgmt", FileHandler.datetime_to_float(previous), FileHandler.datetime_to_float(time))
                 previous = time
                 kwargs = {"background": FileHandler.power_mgmt_colors[power_mode]}
                 power_mode = mode
@@ -390,7 +388,7 @@ class FileHandler(object):
         return results
 
     @staticmethod
-    def get_tracking_markers(screen_dict, ship_stats):
+    def get_tracking_markers(screen_dict: dict, ship_stats: ShipStats):
         """
         Generates a dictionary of markers that indicate tracking
         penalty. Attempts to read the tracking penalty data from the
@@ -403,7 +401,7 @@ class FileHandler(object):
         # processing in the calling function.
         results = {"tracking": []}
         stats = {
-            "firing_arc": 40,  # degrees
+            "firing_arc": 32,  # degrees
             "penalty": 0,  # percentpoint per degree
             "upgrade_c": 0  # the upgrade constant
         }
@@ -424,7 +422,7 @@ class FileHandler(object):
         # Loop over screen parsing cursor position data
         for key, value in sorted(screen_dict["cursor_pos"].items()):
             degrees = get_tracking_degrees(get_distance_from_center(value))
-            degrees = max(min(degrees, stats["firing_arc"]), 1)
+            degrees = max(min(degrees, stats["firing_arc"]), 0)
             # If tracking penalty constants are available
             if stats["penalty"] != 0:
                 # Calculate the actual tracking penalty instead of using
@@ -437,7 +435,7 @@ class FileHandler(object):
             else:
                 # Base the marker on the degrees from center instead
                 darkened = color_darken(
-                    base_color, stats["firing_arc"] / degrees)
+                    base_color, ((degrees / stats["firing_arc"]) - 1) / 2 + 1)
                 background = tuple_to_hex(darkened)
             # Create the marker data
             start = FileHandler.datetime_to_float(key)
@@ -450,8 +448,9 @@ class FileHandler(object):
     @staticmethod
     def get_ability_markers(spawn_list, ship_stats):
         """
-        Parse a spawn list of lines and take the Engine, Shield, Systems and CoPilot ability activations and create
-        markers for them to be put in the TimeLine.
+        Parse a spawn list of lines and take the Engine, Shield, Systems
+        and CoPilot ability activations and create markers for them to
+        be put in the TimeLine.
         """
         # TODO: Use ship_statistics to create availability markers
         categories = ["engines", "shields", "copilot", "systems"]
@@ -500,7 +499,13 @@ class FileHandler(object):
                 start = time
                 continue
             # pressed is False
-            args = ("boosting", start, time)
+            try:
+                start_dt = FileHandler.datetime_to_float(start)
+                time_dt = FileHandler.datetime_to_float(time)
+            except TypeError as e:
+                print("[FileHandler:BoostMarkers] Failed to convert time to float:", e)
+                continue
+            args = ("boosting", start_dt, time_dt)
             kwargs = {"background": FileHandler.colors["engines"]}
             results["boosting"].append((args, kwargs))
         return results
@@ -523,4 +528,3 @@ class FileHandler(object):
                 pressed = True
             pressed = "pressed" in pressed if isinstance(pressed, str) else pressed
             yield time, (key, pressed)
-

@@ -14,17 +14,18 @@ from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 # Frames
-from frames import FileFrame, ResourcesFrame, SharingFrame, GraphsFrame, \
-    SettingsFrame, RealtimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
-    StatsFrame, StrategiesFrame, ToolsFrame
+from frames import FileFrame, RealTimeFrame, CharactersFrame,\
+    BuildsFrame, GraphsFrame, SettingsFrame, ShipFrame, \
+    StatsFrame, StrategiesFrame
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
 # Project Modules
-import variables
+from network.discord import DiscordClient
 from utils.directories import get_temp_directory, get_assets_directory
 from utils.update import check_update
 from variables import settings
+import variables
 # Packages
 import pyscreenshot
 from PIL import Image
@@ -55,6 +56,7 @@ class MainWindow(ThemedTk):
         self.set_icon()
         self.set_variables()
         self.update_style()
+        self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
@@ -68,17 +70,14 @@ class MainWindow(ThemedTk):
         self.realtime_tab_frame = ttk.Frame(self.notebook)
         self.settings_tab_frame = ttk.Frame(self.notebook)
         self.characters_frame = CharactersFrame(self.notebook, self)
-        self.sharing_frame = SharingFrame(self.notebook, self)
         self.file_select_frame = FileFrame(self.file_tab_frame, self)
         self.middle_frame = StatsFrame(self.file_tab_frame, self)
         self.ship_frame = ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
-        self.realtime_frame = RealtimeFrame(self.realtime_tab_frame, self)
+        self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
-        self.resources_frame = ResourcesFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
-        self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.grid_widgets()
@@ -99,6 +98,7 @@ class MainWindow(ThemedTk):
         self.finished = True
         self.splash.destroy()
         # Start the main loop
+        self.discord.send_files(self)
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
@@ -121,10 +121,8 @@ class MainWindow(ThemedTk):
         self.graphs_frame.grid_widgets()
         self.builds_frame.grid_widgets()
         self.characters_frame.grid_widgets()
-        self.toolsframe.grid_widgets()
         self.file_select_frame.clear_data_widgets()
         self.strategies_frame.grid_widgets()
-        self.sharing_frame.grid_widgets()
 
     def setup_notebook(self):
         """Add all created frames to the notebook widget"""
@@ -134,9 +132,6 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.sharing_frame, text="Sharing")
-        self.notebook.add(self.resources_frame, text="Resources")
-        self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
 
     def set_attributes(self):
@@ -221,7 +216,6 @@ class MainWindow(ThemedTk):
         screenshot.save(file_name, "PNG")
 
     def destroy(self):
-        self.sharing_frame.save_database()
         if self.strategies_frame.settings is not None:
             if self.strategies_frame.settings.server:
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")

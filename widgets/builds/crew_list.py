@@ -9,7 +9,6 @@ from collections import OrderedDict
 # UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
-from tkinter import messagebox
 # Project Modules
 import variables
 from widgets.toggledframe import ToggledFrame
@@ -38,82 +37,78 @@ class CrewListFrame(ttk.Frame):
         self.data = data_dictionary
         self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
         self.header_label = ttk.Label(self, text="Crew", font=("default", 12), justify=tk.LEFT)
+
+        # Attributes
         self.category_frames = OrderedDict()
-        self.member_buttons = OrderedDict()
-        self.member_icons = OrderedDict()
-        self.copilots = {}
-        self.copilot_dicts = {}
-        self.copilot_icons = {}
-        self.copilot_buttons = {}
-        self.category_variables = {}
+        self.member_buttons, self.member_icons = OrderedDict(), OrderedDict()
+        self.copilots, self.copilot_dicts = dict(), dict()
+        self.copilot_icons, self.copilot_buttons = dict(), dict()
+        self.category_variables = dict()
         self.copilot_variable = tk.StringVar()
         self.faction = faction
-        for category in self.data:
-            # Category is a dictionary (weirdly): {crole: [{}, {}]}
-            # The dictionaries in the list contain the companion data
-            # No other keys are in the dictionary
-            crole = ""
-            for role in self.roles:
-                # Attempt to match the category to a known category name
-                if role not in category:
-                    continue
-                # ATTENTION: Category is now the [{}, {}] from before
-                category = category[role]
-                # crole is the role of the companions in this dict (str type)
-                crole = role
-                break
-            # If, for some reason, there is a discrepancy in the database and the loop before did not get a valid
-            # result, then skip this category, after showing a message
-            if not isinstance(category, list):
-                messagebox.showinfo("Info", "A non-critical error occurred. The GSF Parser had an unexpected result "
-                                            "while going over the data in companions.db, please report this with the "
-                                            "output below.\n\n{}".format(category))
+
+        self.build_widgets()
+
+    def build_widgets(self):
+        """Build widgets for the Crew Members"""
+        for category in self.data:  # {crew_role: [dict, dict, ...]}
+            crew_role, = category.keys()  # CoPilot, Engineering, etc...
+            category,  = category.values()  # [dict, dict, ...]
+            # The CoPilot is selected from selected crew members
+            if crew_role == "CoPilot":
+                for member in category:
+                    self.category_frames[crew_role] = ToggledFrame(self, text=crew_role)
+                    self.copilot_dicts[member["Name"]] = member
                 continue
-            # The CoPilot role is a special case
-            if crole == "CoPilot":
-                for member_dict in category:
-                    self.category_frames[crole] = ToggledFrame(self, text=crole)
-                    self.copilot_dicts[member_dict["Name"]] = member_dict
-                continue
-            elif crole == "":
-                raise ValueError("Invalid role detected.")
-            self.category_frames[crole] = ToggledFrame(self, text=crole, callback=self.toggle_callback)
-            self.category_variables[crole] = tk.StringVar()
-            for member_dict in category:
-                icon_name = member_dict["Icon"].lower().replace("Crew", "crew")
-                self.member_icons[member_dict["Name"]] = open_icon(icon_name)
-                self.member_buttons[member_dict["Name"]] = ttk.Radiobutton(
-                    self.category_frames[crole].sub_frame, text=member_dict["Name"], compound=tk.LEFT, width=12,
-                    image=self.member_icons[member_dict["Name"]], variable=self.category_variables[crole],
-                    value=member_dict["Name"],
-                    command=lambda i=(faction, crole, member_dict["Name"]): self.set_crew_member(i))
-                if member_dict["IsDefaultCompanion"]:
-                    self.copilots[crole] = member_dict["Name"]
+            # Build Crew widgets for this category: Frame, Radiobuttons
+            self.category_frames[crew_role] = ToggledFrame(self, text=crew_role, callback=self.toggle_callback)
+            # Stores name of selected crew member in this crew role
+            self.category_variables[crew_role] = tk.StringVar()
+            # Build Radiobutton widget for each Crew member option
+            for member in category:  # {Name, Icon, etc...}
+                self.member_icons[member["Name"]] = open_icon(member["Icon"].lower())
+                self.member_buttons[member["Name"]] = ttk.Radiobutton(
+                    self.category_frames[crew_role].sub_frame, text=member["Name"], compound=tk.LEFT, width=10,
+                    image=self.member_icons[member["Name"]], variable=self.category_variables[crew_role],
+                    value=member["Name"],
+                    command=lambda i=(self.faction, crew_role, member["Name"]): self.set_crew_member(i))
+                if member["IsDefaultCompanion"]:
+                    self.copilots[crew_role] = member["Name"]
         self.update_copilots()
 
-    def set_crew_member(self, member):
-        faction, crole, name = member
-        print("Setting {} in category {}".format(name, crole))
-        self.copilots[crole] = name
+    def set_crew_member(self, member: tuple):
+        """
+        Callback for Radiobuttons for the crew members.
+        member: (faction: str, crew_role: str, crew_name: str)
+        """
+        faction, role, name = member
+        print("[CrewListFrame] Setting {} in category {}".format(name, role))
+        self.copilots[role] = name
         self.callback(member)
         self.update_copilots()
 
     def update_copilots(self):
+        """
+        Update the CoPilot widgets in the CoPilot ToggledFrame. The
+        CoPilot is selected from the crew members selected in the other
+        crew member roles and thus in the CoPilot Frame only the crew
+        members selected in the other roles should be displayed here.
+        """
+        # Clear the currently existing widgets
         for widget in self.copilot_buttons.values():
             widget.grid_forget()
         self.copilot_buttons.clear()
         self.copilot_icons.clear()
-        index = 0
-        for category, name in self.copilots.items():
+        for index, (category, name) in enumerate(self.copilots.items()):
             self.copilot_icons[name] = open_icon(self.copilot_dicts[name]["Icon"].lower())
             self.copilot_buttons[name] = ttk.Radiobutton(
-                self.category_frames["CoPilot"].sub_frame, width=16, variable=self.copilot_variable, value=name,
-                text=name, compound=tk.LEFT, image=self.member_icons[name],
-                command=lambda faction=self.faction, name=name: self.set_crew_member((faction, "CoPilot", name)))
-            index += 1
+                self.category_frames["CoPilot"].sub_frame, width=10, variable=self.copilot_variable,
+                value=name, text=name, compound=tk.LEFT, image=self.member_icons[name],
+                command=lambda name=name: self.set_crew_member((self.faction, "CoPilot", name)))
         self.grid_widgets()
 
     def grid_widgets(self):
+        """Configure widgets in grid geometry manager"""
         self.header_label.grid(row=0, column=0, sticky="nswe", padx=5, pady=5)
         set_row = 1
         for frame in self.category_frames.values():
@@ -132,9 +127,11 @@ class CrewListFrame(ttk.Frame):
             if frame.show.get():
                 frame.toggle()
 
-    def toggle_callback(self, frame, open):
+    def toggle_callback(self, frame: ttk.Frame, open: bool):
         """
-        Callback for the ToggledFrames so only one of them is open at a time.
+        Callback for the ToggledFrames so only one of them is open at a
+        time. This is to prevent the clogging up of the relatively small
+        CrewListFrame.
         """
         if open is False:
             return

@@ -49,10 +49,17 @@ ship_names = {
     "Legion": "Imperial_B-4D_Legion"
 }
 
-ships_reverse = {value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key for key, value in
-                 ship_names.items()}
-ships_other = {value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key for key, value in
-               ship_names.items()}
+ships_names_reverse = {value: key for key, value in ship_names.items()}
+
+ships_reverse = {
+    value.replace("Republic_", "").replace("Imperial_", "").replace("_", " "): key
+    for key, value in ship_names.items()
+}
+
+ships_other = {
+    value.replace("Imperial_", "").replace("Republic_", "").replace("_", " "): key
+    for key, value in ship_names.items()
+}
 
 companion_indices = {
     "Engineering": 0,

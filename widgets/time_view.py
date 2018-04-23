@@ -54,9 +54,7 @@ class TimeView(ttk.Treeview):
         self.index = 0
 
     def setup_columns(self):
-        """
-        Setup the Treeview with the correct widths and tags
-        """
+        """Setup the Treeview with the correct widths and tags"""
         self.column("#0", width=int(40 * self._width), anchor=tk.W)
         self.column("time", width=int(60 * self._width))
         self.column("source", width=int(105 * self._width))
@@ -68,7 +66,6 @@ class TimeView(ttk.Treeview):
         """
         Insert a new line into the Treeview
         :param line_dict: line dictionary (Parser.line_to_dictionary)
-        :return: None
         """
         if line_dict is None or line_dict["type"] == Parser.LINE_EFFECT:
             return
@@ -85,7 +82,7 @@ class TimeView(ttk.Treeview):
         )
         tag = Parser.get_event_category(line_dict, active_ids)
         if line_dict["ability"] not in self.icons:
-            print("Icon for ability '{}' is missing.".format(line_dict["ability"]))
+            print("[TimeView] Icon for ability '{}' is missing.".format(line_dict["ability"]))
             image = self.icons["default"]
         else:
             image = self.icons[line_dict["ability"]]
@@ -114,7 +111,7 @@ class TimeView(ttk.Treeview):
                 kwargs.update({"image": self.icons[effect["name"]]})
             self.insert(iid, tk.END, **kwargs)
 
-    def insert_spawn(self, spawn, player_name):
+    def insert_spawn(self, spawn, player_name, active_ids:list=None):
         """
         Insert the events of a spawn into the Treeview
         :param spawn: A set of lines or line_dicts
@@ -125,7 +122,7 @@ class TimeView(ttk.Treeview):
             raise ValueError("Invalid spawn passed.")
         spawn = spawn if isinstance(spawn[0], dict) else [Parser.line_to_dictionary(line) for line in spawn]
         start_time = spawn[0]["time"]
-        active_ids = Parser.get_player_id_list(spawn)
+        active_ids = Parser.get_player_id_list(spawn) if active_ids is None else active_ids
         for line_dict in spawn:
             line_event_dict = Parser.line_to_event_dictionary(line_dict, active_ids, spawn)
             self.insert_event(line_event_dict, player_name, active_ids, start_time)
@@ -138,16 +135,11 @@ class TimeView(ttk.Treeview):
         :param start_time: time the match or spawn has started
         :return: a formatted string of the time difference
         """
-        delta = time - start_time
-        elapsed = divmod(delta.total_seconds(), 60)
-        string = "%02d:%02d" % (int(round(elapsed[0], 0)), int(round(elapsed[1], 0)))
-        return string
+        return time.strftime("%H:%M:%S")
 
     @staticmethod
     def get_treeview_values(line_dict, player_name, start_time, active_ids):
-        """
-        Return the Treeview values for a certain line_dict
-        """
+        """Return the Treeview values for a certain line_dict"""
         values = (
             TimeView.format_time_diff(line_dict["time"], start_time),
             player_name if Parser.compare_ids(line_dict["source"], active_ids) else line_dict["source"],
@@ -158,9 +150,7 @@ class TimeView(ttk.Treeview):
         return values
 
     def delete(self, *items):
-        """
-        Function redirect to reset the index attribute
-        """
+        """Function redirect to reset the index attribute"""
         ttk.Treeview.delete(self, *items)
         self.index = 0
 

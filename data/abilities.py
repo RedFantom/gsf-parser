@@ -289,3 +289,64 @@ all_ships = {
 
 ships_dual_secondaries = ["Mangler", "Jurgoran", "Dustmaker", "Quell"]
 ships_dual_primaries = ["Rycer"]
+
+cooldowns = {
+    "Seeker Mine": 20,
+    "Interdiction Mine": 20,
+    "Concussion Mine": 20,
+    "Ion Mine": 20,
+    "Targeting Telemtry": 45,
+    "Blaster Overcharge": 60,
+    "Booster Recharge": 60,
+    "Sensor Beacon": 90,
+    "Combat Command": 75,
+    "Tensor Field": 90,
+    "Repair Probes": 75,
+    "Remote Slicing": 45,
+
+    "Railgun Sentry Drone": 90,
+    "Interdiction Sentry Drone": 90,
+    "Missile Sentry Drone": 90,
+
+    "Shield Projector": 30,
+    "Overcharged Shield": 60,
+    "Repair Drone": 90,
+    "Distortion Field": 30,
+    "Directional Shield": 1,
+    "Charged Plating": 30,
+    "Fortress Shield": 1,
+    "Feedback Shield": 30,
+    "Quick-Charge Shield": 30,
+    "Engine Power Convertor": 9,
+
+    "Shield Power Convertor": 9,
+    "Weapon Power Convertor": 9,
+    "Interdiction Drive": 60,
+    "Power Dive": 15,
+    "Koiogran Turn": 20,
+    "Retro Thrusters": 20,
+    "Hyperspace Beacon": 180,
+    "Barrel Roll": 30,
+    "Rotational Thrusters": 15,
+    "Snap Turn": 20,
+
+    "Primary Weapon Swap": 0,
+    "Secondary Weapon Swap": 0,
+}
+
+missiles = (
+    "Proton Torpedo",
+    "Concussion Missile",
+    "Thermite Torpedo",
+    "Cluster Missiles",
+    "Seeker Mine",
+    "Rocket Pod",
+    "EMP Missile",
+    "Ion Missile",
+)
+
+railguns = (
+    "Slug Railgun",
+    "Ion Railgun",
+    "Plasma Railgun"
+)

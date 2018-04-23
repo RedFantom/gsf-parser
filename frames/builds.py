@@ -92,18 +92,15 @@ class BuildsFrame(ttk.Frame):
         in the CrewAbilitiesFrame
         :param member: (faction, category, name)
         """
-        print("set_crew_member received member: {0}".format(member))
-        print("Looking for companion {0} in category {1}".format(member[2], member[1]))
+        print("[BuildsFrame] Configuring crew member:", member)
         value = None
         faction, category, name = member
         self.ship.crew[category] = member
         category_index = companion_indices[category]
         for index, companion in enumerate(self.companions_data[faction][category_index][category]):
-            print("Checking companion: {0}".format(companion["Name"]))
+            print("[BuildsFrame] Checking companion: {0}".format(companion["Name"]))
             if name == companion["Name"]:
-                print("Companion is valid!")
                 value = index
-                print("Index was {0}, so value set to {1}".format(index, value))
                 break
         if value is None:
             raise ValueError()
@@ -262,7 +259,7 @@ class BuildsFrame(ttk.Frame):
         self.grid_widgets()
         self.current_component.grid(row=0, rowspan=3, column=2, sticky="nswe")
 
-    def set_faction(self, faction):
+    def set_faction(self, faction: str):
         """
         Sets the faction attribute and calls grid_widgets to update the
         ship widgets that are displayed for the appropriate faction.
@@ -290,7 +287,7 @@ class BuildsFrame(ttk.Frame):
             for i in range(len(button)):
                 button[i].config(state=tk.DISABLED)
 
-    def toggle_callback(self, frame, open):
+    def toggle_callback(self, frame: ToggledFrame, open: bool):
         """
         Callback for ToggledFrame in order to close all the open frames
         upon opening a new one so only a single frame is open at the

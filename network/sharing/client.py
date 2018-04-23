@@ -24,25 +24,24 @@ class SharingClient(Client):
         Client.__init__(self, host, port)
 
     def send_name_id(self, server, faction, mainname, altname, id):
-        """
-        Send a name/ID combination to the network
-        """
+        """Send a name/ID combination to the network"""
         print("[SharingClient] Sending store name command.")
         self.send("storename_{}_{}_{}_{}_{}".format(server, faction, mainname, altname, id))
         print("[SharingClient] Awaiting result.")
         message = self.get_message()
+        if isinstance(message, bytes):
+            message = message.decode()
         if message == "saved":
             print("[SharingClient] Saved successfully.")
             return True
         elif message == "unkown":
             print("[SharingClient] Store failed.")
             return None
+        print("[SharingClient] Unknown response:", message)
         return False
 
     def get_name_id(self, server, id):
-        """
-        Get a mainname from the network
-        """
+        """Get a main name from the network"""
         self.send("getname_{}_{}".format(server, id))
         message = self.get_message()
         if message is False:

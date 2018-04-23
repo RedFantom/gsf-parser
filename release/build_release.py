@@ -21,8 +21,8 @@ def print_without_newline(*args):
 
 def get_inno_setup_path(executable="ISCC.exe", identifier="inno"):
     """
-    Return an absolute path to the Inno Setup executable, if it exists on the system in a known folder. Otherwise,
-    False is returned.
+    Return an absolute path to the Inno Setup executable, if it exists
+    on the system in a known folder. Otherwise, False is returned.
     """
     # Check PATH
     paths = os.environ["PATH"].split(os.pathsep)
@@ -43,9 +43,7 @@ def get_inno_setup_path(executable="ISCC.exe", identifier="inno"):
 
 
 def get_pyinstaller_path():
-    """
-    Return an absolute path to the pyinstaller executable
-    """
+    """Return an absolute path to the pyinstaller executable"""
     printw("Installing PyInstaller if required... ")
     pip.main(["install", "pyinstaller", "--quiet"])
     printw("Done.\n")

@@ -6,9 +6,8 @@ Copyright (C) 2016-2018 RedFantom
 """
 import socket
 from tkinter import messagebox
-from ast import literal_eval
 # Project Modules
-from parsing.strategies import Strategy, Item, Phase
+from parsing.strategies import Strategy, Item
 from network.client import Client
 
 
@@ -42,7 +41,8 @@ class StrategyClient(Client):
 
     def connect(self):
         """
-        Function to connect to the specified network or provide error handling when that fails
+        Function to connect to the specified network or provide error
+        handling when that fails
         """
         try:
             self.socket.settimeout(4)
@@ -93,51 +93,7 @@ class StrategyClient(Client):
         if not isinstance(strategy, Strategy):
             raise ValueError("Attempted to send object that is not an instance of Strategy: {0}".format(type(strategy)))
         # Serialize the Strategy object and then send
-        self.send(self.build_strategy_string(strategy))
-
-    @staticmethod
-    def build_strategy_string(strategy):
-        """Function to serialize a Strategy object into a string"""
-        string = "strategy_" + strategy.name + "~" + strategy.description + "~" + str(strategy.map) + "~"
-        for phase_name, phase in strategy:
-            string += phase.name + "¤" + phase.description + "¤" + str(phase.map) + "¤"
-            for item_name, item in phase:
-                string += "³" + str(item.data)
-            string += "¤"
-        return string
-
-    @staticmethod
-    def read_strategy_string(string):
-        """Function to rebuild Strategy object from string"""
-        strategy_elements = string.split("~")
-        strategy_name = strategy_elements[0]
-        strategy_description = strategy_elements[1]
-        strategy_map = literal_eval(strategy_elements[2])
-        phase_elements = strategy_elements[3:]
-        strategy = Strategy(strategy_name, strategy_map)
-        strategy.description = strategy_description
-        for phase_string in phase_elements:
-            phase_string_elements = phase_string.split("¤")
-            phase_name = phase_string_elements[0]
-            phase_description = phase_string_elements[1]
-            phase_map = literal_eval(phase_string_elements[2])
-            phase = Phase(phase_name, phase_map)
-            phase.description = phase_description
-            item_string = phase_string_elements[3]
-            item_elements = item_string.split("³")
-            for item_string_elements in item_elements:
-                if item_string_elements == "":
-                    continue
-                item_dictionary = literal_eval(item_string_elements)
-                phase[item_dictionary["name"]] = Item(
-                    item_dictionary["name"],
-                    item_dictionary["x"],
-                    item_dictionary["y"],
-                    item_dictionary["color"],
-                    item_dictionary["font"]
-                )
-            strategy[phase_name] = phase
-        return strategy
+        self.send(strategy.serialize())
 
     def update(self):
         """Update the current state of the Client"""
@@ -150,7 +106,7 @@ class StrategyClient(Client):
             return
         # Get a message
         message = self.message_queue.get()
-        print("Client received data: ", message)
+        print("[StrategyClient] Client received data: ", message)
         # Decode the message
         dmessage = message.decode()
         elements = dmessage.split("_")
@@ -178,7 +134,7 @@ class StrategyClient(Client):
             self.del_item_server(strategy, phase, text)
         elif command == "strategy":
             assert len(elements) >= 2
-            strategy = self.read_strategy_string(elements[1])
+            strategy = Strategy.deserialize(elements[1])
             self.list.db[strategy.name] = strategy
             self.list.update_tree()
         elif command == "client":
@@ -276,14 +232,14 @@ class StrategyClient(Client):
     """
 
     def add_item(self, strategy, phase, text, font, color):
-        print("Sending add item command")
+        print("[StrategyClient] Sending add item command")
         self.send("add_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, font, color))
 
     def move_item(self, strategy, phase, text, x, y):
         self.send("move_{0}_{1}_{2}_{3}_{4}".format(strategy, phase, text, x, y))
 
     def del_item(self, strategy, phase, text):
-        print("Sending del command")
+        print("[StrategyClient] Sending del command")
         self.send("del_{0}_{1}_{2}".format(strategy, phase, text))
 
     """
@@ -298,29 +254,29 @@ class StrategyClient(Client):
 
     def kick_player(self, player_name):
         if not self.role == "master":
-            raise ValueError("Attempted to kick a player while not master!")
+            raise PermissionError("Attempted to kick a player while not master!")
         self.send("kick_{0}".format(player_name))
         self.insert_callback("logout", ["logout", player_name])
 
     def ban_player(self, player_name):
         if not self.role == "master":
-            raise ValueError("Attempted to ban a player while not master!")
+            raise PermissionError("Attempted to ban a player while not master!")
         self.send("ban_{0}".format(player_name))
         self.insert_callback("logout", ["logout", player_name])
 
     def allow_share_player(self, player_name, new_state):
         if not self.role == "master":
-            raise ValueError("Attempted to change allow_share state while not master.")
+            raise PermissionError("Attempted to change allow_share state while not master.")
         self.send("allowshare_{}_{}".format(player_name, new_state))
 
     def allow_edit_player(self, player_name, new_state):
         if not self.role == "master":
-            raise ValueError("Attempted to change the allow_edit state while not master.")
+            raise PermissionError("Attempted to change the allow_edit state while not master.")
         self.send("allowedit_{}_{}".format(player_name, new_state))
 
     def readonly_player(self, player_name, new_state):
         if not self.role == "master":
-            raise ValueError("Attempted to change readonly state while not master.")
+            raise PermissionError("Attempted to change readonly state while not master.")
         self.send("readonly_{}_{}".format(player_name, new_state))
 
     def update_description(self, strategy, phase, description):

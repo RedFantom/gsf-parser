@@ -34,6 +34,10 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
+    # Date format
+    TIME_FORMAT = "%H:%M:%S.%f"
+    DATE_FORMAT = ""
+
     @staticmethod
     def line_to_dictionary(line, enemies: dict=None):
         """
@@ -54,17 +58,20 @@ class Parser(object):
         Valid GSF CombatLog event:
         [time] [source] [target] [ability] [effect] (amount)
         """
+        log = dict()
+        log["line"] = line
+        effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
+        log["time"] = datetime.strptime(elements[0], Parser.TIME_FORMAT)
+        log["source"] = elements[1]
+        log["target"] = elements[2]
         if len(elements) != 6:
-            raise ValueError("Invalid event: {}".format(line))
-        log = {
-            "time": datetime.strptime(elements[0], "%H:%M:%S.%f"),
-            "source": elements[1],
-            "target": elements[2], "destination": elements[2],
+            return log  # Invalid non-GSF CombatLog line
+        log.update({
             "ability": elements[3].split("{", 1)[0].strip(),
-            "effect": elements[4],
+            "effect": effect,
             "amount": elements[5],
-            "line": line
-        }
+            "destination": log["target"]
+        })
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
         if log["ability"].strip() == "":
@@ -77,6 +84,10 @@ class Parser(object):
             if log["target"] in enemies:
                 log["target"] = enemies[log["target"]]
         log["destination"] = log["target"]
+        log["self"] = log["source"] == log["target"]
+        amount = log["amount"].replace("*", "")
+        log["damage"] = int(amount) if amount.isdigit() else 0
+        log["crit"] = "*" in log["amount"]
         return log
 
     @staticmethod
@@ -98,8 +109,6 @@ class Parser(object):
             "color": color for this type of event,
             "active_id": id that was activate when this ability was fired
         }
-        :param line: A GSF CombatLog line
-        :return: dictionary
         """
         # Get the base dictionary
         line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
@@ -151,7 +160,6 @@ class Parser(object):
         """
         eligibility = Parser.get_effects_eligible(line_dict, lines, active_id)
         if eligibility is False or eligibility is None:
-            print("[Parser] Line with ability {} is not eligible for events".format(line_dict["ability"]))
             return eligibility
         ability = line_dict["ability"]
         ability_effects = {}
@@ -165,7 +173,6 @@ class Parser(object):
                 time_diff = (event["time"] - ability_effects[effect]["start"]["time"]).total_seconds()
                 ability_effects[effect]["duration"] = time_diff
             if effect not in effects_list or line_dict["source"] != event["source"]:
-                print("[Parser] Ignoring effect '{}' for ability '{}'".format(effect, ability))
                 continue
             if event["ability"] != ability:
                 continue
@@ -236,7 +243,7 @@ class Parser(object):
         return colors[category][1]
 
     @staticmethod
-    def get_event_category(line_dict, active_id):
+    def get_event_category(line_dict: dict, active_id: (list, str)):
         """
         Get the correct category for an event
         :param line_dict: line dictionary
@@ -283,6 +290,8 @@ class Parser(object):
                 return "shield"
             elif line_dict["ability"] in abilities.systems:
                 return "system"
+            elif line_dict["ability"] == "Player Death":
+                return "death"
             else:
                 return "other"
         elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
@@ -290,7 +299,7 @@ class Parser(object):
         raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
 
     @staticmethod
-    def compare_ids(id, active_ids):
+    def compare_ids(id: str, active_ids: (list, str)):
         """
         Compare an ID to either a single active ID or a list of IDs
         :param id: id to compare
@@ -328,8 +337,6 @@ class Parser(object):
         # Check if file exists, else add the combatlogs folder to it
         combatlogs_path = settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
-        if not os.path.exists(file_name):
-            raise FileNotFoundError("CombatLog {} was not found.".format(file_name))
         # Execute the splitting
         lines = Parser.read_file(file_name)
         return Parser.split_combatlog(lines, player_id_list)
@@ -362,7 +369,8 @@ class Parser(object):
     @staticmethod
     def get_enemy_id_list(lines: list, player_list: list):
         """
-        Get the list of enemies for a certain list of lines that describe a spawn
+        Get the list of enemies for a certain list of lines that
+        describe a spawn
         """
         enemies = []
         for line in lines:
@@ -420,6 +428,7 @@ class Parser(object):
     @staticmethod
     def parse_filename(file_name):
         """Get datetime object for a filename"""
+        file_name = os.path.basename(file_name)
         try:
             return datetime.strptime(file_name[:-10], "combat_%Y-%m-%d_%H_%M_%S_")
         except ValueError:
@@ -432,13 +441,8 @@ class Parser(object):
         indexing [match][spawn][event]) and provide the same interface
         as the legacy parse.splitter function.
         """
-        # Check if arguments are valid
-        if len(lines) == 0:
-            raise ValueError("Empty file")
-        if isinstance(lines[0], str):
-            raise NotImplementedError()
-        if len(player_list) == 0:
-            raise ValueError("Empty player list")
+        if player_list is None:
+            player_list = Parser.get_player_id_list(lines)
 
         # Data variables
         file_cube = []
@@ -535,19 +539,16 @@ class Parser(object):
             with open(file_name, "rb") as fi:
                 lines = fi.readlines()
         except OSError:
-            raise PermissionError("Could not read from file '{}'".format(file_name))
-        unicode = False
+            print("[Parser] Failed to read file: {}".format(os.path.basename(file_name)))
+            raise
         lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
             try:
                 line = line.decode()
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
-                unicode = True
                 continue
             lines_decoded.append(line)
-        if unicode is True:
-            print("[Parser] A file contains invalid UTF-8 characters:", file_name)
         enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
         return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
 
@@ -572,9 +573,7 @@ class Parser(object):
                 event = Parser.line_to_dictionary(event)
             # Get the data into locals
             time, source, target = event["time"], event["source"], event["target"]
-            ability, effect, amount_str = event["ability"], event["effect"], event["amount"]
-            # Process amount, as it is still a str with possibly a "*" for crits in it
-            amount = int(amount_str.replace("*", "")) if amount_str != "" else 0
+            ability, effect, amount = event["ability"], event["effect"], event["damage"]
             # If source is empty, then rename source to ability
             if source == "":
                 source = ability
@@ -598,7 +597,7 @@ class Parser(object):
                     dmg_d += amount
                     # Process hit
                     hitcount += 1
-                    critcount += 1 if "*" in amount_str else 0
+                    critcount += event["crit"]
                     # Process enemy
                     if target not in enemy_dmg_t:
                         enemy_dmg_t[target] = 0
@@ -810,3 +809,45 @@ class Parser(object):
         return (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount,
                 critcount, crit_luck, enemies, enemy_dmg_d, enemy_dmg_t,
                 ships, uncounted, deaths, time)
+
+    @staticmethod
+    def build_spawn_from_match(match: list)->list:
+        """Join the spawns of a match together to a single big spawn"""
+        result = list()
+        for spawn in match:
+            result.extend(spawn)
+            id_list = Parser.get_player_id_list(spawn)
+            line = spawn[-1]
+            death_event = "[{}] [{}] [{}] [{}] [{}] ()".format(
+                line["time"].strftime(Parser.TIME_FORMAT),
+                line["source"],
+                Parser.get_player_id_from_line(line, id_list),
+                "Player Death",
+                "ApplyEffect {}: AbilityActivate {}")
+            result.append(Parser.line_to_dictionary(death_event))
+        return result
+
+    @staticmethod
+    def get_player_id_from_line(line: dict, active_id: (str, list)):
+        """Return the active ID of a line based on a single line"""
+        for player_id in (line["source"], line["target"]):
+            if Parser.compare_ids(player_id, active_id) is True:
+                return player_id
+        return None
+
+    @staticmethod
+    def gsf_combatlogs():
+        """Return a list of absolute paths to all files with GSF matches"""
+        files = os.listdir(settings["parsing"]["path"])
+        for file in files:
+            if not Parser.get_gsf_in_file(file):
+                continue
+            path = os.path.join(settings["parsing"]["path"], file)
+            yield path
+
+    @staticmethod
+    def get_id_format(spawn: list):
+        """Return the player ID format of a match or spawn"""
+        id_list = Parser.get_player_id_list(spawn)
+        return id_list[0][:8]
+

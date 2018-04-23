@@ -40,13 +40,12 @@ class LogStalker(object):
             return
         self.file = recent
         print("[LogStalker] Watching new file: {}".format(self.file))
-        self._read_so_far = 0
+        with open(os.path.join(self._folder, self.file), "r") as fi:
+            self._read_so_far = len(fi.readlines())
         self._watching_callback(self.file)
 
     def get_new_lines(self):
-        """
-        Read the new lines in the file and return them as a list.
-        """
+        """Read the new lines in the file and return them as a list"""
         self.update_file()
         with open(os.path.join(self._folder, self.file), "rb") as fi:
             lines = fi.readlines()[self._read_so_far:]

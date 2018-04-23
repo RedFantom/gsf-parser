@@ -44,6 +44,6 @@ class SettingsDictionary(object):
         of str type and it is not a path, then the string is lowered
         in order to preserve backwards compatibility with older code.
         """
-        if isinstance(value, str) and not os.path.exists(value):
+        if isinstance(value, str) and not os.path.exists(value) and "@" not in value:
             value = value.lower()
         self._data[key] = value

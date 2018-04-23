@@ -6,7 +6,6 @@ Copyright (C) 2016-2018 RedFantom
 """
 from unittest import TestCase
 from PIL.ImageTk import PhotoImage
-
 import data.maps
 from utils import utilities
 import tkinter as tk

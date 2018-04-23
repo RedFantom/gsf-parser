@@ -18,13 +18,16 @@ from screeninfo import get_monitors
 from utils.directories import get_assets_directory
 
 
+EXTENSIONS = (".jpg", ".png")
+
+
 def open_icon_pil(image_name, size=None, ext=".jpg"):
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
         raise ValueError()
     icons_path = path.join(get_assets_directory(), "icons")
-    if not image_name.endswith(ext):
+    if not image_name.endswith(EXTENSIONS):
         image_name += ext
     filename = path.join(icons_path, image_name)
     if not path.exists(filename):

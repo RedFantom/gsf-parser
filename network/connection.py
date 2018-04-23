@@ -36,7 +36,7 @@ class Connection(object):
       messages by calling the functions upon this class instance.
     """
 
-    def __init__(self, sock=None, separator="+", lock=Lock(), queue=Queue()):
+    def __init__(self, sock, separator="+", lock=Lock(), queue=Queue()):
         """
         :param sock: Socket object to operate with
         :param separator: UTF-8 character that is used to separate
@@ -58,6 +58,10 @@ class Connection(object):
         self.separator = separator
         self.socket_lock = lock
         self.message_queue = queue
+
+    def connect(self, host: str, port: int):
+        """Connect to a server at the given address."""
+        self.socket.connect((host, port))
 
     def send(self, message, error=False):
         """
@@ -151,7 +155,7 @@ class Connection(object):
         return self.message_queue.get()
 
     def close(self, message=None):
-        """Closes the Connection."""
+        """Closes the Connection"""
         self.socket_lock.acquire()
         if message is not None:
             self.send(message)

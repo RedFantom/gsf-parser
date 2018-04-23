@@ -10,11 +10,13 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
-from ttkwidgets import TimeLine
+from widgets.timeline import TimeLine
 # Project Modules
 from widgets.time_view import TimeView
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
+from parsing.patterns import PatternParser
+from data.patterns import Patterns
 
 
 class StatsFrame(ttk.Frame):
@@ -135,6 +137,7 @@ class StatsFrame(ttk.Frame):
         # categories["wpower"] = {"text": "Weapon Power", "foreground": "#ff9933", "font": ("default", 11)}
         # categories["epower"] = {"text": "Engine Power", "foreground": "#751aff", "font": ("default", 11)}
         categories["power_mgmt"] = {"text": "Power Management", "foreground": "darkblue", "font": ("default", 11)}
+        categories["patterns"] = {"text": "Patterns", "foreground": "black", "font": ("default", 11)}
         self.time_line = TimeLine(
             self.timeline_frame, marker_change_category=False, marker_allow_overlap=False, marker_move=False,
             marker_font=("default", 11), marker_background="white", marker_border=0, marker_outline="black",
@@ -171,6 +174,22 @@ class StatsFrame(ttk.Frame):
         #     Balloon(labels[category], text=text)
         Balloon(labels["power_mgmt"], text="The TimeLine's color indicates the power management mode enabled at that "
                                            "time, and the darker markers indicate a switch in power management mode.")
+        self.setup_timeline_patterns()
+
+    def setup_timeline_patterns(self):
+        """Configure the TimeLine for Pattern display"""
+        string = ""
+        for pattern in Patterns.ALL_PATTERNS:
+            tag, header, text = pattern["tag"], pattern["name"], pattern["description"]
+            color = pattern["color"]
+            self.time_line.tag_configure(tag)
+            string += "{} - {}\n\n{}\n\n".format(header, color, text)
+            balloon = Balloon(self.time_line._timeline, headertext=header, text=text)
+            self.time_line._timeline.unbind("<Enter>")
+            self.time_line._timeline.unbind("<Leave>")
+            self.time_line.tag_bind(tag, "<Enter>", balloon._on_enter)
+            self.time_line.tag_bind(tag, "<Leave>", balloon._on_leave)
+        Balloon(self.time_line._category_labels["patterns"], headertext="Patterns", text=string, width=400)
 
     def setup_enemy_treeview(self):
         """Configure columns and options for enemies Treeview"""
@@ -217,7 +236,7 @@ class StatsFrame(ttk.Frame):
         self.time_scroll.grid(column=1, row=0, sticky="ns", pady=5)
         self.time_line.grid(column=1, row=1, sticky="nswe", padx=5, pady=5)
         self.screen_label.grid(column=1, row=2, padx=5, pady=5, sticky="w")
-        self.time_line._scrollbar_vertical.grid_forget()
+        # self.time_line._scrollbar_vertical.grid_forget()
 
     def treeview_sort_column(self, treeview, column, reverse, type):
         """
@@ -255,14 +274,17 @@ class StatsFrame(ttk.Frame):
         self.time_line.config(start=start, finish=finish)
         # Update the TimeLine
         screen_data = FileHandler.get_data_dictionary()
-        if file not in screen_data:
-            return  # File is not found in the screen parsing results dictionary
         screen_dict = FileHandler.get_spawn_dictionary(
             screen_data, file, match_timings[2 * match], spawn_timings[match][spawn]
         )
-        if isinstance(screen_dict, str):
-            return
-        markers = FileHandler.get_markers(screen_dict, file_cube[match][spawn])
+        screen_dict = None if isinstance(screen_dict, str) or screen_dict is None else screen_dict
+        spawn_list = file_cube[match][spawn]
+        active_ids = Parser.get_player_id_list(spawn_list)
+        markers = dict()
+        if isinstance(screen_dict, dict):
+            markers = FileHandler.get_markers(screen_dict, spawn_list, active_ids)
+        markers["patterns"] = PatternParser.parse_patterns(spawn_list, screen_dict, Patterns.ALL_PATTERNS, active_ids)
+        print("[TimeLine] Building {} markers.".format(sum(len(value) for value in markers.values())))
         for category, data in markers.items():
             for (args, kwargs) in data:
                 try:
@@ -271,7 +293,12 @@ class StatsFrame(ttk.Frame):
                     print("[TimeLine] Marker creation failed: '{}', '{}', '{}', '{}': {}".format(
                         args[0], args[1], args[2], kwargs["background"], repr(e))
                     )
-                    continue
-                print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
-                    args[0], args[1], args[2], kwargs["background"]))
+                    if isinstance(e, ValueError):
+                        pass
+                    elif isinstance(e, TypeError):
+                        raise
+                    else:
+                        raise
+                # print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
+                #     args[0], args[1], args[2], kwargs["background"]))
         return

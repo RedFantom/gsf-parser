@@ -17,7 +17,7 @@ defaults = {
         # Whether checks for updates are enabled
         "autoupdate": True,
         # assets/ships.db SWTOR patch level
-        "patch_level": "5.5",
+        "patch_level": "5.6.0",
         # SWTOR Temporary directory, for use on Linux
         "temp_dir": ""
     },
@@ -53,15 +53,28 @@ defaults = {
         "overlay_position": "x0y0",
         # Whether the Overlay hides outside of GSF
         "overlay_when_gsf": True,
-        # Whether screen parsing is enabled
-        "screenparsing": True,
-        # Whether screen parsing data is in the Overlay
-        "screen_overlay": True,
-        # List of enabled screen parsing features
-        "screen_features": ["Tracking penalty", "Ship health", "Power management"],
-        # Whether to use the experimental WindowsOverlay
-        "overlay_experimental": False,
-        # Whether to enable experimental Dynamic Window Location
-        "window": False,
+        # Whether to enable EventOverlay
+        "event_overlay": False,
+        # Location of EventOverlay
+        "event_location": "x0y0",
     },
+    "screen": {
+        # Whether screen parsing is enabled
+        "enabled": True,
+        # Whether screen parsing data is in the Overlay
+        "overlay": True,
+        # List of enabled screen parsing features
+        "features": ["Tracking penalty", "Ship health", "Power management"],
+        # Whether to use the experimental WindowsOverlay
+        "experimental": False,
+        # Whether to enable experimental Dynamic Window Location
+        "window": False
+    },
+    "sharing": {
+        "enabled": True,
+        "discord": "",
+        "auth": "",
+        "host": "discord.thrantasquadron.tk",
+        "port": 64731
+    }
 }

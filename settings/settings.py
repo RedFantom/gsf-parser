@@ -36,9 +36,7 @@ class Settings(object):
             self.write_settings({"misc": {"version": defaults["misc"]["version"]}})
 
     def write_defaults(self):
-        """
-        Write the default settings into the settings file
-        """
+        """Write the default settings into the settings file"""
         conf = configparser.ConfigParser()
         conf.read_dict(defaults)
         with open(self.file_name, "w") as fo:

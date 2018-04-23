@@ -10,7 +10,8 @@ from tkinter import ttk
 from tkinter.simpledialog import askstring
 # Project Modules
 from parsing.strategies import *
-from toplevels.strategy_toplevels import AddStrategy, AddPhase
+from toplevels.strategy.add_phase import AddPhase
+from toplevels.strategy.add_strategy import AddStrategy
 from network.strategy.client import StrategyClient
 
 
@@ -138,8 +139,7 @@ class StrategiesList(ttk.Frame):
     def update_tree(self):
         """Update list of Strategies and Phases in Treeview"""
         self.tree.delete(*self.tree.get_children())
-        iterator = self.db
-        for strategy, content in iterator:
+        for strategy, content in self.db:
             self.tree.insert("", tk.END, iid=strategy, text=strategy)
             for phase in content:
                 self.tree.insert(strategy, tk.END, iid=(content.name, "..", phase[0]), text=phase[0])
@@ -222,7 +222,9 @@ class StrategiesList(ttk.Frame):
 
         Create a new Phase in the Database with name title
         """
-        self.db[self.selection][title] = Phase(title, self.db[self.selected_strategy].map)
+        self.db[self.selected_strategy][title] = Phase(title, self.db[self.selected_strategy].map)
+        if self.selected_phase is not None:
+            self.db[self.selected_strategy][title].items = self.db[self.selected_strategy][self.selected_phase].items
         self.update_tree()
         self.db.save_database()
 
@@ -262,7 +264,7 @@ class StrategiesList(ttk.Frame):
         """Callback to update widgets when a Phase is selected"""
         # self.new_button.config(text="New strategy", state=tk.DISABLED)
         self.del_button.config(text="Delete phase", command=self.del_phase)
-        self.edit_button.config(text="Edit phase", command=self.edit_phase, state=tk.DISABLED)
+        # self.edit_button.config(text="Edit phase", command=self.edit_phase, state=tk.DISABLED)
 
     @property
     def selection(self):

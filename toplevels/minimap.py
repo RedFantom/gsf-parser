@@ -83,7 +83,7 @@ class MiniMap(tk.Toplevel):
         self._background = ImageTk.PhotoImage(master=self, image=image)
         if "map" in self._items:
             self._canvas.delete(self._items["map"])
-        self._items["map"] = self._canvas.create_image(0, 0, image=self._background, anchor=tk.W, tag="background")
+        self._items["map"] = self._canvas.create_image(0, 0, image=self._background, anchor=tk.NW, tag="background")
         # self._canvas.tag_lower("background")
         print("[MiniMap] New background: {}: {}, {}".format(self._items["map"], file_name, size))
         self._canvas.update()
