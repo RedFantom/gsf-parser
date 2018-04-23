@@ -141,12 +141,14 @@ class DiscordClient(Connection):
 
     def send_character(self, server: str, faction: str, name: str):
         """Notify the server of the existence of a character"""
-        return self.send_command("character_{}_{}_{}".format(server, faction, name))
+        return self.send_command("character_{}_{}_{}_{}".format(
+            server, faction, name, settings["sharing"]["discord"]))
 
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self, *args):
+        print("[DiscordClient] __exit__ args:", args)
         self.socket.close()
 
     @staticmethod
@@ -182,6 +184,7 @@ class DiscordClient(Connection):
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
             return
         self.files = list(Parser.gsf_combatlogs())
+        print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(self.files)))
         # Send the first file
         self.file = self.files[0]
         window.after(2000, self.send_file, self.file, window)
@@ -197,6 +200,7 @@ class DiscordClient(Connection):
         server = window.characters_frame.characters.get_server_for_character(player_name)
         basename = os.path.basename(file_name)
         self.connect()
+        print("[DiscordClient] Considering file: {}".format(file_name))
         # Actually send the file data to the server
         if date is not None and server is not None and basename not in self.db and self.connected is True:
             print("[DiscordClient] Sending matches for file: {}".format(basename))
