@@ -21,7 +21,7 @@ class GSFInterface(GUIParser):
                 "FreeFlightPowerSettings": (80, 180),
                 "FreeFlightMissileLockIndicator": (90, 80),
                 "FreeFlightMiniMap": (410, 310),
-                "FreeFlightScorecard": (420, 120),
+                "FreeFlightScorecard": (275, 120),
                 "FreeFlightCopilotBark": (245, 90),
                 "Global": (0, 0),
             }
@@ -114,3 +114,7 @@ class GSFInterface(GUIParser):
     def get_minimap_coordinates(self):
         """Return box coordinates to minimap"""
         return self.get_box_coordinates("FreeFlightMiniMap")
+
+    def get_scorecard_coordinates(self):
+        """Return box coordinates to the in-flight score card"""
+        return self.get_box_coordinates("FreeFlightScorecard")

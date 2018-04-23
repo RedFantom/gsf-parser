@@ -23,6 +23,7 @@ from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
 from toplevels.addcharacter import AddCharacter
 from network.sharing.data import servers
+from network.discord import DiscordClient
 from variables import settings
 
 
@@ -348,8 +349,12 @@ class CharactersFrame(ttk.Frame):
             self.character_data["GUI"] = self.gui_profile.get()
             server = self.character_data["Server"]
             name = self.character_data["Name"]
-            self.character_data["Discord"] = self.discord_sharing.get()
+            faction = self.character_data["Faction"]
+            discord = self.character_data["Discord"] = self.discord_sharing.get()
             self.characters[(server, name)] = self.character_data
+            if discord is True:
+                with DiscordClient() as client:
+                    client.send_character(server, faction, name)
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 

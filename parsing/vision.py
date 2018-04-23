@@ -11,8 +11,10 @@ import operator
 # Packages
 from PIL import Image
 import numpy
+import cv2 as opencv
 # Project Modules
-from utils.directories import get_assets_directory
+from data.maps import map_dictionary
+from utils.directories import get_assets_directory, get_temp_directory
 from parsing.imageops import \
     get_similarity, get_similarity_pixels, \
     get_brightest_pixel, get_brightest_pixel_loc
@@ -29,6 +31,8 @@ colors = {
 timer_boxes = {
     (1920, 1080): (1466, 835, 1536, 875),
 }
+
+MIN_MATCHES = 30
 
 
 def get_pointer_middle(coordinates, size=(44, 44)):
@@ -167,3 +171,32 @@ def get_minimap_location(minimap: Image.Image):
 def image_to_opencv(image: Image.Image):
     """Convert a PIL image into a cv2 compatible array"""
     return numpy.array(image)[:, :, ::-1].copy()
+
+
+def get_map(image: Image.Image):
+    """Use feature matching to determine match and map type"""
+    path = os.path.join(get_temp_directory(), "temp.png")
+    map_directory = os.path.join(get_assets_directory(), "maps")
+    image.save(path)
+    image = opencv.imread(path, 0)
+    orb = opencv.ORB_create()
+    image_kp, image_ds = orb.detectAndCompute(image, None)
+    map_results = dict()
+    bf = opencv.BFMatcher(opencv.NORM_L1, crossCheck=False)
+    for match_type, maps in map_dictionary.items():
+        for map, file_name in maps.items():
+            file_name = "{}_{}".format(match_type, file_name + ".jpg")
+            path = os.path.join(map_directory, file_name)
+            Image.open(path).resize((200, 200), Image.ANTIALIAS).save(os.path.join(get_temp_directory(), file_name))
+            template = opencv.imread(os.path.join(get_temp_directory(), file_name), 0)
+            template_kp, template_ds = orb.detectAndCompute(template, None)
+            matches = bf.knnMatch(image_ds, template_ds, k=2)
+            good = list()
+            for m, n in matches:
+                if m.distance < 0.8 * n.distance:
+                    good.append(m)
+            map_results[(match_type, map)] = len(good)
+    map = max(map_results, key=lambda key: map_results[key])
+    if map_results[map] < MIN_MATCHES:
+        return None
+    return map

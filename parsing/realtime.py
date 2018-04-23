@@ -558,6 +558,17 @@ class RealTimeParser(Thread):
             self._client.send_location(fracs)
             self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
 
+        """Map and match type"""
+        if ("Map and match type" in self._screen_parsing_features and
+                self.get_for_current_spawn("map") is not None and self.active_id != ""):
+            minimap = screenshot.crop(self.get_coordinates("minimap"))
+            match_map = vision.get_map(minimap)
+            self.set_for_current_spawn("map", match_map)
+            if self.discord is not None:
+                server, date, start = self._character_data["Server"], self.start_match, self.start_match
+                id_fmt = self.active_id[:8]
+                self.discord.send_match_map(server, date, start, id_fmt, match_map)
+
         # Finally, save data
         self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
@@ -726,6 +737,9 @@ class RealTimeParser(Thread):
         else:
             raise ValueError()
         self.release()
+
+    def get_for_current_spawn(self, category):
+        return self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][category]
 
     def acquire(self):
         # print("[RealTimeParser] Acquiring Lock")
