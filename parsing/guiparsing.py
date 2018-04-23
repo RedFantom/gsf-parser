@@ -4,12 +4,16 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import xml.etree.cElementTree as et
+import os
+# UI Libraries
+from tkinter import messagebox
+# Project Modules
 from utils.utilities import get_screen_resolution
 from utils.directories import get_assets_directory
 from utils.swtor import get_swtor_directory
-import xml.etree.cElementTree as et
-import os
-from tkinter import messagebox
+from data.servers import server_ini
 
 
 def get_gui_profiles():
@@ -22,7 +26,7 @@ def get_gui_profiles():
                 get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
 
 
-def get_player_guiname(player_name):
+def get_player_guiname(player_name, server=None):
     """
     Returns the GUI Profile name for a certain player name. Does not
     work if there are multiple characters with the same name on the same
@@ -41,12 +45,15 @@ def get_player_guiname(player_name):
         messagebox.showerror("Error", "SWTOR settings path not found. Is SWTOR correctly installed?")
         raise ValueError("SWTOR settings path not found")
     correct_file = None
-    for file_name in os.listdir(dir):
-        if not file_name.endswith(".ini"):
-            continue
-        elif player_name in file_name:
-            correct_file = file_name
-            break
+    if server is None:
+        for file_name in os.listdir(dir):
+            if not file_name.endswith(".ini"):
+                continue
+            elif player_name in file_name:
+                correct_file = file_name
+                break
+    else:
+        correct_file = "{}_{}_PlayerGUIState.ini".format(server_ini[server], player_name)
     if not correct_file:
         raise ValueError("Could not find a player settings file with name: {0}".format(player_name))
     with open(os.path.join(dir, correct_file)) as settings_file:
@@ -59,6 +66,8 @@ def get_player_guiname(player_name):
             break
     if not gui_profile:
         raise ValueError("Could not find GUI_Current_Profile in settings file {0}".format(correct_file))
+    if "preferences" in gui_profile:
+        return "Default"
     return gui_profile[1:].replace("\n", "")
 
 

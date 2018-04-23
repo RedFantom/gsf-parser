@@ -18,7 +18,6 @@ from data import ships as ships_data
 from utils import directories
 from utils import utilities
 from widgets import VerticalScrollFrame
-from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
 from toplevels.addcharacter import AddCharacter
@@ -104,12 +103,6 @@ class CharactersFrame(ttk.Frame):
             self.options_frame, text="Empire", image=self.imperial_logo, compound=tk.LEFT,
             variable=self.faction, value="Imperial", command=lambda: self.set_character_faction("Imperial"))
 
-        self.gui_profile = tk.StringVar()
-        self.gui_profile_label = ttk.Label(self.options_frame, text="GUI Profile")
-        self.gui_profile_dropdown = ttk.OptionMenu(
-            self.options_frame, self.gui_profile, *tuple(("Select", "Default") + tuple(get_gui_profiles())))
-        self.gui_profile_detect_button = ttk.Button(self.options_frame, text="Auto detect", command=self.detect_profile)
-
         self.lineup_label = ttk.Label(self.options_frame, text="Ships line-up")
         self.lineup_frame = ttk.Frame(self.options_frame)
 
@@ -167,9 +160,7 @@ class CharactersFrame(ttk.Frame):
         self.faction_label.grid(column=0, row=4, sticky="nsw", padx=5, pady=5)
         self.faction_republic_radiobutton.grid(column=0, row=5, sticky="nsw", padx=5, pady=5)
         self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_label.grid(column=0, row=6, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_dropdown.grid(column=0, row=7, sticky="nswe", padx=5, pady=5)
-        self.gui_profile_detect_button.grid(column=1, row=7, sticky="nswe", padx=5, pady=5)
+        self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
         self.lineup_label.grid(column=0, row=8, sticky="nsw", padx=5, pady=5)
         self.lineup_frame.grid(column=0, row=9, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
 
@@ -246,26 +237,6 @@ class CharactersFrame(ttk.Frame):
             pickle.dump(characters, f)
         self.characters = characters
 
-    def detect_profile(self):
-        """
-        Callback for the Auto-detect button, sets the GUI profile
-        according to the result of get_player_guiname or display a
-        message that the profile cannot be determined reliably
-        (because of the same character name on different servers)
-        """
-        if not self.character_data:
-            mb.showinfo("Info", "Please select a character from the list first.")
-            return
-        try:
-            gui_name = get_player_guiname(self.character_data["Name"])
-        except ValueError:
-            mb.showinfo("Info", "Could not reliably determine the GUI profile used by this character. Please select it "
-                                "manually.")
-            return
-        self.gui_profile.set(gui_name)
-        self.character_data["GUI"] = gui_name
-        self.save_button.invoke()
-
     def new_character(self):
         """
         Callback for the self.new_character_button Button widget.
@@ -300,7 +271,6 @@ class CharactersFrame(ttk.Frame):
             "Legacy": legacy,
             "Ships": ships,
             "Ship Objects": ships_dict,
-            "GUI": "Default",
             "Discord": True
         }
         self.character_data = self.characters[(server, name)]
@@ -346,7 +316,6 @@ class CharactersFrame(ttk.Frame):
         """Save CharacterDatabase to a file in the temporary dir"""
         print("[CharactersFrame] Saving character database")
         if self.character_data is not None:
-            self.character_data["GUI"] = self.gui_profile.get()
             server = self.character_data["Server"]
             name = self.character_data["Name"]
             faction = self.character_data["Faction"]
@@ -447,7 +416,6 @@ class CharactersFrame(ttk.Frame):
             return
         self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
-        self.gui_profile.set(character_data["GUI"])
         iterator = self.imp_ship_variables if character_data["Faction"] == "Imperial" else self.rep_ship_variables
         for name, intvar in iterator.items():
             intvar.set(name in character_data["Ships"])
@@ -460,7 +428,6 @@ class CharactersFrame(ttk.Frame):
         self.character_name_entry.delete(0, tk.END)
         self.legacy_name_entry.delete(0, tk.END)
         self.faction.set("Republic")
-        self.gui_profile.set("Select")
         for intvar in self.imp_ship_variables.values():
             intvar.set(0)
         for intvar in self.rep_ship_variables.values():

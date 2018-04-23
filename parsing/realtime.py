@@ -21,6 +21,7 @@ from PIL import Image
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from parsing.gsfinterface import GSFInterface
+from parsing.guiparsing import get_player_guiname
 from parsing import vision
 from parsing.shipstats import ShipStats
 from utils.utilities import get_screen_resolution
@@ -205,11 +206,7 @@ class RealTimeParser(Thread):
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
-        file_name = self._character_db[self._character_data]["GUI"]
-        if file_name == "Select":
-            messagebox.showerror("Error", "You have not selected a valid "
-                                          "GUI Profile for this character.")
-            raise ValueError("No GUI Profile selected.")
+        file_name = get_player_guiname(self._character_data["Name"], self._character_data["Server"])
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
