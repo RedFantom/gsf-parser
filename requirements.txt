@@ -15,3 +15,4 @@ semantic-version>=2.6.0
 ttkthemes>=1.5.2
 ttkwidgets>=0.8.0
 screeninfo
+opencv-python
