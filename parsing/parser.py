@@ -851,3 +851,11 @@ class Parser(object):
         id_list = Parser.get_player_id_list(spawn)
         return id_list[0][:8]
 
+    @staticmethod
+    def is_tutorial(match: dict):
+        for spawn in match:
+            for line in spawn:
+                if "Tutorial" in line["line"] or "Invulnerable" in line["line"]:
+                    return True
+        return False
+
