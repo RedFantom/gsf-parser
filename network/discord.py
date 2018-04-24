@@ -205,7 +205,11 @@ class DiscordClient(Connection):
         match_s, char_s = True, False
         player_id_list = Parser.get_player_id_list(lines)
         file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
-        character_enabled = window.characters_frame.characters[(server, player_name)]["Discord"]
+        character = window.characters_frame.characters[(server, player_name)]
+        character_enabled = character["Discord"]
+        if character_enabled is True:
+            server, name, faction = character["Server"], character["Name"], character["Faction"]
+            self.send_character(server, faction, name)
         for index, (start, end) in enumerate(zip(matches[::2], matches[1::2])):
             match = file_cube[index]
             id_fmt = Parser.get_id_format(match[0])
