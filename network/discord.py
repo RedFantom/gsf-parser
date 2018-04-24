@@ -37,10 +37,8 @@ class DiscordClient(Connection):
         self.notified = False
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Connection.__init__(self, sock)
-        self.files = list()
-        self.file = str()
         self.task = None
-        self.db = list()
+        self.db = dict()
         self.open_database()
 
     def open_database(self):
@@ -132,12 +130,12 @@ class DiscordClient(Connection):
         return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
 
     def send_result(self, server: str, date: datetime, start: datetime, id_fmt: str,
-                    character: str, assists: int, damage: int, deaths: int):
+                    character: str, assists: int, dmgd: int, dmgt: int, deaths: int):
         """Notify the server of the result a character obtained"""
         start = DiscordClient.time_to_str(start)
         date = DiscordClient.date_to_str(date)
-        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}".format(
-            server, date, start, id_fmt, character, assists, damage, deaths))
+        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+            server, date, start, id_fmt, character, assists, dmgd, dmgt, deaths))
 
     def send_character(self, server: str, faction: str, name: str):
         """Notify the server of the existence of a character"""
@@ -152,10 +150,6 @@ class DiscordClient(Connection):
         self.socket.close()
 
     @staticmethod
-    def is_enabled():
-        return settings["sharing"]["enabled"]
-
-    @staticmethod
     def date_to_str(dt: datetime):
         return dt.strftime(DiscordClient.DATE_FORMAT)
 
@@ -165,6 +159,7 @@ class DiscordClient(Connection):
 
     @staticmethod
     def validate_tag(tag: str):
+        """Return whether a given Discord tag is valid Discord tag"""
         if len(tag) == 0:
             return False
         if tag[0] != "@":
@@ -179,47 +174,51 @@ class DiscordClient(Connection):
             return False
         return True
 
-    def send_files(self, window: tk.Tk):
+    def send_files(self, window: tk.Tk,):
         """Send the files making clever use of the Tkinter mainloop"""
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
             return
-        self.files = list(Parser.gsf_combatlogs())
-        print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(self.files)))
-        # Send the first file
-        self.file = self.files[0]
-        window.after(2000, self.send_file, self.file, window)
+        files = list(Parser.gsf_combatlogs())
+        if len(self.db) == 0:
+            mb.showinfo("Notice", "This is the first time data is being synchronized with the Discord Bot Server. "
+                                  "This may take a while.")
+        elif len(files) - len(self.db) > 10:
+            mb.showinfo("Notice", "There are quite many files to synchronize. Please stand by.")
+        print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
+        for file_name in files:
+            self.send_file(file_name, window)
+        print("[DiscordClient] Done sending files.")
 
-    def send_file(self, file_name: str, window: tk.Tk):
-        """
-        Send a given file to the Discord Bot Server and queue the next
-        one by using an after_idle task.
-        """
+    def send_file(self, file_name, window):
         date = Parser.parse_filename(file_name)
         lines = Parser.read_file(file_name)
         player_name = Parser.get_player_name(lines)
         server = window.characters_frame.characters.get_server_for_character(player_name)
         basename = os.path.basename(file_name)
-        self.connect()
-        print("[DiscordClient] Considering file: {}".format(file_name))
         # Actually send the file data to the server
-        if date is not None and server is not None and basename not in self.db and self.connected is True:
-            print("[DiscordClient] Sending matches for file: {}".format(basename))
-            player_id_list = Parser.get_player_id_list(lines)
-            file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
-            result = True
-            for index, (start, end) in enumerate(zip(matches[::2], matches[1::2])):
-                id_fmt = Parser.get_id_format(file_cube[index][0])
-                start, end = map(lambda time: datetime.combine(date.date(), time.time()), (start, end))
-                result = (self.send_match_start(server, date, start, id_fmt) and result)
-                result = (self.send_match_end(server, date, start, id_fmt, end) and result)
-            print("[DiscordClient] {}: {}".format(basename, result))
-            self.db.append(basename) if result is True else None
-            self.save_database()
-        # Create the task for sending the next file
-        index = self.files.index(self.file)
-        if index == len(self.files) - 1:
+        if date is None or server is None:
             return
-        index += 1
-        self.file = self.files[index]
-        window.after(2000, self.send_file, self.file, window)
+        print("[DiscordClient] Synchronizing file: {}".format(basename))
+        if basename not in self.db:
+            self.db[basename] = {"match": False, "char": False}
+        match_s, char_s = True, False
+        player_id_list = Parser.get_player_id_list(lines)
+        file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
+        character_enabled = window.characters_frame.characters[(server, player_name)]["Discord"]
+        for index, (start, end) in enumerate(zip(matches[::2], matches[1::2])):
+            match = file_cube[index]
+            id_fmt = Parser.get_id_format(match[0])
+            if self.db[basename]["match"] is False:
+                start, end = map(lambda time: datetime.combine(date.date(), time.time()), (start, end))
+                match_s = self.send_match_start(server, date, start, id_fmt) and match_s
+                match_s = self.send_match_end(server, date, start, id_fmt, end) and match_s
+            if character_enabled is True and self.db[basename]["char"] is False:
+                # Parse the file with results and send the results
+                _, dmg_d, dmg_t, _, _, _, _, _, enemies, _, _, _, _ = Parser.parse_match(match, player_id_list)
+                deaths = len(match) - 1
+                char_s = self.send_result(server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths)
+                print("[DiscordClient] {} to send character result for ({}, {})".format(
+                    "Succeeded" if char_s is True else "Failed", server, player_name))
+        self.db[basename] = {"match": match_s, "char": char_s}
+        self.save_database()
 

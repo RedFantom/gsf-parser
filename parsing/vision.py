@@ -200,3 +200,35 @@ def get_map(image: Image.Image):
     if map_results[map] < MIN_MATCHES:
         return None
     return map
+
+
+def get_score(image: Image.Image):
+    """
+    Implementation:
+
+    1. Crop the image
+    2. (Optional) Use template matching to detect score card
+       Whether this is required highly depends on the accuracy of the
+       coordinates. If the coordinates are not accurate, it is
+       impossible to determine the actual score based on the fill
+       ratio of the coloured score bars.
+    3. Use brightest pixel detection to get score location
+    4. Compute the ratio filled of the score bars
+    5. Compute the score
+    6. Detect the presence of satellite markers
+    7. Calculate the score from ratio and match type
+
+    If the length of the coloured bar cannot be determined, then it
+    must be assumed that one of the bars is full, and thus has gained
+    full points. The ratio can then be determined with the other bar,
+    moving in the left direction only horizontally, continuing for as
+    long as the pixels are coloured and not black.
+    """
+    image.save("temp.png")
+    red, green = get_brightest_pixel_loc(image, 0), get_brightest_pixel_loc(image, 1)
+    rc, gc = image.getpixel(red), image.getpixel(green)
+    print("[Vision.get_score] Coordinates: {} (red), {} (green)".format(red, green))
+    print("[Vision.get_score] Colors: {} (red), {} (green)".format(rc, gc))
+    # Assume one of the bars is full
+    xr, xg = red[0], green[0]
+

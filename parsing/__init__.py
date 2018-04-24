@@ -9,7 +9,7 @@ from parsing.filehandler import FileHandler
 from parsing.filestats import file_statistics
 from parsing.folderstats import folder_statistics
 from parsing.gsfinterface import GSFInterface
-from parsing.guiparsing import GUIParser, get_gui_profiles, get_player_guiname
+from parsing.guiparsing import GUIParser, get_player_guiname
 from parsing.imageops import get_brightest_pixel, get_similarity, get_similarity_pixels
 from parsing.logstalker import LogStalker
 from parsing.matchstats import match_statistics

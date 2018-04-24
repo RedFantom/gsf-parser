@@ -93,12 +93,16 @@ class MainWindow(ThemedTk):
         self.splash.label_var.set("Checking for updates...")
         self.update()
         check_update()
+        # Synchronize with Discord Bot Server
+        if settings["sharing"]["enabled"] is True:
+            self.splash.label_var.set("Synchronizing with Discord Bot Server...")
+            self.update()
+            self.discord.send_files(self)
         # Give focus to the main window
         self.deiconify()
         self.finished = True
         self.splash.destroy()
-        # Start the main loop
-        self.discord.send_files(self)
+        # Mainloop start (main.py)
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""

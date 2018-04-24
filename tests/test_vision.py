@@ -55,7 +55,11 @@ class TestVision(TestCase):
 
     def test_get_map(self):
         result = vision.get_map(self.image.crop(self.gui_parser.get_minimap_coordinates()))
-        print("[TESTS] Map:", result)
+        self.assertEqual(result, ("dom", "km"))
         img2 = Image.open(path.join(get_assets_directory(), "vision", "test_map.png"))
         result = vision.get_map(img2.crop(self.gui_parser.get_minimap_coordinates()))
-        print("[TESTS] Map 2:", result)
+        self.assertEqual(result, ("tdm", "io"))
+
+    def test_get_score(self):
+        result = vision.get_score(self.image.crop(self.gui_parser.get_scorecard_coordinates()))
+        print("[TESTS] Score: {}".format(result))

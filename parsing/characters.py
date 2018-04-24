@@ -56,7 +56,7 @@ class CharacterDatabase(dict):
             "Ships": ("Blackbolt", "Rycer"),
             "Ship Objects": {name: Ship(name) for name in ships.sorted_ships.keys()},
             "GUI": "Default",
-            "Discord": True,
+            "Discord": False,
         }
 
     def update_database(self):
@@ -65,10 +65,13 @@ class CharacterDatabase(dict):
         if not self.version.endswith(".0"):
             self.version += ".0"
         version = Version(self.version)
+        print("[CharacterDatabase] This version: ", version)
         if version < Version("5.6.0"):
+            print("[CharacterDatabase] Updating database for Discord Bot")
             for character, data in self.items():
                 data.update({"Discord": False})
                 self[character] = data
+            settings["misc"]["patch_level"] = "5.6.0"
         self.version = settings["misc"]["patch_level"]
         self.update_characters()
 
@@ -149,5 +152,5 @@ class CharacterDatabase(dict):
                 "Ships": ships_list,
                 "Ship Objects": ships_dict,
                 "GUI": "Default",
-                "Discord": True
+                "Discord": False
             }

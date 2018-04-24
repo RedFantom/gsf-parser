@@ -13,6 +13,7 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mb
+from ttkwidgets.frames import Balloon
 # Project Modules
 from data import ships as ships_data
 from utils import directories
@@ -20,10 +21,8 @@ from utils import utilities
 from widgets import VerticalScrollFrame
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
-from toplevels.addcharacter import AddCharacter
 from network.sharing.data import servers
 from network.discord import DiscordClient
-from variables import settings
 
 
 class CharactersFrame(ttk.Frame):
@@ -50,6 +49,7 @@ class CharactersFrame(ttk.Frame):
         """
         ttk.Frame.__init__(self, parent)
         self.window = main_window
+        self.after_id = None
         self.directory = directories.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = servers
@@ -69,7 +69,6 @@ class CharactersFrame(ttk.Frame):
         # Create all the widgets for the character properties
         self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=350)
         self.options_frame = self.scroll_frame.interior
-        self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
 
         self.save_button = ttk.Button(self, text="Save", command=self.save_character_data)
         self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
@@ -85,7 +84,9 @@ class CharactersFrame(ttk.Frame):
         self.character_name_label = ttk.Label(self.options_frame, text="Character name")
         self.character_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
-        self.legacy_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
+        self.legacy_name_entry = ttk.Entry(self.options_frame, width=width)
+        self.legacy_name_entry.bind("<Key>", self.edit_legacy_name)
+        Balloon(self.legacy_name_entry, text="This is only used for the GSF Parser sharing server, if enabled.")
 
         self.discord_sharing = tk.BooleanVar()
         self.discord_sharing_label = ttk.Label(self.options_frame, text="Discord Sharing")
@@ -146,7 +147,6 @@ class CharactersFrame(ttk.Frame):
         self.widgets_grid_forget()
         self.characters_list.grid(column=0, row=0, sticky="nswe", padx=5, pady=5)
         self.characters_scroll.grid(column=1, row=0, sticky="ns", pady=5)
-        self.new_character_button.grid(column=0, row=1, sticky="nswe", pady=5, padx=5)
         self.scroll_frame.grid(column=2, row=0, rowspan=2, columnspan=4, sticky="nswe", padx=5)
 
         self.character_name_label.grid(column=0, row=0, sticky="nsw", padx=5, pady=5)
@@ -237,19 +237,6 @@ class CharactersFrame(ttk.Frame):
             pickle.dump(characters, f)
         self.characters = characters
 
-    def new_character(self):
-        """
-        Callback for the self.new_character_button Button widget.
-
-        Opens an AddCharacter Toplevel window that provides widgets for
-        inserting a new character into the database.
-
-        Passes self.insert_character as callback argument to
-        AddCharacter. This insert_character callback actually creates
-        the new character in the database.
-        """
-        AddCharacter(self.window, tuple(self.servers.values()), self.insert_character)
-
     def insert_character(self, name: str, legacy: str, server: str, faction: str):
         """
         Create a new character in the CharacterDatabase with the given
@@ -271,7 +258,7 @@ class CharactersFrame(ttk.Frame):
             "Legacy": legacy,
             "Ships": ships,
             "Ship Objects": ships_dict,
-            "Discord": True
+            "Discord": False
         }
         self.character_data = self.characters[(server, name)]
         self.clear_character_data()
@@ -319,7 +306,9 @@ class CharactersFrame(ttk.Frame):
             server = self.character_data["Server"]
             name = self.character_data["Name"]
             faction = self.character_data["Faction"]
-            discord = self.character_data["Discord"] = self.discord_sharing.get()
+            discord = self.discord_sharing.get()
+            print("[CharactersFrame] Discord sharing enabled:", discord)
+            self.character_data["Discord"] = discord
             self.characters[(server, name)] = self.character_data
             if discord is True:
                 with DiscordClient() as client:
@@ -345,14 +334,6 @@ class CharactersFrame(ttk.Frame):
             self.new_database()
         except EOFError:
             mb.showerror("Error", "The Character Database has been corrupted.")
-            self.new_database()
-        if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != settings["misc"]["patch_level"]:
-            mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
-                                      "Parser database has been updated, and your character database must be updated "
-                                      "as well to match the data. Currently, this process is destructive, and "
-                                      "all your character data, including builds, will be deleted.\n\nThe screen "
-                                      "parsing results are not affected.")
             self.new_database()
         self.characters.update_database()
 
@@ -437,10 +418,20 @@ class CharactersFrame(ttk.Frame):
     def insert_into_entries(self, name: str, legacy: str):
         """Update character name and legacy name Entry widgets"""
         self.character_name_entry.config(state=tk.NORMAL)
-        self.legacy_name_entry.config(state=tk.NORMAL)
         self.character_name_entry.delete(0, tk.END)
         self.legacy_name_entry.delete(0, tk.END)
         self.character_name_entry.insert(tk.END, name)
         self.legacy_name_entry.insert(tk.END, legacy)
         self.character_name_entry.config(state="readonly")
-        self.legacy_name_entry.config(state="readonly")
+
+    def edit_legacy_name(self, *args):
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+        self.after_id = self.after(2000, self.save_legacy_name)
+
+    def save_legacy_name(self, *args):
+        self.after_id = None
+        if self.character_data is None:
+            return
+        self.character_data["Legacy"] = self.legacy_name_entry.get()
+        self.save_character_data()
