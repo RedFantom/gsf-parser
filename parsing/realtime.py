@@ -135,6 +135,7 @@ class RealTimeParser(Thread):
         # Data
         self._character_data = character_data
         self._character_db = character_db
+        self._character_db_data = self._character_db[self._character_data]
         self._realtime_db = {}
         self.diff = None
         self.ships_db = ships_db
@@ -158,6 +159,7 @@ class RealTimeParser(Thread):
         self.secondary_weapon = False
         self.scope_mode = False
         self.discord = DiscordClient()
+        self.tutorial = False
 
         """
         Screen parsing
@@ -206,7 +208,7 @@ class RealTimeParser(Thread):
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
-        file_name = get_player_guiname(self._character_data["Name"], self._character_data["Server"])
+        file_name = get_player_guiname(self._character_db_data["Name"], self._character_db_data["Server"])
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
@@ -311,11 +313,14 @@ class RealTimeParser(Thread):
         ignorable = ("SetLevel", "Infection")
         if any(to_ignore in line["ability"] for to_ignore in ignorable):
             return
+        if "Invulnerable" in line["line"] or "Tutorial" in line["line"]:
+            self.tutorial = True
         # Handle logins
         if line["source"] == line["destination"] and "@" in line["source"] and "Login" in line["ability"] and \
                 ":" not in line["source"]:
             self.player_name = line["source"][1:]  # Do not store @
             print("[RealTimeParser] Login: {}".format(self.player_name))
+            self.process_login()
             # Spawn Timer
             if (self._screen_parsing_enabled and "Spawn Timer" in self._screen_parsing_features and
                     self._waiting_for_timer is False and self.is_match is False):
@@ -332,19 +337,21 @@ class RealTimeParser(Thread):
         # First check if this is still a match event
         if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
             print("[RealTimeParser] Match end.")
+            server, date, time = self._character_db_data["Server"], line["time"], line["time"]
+            id_fmt = self.active_id[:8]
+            if not self.tutorial:
+                self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
             self.start_match = None
             # No longer a match
             self.is_match = False
+            self.tutorial = False
             self.lines.clear()
             # Spawn timer
             self._spawn_time = None  # if-statement is slower than just calling this always
             # Reset match statistics
             self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
             self.abilities.clear()
-            id_fmt = self.active_id[:8]
             self.active_id = ""
-            server, date, time = self._character_data["server"], line["time"], line["time"]
-            self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -432,14 +439,21 @@ class RealTimeParser(Thread):
                 ship = rep_ships[ship]
             if self._screen_parsing_enabled is False:
                 return
-            self.ship = self._character_db[self._character_data]["Ship Objects"][ship]
+            ship_objects = self._character_db[self._character_data]["Ship Objects"]
+            if ship not in ship_objects:
+                return
+            self.ship = ship_objects[ship]
             args = (self.ship, self.ships_db, self.companions_db)
             self.ship_stats = ShipStats(*args)
             self.set_for_current_spawn("ship", self.ship)
         return
 
     def process_login(self):
-        pass
+        """Process a Safe Login event"""
+        server, name = self._character_data
+        if name != self.player_name:
+            messagebox.showerror("Error", "Logged in with a character other than the one selected.")
+            raise ValueError("Invalid character login")
 
     """
     ScreenParser
@@ -557,14 +571,16 @@ class RealTimeParser(Thread):
 
         """Map and match type"""
         if ("Map and match type" in self._screen_parsing_features and
-                self.get_for_current_spawn("map") is not None and self.active_id != ""):
+                self.get_for_current_spawn("map") is None and self.active_id != ""):
             minimap = screenshot.crop(self.get_coordinates("minimap"))
             match_map = vision.get_map(minimap)
-            self.set_for_current_spawn("map", match_map)
-            if self.discord is not None:
-                server, date, start = self._character_data["Server"], self.start_match, self.start_match
-                id_fmt = self.active_id[:8]
-                self.discord.send_match_map(server, date, start, id_fmt, match_map)
+            if match_map is not None:
+                self.set_for_current_spawn("map", match_map)
+                if self.discord is not None:
+                    server, date, start = self._character_data["Server"], self.start_match, self.start_match
+                    id_fmt = self.active_id[:8]
+                    self.discord.send_match_map(server, date, start, id_fmt, match_map)
+            print("[RealTimeParser] Minimap: {}".format(match_map))
 
         # Finally, save data
         self.acquire()
@@ -721,7 +737,8 @@ class RealTimeParser(Thread):
             "power_mgmt": {},
             "player_name": None,
             "ship": None,
-            "ship_name": None
+            "ship_name": None,
+            "map": None
         }
         self.release()
 

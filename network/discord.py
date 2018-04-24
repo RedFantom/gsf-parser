@@ -210,6 +210,8 @@ class DiscordClient(Connection):
         if character_enabled is True:
             server, name, faction = character["Server"], character["Name"], character["Faction"]
             self.send_character(server, faction, name)
+        print("[DiscordClient] Character sharing {} for {} on {}".format(
+            "enabled" if character_enabled else "disabled", player_name, server))
         for index, (start, end) in enumerate(zip(matches[::2], matches[1::2])):
             match = file_cube[index]
             id_fmt = Parser.get_id_format(match[0])
@@ -221,12 +223,19 @@ class DiscordClient(Connection):
             if self.db[basename]["match"] is False:
                 match_s = self.send_match_start(server, date, start, id_fmt) and match_s
                 match_s = self.send_match_end(server, date, start, id_fmt, end) and match_s
-            if character_enabled is True and self.db[basename]["char"] is False:
-                # Parse the file with results and send the results
-                deaths = len(match) - 1
-                char_s = self.send_result(server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths)
-                print("[DiscordClient] {} to send character result for ({}, {})".format(
-                    "Succeeded" if char_s is True else "Failed", server, player_name))
+            else:
+                print("[DiscordClient] Ignored {}".format(basename))
+            if character_enabled is True:
+                if self.db[basename]["char"] is False:
+                    # Parse the file with results and send the results
+                    deaths = len(match) - 1
+                    char_s = self.send_result(server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths)
+                    print("[DiscordClient] {} to send character result for ({}, {})".format(
+                        "Succeeded" if char_s is True else "Failed", server, player_name))
+                else:
+                    print("[DiscordClient] Not sending character result because already sent.")
+            else:
+                print("[DiscordClient] Not sending character result because not enabled.")
         self.db[basename] = {"match": match_s, "char": char_s}
         self.save_database()
 

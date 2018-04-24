@@ -60,19 +60,15 @@ class CharactersFrame(ttk.Frame):
         # Set up the characters list
         self.characters_list = ttk.Treeview(self)
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
-        self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=14)
+        self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=16)
         self.characters_list.heading("#0", text="Characters")
         # self.characters_list.column("", width=0)
         self.characters_list.column("#0", width=250)
         self.characters_list["show"] = ("tree", "headings")
         self.characters_list.columnconfigure(0, minsize=50)
         # Create all the widgets for the character properties
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=350)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=380)
         self.options_frame = self.scroll_frame.interior
-
-        self.save_button = ttk.Button(self, text="Save", command=self.save_character_data)
-        self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
-        self.delete_button = ttk.Button(self, text="Delete", command=self.delete_character)
 
         self.republic_logo = utilities.open_icon("republic_s", ext=".png")
         self.imperial_logo = utilities.open_icon("imperial_s", ext=".png")
@@ -140,7 +136,7 @@ class CharactersFrame(ttk.Frame):
         else:
             raise ValueError("Unknown value for faction found: {0}".format(self.character_data["Faction"]))
         self.character_data["Ships"] = ships
-        self.save_button.invoke()
+        self.save_character_data()
 
     def grid_widgets(self):
         """Add all the widgets to the UIt"""
@@ -163,10 +159,6 @@ class CharactersFrame(ttk.Frame):
         self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
         self.lineup_label.grid(column=0, row=8, sticky="nsw", padx=5, pady=5)
         self.lineup_frame.grid(column=0, row=9, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
-
-        self.delete_button.grid(column=2, row=1, sticky="nswe", pady=5, padx=5)
-        self.discard_button.grid(column=3, row=1, sticky="nswe", pady=5, padx=5)
-        self.save_button.grid(column=4, row=1, sticky="nswe", pady=5, padx=5)
 
         set_row = 0
         set_column = 0
@@ -263,7 +255,7 @@ class CharactersFrame(ttk.Frame):
         self.character_data = self.characters[(server, name)]
         self.clear_character_data()
         self.set_character(set=False)
-        self.save_button.invoke()
+        self.save_character_data()
         self.window.realtime_frame.update_characters()
         self.update_tree()
         self.window.builds_frame.ship_select_frame.update_characters()
@@ -313,6 +305,9 @@ class CharactersFrame(ttk.Frame):
             if discord is True:
                 with DiscordClient() as client:
                     client.send_character(server, faction, name)
+        self.save_database()
+
+    def save_database(self):
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 
@@ -336,29 +331,7 @@ class CharactersFrame(ttk.Frame):
             mb.showerror("Error", "The Character Database has been corrupted.")
             self.new_database()
         self.characters.update_database()
-
-    def discard_character_data(self):
-        """
-        Discard any changes to the character data that have not yet
-        been saved. Most changes also trigger CharacterDatabase saves.
-        # TODO: Deprecate this feature and UI elements
-        """
-        self.clear_character_data()
-        self.set_character()
-
-    def delete_character(self):
-        """
-        Callback for self.delete_button Button widget.
-
-        Deletes the character selected in the Treeview from the
-        CharacterDatabase and saves the database. Deleting a character
-        from the Database is final.
-        """
-        self.set_character()
-        del self.characters[(self.character_data["Server"], self.character_data["Name"])]
-        self.clear_character_data()
-        self.save_button.invoke()
-        self.update_tree()
+        self.save_database()
 
     def get_character_data(self, character: tuple=None):
         """

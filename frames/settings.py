@@ -314,12 +314,12 @@ class SettingsFrame(ttk.Frame):
         self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
         self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
         # Sharing server
-        self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
-        self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
-        self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
-        self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
-        self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
+        # self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
+        # self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
+        # self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        # self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
+        # self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
+        # self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
 
         """
         Sharing settings

@@ -310,7 +310,7 @@ class RealTimeFrame(ttk.Frame):
             if character_server != server:
                 continue
             characters.append(data[1])
-        for character in characters:
+        for character in sorted(characters):
             self.character_dropdown["menu"].add_command(
                 label=character, command=lambda value=character: self.character.set(value)
             )

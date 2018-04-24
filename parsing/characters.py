@@ -72,6 +72,7 @@ class CharacterDatabase(dict):
                 data.update({"Discord": False})
                 self[character] = data
             settings["misc"]["patch_level"] = "5.6.0"
+            settings.save_settings()
         self.version = settings["misc"]["patch_level"]
         self.update_characters()
 

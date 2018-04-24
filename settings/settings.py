@@ -61,6 +61,12 @@ class Settings(object):
             conf.write(fo)
         self.read_settings()
 
+    def save_settings(self):
+        conf = configparser.ConfigParser()
+        conf.read_dict(self.settings)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
+
     def read_settings(self):
         """
         Read the settings from the settings file using a ConfigParser
