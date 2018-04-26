@@ -9,7 +9,6 @@ from frames.characters import CharactersFrame
 from frames.file import FileFrame
 from frames.graphs import GraphsFrame
 from frames.realtime import RealTimeFrame
-from frames.resources import ResourcesFrame
 from frames.settings import SettingsFrame
 from frames.sharing import SharingFrame
 from frames.ship import ShipFrame

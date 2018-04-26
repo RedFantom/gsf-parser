@@ -7,7 +7,6 @@ Copyright (C) 2016-2018 RedFantom
 
 # UI Libraries
 import tkinter as tk
-from tkinter.messagebox import showinfo
 # Standard Library
 from pynput import keyboard
 import sys
@@ -34,20 +33,16 @@ class CartelFix(tk.Toplevel):
     weapon icons.
     """
     def __init__(self, master: tk.Tk, first: tk.PhotoImage, second: tk.PhotoImage, coordinates: tuple):
-        if not admin.check_privileges():
-            if sys.platform == "win32":
+        if not admin.check_privileges() and sys.platform == "win32":
                 variables.main_window.destroy()
                 admin.escalate_privileges()
                 exit()
-            else:
-                showinfo("Information", "This feature is currently not supported on Unix machines.")
-                raise ValueError()
         tk.Toplevel.__init__(self, master)
         self.label = tk.Label(self)
         self.railgun = 1
         self.first = first
         self.second = second
-        self.label.config(image=self.first)
+        self.label.config(image=self.first, )
         self.label.grid()
         self.listener = keyboard.Listener(on_press=self.switch)
         self.coordinates = coordinates
@@ -79,7 +74,8 @@ class CartelFix(tk.Toplevel):
     def set_geometry(self):
         """Update window geometry and attributes"""
         self.configure(background="white")
-        self.wm_attributes("-transparentcolor", "white")
+        if sys.platform == "win32":
+            self.wm_attributes("-transparentcolor", "white")
         self.overrideredirect(True)
         self.attributes("-topmost", True)
         self.wm_geometry("+{0}+{1}".format(self.coordinates[0], self.coordinates[1]))
