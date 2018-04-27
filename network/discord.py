@@ -18,6 +18,7 @@ import tkinter as tk
 from data.ships import ship_tiers
 from network.connection import Connection
 from parsing import Parser
+from toplevels.splashscreens import DiscordSplash
 from utils.directories import get_temp_directory
 from variables import settings
 
@@ -214,7 +215,17 @@ class DiscordClient(Connection):
             return False
         return True
 
-    def send_files(self, window: tk.Tk,):
+    def send_recent_files(self, window: tk.Tk):
+        """Send only the files of today"""
+        files = list(Parser.gsf_combatlogs())
+        result = list()
+        for file in files:
+            file_date = Parser.parse_filename(file).date()
+            if file_date == datetime.now().date():
+                result.append(file)
+        self.send_files(window, result)
+
+    def send_files(self, window: tk.Tk, files: list = None):
         """
         Send the match data found in CombatLogs in the CombatLogs folder
         to the Discord Bot Server. For the actual sending, the send_file
@@ -230,9 +241,10 @@ class DiscordClient(Connection):
         synchronized. If files have to be synchronized, this function
         will take long to complete.
         """
+        splash = DiscordSplash(window.splash if window.splash is not None else window)
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
             return
-        files = list(Parser.gsf_combatlogs())
+        files = list(Parser.gsf_combatlogs()) if files is None else files
         if len(self.db) == 0:
             mb.showinfo("Notice", "This is the first time data is being synchronized with the Discord Bot Server. "
                                   "This may take a while.")
@@ -241,6 +253,8 @@ class DiscordClient(Connection):
         print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
         for file_name in files:
             self.send_file(file_name, window)
+            splash.update_state()
+        splash.destroy()
         print("[DiscordClient] Done sending files.")
 
     def send_file(self, file_name, window):
@@ -340,4 +354,3 @@ class DiscordClient(Connection):
                 print("[DiscordClient] Not sending character result because not enabled.")
         self.db[basename] = {"match": match_s, "char": char_s}
         self.save_database()
-

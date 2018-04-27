@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from itertools import tee
 from threading import Thread, Lock
+import traceback
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -453,7 +454,7 @@ class RealTimeParser(Thread):
         server, name = self._character_data
         if name != self.player_name:
             messagebox.showerror("Error", "Logged in with a character other than the one selected.")
-            raise ValueError("Invalid character login")
+            self.close()
 
     """
     ScreenParser
@@ -653,12 +654,13 @@ class RealTimeParser(Thread):
                 self.update()
             except Exception as e:
                 # Errors are not often handled well in Threads
-                print("RealTimeParser encountered an error: ", e)
+                error = traceback.format_exc()
+                print("RealTimeParser encountered an error: ", error)
                 messagebox.showerror(
                     "Error",
                     "The real-time parsing back-end encountered an error while performing operations. Please report "
                     "this to the developer with the debug message below and, if possible, the full strack-trace. "
-                    "\n\n{}".format(e)
+                    "\n\n{}".format(error)
                 )
                 raise
         # Perform closing actions

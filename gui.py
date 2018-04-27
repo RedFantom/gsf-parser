@@ -103,6 +103,7 @@ class MainWindow(ThemedTk):
         self.deiconify()
         self.finished = True
         self.splash.destroy()
+        self.splash = None
         # Mainloop start (main.py)
 
     def grid_widgets(self):
