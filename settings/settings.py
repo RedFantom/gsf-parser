@@ -82,7 +82,8 @@ class Settings(object):
             self.settings[section] = SettingsDictionary(section)
             for item, value in dictionary.items():
                 self.settings[section][item] = config_eval(value)
-        return
+        self.settings["sharing"]["version"] = defaults["sharing"]["version"]
+        self.settings["misc"]["version"] = defaults["misc"]["version"]
 
     def __getitem__(self, section):
         """

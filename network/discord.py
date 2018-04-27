@@ -15,6 +15,7 @@ import _pickle as pickle
 from tkinter import messagebox as mb
 import tkinter as tk
 # Project Modules
+from data.ships import ship_tiers
 from network.connection import Connection
 from parsing import Parser
 from utils.directories import get_temp_directory
@@ -79,9 +80,13 @@ class DiscordClient(Connection):
         """Open the file database"""
         path = os.path.join(get_temp_directory(), "files.db")
         if not os.path.exists(path):
+            self.db = {"version": settings["sharing"]["version"]}
             self.save_database()
         with open(path, "rb") as fi:
             self.db = pickle.load(fi)
+        if self.db["version"] != settings["sharing"]["version"]:
+            os.remove(path)
+            self.open_database()
 
     def save_database(self):
         """Save the file database"""
@@ -165,12 +170,12 @@ class DiscordClient(Connection):
         return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
 
     def send_result(self, server: str, date: datetime, start: datetime, id_fmt: str,
-                    character: str, assists: int, dmgd: int, dmgt: int, deaths: int):
+                    character: str, assists: int, dmgd: int, dmgt: int, deaths: int, ship: str):
         """Notify the server of the result a character obtained"""
         start = DiscordClient.time_to_str(start)
         date = DiscordClient.date_to_str(date)
-        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
-            server, date, start, id_fmt, character, assists, dmgd, dmgt, deaths))
+        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+            server, date, start, id_fmt, character, assists, dmgd, dmgt, deaths, ship))
 
     def send_character(self, server: str, faction: str, name: str):
         """Notify the server of the existence of a character"""
@@ -312,7 +317,7 @@ class DiscordClient(Connection):
             id_fmt = Parser.get_id_format(match[0])
             start, end = map(lambda time: datetime.combine(date.date(), time.time()), (start, end))
             results = Parser.parse_match(match, player_id_list)
-            abls, dmg_d, dmg_t, _, _, _, _, _, enemies, _, _, _, _ = results
+            abls, dmg_d, dmg_t, _, _, _, _, _, enemies, _, _, ships, _ = results
             if Parser.is_tutorial(match):
                 continue
             if self.db[basename]["match"] is False:
@@ -323,8 +328,10 @@ class DiscordClient(Connection):
             if character_enabled is True:
                 if self.db[basename]["char"] is False:
                     # Parse the file with results and send the results
+                    ship = ship_tiers[max(ships, key=ships.__getitem__)] if len(ships) != 0 else "Unknown"
                     deaths = len(match) - 1
-                    char_s = self.send_result(server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths)
+                    char_s = self.send_result(
+                        server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths, ship)
                     print("[DiscordClient] {} to send character result for ({}, {})".format(
                         "Succeeded" if char_s is True else "Failed", server, player_name))
                 else:

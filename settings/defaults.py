@@ -75,6 +75,7 @@ defaults = {
         "discord": "",
         "auth": "",
         "host": "discord.thrantasquadron.tk",
-        "port": 64731
+        "port": 64731,
+        "version": "0.0.1"
     }
 }
