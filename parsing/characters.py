@@ -137,6 +137,8 @@ class CharacterDatabase(dict):
             if not file.endswith("PlayerGUIState.ini"):
                 continue
             server, player_name, _ = file.split("_")
+            if server not in servers.server_keys:
+                continue
             server = servers.server_keys[server]
             if (server, player_name) in self:
                 continue
