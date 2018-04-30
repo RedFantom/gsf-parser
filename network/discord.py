@@ -242,6 +242,7 @@ class DiscordClient(Connection):
         will take long to complete.
         """
         splash = DiscordSplash(window.splash if window.splash is not None else window)
+        splash.update_state()
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
             return
         files = list(Parser.gsf_combatlogs()) if files is None else files

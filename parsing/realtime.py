@@ -342,6 +342,9 @@ class RealTimeParser(Thread):
             id_fmt = self.active_id[:8]
             if not self.tutorial:
                 self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
+                match_map = self.get_for_current_spawn("map")
+                if match_map is not None:
+                    self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
             self.start_match = None
             # No longer a match
             self.is_match = False
@@ -578,7 +581,7 @@ class RealTimeParser(Thread):
             if match_map is not None:
                 self.set_for_current_spawn("map", match_map)
                 if self.discord is not None:
-                    server, date, start = self._character_data["Server"], self.start_match, self.start_match
+                    server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))

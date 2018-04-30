@@ -662,6 +662,8 @@ class Parser(object):
             for ship in ships_list_copy:
                 if ship not in getattr(abilities, "ships_dual_{}".format(category)):
                     ships_list.remove(ship)
+                if len(ships_list) == 0:
+                    raise ValueError("No ships possible for this spawn because of {}".format(category))
         # Calculate critical luck
         crit_luck = critcount / hitcount if hitcount != 0 else 0  # ZeroDivisionError
         # Return the expected variables
@@ -702,6 +704,8 @@ class Parser(object):
             # Ships
             if len(results[9]) > 1:
                 uncounted += 1
+            elif len(results[9]) == 0:
+                raise ValueError
             else:
                 ships[results[9][0]] += 1
         # Crit luck

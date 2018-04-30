@@ -159,7 +159,7 @@ class PatternParser(object):
         """
         if event[0] != Patterns.SHIP:
             raise InvalidDescriptor(event)
-        _, event_type, args = event  # "ability", "component", "crew"
+        event_type, args = event[1], event[2:]  # "ability", "component", "crew"
         # Parse Component selected
         if event_type == "component":
             # Component must be selected on the Ship for this spawn

@@ -39,8 +39,7 @@ class LogStalker(object):
         if self.file is not None and recent == self.file:
             return
         self.file = recent
-        print("[LogStalker] Watching new file: {}".format(self.file))
-        self._read_so_far = len(Parser.read_file(self.file))
+        self._read_so_far = 0
         self._watching_callback(self.file)
 
     def get_new_lines(self):
