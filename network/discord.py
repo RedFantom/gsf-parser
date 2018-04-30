@@ -15,8 +15,10 @@ import _pickle as pickle
 from tkinter import messagebox as mb
 import tkinter as tk
 # Project Modules
+from data.ships import ship_tiers
 from network.connection import Connection
 from parsing import Parser
+from toplevels.splashscreens import DiscordSplash
 from utils.directories import get_temp_directory
 from variables import settings
 
@@ -26,6 +28,40 @@ class DiscordClient(Connection):
     Connects to the GSF Parser Bot Server to share information on
     characters and other information about the user of this instance
     of the GSF Parser and his environment.
+
+    The GSF Parser Discord Bot is a bot mean to operate in the GSF
+    Discord Server to allow social interaction with match statistics.
+    It provides functionality such as tracking the amount of matches
+    on dates, as well as more personalized data such as match results.
+
+    The source code for the GSF Parser Discord Bot is available here:
+    <https://www.github.com/RedFantom/gsf-discord-bot>
+
+    The connection works in a different way from the other networking
+    options.
+    1. DiscordClient formulates a command to send.
+    2. The send_command() function appends authentication data to the
+       command and sends it to the server.
+    3. The server processes the command and sends a response:
+       - 'ack' = Acknowledged. This does not mean the command was
+         executed without error, the client is not notified of that.
+         All this means is that the user authenticated successfully and
+         the message was received. The server decides what to do with
+         the commands given.
+       - 'unauth' = The user failed to authenticate. This may mean that
+         the user is not registered in the database or an invalid
+         security code has been entered in the settings tab.
+       - 'error' = This message is returned when the command is not
+         valid. It does not mean that a valid command failed to execute.
+       - None = This means the server has failed to give a response
+         within the timeout of the Connection instance. This may mean
+         that the server has crashed.
+    4. The DiscordClient closes the Connection. For a new command, a
+       new connection will be opened.
+
+    The many-connection design is not the most efficient, but it does
+    work well with the asynchronous design of the GSF Parser Discord
+    Bot Server.
     """
 
     DATE_FORMAT = "%Y-%m-%d"
@@ -45,9 +81,13 @@ class DiscordClient(Connection):
         """Open the file database"""
         path = os.path.join(get_temp_directory(), "files.db")
         if not os.path.exists(path):
+            self.db = {"version": settings["sharing"]["version"]}
             self.save_database()
         with open(path, "rb") as fi:
             self.db = pickle.load(fi)
+        if self.db["version"] != settings["sharing"]["version"]:
+            os.remove(path)
+            self.open_database()
 
     def save_database(self):
         """Save the file database"""
@@ -131,12 +171,12 @@ class DiscordClient(Connection):
         return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
 
     def send_result(self, server: str, date: datetime, start: datetime, id_fmt: str,
-                    character: str, assists: int, dmgd: int, dmgt: int, deaths: int):
+                    character: str, assists: int, dmgd: int, dmgt: int, deaths: int, ship: str):
         """Notify the server of the result a character obtained"""
         start = DiscordClient.time_to_str(start)
         date = DiscordClient.date_to_str(date)
-        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
-            server, date, start, id_fmt, character, assists, dmgd, dmgt, deaths))
+        return self.send_command("result_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+            server, date, start, id_fmt, character, assists, dmgd, dmgt, deaths, ship))
 
     def send_character(self, server: str, faction: str, name: str):
         """Notify the server of the existence of a character"""
@@ -175,11 +215,37 @@ class DiscordClient(Connection):
             return False
         return True
 
-    def send_files(self, window: tk.Tk,):
-        """Send the files making clever use of the Tkinter mainloop"""
+    def send_recent_files(self, window: tk.Tk):
+        """Send only the files of today"""
+        files = list(Parser.gsf_combatlogs())
+        result = list()
+        for file in files:
+            file_date = Parser.parse_filename(file).date()
+            if file_date == datetime.now().date():
+                result.append(file)
+        self.send_files(window, result)
+
+    def send_files(self, window: tk.Tk, files: list = None):
+        """
+        Send the match data found in CombatLogs in the CombatLogs folder
+        to the Discord Bot Server. For the actual sending, the send_file
+        function is used to send each individual file. If Discord
+        Sharing is not enabled, the function returns immediately.
+
+        This function is meant to be executed during start-up of the
+        GSF Parser, while still at the SplashScreen. The procedure of
+        this function takes a rather long time and given data access of
+        the MainWindow.characters_frame running it in a separate Thread
+        would be a bad idea, and thus this function would interrupt the
+        mainloop for at least three seconds, if no files have to be
+        synchronized. If files have to be synchronized, this function
+        will take long to complete.
+        """
+        splash = DiscordSplash(window.splash if window.splash is not None else window)
+        splash.update_state()
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
             return
-        files = list(Parser.gsf_combatlogs())
+        files = list(Parser.gsf_combatlogs()) if files is None else files
         if len(self.db) == 0:
             mb.showinfo("Notice", "This is the first time data is being synchronized with the Discord Bot Server. "
                                   "This may take a while.")
@@ -188,9 +254,58 @@ class DiscordClient(Connection):
         print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
         for file_name in files:
             self.send_file(file_name, window)
+            splash.update_state()
+        splash.destroy()
         print("[DiscordClient] Done sending files.")
 
     def send_file(self, file_name, window):
+        """
+        Send the data in a single file to the Discord Bot Server. This
+        is done in a few steps.
+        # TODO: Optimize amount of times the file is looped over
+        # TODO: Split this into multiple shorter functions
+        1. Retrieve basic information for this CombatLog that is
+           required for sending it, including the date it was created
+           and the player name.
+        2. Check the requirement that the server for this character is
+           known. This is only the case if the character name is unique
+           for this system across all servers. If the server cannot
+           reliably be determined, the CombatLog data cannot be sent.
+        3. Check the files.db database in the temporary data directory
+           if this file is in it. If it is not, this is  the first time
+           this file is processed. If it is, this file has already been
+           processed at least once.
+        4. Parse the file, determining individual matches and the times
+           they started at.
+        5. Retrieve data from the character database (managed by the
+           MainWindow.characters_frame in the :characters: attribute.
+        6. If Discord sharing is enabled for the character, make sure
+           the Discord Bot Server knows about it by sending the command
+           for registering a character to the server.
+           Note that this may cause duplicate registration requests
+           among multiple files, but the Discord Bot Server will ignore
+           them if the character is already registered.
+        7. Loop over the matches to send.
+           7.1. Retrieve match-specific required information such as
+                the player ID format and the results.
+           7.2. Check if the match is a tutorial match. If it is, the
+                character was the only participant and sending it would
+                only clutter the database.
+           7.3. Check if the non-personal match data has already been
+                sent for this file and if not send it to the server.
+                # TODO: Extend this part for sending the map type
+           7.4. Check if personal data sharing is enabled for this
+                character and it has not already been sent. Then send
+                the personal match data to the server.
+        8. Update the files.db database with whether the sharing of
+           data was successful. Only if *all* matches were successfully
+           synchronized will the state be set to True. If the state is
+           False, a new attempt will be made at some later point.
+        9. Save the database to file to prevent loss of data if the user
+           exits the process unexpectedly.
+        :param file_name: Absolute path to the CombatLog to sync
+        :param window: MainWindow instance of this GSF Parser
+        """
         date = Parser.parse_filename(file_name)
         lines = Parser.read_file(file_name)
         player_name = Parser.get_player_name(lines)
@@ -217,7 +332,7 @@ class DiscordClient(Connection):
             id_fmt = Parser.get_id_format(match[0])
             start, end = map(lambda time: datetime.combine(date.date(), time.time()), (start, end))
             results = Parser.parse_match(match, player_id_list)
-            abls, dmg_d, dmg_t, _, _, _, _, _, enemies, _, _, _, _ = results
+            abls, dmg_d, dmg_t, _, _, _, _, _, enemies, _, _, ships, _ = results
             if Parser.is_tutorial(match):
                 continue
             if self.db[basename]["match"] is False:
@@ -228,8 +343,10 @@ class DiscordClient(Connection):
             if character_enabled is True:
                 if self.db[basename]["char"] is False:
                     # Parse the file with results and send the results
+                    ship = ship_tiers[max(ships, key=ships.__getitem__)] if len(ships) != 0 else "Unknown"
                     deaths = len(match) - 1
-                    char_s = self.send_result(server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths)
+                    char_s = self.send_result(
+                        server, date, start, id_fmt, player_name, len(enemies), dmg_d, dmg_t, deaths, ship)
                     print("[DiscordClient] {} to send character result for ({}, {})".format(
                         "Succeeded" if char_s is True else "Failed", server, player_name))
                 else:
@@ -238,4 +355,3 @@ class DiscordClient(Connection):
                 print("[DiscordClient] Not sending character result because not enabled.")
         self.db[basename] = {"match": match_s, "char": char_s}
         self.save_database()
-

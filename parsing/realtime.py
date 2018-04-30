@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from itertools import tee
 from threading import Thread, Lock
+import traceback
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -341,6 +342,9 @@ class RealTimeParser(Thread):
             id_fmt = self.active_id[:8]
             if not self.tutorial:
                 self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
+                match_map = self.get_for_current_spawn("map")
+                if match_map is not None:
+                    self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
             self.start_match = None
             # No longer a match
             self.is_match = False
@@ -453,7 +457,7 @@ class RealTimeParser(Thread):
         server, name = self._character_data
         if name != self.player_name:
             messagebox.showerror("Error", "Logged in with a character other than the one selected.")
-            raise ValueError("Invalid character login")
+            self.close()
 
     """
     ScreenParser
@@ -577,7 +581,7 @@ class RealTimeParser(Thread):
             if match_map is not None:
                 self.set_for_current_spawn("map", match_map)
                 if self.discord is not None:
-                    server, date, start = self._character_data["Server"], self.start_match, self.start_match
+                    server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))
@@ -653,12 +657,13 @@ class RealTimeParser(Thread):
                 self.update()
             except Exception as e:
                 # Errors are not often handled well in Threads
-                print("RealTimeParser encountered an error: ", e)
+                error = traceback.format_exc()
+                print("RealTimeParser encountered an error: ", error)
                 messagebox.showerror(
                     "Error",
                     "The real-time parsing back-end encountered an error while performing operations. Please report "
                     "this to the developer with the debug message below and, if possible, the full strack-trace. "
-                    "\n\n{}".format(e)
+                    "\n\n{}".format(error)
                 )
                 raise
         # Perform closing actions

@@ -16,6 +16,14 @@ from utils.swtor import get_swtor_directory
 from data.servers import server_ini
 
 
+def get_gui_profiles():
+    """Return a list of all GUI Profile Names in the SWTOR directory"""
+    return [
+        item.replace(".xml", "") for item in
+        os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))
+    ]
+
+
 def get_player_guiname(player_name, server):
     """
     Returns the GUI Profile name for a certain player name. Does not

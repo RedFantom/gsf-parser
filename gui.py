@@ -14,9 +14,9 @@ from ttkthemes import ThemedTk
 import tkinter.ttk as ttk
 from tkinter import messagebox
 # Frames
-from frames import FileFrame, RealTimeFrame, CharactersFrame,\
-    BuildsFrame, GraphsFrame, SettingsFrame, ShipFrame, \
-    StatsFrame, StrategiesFrame
+from frames import FileFrame, GraphsFrame, \
+    SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
+    StatsFrame, StrategiesFrame, ToolsFrame
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
@@ -78,6 +78,7 @@ class MainWindow(ThemedTk):
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
+        self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
         # Pack the frames and put their widgets into place
         self.grid_widgets()
@@ -102,6 +103,7 @@ class MainWindow(ThemedTk):
         self.deiconify()
         self.finished = True
         self.splash.destroy()
+        self.splash = None
         # Mainloop start (main.py)
 
     def grid_widgets(self):
@@ -125,6 +127,7 @@ class MainWindow(ThemedTk):
         self.graphs_frame.grid_widgets()
         self.builds_frame.grid_widgets()
         self.characters_frame.grid_widgets()
+        self.toolsframe.grid_widgets()
         self.file_select_frame.clear_data_widgets()
         self.strategies_frame.grid_widgets()
 
@@ -136,6 +139,7 @@ class MainWindow(ThemedTk):
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
+        self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
 
     def set_attributes(self):

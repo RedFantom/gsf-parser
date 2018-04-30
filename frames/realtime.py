@@ -15,13 +15,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 # Project Modules
-from widgets.time_view import TimeView
+from network.discord import DiscordClient
+from parsing.realtime import RealTimeParser
 from toplevels.minimap import MiniMap
 from toplevels.event_overlay import EventOverlay
-from parsing.realtime import RealTimeParser
-from variables import settings
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
+from widgets.time_view import TimeView
+from variables import settings
 
 
 class RealTimeFrame(ttk.Frame):
@@ -36,6 +37,7 @@ class RealTimeFrame(ttk.Frame):
         """
         self.window = window
         self.after_id = None
+        self._rtp_id = None
         self.parser = None
         self.exit_queue = None
         self.data_queue = None
@@ -162,9 +164,13 @@ class RealTimeFrame(ttk.Frame):
         self.update_data_string()
         # Start the parser
         self.parser.start()
+        self.after(1000, self.check_alive)
 
     def stop_parsing(self):
         """Stop the parsing process"""
+        if self._rtp_id is not None:
+            self.after_cancel(self._rtp_id)
+            self._rtp_id = None
         if self.minimap_enabled.get() is True and self.minimap is not None:
             self.minimap.destroy()
         self.close_overlay()
@@ -181,6 +187,7 @@ class RealTimeFrame(ttk.Frame):
         self.parser = None
         self.close_overlay()
         self.close_event_overlay()
+        DiscordClient().send_recent_files(self.window)
 
     def file_callback(self, file_name):
         """
@@ -312,8 +319,7 @@ class RealTimeFrame(ttk.Frame):
             characters.append(data[1])
         for character in sorted(characters):
             self.character_dropdown["menu"].add_command(
-                label=character, command=lambda value=character: self.character.set(value)
-            )
+                label=character, command=lambda value=character: self.character.set(value))
 
     @property
     def character_data(self):
@@ -324,3 +330,12 @@ class RealTimeFrame(ttk.Frame):
         server = reverse_servers[self.server.get()]
         return server, self.character.get()
 
+    def check_alive(self):
+        """Check if the RealTimeParser is still alive"""
+        if self.parser is None:
+            self._rtp_id = None
+            return
+        if self.parser.is_alive() is False:
+            self.stop_parsing()
+        else:
+            self._rtp_id = self.after(1000, self.check_alive)
