@@ -93,3 +93,7 @@ development
 
 # Project Files
 parser.db
+
+# Release Files
+release/setup.iss
+release/Setups/
