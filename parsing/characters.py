@@ -136,8 +136,14 @@ class CharacterDatabase(dict):
         for file in gui_state_files:
             if not file.endswith("PlayerGUIState.ini"):
                 continue
-            server, player_name, _ = file.split("_")
+            elements = file.split("_")
+            if len(elements) == 3:
+                server, player_name, _ = elements
+            else:
+                server, first, last, _ = elements
+                player_name = "{} {}".format(first, last)
             if server not in servers.server_keys:
+                print("[CharacterDatabase] Ignored GUIState file: {}".format(file))
                 continue
             server = servers.server_keys[server]
             if (server, player_name) in self:
