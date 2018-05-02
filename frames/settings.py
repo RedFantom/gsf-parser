@@ -548,7 +548,8 @@ class SettingsFrame(ttk.Frame):
         if not self.sharing_port.get().isdigit():
             messagebox.showerror("Error", "The port number entered for Discord Sharing is invalid.")
         if not DiscordClient.validate_tag(self.sharing_tag.get()):
-            messagebox.showerror("Error", "Invalid Discord tag entered.")
+            messagebox.showerror("Error", "Invalid Discord tag entered. The only accepted format is:\n\n"
+                                          "@Name#0000")
             return False
         if len(self.sharing_auth.get()) > 0 and not self.sharing_auth.get().isdigit():
             messagebox.showerror("Error", "Invalid Discord Sharing authentication code entered.")
