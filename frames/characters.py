@@ -376,6 +376,7 @@ class CharactersFrame(ttk.Frame):
         self.discord_sharing.set(character_data["Discord"])
         self.character_data = character_data
         self.window.builds_frame.reset()
+        self.grid_widgets()
 
     def clear_character_data(self):
         """Clear the character data property widgets"""
