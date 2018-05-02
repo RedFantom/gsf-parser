@@ -15,11 +15,12 @@ from tkinter import filedialog
 from tkinter import messagebox
 from ttkwidgets.frames import Balloon
 # Project Modules
-from variables import settings, colors
-from widgets import VerticalScrollFrame
+from network.discord import DiscordClient
+from parsing.vision import timer_boxes
 from toplevels.event_colors import EventColors
 from utils.utilities import get_screen_resolution
-from parsing.vision import timer_boxes
+from variables import settings, colors
+from widgets import VerticalScrollFrame
 
 
 class SettingsFrame(ttk.Frame):
@@ -546,9 +547,7 @@ class SettingsFrame(ttk.Frame):
         # Sharing settings
         if not self.sharing_port.get().isdigit():
             messagebox.showerror("Error", "The port number entered for Discord Sharing is invalid.")
-            return False
-        tag = self.sharing_tag.get()
-        if len(tag) > 0 and (tag[0] != "@" or "#" not in tag or not all(len(elem) > 2 for elem in tag.split("#"))):
+        if not DiscordClient.validate_tag(self.sharing_tag.get()):
             messagebox.showerror("Error", "Invalid Discord tag entered.")
             return False
         if len(self.sharing_auth.get()) > 0 and not self.sharing_auth.get().isdigit():
