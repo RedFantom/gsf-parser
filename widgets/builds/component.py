@@ -94,7 +94,7 @@ class ComponentWidget(ttk.Frame):
         # Access CharacterDatabase managed by CharactersFrame
         self.window.characters_frame.characters[self.window.builds_frame.character]["Ship Objects"][
             self.ship.name] = self.ship
-        self.window.characters_frame.save_button.invoke()
+        self.window.characters_frame.save_database()
 
     def build_widgets(self, data: dict):
         """

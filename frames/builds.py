@@ -212,7 +212,7 @@ class BuildsFrame(ttk.Frame):
                 button[i].config(state=tk.NORMAL)
         # Save the altered ship
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship_name] = self.ship
-        self.window.characters_frame.save_button.invoke()
+        self.window.characters_frame.save_database()
 
     def grid_widgets(self):
         """Puts all the widgets in the correct place for this Frame"""
@@ -270,7 +270,7 @@ class BuildsFrame(ttk.Frame):
     def save_ship_data(self):
         """Saves the modified Ship instance to the CharacterDatabase"""
         self.window.characters_frame.characters[self.character]["Ship Objects"][self.ship.name] = self.ship
-        self.window.characters_frame.save_button.invoke()
+        self.window.characters_frame.save_database()
 
     def reset(self):
         """

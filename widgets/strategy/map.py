@@ -89,6 +89,7 @@ class Map(ttk.Frame):
         self.canvas.tag_bind("item", "<B1-Motion>", self.left_motion)
         self.canvas.tag_bind("item", "<ButtonPress-3>", self.right_press)
         self.canvas.bind("<ButtonPress-3>", self.frame_right_press)
+        self.canvas.bind("<ButtonPress-1>", self.frame_left_press)
 
     def frame_right_press(self, event):
         """
@@ -97,6 +98,14 @@ class Map(ttk.Frame):
         Opens the self.frame_menu in the event location
         """
         self.frame_menu.post(event.x_root, event.y_root)
+
+    def frame_left_press(self, event):
+        """
+        Callback for Tkinter ButtonPress-1 event on self
+
+        Closes the self.frame_menu
+        """
+        self.frame_menu.unpost()
 
     def left_press(self, event):
         """

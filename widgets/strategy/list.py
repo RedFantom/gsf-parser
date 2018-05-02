@@ -224,7 +224,8 @@ class StrategiesList(ttk.Frame):
         """
         self.db[self.selected_strategy][title] = Phase(title, self.db[self.selected_strategy].map)
         if self.selected_phase is not None:
-            self.db[self.selected_strategy][title].items = self.db[self.selected_strategy][self.selected_phase].items
+            items = self.db[self.selected_strategy][self.selected_phase].items.copy()
+            self.db[self.selected_strategy][title].items = items
         self.update_tree()
         self.db.save_database()
 

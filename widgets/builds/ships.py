@@ -16,12 +16,12 @@ from collections import OrderedDict
 from PIL.ImageTk import PhotoImage
 from ttkwidgets.frames import Balloon
 # Project Modules
-import variables
-from widgets import ToggledFrame, VerticalScrollFrame
-from parsing import ships
 from data.ships import ships_other
+from parsing import ships
 from utils.utilities import open_icon_pil
 from utils.directories import get_assets_directory
+import variables
+from widgets import ToggledFrame, VerticalScrollFrame
 
 
 class ShipSelectFrame(ttk.Frame):
@@ -115,8 +115,9 @@ class ShipSelectFrame(ttk.Frame):
             mb.showinfo("Request", "Please choose a character first.")
             return
         ship_name = ships_other[ship_name]
-        if self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]:
-            ship_object = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"][ship_name]
+        ship_objects = self.window.characters_frame.characters[self.character_tuple]["Ship Objects"]
+        if ship_name in ship_objects and isinstance(ship_objects[ship_name], ships.Ship):
+            ship_object = ship_objects[ship_name]
         else:
             ship_object = ships.Ship(ship_name)
         for item, frame in self.window.builds_frame.components_lists.items():
