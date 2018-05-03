@@ -120,4 +120,11 @@
 		<AnchorOffsetY Type="3" Value="0.000000" />
 		<AnchorAlignment Type="3" Value="9.000000" />
 	</FreeFlightFleetConvertDialog>
+	<Global>
+		<GlobalScale Type="3" Value="1.000000" />
+		<EnableMovableWindows Type="2" Value="1" />
+		<LayoutEditorGridSnap Type="2" Value="0" />
+		<LayoutEditorGridY Type="3" Value="32.000000" />
+		<LayoutEditorGridX Type="3" Value="32.000000" />
+	</Global>
 </GUIProfile>
