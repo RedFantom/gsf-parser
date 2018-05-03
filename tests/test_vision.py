@@ -63,3 +63,4 @@ class TestVision(TestCase):
     def test_get_score(self):
         result = vision.get_score(self.image.crop(self.gui_parser.get_scorecard_coordinates()))
         print("[TESTS] Score: {}".format(result))
+        self.assertAlmostEqual(result, 0.84, places=1)

@@ -215,6 +215,7 @@ class RealTimeParser(Thread):
             "health": self._interface.get_ship_health_coordinates(),
             "minimap": self._interface.get_minimap_coordinates(),
             "hull": self._interface.get_ship_hull_box_coordinates(),
+            "scorecard": self._interface.get_scorecard_coordinates(),
         }
         self._pixels_per_degree = self._interface.get_pixels_per_degree()
         self._screen_parsing_setup = True
@@ -586,6 +587,15 @@ class RealTimeParser(Thread):
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))
 
+        """Match score"""
+        if "Match score" in self._screen_parsing_features and self.active_id != "":
+            scorecard = screenshot.crop(self.get_coordinates("scorecard"))
+            score = vision.get_score(scorecard)
+            self.set_for_current_spawn("score", score)
+            if self.discord is not None:
+                self.discord.send_match_score(
+                    self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
+                    self._character_db_data["Faction"], str(score))
         # Finally, save data
         self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict

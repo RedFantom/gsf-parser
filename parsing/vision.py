@@ -224,11 +224,23 @@ def get_score(image: Image.Image):
     moving in the left direction only horizontally, continuing for as
     long as the pixels are coloured and not black.
     """
-    image.save("temp.png")
     red, green = get_brightest_pixel_loc(image, 0), get_brightest_pixel_loc(image, 1)
-    rc, gc = image.getpixel(red), image.getpixel(green)
-    print("[Vision.get_score] Coordinates: {} (red), {} (green)".format(red, green))
-    print("[Vision.get_score] Colors: {} (red), {} (green)".format(rc, gc))
     # Assume one of the bars is full
-    xr, xg = red[0], green[0]
+    (xr, yr), (xg, yg) = red, green
+    pixels = image.load()
+    # Move over pixels in left direction from brightest point on
+    xpr = xr
+    while True:
+        color = pixels[xpr, yr]
+        if color[0] < 150:
+            break
+        xpr -= 1
+    xpg = xg
+    while True:
+        color = pixels[xpg, yg]
+        if color[1] < 150:
+            break
+        xpg -= 1
+    # Now calculate ratio between two scores (ally/enemy)
+    return (xg - xpg) / (xr - xpr)
 

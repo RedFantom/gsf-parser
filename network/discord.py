@@ -10,6 +10,7 @@ code to 120 characters.
 import os
 import socket
 from datetime import datetime
+from dateutil import tz
 import _pickle as pickle
 # UI Libraries
 from tkinter import messagebox as mb
@@ -17,7 +18,7 @@ import tkinter as tk
 # Project Modules
 from data.ships import ship_tiers
 from network.connection import Connection
-from parsing import Parser
+from parsing import Parser, FileHandler
 from toplevels.splashscreens import DiscordSplash
 from utils.directories import get_temp_directory
 from variables import settings
@@ -118,7 +119,7 @@ class DiscordClient(Connection):
         tag, auth = settings["sharing"]["discord"], settings["sharing"]["auth"]
         if self.validate_tag(tag) is False:
             return False
-        message = "{}_{}_{}".format(tag, auth, command)
+        message = "{}_{}_{}_{}".format(tag, auth, command, settings["misc"]["version"])
         print("[DiscordClient] {}".format(message))
         self.send(message)
         self.receive()
@@ -139,6 +140,12 @@ class DiscordClient(Connection):
         elif response == "error":
             print("[DiscordClient] Command {} failed.".format(message))
             result = False
+        elif response == "version":
+            if self.notified is False:
+                mb.showerror("Error", "Your GSF Parser version is too old for "
+                                      "communication with the Discord Bot Server.")
+                self.notified = True
+            result = False
         else:
             print("[DiscordClient] Invalid server response: {}.".format(response))
             result = False
@@ -158,17 +165,20 @@ class DiscordClient(Connection):
         command = "end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, end)
         return self.send_command(command)
 
-    def send_match_score(self, server: str, date: datetime, start: datetime, id_fmt: str, score: str):
+    def send_match_score(self, server: str, date: datetime, start: datetime, id_fmt: str, faction: str, score: float):
         """Notify the server of the score of a match"""
         date = DiscordClient.date_to_str(date)
         start = DiscordClient.time_to_str(start)
-        return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, score))
+        if faction == "Republic":
+            score = 1 / score
+        return self.send_command("score_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, score))
 
     def send_match_map(self, server: str, date: datetime, start: datetime, id_fmt: str, map: tuple):
         """Notify the server of the map detected for a match"""
         date = DiscordClient.date_to_str(date)
         start = DiscordClient.time_to_str(start)
-        return self.send_command("end_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
+        map = "{},{}".format(*map)
+        return self.send_command("map_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, map))
 
     def send_result(self, server: str, date: datetime, start: datetime, id_fmt: str,
                     character: str, assists: int, dmgd: int, dmgt: int, deaths: int, ship: str):
@@ -192,11 +202,11 @@ class DiscordClient(Connection):
 
     @staticmethod
     def date_to_str(dt: datetime):
-        return dt.strftime(DiscordClient.DATE_FORMAT)
+        return DiscordClient.datetime_to_utc(dt).strftime(DiscordClient.DATE_FORMAT)
 
     @staticmethod
     def time_to_str(dt: datetime):
-        return dt.strftime(DiscordClient.TIME_FORMAT)
+        return DiscordClient.datetime_to_utc(dt).strftime(DiscordClient.TIME_FORMAT)
 
     @staticmethod
     def validate_tag(tag: str):
@@ -224,6 +234,13 @@ class DiscordClient(Connection):
             if file_date == datetime.now().date():
                 result.append(file)
         self.send_files(window, result)
+
+    @staticmethod
+    def datetime_to_utc(dt: datetime):
+        to_zone = tz.tzutc()
+        from_zone = tz.tzlocal()
+        local = dt.replace(tzinfo=from_zone)
+        return local.astimezone(to_zone)
 
     def send_files(self, window: tk.Tk, files: list = None):
         """
@@ -340,6 +357,13 @@ class DiscordClient(Connection):
                 match_s = self.send_match_end(server, date, start, id_fmt, end) and match_s
             else:
                 print("[DiscordClient] Ignored {}".format(basename))
+            data = FileHandler.get_data_dictionary()
+            spawn_dict = FileHandler.get_spawn_dictionary(data, basename, start, match[0][0]["time"])
+            if isinstance(spawn_dict, dict):
+                if "map" in spawn_dict and isinstance(spawn_dict["map"], tuple) and None not in spawn_dict["map"]:
+                    self.send_match_map(server, date, start, id_fmt, spawn_dict["map"])
+                if "score" in spawn_dict and isinstance(spawn_dict["score"], float):
+                    self.send_match_score(server, date, start, id_fmt, character["Faction"], spawn_dict["score"])
             if character_enabled is True:
                 if self.db[basename]["char"] is False:
                     # Parse the file with results and send the results
