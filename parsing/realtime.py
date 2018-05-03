@@ -595,7 +595,7 @@ class RealTimeParser(Thread):
             if self.discord is not None:
                 self.discord.send_match_score(
                     self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
-                    self._character_db_data["Faction"], str(score))
+                    self._character_db_data["Faction"], score)
         # Finally, save data
         self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
