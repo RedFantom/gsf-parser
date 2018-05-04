@@ -119,7 +119,7 @@ class DiscordClient(Connection):
         tag, auth = settings["sharing"]["discord"], settings["sharing"]["auth"]
         if self.validate_tag(tag) is False:
             return False
-        message = "{}_{}_{}_{}".format(tag, auth, command, settings["misc"]["version"])
+        message = "{}_{}_{}_{}".format(tag, auth, settings["misc"]["version"], command)
         print("[DiscordClient] {}".format(message))
         self.send(message)
         self.receive()
