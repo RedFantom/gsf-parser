@@ -60,12 +60,12 @@ class Parser(object):
         """
         log = dict()
         log["line"] = line
-        effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
         log["time"] = datetime.strptime(elements[0], Parser.TIME_FORMAT)
         log["source"] = elements[1]
         log["target"] = elements[2]
         if len(elements) != 6:
             return log  # Invalid non-GSF CombatLog line
+        effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
         log.update({
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
