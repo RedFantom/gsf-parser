@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import os
 import sys
-import pip
+from pip._internal import main as pipmain
 from shutil import rmtree, move, copytree, copyfile, make_archive
 import subprocess
 # Project Modules
@@ -45,7 +45,7 @@ def get_inno_setup_path(executable="ISCC.exe", identifier="inno"):
 def get_pyinstaller_path():
     """Return an absolute path to the pyinstaller executable"""
     printw("Installing PyInstaller if required... ")
-    pip.main(["install", "pyinstaller", "--quiet"])
+    pipmain(["install", "pyinstaller", "--quiet"])
     printw("Done.\n")
     path = os.path.join(os.path.dirname(sys.executable), "Scripts", "pyinstaller.exe")
     if not os.path.exists(path):
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     version = defaults["misc"]["version"]
     # Install all required packages using pip
     printw("Installing packages if required...")
-    pip.main(["install", "-r", "../requirements.txt", "-q"])
+    pipmain(["install", "-r", "../requirements.txt", "-q"])
     printw("  Done.\n")
     dist_dir = os.path.join(os.getcwd(), "dist")
     build_dir = os.path.join(dist_dir, os.path.splitext(filename)[0] + "\\")
