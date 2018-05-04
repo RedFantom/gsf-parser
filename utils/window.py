@@ -104,8 +104,9 @@ class Window(object):
         handles = list()
         for win in windows:
             out, err = Window.execute("xdotool", "getwindowpid", win)
-            process_id = int(out)
+            process_id = int(out) if out != "" else 0
             if process_id in pids:
+                print("[Window] SWTOR PID:", process_id)
                 handles.append(win)
         return handles
 
