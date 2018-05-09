@@ -336,7 +336,7 @@ class DiscordClient(Connection):
         print("[DiscordClient] Synchronizing file: {}".format(basename))
         if basename not in self.db:
             self.db[basename] = {"match": False, "char": False}
-        match_s, char_s = True, False
+        match_s, char_s = self.db[basename]["match"], self.db[basename]["char"]
         player_id_list = Parser.get_player_id_list(lines)
         file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
         character = window.characters_frame.characters[(server, player_name)]
