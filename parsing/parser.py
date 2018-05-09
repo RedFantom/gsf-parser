@@ -702,10 +702,8 @@ class Parser(object):
             enemy_dmg_d.update(results[10])
             enemy_dmg_t.update(results[11])
             # Ships
-            if len(results[9]) > 1:
+            if len(results[9]) > 1 or len(results[9]) == 0:
                 uncounted += 1
-            elif len(results[9]) == 0:
-                raise ValueError
             else:
                 ships[results[9][0]] += 1
         # Crit luck
