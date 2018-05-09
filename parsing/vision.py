@@ -230,17 +230,18 @@ def get_score(image: Image.Image):
     pixels = image.load()
     # Move over pixels in left direction from brightest point on
     xpr = xr
-    while True:
+    while xpr > 0:
         color = pixels[xpr, yr]
         if color[0] < 150:
             break
         xpr -= 1
     xpg = xg
-    while True:
+    while xpg > 0:
         color = pixels[xpg, yg]
-        if color[1] < 150:
+        if color[1] < 175:
             break
         xpg -= 1
     # Now calculate ratio between two scores (ally/enemy)
+    if xr == xpr:
+        return 0.0
     return (xg - xpg) / (xr - xpr)
-

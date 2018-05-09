@@ -365,7 +365,7 @@ class RealTimeParser(Thread):
                 return
             else:  # Valid match event
                 print("[RealTimeParser] Match start.")
-                self.start_match = line["time"]
+                self.start_match = datetime.combine(datetime.now().date(), line["time"].time())
                 self.is_match = True
                 # Call the new match callback
                 self.match_callback()
@@ -383,6 +383,8 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
+            server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+            self.discord.send_match_start(server, date, start, self.active_id[:8])
             # Parse the lines that are on hold
             if self.hold != 0:
                 self.hold = 0  # For recursive calls, this must be zero to prevent an infinite loop
@@ -457,8 +459,11 @@ class RealTimeParser(Thread):
         """Process a Safe Login event"""
         server, name = self._character_data
         if name != self.player_name:
-            messagebox.showerror("Error", "Logged in with a character other than the one selected.")
-            self.close()
+            self._character_data = (server, self.player_name)
+            self._character_db_data = self._character_db[self._character_data]
+            messagebox.showwarning(
+                "Warning", "Different character login. The GSF Parser will adjust for the change, "
+                           "but may exhibit unexpected behaviour or show inaccurate results.")
 
     """
     ScreenParser

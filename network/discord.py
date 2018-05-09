@@ -237,6 +237,8 @@ class DiscordClient(Connection):
 
     @staticmethod
     def datetime_to_utc(dt: datetime):
+        if dt.strftime(DiscordClient.DATE_FORMAT) == "1900-01-01":
+            dt = datetime.combine(datetime.now().date(), dt.time())
         to_zone = tz.tzutc()
         from_zone = tz.tzlocal()
         local = dt.replace(tzinfo=from_zone)

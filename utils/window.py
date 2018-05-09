@@ -49,7 +49,7 @@ class Window(object):
         if pid is not None:
             pids = [pid, ]
         if pids is None:
-            raise ValueError("Invalid arguments received")
+            raise ValueError("No window active for specified arguments.")
         self._pids = pids
         self._w_handles = self.get_window_handles(self._pids)
 
