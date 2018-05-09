@@ -47,6 +47,7 @@ class ShipStats(object):
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
         for category in components:
+            print("[ShipStats] Processing component {}".format(category))
             category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
@@ -108,6 +109,7 @@ class ShipStats(object):
                             if key not in self.stats:
                                 print("[ShipStats] Key {} was not found in statistics.".format(key))
                                 continue
+                            print("[ShipStats] Updating statistic for {} to {} based on {}")
                             self.stats[key] = ShipStats.update_statistic(
                                 self.stats[key], statistic, multiplicative, value
                             )
@@ -121,11 +123,13 @@ class ShipStats(object):
                 # Process the statistic name
                 statistic, multiplicative = ShipStats.is_multiplicative(stat)
                 # Perform the calculation
-                for category in self.stats.keys():
-                    if statistic not in self.stats[category]:
+                for category_to_update in self.stats.keys():
+                    if category == "Capacitor" and "PrimaryWeapon" not in category_to_update:
+                        continue  # Exception for Capacitors as data is missing
+                    if statistic not in self.stats[category_to_update]:
                         continue
-                    self.stats[category] = ShipStats.update_statistic(
-                        self.stats[category], statistic, multiplicative, value
+                    self.stats[category_to_update] = ShipStats.update_statistic(
+                        self.stats[category_to_update], statistic, multiplicative, value
                     )
         # Go over Crew
         for category, companion in self.ship.crew.items():
