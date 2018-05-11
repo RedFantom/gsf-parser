@@ -38,7 +38,7 @@ from network.discord import DiscordClient
 
 def pair_wise(iterable: (list, tuple)):
     """Create generator to loop over iterable in pairs"""
-    return zip(tee(iterable))
+    return list(zip(*tuple(iterable[i::2] for i in range(2))))
 
 
 """
@@ -619,10 +619,15 @@ class RealTimeParser(Thread):
         wo, ho = self._resolution
         coords = self._coordinates[key]
         corrected = list()
-        for x, y in pair_wise(coords):  # Support 2 and 4 coord tuples
-            x, y = x / wo * w + x1, y / ho * h + y1  # Correct for size and offset
-            corrected.append(x)
-            corrected.append(y)
+        try:
+            for x, y in pair_wise(coords):  # Support 2 and 4 coord tuples
+                x, y = x / wo * w + x1, y / ho * h + y1  # Correct for size and offset
+                corrected.append(x)
+                corrected.append(y)
+        except ValueError:
+            print(traceback.format_exc())
+            print(coords, print(list(list(elem) for elem in pair_wise(coords))))
+            return coords
         corrected = tuple(map(int, corrected))
         print("[RealTimeParser/Window] Corrected coordinates for {}: {} -> {}".format(
             key, coords, corrected))
