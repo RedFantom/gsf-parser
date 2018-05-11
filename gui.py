@@ -11,7 +11,8 @@ from sys import exit
 from datetime import datetime
 # UI Libraries
 from ttkthemes import ThemedTk
-import tkinter.ttk as ttk
+from tkinter import ttk
+import tkinter as tk
 from tkinter import messagebox
 # Frames
 from frames import FileFrame, GraphsFrame, \
@@ -196,6 +197,19 @@ class MainWindow(ThemedTk):
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
         self.style.configure('.', foreground=settings["gui"]["color"])
+        self.setup_tk_toplevel_hooks()
+
+    def setup_tk_toplevel_hooks(self):
+        """Change the default background color of Tk and Toplevel"""
+        color = self.style.lookup("TFrame", "background")
+        self.config(background=color)
+        __init__original = tk.Toplevel.__init__
+
+        def __init__toplevel(*args, **kwargs):
+            kwargs.setdefault("background", color)
+            __init__original(*args, **kwargs)
+
+        tk.Toplevel.__init__ = __init__toplevel
 
     def set_icon(self):
         """Changes the window's icon"""
