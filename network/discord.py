@@ -338,7 +338,7 @@ class DiscordClient(Connection):
             self.db[basename] = {"match": False, "char": False}
         match_s, char_s = self.db[basename]["match"], self.db[basename]["char"]
         player_id_list = Parser.get_player_id_list(lines)
-        file_cube, matches, _ = Parser.split_combatlog(lines, player_id_list)
+        file_cube, matches, spawns = Parser.split_combatlog(lines, player_id_list)
         character = window.characters_frame.characters[(server, player_name)]
         character_enabled = character["Discord"]
         if character_enabled is True:
@@ -360,7 +360,11 @@ class DiscordClient(Connection):
             else:
                 print("[DiscordClient] Ignored {}".format(basename))
             data = FileHandler.get_data_dictionary()
-            spawn_dict = FileHandler.get_spawn_dictionary(data, basename, start, match[0][0]["time"])
+            spawn_dict = None
+            for spawn in spawns[index]:
+                result = FileHandler.get_spawn_dictionary(data, basename, start, spawn)
+                if isinstance(result, dict):
+                    spawn_dict = result
             if isinstance(spawn_dict, dict):
                 if "map" in spawn_dict and isinstance(spawn_dict["map"], tuple) and None not in spawn_dict["map"]:
                     self.send_match_map(server, date, start, id_fmt, spawn_dict["map"])
