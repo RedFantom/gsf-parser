@@ -127,7 +127,7 @@ class FileFrame(ttk.Frame):
                                                       "significantly.".format(len(file_list)))
         self.file_tree.insert("", tk.END, iid="all", text="All CombatLogs")
         file_list = list(reversed(sorted(file_list)) if not self.ascending else sorted(file_list))
-        if self.main_window.splash.winfo_exists():
+        if self.main_window.splash is not None and self.main_window.splash.winfo_exists():
             self.main_window.splash.update_maximum(len(file_list))
         for number, file in enumerate(file_list):
             if not Parser.get_gsf_in_file(file):
@@ -141,7 +141,7 @@ class FileFrame(ttk.Frame):
                 splash_screen.update_progress(number)
                 splash_screen.update()
             self.insert_file(file_string)
-            if self.main_window.splash.winfo_exists():
+            if self.main_window.splash is not None and self.main_window.splash.winfo_exists():
                 self.main_window.splash.update_progress(number)
         if splash_screen is not None:
             splash_screen.destroy()
