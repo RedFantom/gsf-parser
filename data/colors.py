@@ -44,7 +44,7 @@ color_keys = [
     "dmgd_sec", "dmgt_sec",
     "selfdmg", "healing", "selfheal",
     "engine", "shield", "system", "other",
-    "spawn", "match", "default"
+    "death", "default"
 ]
 
 color_descriptions = {
