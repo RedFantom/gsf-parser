@@ -74,7 +74,7 @@ defaults = {
         "enabled": True,
         "discord": "",
         "auth": "",
-        "host": "discord.thrantasquadron.tk",
+        "host": "discord.gsfparser.tk",
         "port": 64731,
         "version": "0.0.2"
     }
