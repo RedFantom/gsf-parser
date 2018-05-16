@@ -12,10 +12,9 @@ from tkinter import ttk
 import tkinter.messagebox
 from ttkwidgets import Calendar, ScaleEntry
 # Project Modules
-import widgets
 import variables
 from parsing.parser import Parser
-from widgets.verticalscrollframe import VerticalScrollFrame
+from widgets import ToggledFrame, VerticalScrollFrame
 from toplevels import splashscreens
 from data import abilities as abls
 
@@ -47,70 +46,35 @@ class Filters(tk.Toplevel):
             self.filter_type_checkbuttons.append(
                 ttk.Checkbutton(self.scroll_frame.interior, text=type, variable=self.filter_type_vars[type]))
         print("[Filters] Setting up Type filters")
-        self.type_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Type", labelwidth=90)
+        self.type_frame = ToggledFrame(self.scroll_frame.interior, text="Type", labelwidth=90)
         print("[Filters] Setting up date filters")
-        self.dateframe = widgets.ToggledFrame(self.scroll_frame.interior, text="Date", labelwidth=90)
-        self.start_date_label = ttk.Label(self.dateframe.sub_frame, text="Start date", font=("default", 12),
+        self.date_frame = ToggledFrame(self.scroll_frame.interior, text="Date", labelwidth=90)
+        self.start_date_label = ttk.Label(self.date_frame.sub_frame, text="Start date", font=("default", 12),
                                           justify=tk.CENTER)
-        self.end_date_label = ttk.Label(self.dateframe.sub_frame, text="End date", font=("default", 12),
+        self.end_date_label = ttk.Label(self.date_frame.sub_frame, text="End date", font=("default", 12),
                                         justify=tk.CENTER)
-        self.start_date_widget = Calendar(self.dateframe.sub_frame)
-        self.end_date_widget = Calendar(self.dateframe.sub_frame)
-        print("[Filters] Setting up components filters")
-        self.components_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Components", labelwidth=90)
-        self.primaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Primaries", labelwidth=90)
-        self.secondaries_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Secondaries",
-                                                      labelwidth=90)
-        self.engines_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Engines", labelwidth=90)
-        self.shields_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Shields", labelwidth=90)
-        self.systems_frame = widgets.ToggledFrame(self.components_frame.sub_frame, text="Sytems", labelwidth=90)
-        self.primaries_tickboxes = {}
-        self.primaries_tickboxes_vars = {}
-        self.secondaries_tickboxes = {}
-        self.secondaries_tickboxes_vars = {}
-        self.engines_tickboxes = {}
-        self.engines_tickboxes_vars = {}
-        self.shields_tickboxes = {}
-        self.shields_tickboxes_vars = {}
-        self.systems_tickboxes = {}
-        self.systems_tickboxes_vars = {}
-        for primary in abls.primaries:
-            primary_var = tk.IntVar()
-            primary_chk = ttk.Checkbutton(self.primaries_frame.sub_frame, text=primary, variable=primary_var,
-                                          width=20)
-            self.primaries_tickboxes[primary] = primary_chk
-            self.primaries_tickboxes_vars[primary] = primary_var
-        for secondary in abls.secondaries:
-            secondary_var = tk.IntVar()
-            secondary_chk = ttk.Checkbutton(self.secondaries_frame.sub_frame, text=secondary,
-                                            variable=secondary_var,
-                                            width=20)
-            self.secondaries_tickboxes[secondary] = secondary_chk
-            self.secondaries_tickboxes_vars[secondary] = secondary_var
-        for engine in abls.engines:
-            engine_var = tk.IntVar()
-            engine_chk = ttk.Checkbutton(self.engines_frame.sub_frame, text=engine, variable=engine_var,
-                                         width=20)
-            self.engines_tickboxes[engine] = engine_chk
-            self.engines_tickboxes_vars[engine] = engine_var
-        for shield in abls.shields:
-            shield_var = tk.IntVar()
-            shield_chk = ttk.Checkbutton(self.shields_frame.sub_frame, text=shield, variable=shield_var,
-                                         width=20)
-            self.shields_tickboxes[shield] = shield_chk
-            self.shields_tickboxes_vars[shield] = shield_var
-        for system in abls.systems:
-            system_var = tk.IntVar()
-            system_chk = ttk.Checkbutton(self.systems_frame.sub_frame, text=system, variable=system_var,
-                                         width=20)
-            self.systems_tickboxes[system] = system_chk
-            self.systems_tickboxes_vars[system] = system_var
-        self.comps_dicts = [self.primaries_tickboxes, self.secondaries_tickboxes, self.engines_tickboxes,
-                            self.shields_tickboxes, self.systems_tickboxes]
-        self.comps_vars = [self.primaries_tickboxes_vars, self.secondaries_tickboxes_vars, self.engines_tickboxes_vars,
-                           self.shields_tickboxes_vars, self.systems_tickboxes_vars]
+        self.start_date_widget = Calendar(self.date_frame.sub_frame)
+        self.end_date_widget = Calendar(self.date_frame.sub_frame)
 
-        self.ships_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
+        print("[Filters] Setting up components filters")
+        self.components_frame = ToggledFrame(self.scroll_frame.interior, text="Components", labelwidth=90)
+        self.component_values = {"variables": dict(), "widgets": dict(), "frames": dict()}
+        component_types = ("Primaries", "Secondaries", "Engines", "Shields", "Systems")
+        for category in component_types:
+            self.component_values["frames"][category] = ToggledFrame(
+                self.components_frame.sub_frame, text=category, labelwidth=90)
+            for key in ("variables", "widgets"):
+                self.component_values[key][category] = dict()
+            components = getattr(abls, category.lower())
+            for component in components:
+                self.component_values["variables"][category][component] = tk.BooleanVar()
+                self.component_values["widgets"][category][component] = ttk.Checkbutton(
+                    self.component_values["frames"][category].sub_frame, text=component,
+                    variable=self.component_values["variables"][category][component], width=20)
+        self.comps_dicts = [component for component in self.component_values["widgets"].values()]
+        self.comps_vars = [component for component in self.component_values["variables"].values()]
+
+        self.ships_frame = ToggledFrame(self.scroll_frame.interior, text="Ships", labelwidth=90)
         self.ships_checkboxes = {}
         self.ships_intvars = {}
         if variables.settings["gui"]["faction"] == "empire":
@@ -126,7 +90,7 @@ class Filters(tk.Toplevel):
         else:
             raise ValueError("No valid faction found.")
 
-        self.statistics_frame = widgets.ToggledFrame(self.scroll_frame.interior, text="Statistics", labelwidth=90)
+        self.statistics_frame = ToggledFrame(self.scroll_frame.interior, text="Statistics", labelwidth=90)
         self.statistics_header_label = ttk.Label(self.statistics_frame.sub_frame,
                                                  text="All statistics are averages per match, if the maximum is set to "
                                                       "zero the setting is ignored.")
@@ -157,14 +121,12 @@ class Filters(tk.Toplevel):
 
         for stat in self.statistics:
             self.statistics_labels[stat] = ttk.Label(self.statistics_frame.sub_frame, text=self.statistics_dict[stat])
-            self.statistics_scales_max[stat] = ScaleEntry(self.statistics_frame.sub_frame,
-                                                          from_=self.statistics_limits[stat][0],
-                                                          to=self.statistics_limits[stat][1], scalewidth=150,
-                                                          entrywidth=7)
-            self.statistics_scales_min[stat] = ScaleEntry(self.statistics_frame.sub_frame,
-                                                          from_=self.statistics_limits[stat][0],
-                                                          to=self.statistics_limits[stat][1], scalewidth=150,
-                                                          entrywidth=7)
+            self.statistics_scales_max[stat] = ScaleEntry(
+                self.statistics_frame.sub_frame, from_=self.statistics_limits[stat][0],
+                to=self.statistics_limits[stat][1], scalewidth=150, entrywidth=7)
+            self.statistics_scales_min[stat] = ScaleEntry(
+                self.statistics_frame.sub_frame, from_=self.statistics_limits[stat][0],
+                to=self.statistics_limits[stat][1], scalewidth=150, entrywidth=7)
 
         self.complete_button = ttk.Button(self, text="Filter", command=self.filter)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
@@ -190,8 +152,8 @@ class Filters(tk.Toplevel):
         in the CombatLogs folder. Insert them into the file_frame
         file_tree widget when the file passed the filters.
         :param search: if search is True, the function will calculate
-                       the amount of files found and ask the user
-                       whether the results should be displayed first
+            the amount of files found and ask the user whether the
+            results should be displayed first
         """
         # logs, matches or spawns
         results = []
@@ -217,10 +179,6 @@ class Filters(tk.Toplevel):
             # Parse the CombatLog to get the data to filter against
             player_list = Parser.get_player_id_list(lines)
             file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
-            """
-            (abilities_dict, dmg_d, dmg_t, dmg_s, healing, hitcount, critcount,
-                crit_luck, enemies, enemy_dmg_d, enemy_dmg_t, ships, uncounted)
-            """
             (abilities, damagedealt, damagetaken, selfdamage, healing, _, _, _, _,
              enemy_dmg_d, enemy_dmg_t, _, _) = Parser.parse_file(file_cube, player_list)
             matches = len(file_cube)
@@ -306,7 +264,7 @@ class Filters(tk.Toplevel):
             widget.grid(row=1, column=set_column, sticky="w")
             set_column += 1
         # self.type_frame.grid(row=2, column=1, columnspan=len(self.filter_types), sticky="nswe")
-        self.dateframe.grid(row=3, column=1, columnspan=len(self.filter_types), sticky="nswe")
+        self.date_frame.grid(row=3, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.components_frame.grid(row=4, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.ships_frame.grid(row=5, column=1, columnspan=len(self.filter_types), sticky="nswe")
         self.statistics_frame.grid(row=6, column=1, columnspan=len(self.filter_types), sticky="nswe")
@@ -320,11 +278,8 @@ class Filters(tk.Toplevel):
         self.start_date_widget.grid(row=1, column=1, sticky="nswe")
         self.end_date_widget.grid(row=1, column=2, sticky="nswe")
 
-        self.primaries_frame.grid(row=0, column=0, sticky="nswe")
-        self.secondaries_frame.grid(row=1, column=0, sticky="nswe")
-        self.engines_frame.grid(row=2, column=0, sticky="nswe")
-        self.shields_frame.grid(row=3, column=0, sticky="nswe")
-        self.systems_frame.grid(row=4, column=0, sticky="nswe")
+        for index, frame in enumerate(self.component_values["frames"].values()):
+            frame.grid(row=index, column=0, sticky="nswe")
 
         start_row = 1
         start_column = 1
@@ -398,26 +353,29 @@ class Filters(tk.Toplevel):
 
 class LimitedIntVar(tk.IntVar):
     """
-    Subclass of tk.IntVar that allows limits in the value of the variable stored
+    Subclass of tk.IntVar that constrains the value set to a maximum and
+    minimum value.
     """
 
-    def __init__(self, low, high):
+    def __init__(self, low: int, high: int):
+        """
+        :param low: Lower limit
+        :param high: Higher limit
+        """
         self._low = low
         self._high = high
         tk.IntVar.__init__(self, value=low)
 
-    def set(self, value):
+    def set(self, value: (str, int)):
         """
-        Set a new value, but check whether it is in limits first. If not, return False and set the new value to
-        either be the minimum (if value is smaller than the minimum) or the maximum (if the value is larger than
-        the maximum). Both str and int are supported as value types, as long as the str contains an int.
+        Set the value constrained by the limits.
+        :param value: int or valid str literal for int
         """
-        if not isinstance(value, int):
-            try:
-                value = int(value)
-            except ValueError:
-                raise ValueError("value argument passed is not int and cannot be converted to int")
+        if not isinstance(value, int) and not value.isdigit():
+            raise ValueError("value argument passed is not int and cannot be converted to int")
+        if isinstance(value, str):
+            value = int(value)
         limited_value = max(min(self._high, value), self._low)
         tk.IntVar.set(self, limited_value)
         # Return False if the value had to be limited
-        return limited_value is value
+        return limited_value == value

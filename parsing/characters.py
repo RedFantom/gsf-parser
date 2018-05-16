@@ -4,12 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import os
+# UI Libraries
+from toplevels.choice import askoption
 # Packages
 from semantic_version import Version
 # Project Modules
-from data import ships
+from data import ships, servers
 from variables import settings
 from parsing.ships import Ship
+from data import ships as ships_data
+from utils.swtor import get_swtor_directory
 
 
 class CharacterDatabase(dict):
@@ -50,7 +56,7 @@ class CharacterDatabase(dict):
             "Ships": ("Blackbolt", "Rycer"),
             "Ship Objects": {name: Ship(name) for name in ships.sorted_ships.keys()},
             "GUI": "Default",
-            "Discord": True,
+            "Discord": False,
         }
 
     def update_database(self):
@@ -59,11 +65,16 @@ class CharacterDatabase(dict):
         if not self.version.endswith(".0"):
             self.version += ".0"
         version = Version(self.version)
+        print("[CharacterDatabase] This version: ", version)
         if version < Version("5.6.0"):
+            print("[CharacterDatabase] Updating database for Discord Bot")
             for character, data in self.items():
                 data.update({"Discord": False})
                 self[character] = data
+            settings["misc"]["patch_level"] = "5.6.0"
+            settings.save_settings()
         self.version = settings["misc"]["patch_level"]
+        self.update_characters()
 
     def update_servers(self, trans: dict):
         """Update the character database to a new set of servers"""
@@ -116,3 +127,39 @@ class CharacterDatabase(dict):
         if len(servers) > 1:
             return None
         return servers[0]
+
+    def update_characters(self):
+        """Insert all the characters ever played into the database"""
+        print("[CharacterDatabase] Updating characters")
+        path = os.path.join(get_swtor_directory(), "swtor", "settings")
+        gui_state_files = os.listdir(path)
+        for file in gui_state_files:
+            if not file.endswith("PlayerGUIState.ini"):
+                continue
+            elements = file.split("_")
+            if len(elements) == 3:
+                server, player_name, _ = elements
+            else:
+                server, first, last, _ = elements
+                player_name = "{} {}".format(first, last)
+            if server not in servers.server_keys:
+                print("[CharacterDatabase] Ignored GUIState file: {}".format(file))
+                continue
+            server = servers.server_keys[server]
+            if (server, player_name) in self:
+                continue
+            name = servers.servers[server]
+            faction = askoption(("Republic", "Imperial"), label="Faction for {} on {}".format(player_name, name))
+            ships_dict = {name: Ship(name) for name in ships_data.sorted_ships.values()}
+            ships_list = list()
+            print("[CharacterDatabase] Inserting previously unknown character: {}".format((server, player_name)))
+            self[(server, player_name)] = {
+                "Server": server,
+                "Faction": faction,
+                "Name": player_name,
+                "Legacy": player_name,
+                "Ships": ships_list,
+                "Ship Objects": ships_dict,
+                "GUI": "Default",
+                "Discord": False
+            }

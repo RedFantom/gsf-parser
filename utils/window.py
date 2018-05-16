@@ -49,7 +49,7 @@ class Window(object):
         if pid is not None:
             pids = [pid, ]
         if pids is None:
-            raise ValueError("Invalid arguments received")
+            raise ValueError("No window active for specified arguments.")
         self._pids = pids
         self._w_handles = self.get_window_handles(self._pids)
 
@@ -104,8 +104,9 @@ class Window(object):
         handles = list()
         for win in windows:
             out, err = Window.execute("xdotool", "getwindowpid", win)
-            process_id = int(out)
+            process_id = int(out) if out != "" else 0
             if process_id in pids:
+                print("[Window] SWTOR PID:", process_id)
                 handles.append(win)
         return handles
 

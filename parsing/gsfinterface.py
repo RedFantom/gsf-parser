@@ -21,7 +21,7 @@ class GSFInterface(GUIParser):
                 "FreeFlightPowerSettings": (80, 180),
                 "FreeFlightMissileLockIndicator": (90, 80),
                 "FreeFlightMiniMap": (410, 310),
-                "FreeFlightScorecard": (275, 120),
+                "FreeFlightScorecard": (300, 120),
                 "FreeFlightCopilotBark": (245, 90),
                 "Global": (0, 0),
             }

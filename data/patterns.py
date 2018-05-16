@@ -103,7 +103,7 @@ class Patterns:
         "events": (
             # No engine ability fired while available
             ((-20, 0), (FILE, {"ability": "engines", "occurred": False}), 1),
-            ((0, 0), (SHIP, "ability", "engines", True), 1),
+            ((0, 0), (SHIP, "ability", ("engines", True)), 1),
             # No inhibiting effects
             ((-15, 0), (FILE, {"effect": "ApplyEffect: Engine Ability Disabled", "occurred": False}), 2),
         ),

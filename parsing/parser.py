@@ -60,12 +60,12 @@ class Parser(object):
         """
         log = dict()
         log["line"] = line
-        effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
         log["time"] = datetime.strptime(elements[0], Parser.TIME_FORMAT)
         log["source"] = elements[1]
         log["target"] = elements[2]
         if len(elements) != 6:
             return log  # Invalid non-GSF CombatLog line
+        effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
         log.update({
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
@@ -662,6 +662,8 @@ class Parser(object):
             for ship in ships_list_copy:
                 if ship not in getattr(abilities, "ships_dual_{}".format(category)):
                     ships_list.remove(ship)
+                if len(ships_list) == 0:
+                    raise ValueError("No ships possible for this spawn because of {}".format(category))
         # Calculate critical luck
         crit_luck = critcount / hitcount if hitcount != 0 else 0  # ZeroDivisionError
         # Return the expected variables
@@ -700,7 +702,7 @@ class Parser(object):
             enemy_dmg_d.update(results[10])
             enemy_dmg_t.update(results[11])
             # Ships
-            if len(results[9]) > 1:
+            if len(results[9]) > 1 or len(results[9]) == 0:
                 uncounted += 1
             else:
                 ships[results[9][0]] += 1
@@ -850,4 +852,12 @@ class Parser(object):
         """Return the player ID format of a match or spawn"""
         id_list = Parser.get_player_id_list(spawn)
         return id_list[0][:8]
+
+    @staticmethod
+    def is_tutorial(match: dict):
+        for spawn in match:
+            for line in spawn:
+                if "Tutorial" in line["line"] or "Invulnerable" in line["line"]:
+                    return True
+        return False
 

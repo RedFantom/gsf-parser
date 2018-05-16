@@ -61,6 +61,12 @@ class Settings(object):
             conf.write(fo)
         self.read_settings()
 
+    def save_settings(self):
+        conf = configparser.ConfigParser()
+        conf.read_dict(self.settings)
+        with open(self.file_name, "w") as fo:
+            conf.write(fo)
+
     def read_settings(self):
         """
         Read the settings from the settings file using a ConfigParser
@@ -76,7 +82,10 @@ class Settings(object):
             self.settings[section] = SettingsDictionary(section)
             for item, value in dictionary.items():
                 self.settings[section][item] = config_eval(value)
-        return
+        if "sharing" not in self.settings:
+            self.settings["sharing"] = defaults["sharing"]
+        self.settings["sharing"]["version"] = defaults["sharing"]["version"]
+        self.settings["misc"]["version"] = defaults["misc"]["version"]
 
     def __getitem__(self, section):
         """

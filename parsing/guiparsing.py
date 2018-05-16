@@ -4,32 +4,35 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+import xml.etree.cElementTree as et
+import os
+# UI Libraries
+from tkinter import messagebox
+# Project Modules
 from utils.utilities import get_screen_resolution
 from utils.directories import get_assets_directory
 from utils.swtor import get_swtor_directory
-import xml.etree.cElementTree as et
-import os
-from tkinter import messagebox
+from data.servers import server_ini
 
 
 def get_gui_profiles():
-    """
-    Returns a list of all GUI profiles available in the SWTOR directory
-    :return: list
-    """
-    return [item.replace(".xml", "") for item in
-            os.listdir(os.path.join(
-                get_swtor_directory(), "swtor", "settings", "GUIProfiles"))]
+    """Return a list of all GUI Profile Names in the SWTOR directory"""
+    return [
+        item.replace(".xml", "") for item in
+        os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))
+    ]
 
 
-def get_player_guiname(player_name):
+def get_player_guiname(player_name, server):
     """
     Returns the GUI Profile name for a certain player name. Does not
     work if there are multiple characters with the same name on the same
     account used on the same computer and also doesn't work if the name
     is misspelled. Credit for finding this reference to the GUI state
     files in the SWTOR settings files goes to Ion.
-    :param player_name: name of the player
+    :param player_name: Name of this character
+    :param server: Server code for this character (DM, TL, etc.)
     :return: GUI profile name, not XML file
     """
     if not isinstance(player_name, str):
@@ -41,12 +44,15 @@ def get_player_guiname(player_name):
         messagebox.showerror("Error", "SWTOR settings path not found. Is SWTOR correctly installed?")
         raise ValueError("SWTOR settings path not found")
     correct_file = None
-    for file_name in os.listdir(dir):
-        if not file_name.endswith(".ini"):
-            continue
-        elif player_name in file_name:
-            correct_file = file_name
-            break
+    if server is None:
+        for file_name in os.listdir(dir):
+            if not file_name.endswith(".ini"):
+                continue
+            elif player_name in file_name:
+                correct_file = file_name
+                break
+    else:
+        correct_file = "{}_{}_PlayerGUIState.ini".format(server_ini[server], player_name)
     if not correct_file:
         raise ValueError("Could not find a player settings file with name: {0}".format(player_name))
     with open(os.path.join(dir, correct_file)) as settings_file:
@@ -59,6 +65,8 @@ def get_player_guiname(player_name):
             break
     if not gui_profile:
         raise ValueError("Could not find GUI_Current_Profile in settings file {0}".format(correct_file))
+    if "preferences" in gui_profile:
+        return "Default"
     return gui_profile[1:].replace("\n", "")
 
 
@@ -144,7 +152,6 @@ class GUIParser(object):
                 raise ValueError("Could not find {0} in GUI profile".format(item))
         resolution = get_screen_resolution()
         self.anchor_dictionary = self.get_anchor_dictionary(resolution)
-        return
 
     def __getitem__(self, key):
         """
@@ -324,28 +331,3 @@ class GUIParser(object):
         x_two = x_one + self.get_scale_corrected_value(self.target_sizes[element_name][0], scale)
         y_two = y_one + self.get_scale_corrected_value(self.target_sizes[element_name][1], scale)
         return x_one, y_one, x_two, y_two
-
-    def get_max_min_coordinates(self, output=False):
-        """
-        Originally for reverse engineering only
-        :param output: if True prints results
-        :return: (x_min, x_max, y_min, y_max), all float
-        """
-        x_values = []
-        y_values = []
-        for child in self.root:
-            valid = False
-            for item in child:
-                if item.tag != "anchorXOffset":
-                    continue
-                else:
-                    valid = True
-                    break
-            if not valid:
-                continue
-            x_values.append(float(child.find("anchorXOffset").get("Value")))
-            y_values.append(float(child.find("anchorYOffset").get("Value")))
-        if output:
-            print("[GUI] Minimum X Value: ", min(x_values), "\nMaximum X Value: ", max(x_values))
-            print("[GUI] Minimum Y Value: ", min(y_values), "\nMaximum Y Value: ", max(y_values))
-        return min(x_values), max(x_values), min(y_values), max(y_values)

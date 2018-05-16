@@ -13,18 +13,16 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox as mb
+from ttkwidgets.frames import Balloon
 # Project Modules
 from data import ships as ships_data
 from utils import directories
 from utils import utilities
 from widgets import VerticalScrollFrame
-from parsing.guiparsing import get_gui_profiles, get_player_guiname
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
-from toplevels.addcharacter import AddCharacter
 from network.sharing.data import servers
 from network.discord import DiscordClient
-from variables import settings
 
 
 class CharactersFrame(ttk.Frame):
@@ -51,6 +49,7 @@ class CharactersFrame(ttk.Frame):
         """
         ttk.Frame.__init__(self, parent)
         self.window = main_window
+        self.after_id = None
         self.directory = directories.get_temp_directory()
         # Lists of servers and abbreviations
         self.servers = servers
@@ -61,20 +60,15 @@ class CharactersFrame(ttk.Frame):
         # Set up the characters list
         self.characters_list = ttk.Treeview(self)
         self.characters_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.characters_list.yview)
-        self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=14)
+        self.characters_list.configure(yscrollcommand=self.characters_scroll.set, height=16)
         self.characters_list.heading("#0", text="Characters")
         # self.characters_list.column("", width=0)
         self.characters_list.column("#0", width=250)
         self.characters_list["show"] = ("tree", "headings")
         self.characters_list.columnconfigure(0, minsize=50)
         # Create all the widgets for the character properties
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=350)
+        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=self.window.width-100-250, canvasheight=380)
         self.options_frame = self.scroll_frame.interior
-        self.new_character_button = ttk.Button(self, text="Add character", command=self.new_character)
-
-        self.save_button = ttk.Button(self, text="Save", command=self.save_character_data)
-        self.discard_button = ttk.Button(self, text="Discard", command=self.discard_character_data)
-        self.delete_button = ttk.Button(self, text="Delete", command=self.delete_character)
 
         self.republic_logo = utilities.open_icon("republic_s", ext=".png")
         self.imperial_logo = utilities.open_icon("imperial_s", ext=".png")
@@ -86,7 +80,9 @@ class CharactersFrame(ttk.Frame):
         self.character_name_label = ttk.Label(self.options_frame, text="Character name")
         self.character_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
         self.legacy_name_label = ttk.Label(self.options_frame, text="Legacy name")
-        self.legacy_name_entry = ttk.Entry(self.options_frame, width=width, state="readonly")
+        self.legacy_name_entry = ttk.Entry(self.options_frame, width=width)
+        self.legacy_name_entry.bind("<Key>", self.edit_legacy_name)
+        Balloon(self.legacy_name_entry, text="This is only used for the GSF Parser sharing server, if enabled.")
 
         self.discord_sharing = tk.BooleanVar()
         self.discord_sharing_label = ttk.Label(self.options_frame, text="Discord Sharing")
@@ -103,12 +99,6 @@ class CharactersFrame(ttk.Frame):
         self.faction_imperial_radiobutton = ttk.Radiobutton(
             self.options_frame, text="Empire", image=self.imperial_logo, compound=tk.LEFT,
             variable=self.faction, value="Imperial", command=lambda: self.set_character_faction("Imperial"))
-
-        self.gui_profile = tk.StringVar()
-        self.gui_profile_label = ttk.Label(self.options_frame, text="GUI Profile")
-        self.gui_profile_dropdown = ttk.OptionMenu(
-            self.options_frame, self.gui_profile, *tuple(("Select", "Default") + tuple(get_gui_profiles())))
-        self.gui_profile_detect_button = ttk.Button(self.options_frame, text="Auto detect", command=self.detect_profile)
 
         self.lineup_label = ttk.Label(self.options_frame, text="Ships line-up")
         self.lineup_frame = ttk.Frame(self.options_frame)
@@ -146,14 +136,13 @@ class CharactersFrame(ttk.Frame):
         else:
             raise ValueError("Unknown value for faction found: {0}".format(self.character_data["Faction"]))
         self.character_data["Ships"] = ships
-        self.save_button.invoke()
+        self.save_character_data()
 
     def grid_widgets(self):
         """Add all the widgets to the UIt"""
         self.widgets_grid_forget()
         self.characters_list.grid(column=0, row=0, sticky="nswe", padx=5, pady=5)
         self.characters_scroll.grid(column=1, row=0, sticky="ns", pady=5)
-        self.new_character_button.grid(column=0, row=1, sticky="nswe", pady=5, padx=5)
         self.scroll_frame.grid(column=2, row=0, rowspan=2, columnspan=4, sticky="nswe", padx=5)
 
         self.character_name_label.grid(column=0, row=0, sticky="nsw", padx=5, pady=5)
@@ -167,15 +156,9 @@ class CharactersFrame(ttk.Frame):
         self.faction_label.grid(column=0, row=4, sticky="nsw", padx=5, pady=5)
         self.faction_republic_radiobutton.grid(column=0, row=5, sticky="nsw", padx=5, pady=5)
         self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_label.grid(column=0, row=6, sticky="nsw", padx=5, pady=5)
-        self.gui_profile_dropdown.grid(column=0, row=7, sticky="nswe", padx=5, pady=5)
-        self.gui_profile_detect_button.grid(column=1, row=7, sticky="nswe", padx=5, pady=5)
+        self.faction_imperial_radiobutton.grid(column=1, row=5, sticky="nsw", padx=5, pady=5)
         self.lineup_label.grid(column=0, row=8, sticky="nsw", padx=5, pady=5)
         self.lineup_frame.grid(column=0, row=9, rowspan=1, columnspan=3, sticky="nswe", padx=5, pady=5)
-
-        self.delete_button.grid(column=2, row=1, sticky="nswe", pady=5, padx=5)
-        self.discard_button.grid(column=3, row=1, sticky="nswe", pady=5, padx=5)
-        self.save_button.grid(column=4, row=1, sticky="nswe", pady=5, padx=5)
 
         set_row = 0
         set_column = 0
@@ -246,39 +229,6 @@ class CharactersFrame(ttk.Frame):
             pickle.dump(characters, f)
         self.characters = characters
 
-    def detect_profile(self):
-        """
-        Callback for the Auto-detect button, sets the GUI profile
-        according to the result of get_player_guiname or display a
-        message that the profile cannot be determined reliably
-        (because of the same character name on different servers)
-        """
-        if not self.character_data:
-            mb.showinfo("Info", "Please select a character from the list first.")
-            return
-        try:
-            gui_name = get_player_guiname(self.character_data["Name"])
-        except ValueError:
-            mb.showinfo("Info", "Could not reliably determine the GUI profile used by this character. Please select it "
-                                "manually.")
-            return
-        self.gui_profile.set(gui_name)
-        self.character_data["GUI"] = gui_name
-        self.save_button.invoke()
-
-    def new_character(self):
-        """
-        Callback for the self.new_character_button Button widget.
-
-        Opens an AddCharacter Toplevel window that provides widgets for
-        inserting a new character into the database.
-
-        Passes self.insert_character as callback argument to
-        AddCharacter. This insert_character callback actually creates
-        the new character in the database.
-        """
-        AddCharacter(self.window, tuple(self.servers.values()), self.insert_character)
-
     def insert_character(self, name: str, legacy: str, server: str, faction: str):
         """
         Create a new character in the CharacterDatabase with the given
@@ -300,13 +250,12 @@ class CharactersFrame(ttk.Frame):
             "Legacy": legacy,
             "Ships": ships,
             "Ship Objects": ships_dict,
-            "GUI": "Default",
-            "Discord": True
+            "Discord": False
         }
         self.character_data = self.characters[(server, name)]
         self.clear_character_data()
         self.set_character(set=False)
-        self.save_button.invoke()
+        self.save_character_data()
         self.window.realtime_frame.update_characters()
         self.update_tree()
         self.window.builds_frame.ship_select_frame.update_characters()
@@ -346,15 +295,19 @@ class CharactersFrame(ttk.Frame):
         """Save CharacterDatabase to a file in the temporary dir"""
         print("[CharactersFrame] Saving character database")
         if self.character_data is not None:
-            self.character_data["GUI"] = self.gui_profile.get()
             server = self.character_data["Server"]
             name = self.character_data["Name"]
             faction = self.character_data["Faction"]
-            discord = self.character_data["Discord"] = self.discord_sharing.get()
+            discord = self.discord_sharing.get()
+            print("[CharactersFrame] Discord sharing enabled:", discord)
+            self.character_data["Discord"] = discord
             self.characters[(server, name)] = self.character_data
             if discord is True:
                 with DiscordClient() as client:
                     client.send_character(server, faction, name)
+        self.save_database()
+
+    def save_database(self):
         with open(os.path.join(self.directory, "characters.db"), "wb") as f:
             pickle.dump(self.characters, f)
 
@@ -377,38 +330,8 @@ class CharactersFrame(ttk.Frame):
         except EOFError:
             mb.showerror("Error", "The Character Database has been corrupted.")
             self.new_database()
-        if not isinstance(self.characters, CharacterDatabase) or\
-                self.characters.version != settings["misc"]["patch_level"]:
-            mb.showinfo("GSF Update", "Galactic StarFighter has received an update! Because of this, the internal GSF "
-                                      "Parser database has been updated, and your character database must be updated "
-                                      "as well to match the data. Currently, this process is destructive, and "
-                                      "all your character data, including builds, will be deleted.\n\nThe screen "
-                                      "parsing results are not affected.")
-            self.new_database()
         self.characters.update_database()
-
-    def discard_character_data(self):
-        """
-        Discard any changes to the character data that have not yet
-        been saved. Most changes also trigger CharacterDatabase saves.
-        # TODO: Deprecate this feature and UI elements
-        """
-        self.clear_character_data()
-        self.set_character()
-
-    def delete_character(self):
-        """
-        Callback for self.delete_button Button widget.
-
-        Deletes the character selected in the Treeview from the
-        CharacterDatabase and saves the database. Deleting a character
-        from the Database is final.
-        """
-        self.set_character()
-        del self.characters[(self.character_data["Server"], self.character_data["Name"])]
-        self.clear_character_data()
-        self.save_button.invoke()
-        self.update_tree()
+        self.save_database()
 
     def get_character_data(self, character: tuple=None):
         """
@@ -447,20 +370,19 @@ class CharactersFrame(ttk.Frame):
             return
         self.insert_into_entries(character_data["Name"], character_data["Legacy"])
         self.faction.set(character_data["Faction"])
-        self.gui_profile.set(character_data["GUI"])
         iterator = self.imp_ship_variables if character_data["Faction"] == "Imperial" else self.rep_ship_variables
         for name, intvar in iterator.items():
             intvar.set(name in character_data["Ships"])
         self.discord_sharing.set(character_data["Discord"])
         self.character_data = character_data
         self.window.builds_frame.reset()
+        self.grid_widgets()
 
     def clear_character_data(self):
         """Clear the character data property widgets"""
         self.character_name_entry.delete(0, tk.END)
         self.legacy_name_entry.delete(0, tk.END)
         self.faction.set("Republic")
-        self.gui_profile.set("Select")
         for intvar in self.imp_ship_variables.values():
             intvar.set(0)
         for intvar in self.rep_ship_variables.values():
@@ -470,10 +392,20 @@ class CharactersFrame(ttk.Frame):
     def insert_into_entries(self, name: str, legacy: str):
         """Update character name and legacy name Entry widgets"""
         self.character_name_entry.config(state=tk.NORMAL)
-        self.legacy_name_entry.config(state=tk.NORMAL)
         self.character_name_entry.delete(0, tk.END)
         self.legacy_name_entry.delete(0, tk.END)
         self.character_name_entry.insert(tk.END, name)
         self.legacy_name_entry.insert(tk.END, legacy)
         self.character_name_entry.config(state="readonly")
-        self.legacy_name_entry.config(state="readonly")
+
+    def edit_legacy_name(self, *args):
+        if self.after_id is not None:
+            self.after_cancel(self.after_id)
+        self.after_id = self.after(2000, self.save_legacy_name)
+
+    def save_legacy_name(self, *args):
+        self.after_id = None
+        if self.character_data is None:
+            return
+        self.character_data["Legacy"] = self.legacy_name_entry.get()
+        self.save_character_data()

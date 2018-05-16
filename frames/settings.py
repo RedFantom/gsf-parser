@@ -15,11 +15,12 @@ from tkinter import filedialog
 from tkinter import messagebox
 from ttkwidgets.frames import Balloon
 # Project Modules
-from variables import settings, colors
-from widgets import VerticalScrollFrame
+from network.discord import DiscordClient
+from parsing.vision import timer_boxes
 from toplevels.event_colors import EventColors
 from utils.utilities import get_screen_resolution
-from parsing.vision import timer_boxes
+from variables import settings, colors
+from widgets import VerticalScrollFrame
 
 
 class SettingsFrame(ttk.Frame):
@@ -211,9 +212,9 @@ class SettingsFrame(ttk.Frame):
         self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
         self.screen_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
-            "MiniMap Location", "Map and match type"
+            "MiniMap Location", "Map and match type", "Match score"
         ]
-        beta = ["MiniMap Location", "Spawn Timer", "Map and match type"]
+        beta = ["MiniMap Location", "Spawn Timer", "Map and match type", "Match score"]
         self.screen_checkboxes = OrderedDict()
         self.screen_variables = {}
         for feature in self.screen_features:
@@ -314,12 +315,12 @@ class SettingsFrame(ttk.Frame):
         self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
         self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
         # Sharing server
-        self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
-        self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
-        self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
-        self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
-        self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
+        # self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
+        # self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
+        # self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        # self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
+        # self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
+        # self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
 
         """
         Sharing settings
@@ -546,10 +547,9 @@ class SettingsFrame(ttk.Frame):
         # Sharing settings
         if not self.sharing_port.get().isdigit():
             messagebox.showerror("Error", "The port number entered for Discord Sharing is invalid.")
-            return False
-        tag = self.sharing_tag.get()
-        if len(tag) > 0 and (tag[0] != "@" or "#" not in tag or not all(len(elem) > 2 for elem in tag.split("#"))):
-            messagebox.showerror("Error", "Invalid Discord tag entered.")
+        if not DiscordClient.validate_tag(self.sharing_tag.get()):
+            messagebox.showerror("Error", "Invalid Discord tag entered. The only accepted format is:\n\n"
+                                          "@Name#0000")
             return False
         if len(self.sharing_auth.get()) > 0 and not self.sharing_auth.get().isdigit():
             messagebox.showerror("Error", "Invalid Discord Sharing authentication code entered.")

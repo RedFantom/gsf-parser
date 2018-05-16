@@ -47,6 +47,7 @@ class ShipStats(object):
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
         for category in components:
+            print("[ShipStats] Processing component {}".format(category))
             category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
@@ -93,9 +94,17 @@ class ShipStats(object):
                     statistic, multiplicative = ShipStats.is_multiplicative(stat)
                     if upgrade_data["Target"] == "":
                         print("[ShipStats] Updating statistic {} with target None".format(statistic))
-                        base_stats = ShipStats.update_statistic(
-                            base_stats, statistic, multiplicative, value
-                        )
+                        print("[ShipStats] Base stats keys: {}".format(list(base_stats.keys())))
+                        if statistic in base_stats:
+                            base_stats = ShipStats.update_statistic(
+                                base_stats, statistic, multiplicative, value
+                            )
+                        elif statistic in self.stats["Ship"]:
+                            self.stats["Ship"] = ShipStats.update_statistic(
+                                self.stats["Ship"], statistic, multiplicative, value
+                            )
+                        else:
+                            print("[ShipStats] I have absolutely no idea what to do with this one:", statistic)
                     elif upgrade_data["Target"] == "Self":
                         print("[ShipStats] Updating statistic {} with target Self".format(statistic))
                         self.stats[category] = ShipStats.update_statistic(
@@ -108,6 +117,7 @@ class ShipStats(object):
                             if key not in self.stats:
                                 print("[ShipStats] Key {} was not found in statistics.".format(key))
                                 continue
+                            print("[ShipStats] Updating statistic for {} to {} based on {}")
                             self.stats[key] = ShipStats.update_statistic(
                                 self.stats[key], statistic, multiplicative, value
                             )
@@ -121,11 +131,13 @@ class ShipStats(object):
                 # Process the statistic name
                 statistic, multiplicative = ShipStats.is_multiplicative(stat)
                 # Perform the calculation
-                for category in self.stats.keys():
-                    if statistic not in self.stats[category]:
+                for category_to_update in self.stats.keys():
+                    if category == "Capacitor" and "PrimaryWeapon" not in category_to_update:
+                        continue  # Exception for Capacitors as data is missing
+                    if statistic not in self.stats[category_to_update]:
                         continue
-                    self.stats[category] = ShipStats.update_statistic(
-                        self.stats[category], statistic, multiplicative, value
+                    self.stats[category_to_update] = ShipStats.update_statistic(
+                        self.stats[category_to_update], statistic, multiplicative, value
                     )
         # Go over Crew
         for category, companion in self.ship.crew.items():
@@ -173,7 +185,9 @@ class ShipStats(object):
         :return: real statistic name str,  multiplicative bool
         """
         multiplicative = "[Pc]" in statistic
-        statistic = statistic.replace("[Pc]", "")
+        if "[Pb]" in statistic:
+            print("[ShipStats] Pb marker!", statistic)
+        statistic = statistic.replace("[Pc]", "").replace("[Pb]", "")
         return statistic, multiplicative
 
     def get_crew_member_data(self, faction, category, name):
