@@ -274,7 +274,10 @@ class DiscordClient(Connection):
             mb.showinfo("Notice", "There are quite many files to synchronize. Please stand by.")
         print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
         for file_name in files:
-            self.send_file(file_name, window)
+            try:
+                self.send_file(file_name, window)
+            except Exception:
+                mb.showerror("Error", "There was an error processing {}.".format(file_name))
             splash.update_state()
             if self.failed > 5:
                 break
