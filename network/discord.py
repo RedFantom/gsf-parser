@@ -77,6 +77,7 @@ class DiscordClient(Connection):
         self.task = None
         self.db = dict()
         self.open_database()
+        self.failed = 0
 
     def open_database(self):
         """Open the file database"""
@@ -108,6 +109,7 @@ class DiscordClient(Connection):
             if self.notified is False:
                 mb.showwarning("Warning", "Failed to connect to the Discord Bot Server.")
                 self.notified = True
+            self.failed += 1
         return self.connected
 
     def send_command(self, command: str):
@@ -274,6 +276,8 @@ class DiscordClient(Connection):
         for file_name in files:
             self.send_file(file_name, window)
             splash.update_state()
+            if self.failed > 5:
+                break
         splash.destroy()
         print("[DiscordClient] Done sending files.")
 
