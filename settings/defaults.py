@@ -13,7 +13,7 @@ defaults = {
     # Miscellaneous settings
     "misc": {
         # GSF Parser version number (used for update checks)
-        "version": "v4.0.2",
+        "version": "v5.0.0",
         # Whether checks for updates are enabled
         "autoupdate": True,
         # assets/ships.db SWTOR patch level
