@@ -72,6 +72,17 @@ class Ship(object):
             "Defensive": None,
             "CoPilot": None
         }
+        ident = self.ship_name.split("_")[1]
+        if "B" in ident or "M" in ident:
+            self.ship_class = "Bomber"
+        elif "G" in ident:
+            self.ship_class = "Gunship"
+        elif "S" in ident:
+            self.ship_class = "Scout"
+        elif "F" in ident:
+            self.ship_class = "Strike Fighter"
+        else:
+            self.ship_class = None
 
     def __setitem__(self, item: str, value):
         """

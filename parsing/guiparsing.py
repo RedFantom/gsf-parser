@@ -131,6 +131,7 @@ class GUIParser(object):
         :param target_items: Dictionary with GUI elements as keys and
                              size tuples as values
         """
+        target_items.update({"Global": (0, 0)})
         file_name = os.path.basename(file_name)
         if ".xml" not in file_name:
             file_name += ".xml"
@@ -152,6 +153,11 @@ class GUIParser(object):
                 raise ValueError("Could not find {0} in GUI profile".format(item))
         resolution = get_screen_resolution()
         self.anchor_dictionary = self.get_anchor_dictionary(resolution)
+
+    @property
+    def global_scale(self):
+        obj = self.get_element_object("Global")
+        return self.get_item_value(obj, "GlobalScale")
 
     def __getitem__(self, key):
         """
@@ -218,15 +224,14 @@ class GUIParser(object):
         """
         return int(round(float(element.find(name).get("Value")), 0))
 
-    @staticmethod
-    def get_element_scale(element):
+    def get_element_scale(self, element):
         """
         As the scale is a float value, not an int, the normal class
         method can't be used for this item
         :param element: element object
         :return: float
         """
-        return round(float(element.find("scale").get("Value")), 3)
+        return round(float(element.find("scale").get("Value")), 3) * self.global_scale
 
     @staticmethod
     def get_scale_corrected_value(value, scale):

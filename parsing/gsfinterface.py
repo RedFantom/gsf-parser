@@ -85,6 +85,9 @@ class GSFInterface(GUIParser):
         y_two = temp_cds[1] + int(175 * temp_scale)
         return x_one, y_one, x_two, y_two
 
+    def get_target_effect_coordinates(self):
+        return self.get_box_coordinates("FreeFlightTargetStatusEffects")
+
     def get_target_distance_coordinates(self):
         """Return box coordinates to target distance number"""
         temp_cds = self.get_box_coordinates("FreeFlightTargetingComputer")
