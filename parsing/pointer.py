@@ -8,6 +8,7 @@ Copyright (C) 2016-2018 RedFantom
 from datetime import datetime
 import os
 from threading import Thread
+from time import sleep
 # Packages
 from mss import mss
 from PIL import Image
@@ -70,6 +71,7 @@ class PointerParser(Thread):
         """Run the loop that takes screenshots"""
         while self.exit_queue.empty():
             if self.rof is None or self.ship_class == "Gunship":
+                sleep(1)  # Reduce performance impact when not active
                 continue
             while not self.mouse_queue.empty():
                 self.pressed = self.mouse_queue.get()
@@ -80,21 +82,17 @@ class PointerParser(Thread):
                 continue
             self.last = datetime.now()
             loc = get_cursor_position()
-            screenshot = self.mss.grab()
+            pointer_box = tuple(c - 30 for c in loc) + (30, 30)
+            screenshot = self.mss.grab({list(zip(("left", "top", "width, height"), pointer_box))})
             screenshot = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-            pointer_box = tuple(c + f * 30 for c, f in zip(loc + loc, (-1, -1, +1, +1)))
-            try:
-                pointer_img = screenshot.crop(pointer_box)
-            except:  # Pointer out of bounds
-                continue
-            # Function calls are to expensive here, so one big blob
-            match, _ = opencv.template_match(pointer_img, self.pointer)
+            match, _ = opencv.template_match(screenshot, self.pointer)
+            self.chance_queue.put((self.last, match))
 
     def stop(self):
         self.exit_queue.put(True)
         self.join()
 
-    def set_ship(self, rof: float, ship_class: str):
+    def set_rate_of_fire(self, rof: float, ship_class: str):
         """
         Update the ship in use by this PointerParser
 

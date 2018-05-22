@@ -9,7 +9,6 @@ import os
 import _pickle as pickle  # known as cPickle
 from datetime import datetime, timedelta
 from time import sleep
-from itertools import tee
 from threading import Thread, Lock
 import traceback
 # UI Libraries
@@ -25,6 +24,7 @@ from parsing.gsfinterface import GSFInterface
 from parsing.guiparsing import get_player_guiname
 from parsing import vision
 from parsing.shipstats import ShipStats
+from parsing.pointer import PointerParser
 from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
@@ -184,6 +184,7 @@ class RealTimeParser(Thread):
         self.setup_screen_parsing()
         self._lock = Lock()
         self._configured_flag = False
+        self._pointer_parser = None
 
         """
         MiniMap Sharing
@@ -349,6 +350,8 @@ class RealTimeParser(Thread):
             self.start_match = None
             # No longer a match
             self.is_match = False
+            self._pointer_parser = None  # One for each match
+            self._primary_weapon = True
             self.tutorial = False
             self.lines.clear()
             # Spawn timer
@@ -579,7 +582,13 @@ class RealTimeParser(Thread):
             self._client.send_location(fracs)
             self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
 
-        """Map and match type"""
+        """
+        Map and match type
+        
+        Uses feature matching to attempt to determine the map that the 
+        player is currently engaged in. If the map is determined at one
+        point, detection is not attempted again.
+        """
         if ("Map and match type" in self._screen_parsing_features and
                 self.get_for_current_spawn("map") is None and self.active_id != ""):
             minimap = screenshot.crop(self.get_coordinates("minimap"))
@@ -592,7 +601,23 @@ class RealTimeParser(Thread):
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))
 
-        """Match score"""
+        """
+        Match score
+        
+        Continuously attempts to determine the ratio of the team scores
+        """
+        # TODO: Implement support for detecting wargames
+        # The starting position of the team (what side of the map)
+        # determines where their score bar is located (top or bottom)
+        # TODO: Implement OCR or some other more accurate technique
+        # Currently, only the ratio of the two scores is calculated,
+        # and it is rather ineffective. White or very light pixels
+        # have a huge impact on the result.
+        # TODO: Implement feature to only detect at match end
+        # The progression of the score of a match is not as interesting
+        # in most cases as the actual end score. Another option is to
+        # only determine it once a minute or some similar technique to
+        # limit the performance impact of this feature.
         if "Match score" in self._screen_parsing_features and self.active_id != "":
             scorecard = screenshot.crop(self.get_coordinates("scorecard"))
             score = vision.get_score(scorecard)
@@ -601,6 +626,36 @@ class RealTimeParser(Thread):
                 self.discord.send_match_score(
                     self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
                     self._character_db_data["Faction"], score)
+
+        """
+        Pointer Parsing
+        
+        Pointer parsing is capable of matching shots fired with a 
+        PrimaryWeapon (only the first
+        """
+        if "Pointer Parsing" in self._screen_parsing_features:
+            if self._pointer_parser is not None:
+                # Create a new PointerParser for each match
+                self._pointer_parser = PointerParser(self._interface)
+            if self.ship is not None and self.ship_stats is not None:
+                # Only if the ship is known does it work
+                type = self.ship.type
+                # Process each shot
+                shots = list()
+                while not self._pointer_parser.chance_queue.empty():
+                    shots.append(self._pointer_parser.chance_queue.get())
+                for line in reversed(self.lines):
+                    # TODO: Implement time matching
+                    # The time matching should map each shot to a single
+                    # primary weapon ability line
+                    pass
+                # TODO: Pass on data to realtime frame for visualization
+                # Retrieve primary weapon statistics
+                key = "PrimaryWeapon" if self._primary_weapon is False else "PrimaryWeapon2"
+                if key in self.ship_stats:
+                    rof = 1 / self.ship_stats[key]["Weapon_Rate_of_Fire"]
+                    self._pointer_parser.set_rate_of_fire(rof, type)
+
         # Finally, save data
         self.acquire()
         self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = spawn_dict
