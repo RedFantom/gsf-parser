@@ -68,7 +68,16 @@ class PointerParser(Thread):
         self.mouse_queue.put(pressed)
 
     def run(self):
-        """Run the loop that takes screenshots"""
+        """
+        Run the loop that takes screenshots
+
+        The loop checks for mouse clicks continuously. The clicks are
+        put in the queue, where this thread picks them up. When a click
+        is processed, a screenshot is taken. Then, the screenshot is
+        cropped to the pointer and a template match is ran in order to
+        determine whether the shot was made on-target. Then the result
+        of this process is passed on to the Thread owner.
+        """
         while self.exit_queue.empty():
             if self.rof is None or self.ship_class == "Gunship":
                 sleep(1)  # Reduce performance impact when not active
@@ -89,6 +98,7 @@ class PointerParser(Thread):
             self.chance_queue.put((self.last, match))
 
     def stop(self):
+        """Stop the Thread's activities by notifying it it needs to exit"""
         self.exit_queue.put(True)
         self.join()
 

@@ -111,7 +111,7 @@ legionAbilities = [
     "Proton Torpedo", "Concussion Missile", "Seeker Mine",
     "Shield Power Converter", "Interdiction Drive",
     "Railgun", "Railgun Sentry Drone",  # Railgun = Railgun Sentry Drone
-        "Interdiction Sentry Drone", "Missile Sentry Drone",
+    "Interdiction Sentry Drone", "Missile Sentry Drone",
     "Shield Projector", "Repair Drone", "Overcharged Shield"
 ]
 razorwireAbilities = [

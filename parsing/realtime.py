@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+from datetime import datetime, timedelta
 import os
 import _pickle as pickle  # known as cPickle
-from datetime import datetime, timedelta
+from queue import Queue
 from time import sleep
 from threading import Thread, Lock
 import traceback
@@ -18,6 +19,10 @@ import mss
 import pynput
 from PIL import Image
 # Project Modules
+from data.keys import keys
+from data.abilities import rep_ships
+from network.minimap.client import MiniMapClient
+from network.discord import DiscordClient
 from parsing.parser import Parser
 from parsing.logstalker import LogStalker
 from parsing.gsfinterface import GSFInterface
@@ -30,10 +35,6 @@ from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
 from utils.window import Window
 from variables import settings
-from data.keys import keys
-from data.abilities import rep_ships
-from network.minimap.client import MiniMapClient
-from network.discord import DiscordClient
 
 
 def pair_wise(iterable: (list, tuple)):
@@ -133,6 +134,7 @@ class RealTimeParser(Thread):
         self._data_queue = data_queue
         self._return_queue = return_queue
         self._exit_queue = exit_queue
+        self._shots_queue = Queue()
         # Data
         self._character_data = character_data
         self._character_db = character_db
@@ -185,6 +187,7 @@ class RealTimeParser(Thread):
         self._lock = Lock()
         self._configured_flag = False
         self._pointer_parser = None
+        self._rof = None
 
         """
         MiniMap Sharing
@@ -350,8 +353,6 @@ class RealTimeParser(Thread):
             self.start_match = None
             # No longer a match
             self.is_match = False
-            self._pointer_parser = None  # One for each match
-            self._primary_weapon = True
             self.tutorial = False
             self.lines.clear()
             # Spawn timer
@@ -360,6 +361,10 @@ class RealTimeParser(Thread):
             self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
             self.abilities.clear()
             self.active_id = ""
+            self.primary_weapon, self.secondary_weapon = False, False
+            if self._pointer_parser is not None:
+                self._pointer_parser.stop()
+                self._pointer_parser = None
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -637,24 +642,31 @@ class RealTimeParser(Thread):
             if self._pointer_parser is not None:
                 # Create a new PointerParser for each match
                 self._pointer_parser = PointerParser(self._interface)
+                self._pointer_parser.start()
             if self.ship is not None and self.ship_stats is not None:
                 # Only if the ship is known does it work
                 type = self.ship.type
                 # Process each shot
-                shots = list()
+                shots, hits = list(), dict()
                 while not self._pointer_parser.chance_queue.empty():
-                    shots.append(self._pointer_parser.chance_queue.get())
-                for line in reversed(self.lines):
-                    # TODO: Implement time matching
-                    # The time matching should map each shot to a single
-                    # primary weapon ability line
-                    pass
-                # TODO: Pass on data to realtime frame for visualization
-                # Retrieve primary weapon statistics
-                key = "PrimaryWeapon" if self._primary_weapon is False else "PrimaryWeapon2"
+                    moment, on_target = self._pointer_parser.chance_queue.get()
+                    if on_target is False:
+                        hits[moment] = "Miss"
+                    shots.append(moment)
+                lines = self.lines.copy()
+                for line in reversed(lines):
+                    for moment in shots:
+                        if (moment.time() - line["time"].time()).total_seconds() > self._rof:
+                            continue
+                        lines.remove(line)
+                        hits[moment] = "Hit"
+                hits.update({moment: "Evade" for moment in shots if moment not in hits})
+                self._shots_queue.put(hits)
+                key = "PrimaryWeapon" if self.primary_weapon is False else "PrimaryWeapon2"
                 if key in self.ship_stats:
                     rof = 1 / self.ship_stats[key]["Weapon_Rate_of_Fire"]
                     self._pointer_parser.set_rate_of_fire(rof, type)
+                    self._rof = rof
 
         # Finally, save data
         self.acquire()
@@ -771,6 +783,8 @@ class RealTimeParser(Thread):
         return self
 
     def __exit__(self):
+        if self._pointer_parser is not None:
+            self._pointer_parser.stop()
         self._exit_queue.put(True)
 
     def close(self):
