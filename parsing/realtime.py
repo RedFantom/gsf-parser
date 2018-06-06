@@ -661,6 +661,8 @@ class RealTimeParser(Thread):
                         lines.remove(line)
                         hits[moment] = "Hit"
                 hits.update({moment: "Evade" for moment in shots if moment not in hits})
+                for shot, hit in hits.items():
+                    print("[PointerParser] Shot: {}".format(hit))
                 self._shots_queue.put(hits)
                 key = "PrimaryWeapon" if self.primary_weapon is False else "PrimaryWeapon2"
                 if key in self.ship_stats:
