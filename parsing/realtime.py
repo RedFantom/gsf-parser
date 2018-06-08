@@ -379,6 +379,7 @@ class RealTimeParser(Thread):
                 self.match_callback()
         # Handle changes of player ID (new spawns)
         if line["source"] != self.active_id and line["destination"] != self.active_id:
+            self.abilities.clear()
             self.active_id = ""
             # Call the spawn callback
             self.start_spawn = line["time"]
@@ -445,11 +446,16 @@ class RealTimeParser(Thread):
         Ship processing
         """
         if self.ship is None:
-            abilities = Parser.get_abilities_dict(self.lines)
-            ship = Parser.get_ship_for_dict(abilities)
-            if len(ship) != 1:
+            ship = Parser.get_ship_for_dict(self.abilities)
+            if len(ship) > 1:
+                print("[RealTimeParser] Could not determine ship with: {}".format(self.abilities))
+                return
+            elif len(ship) == 0:
+                print("[RealTimeParser] Did not retrieve any ships with: {}".format(self.abilities))
+                self.abilities.clear()
                 return
             ship = ship[0]
+            print("[RealTimeParser] Ship determined: {}".format(ship))
             if self._character_db[self._character_data]["Faction"].lower() == "republic":
                 ship = rep_ships[ship]
             if self._screen_parsing_enabled is False:
@@ -639,7 +645,7 @@ class RealTimeParser(Thread):
         PrimaryWeapon (only the first
         """
         if "Pointer Parsing" in self._screen_parsing_features:
-            if self._pointer_parser is not None:
+            if self._pointer_parser is None:
                 # Create a new PointerParser for each match
                 self._pointer_parser = PointerParser(self._interface)
                 self._pointer_parser.start()
@@ -666,6 +672,7 @@ class RealTimeParser(Thread):
                 self._shots_queue.put(hits)
                 key = "PrimaryWeapon" if self.primary_weapon is False else "PrimaryWeapon2"
                 if key in self.ship_stats:
+                    print("[PointerParser] Weapon not properly configured.")
                     rof = 1 / self.ship_stats[key]["Weapon_Rate_of_Fire"]
                     self._pointer_parser.set_rate_of_fire(rof, type)
                     self._rof = rof

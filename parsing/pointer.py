@@ -78,9 +78,11 @@ class PointerParser(Thread):
         determine whether the shot was made on-target. Then the result
         of this process is passed on to the Thread owner.
         """
+        print("[PointerParser] Starting...")
         while self.exit_queue.empty():
             if self.rof is None or self.ship_class == "Gunship":
                 sleep(1)  # Reduce performance impact when not active
+                print("[PointerParser] Does not have required data...")
                 continue
             while not self.mouse_queue.empty():
                 self.pressed = self.mouse_queue.get()
@@ -89,12 +91,14 @@ class PointerParser(Thread):
             # Button is pressed
             if (datetime.now() - self.last).total_seconds() < self.rof:
                 continue
+            print("[PointerParser] Processing a shot...")
             self.last = datetime.now()
             loc = get_cursor_position()
             pointer_box = tuple(c - 30 for c in loc) + (30, 30)
             screenshot = self.mss.grab({list(zip(("left", "top", "width, height"), pointer_box))})
             screenshot = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
             match, _ = opencv.template_match(screenshot, self.pointer)
+            print("[PointerParser] On-target: {}".format(match))
             self.chance_queue.put((self.last, match))
 
     def stop(self):

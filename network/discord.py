@@ -122,7 +122,7 @@ class DiscordClient(Connection):
         if self.validate_tag(tag) is False:
             return False
         message = "{}_{}_{}_{}".format(tag, auth, settings["misc"]["version"], command)
-        print("[DiscordClient] {}".format(message))
+        # print("[DiscordClient] {}".format(message))
         self.send(message)
         self.receive()
         response = None

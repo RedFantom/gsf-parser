@@ -197,7 +197,7 @@ excluded_abilities = [
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
     "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct",
     "Tutorial", "Melting Hull", "Contamination", "Scope Mode", "Launch Projectile",
-    "Railgun Charge"
+    "Railgun Charge", "Hyperspace Slingshot",
 ]
 
 # All ships with their Imperial Faction names available in GSF
