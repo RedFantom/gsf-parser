@@ -101,10 +101,11 @@ class DiscordClient(Connection):
         """Connect the DiscordClient to the server"""
         host, port = settings["sharing"]["host"], settings["sharing"]["port"]
         try:
+            socket.setdefaulttimeout(4)
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((host, port))
             self.connected = True
-        except socket.error:
+        except (socket.error, socket.timeout):
             self.connected = False
             if self.notified is False:
                 mb.showwarning("Warning", "Failed to connect to the Discord Bot Server.")
@@ -172,7 +173,7 @@ class DiscordClient(Connection):
         date = DiscordClient.date_to_str(date)
         start = DiscordClient.time_to_str(start)
         if faction == "Republic":
-            score = 1 / score
+            score = 1 / score if score != 0 else 0
         return self.send_command("score_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, score))
 
     def send_match_map(self, server: str, date: datetime, start: datetime, id_fmt: str, map: tuple):
@@ -262,6 +263,8 @@ class DiscordClient(Connection):
         synchronized. If files have to be synchronized, this function
         will take long to complete.
         """
+        if os.path.exists("development"):
+            return
         splash = DiscordSplash(window.splash if window.splash is not None else window)
         splash.update_state()
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
