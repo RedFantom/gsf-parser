@@ -409,7 +409,6 @@ class Parser(object):
             for ship in temp_list:
                 if ability not in abilities.ships_abilities[ship]:
                     ships_list.remove(ship)
-                    print("[Parser] Removed {} for {}".format(ship, ability))
         return ships_list
 
     @staticmethod
@@ -639,17 +638,7 @@ class Parser(object):
                 secondaries.append(ability)
             if ability in abilities.primaries:
                 primaries.append(ability)
-            # Parse for each ship
-            ships_list_copy = ships_list.copy()
-            # Loop over the ships
-            for ship in ships_list_copy:
-                # Check if this ship can use the ability
-                if ability not in abilities.ships_abilities[ship]:
-                    ships_list.remove(ship)
-                # If no ships are left, then something must have gone wrong with the excluded abilities,
-                # or the abilities for each ship are not up-to-date with the current version of GSF
-                if len(ships_list) == 0:
-                    raise ValueError("No ships possible for this spawn. Last ability was:", ability)
+        ships_list = Parser.get_ship_for_dict(abilities_dict)
         # Remove duplicates from secondaries list
         primaries, secondaries = set(primaries), set(secondaries)
         # Remove all ships that do not fit primaries and secondaries requirements
