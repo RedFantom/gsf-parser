@@ -99,3 +99,7 @@ class Settings(object):
 
     def __contains__(self, item):
         return item in self.settings
+
+    def dict(self):
+        """Build a dictionary from self and return a copy"""
+        return dict(self.settings).copy()

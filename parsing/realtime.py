@@ -123,6 +123,8 @@ class RealTimeParser(Thread):
         """
         Thread.__init__(self)
 
+        self.options = settings.dict()
+
         """
         Attributes
         """
@@ -306,11 +308,10 @@ class RealTimeParser(Thread):
             screenshot_time = datetime.now()
             image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
             self.process_screenshot(image, screenshot_time)
-        # Performance measurements
-        self.diff = datetime.now() - now
-        if self.diff.total_seconds() < 0.5:
+        # RealTimeParser sleep limiting
+        self.diff = diff = datetime.now() - now
+        if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
             sleep(0.5 - self.diff.total_seconds())
-        # print("[RealTimeParser] {}.{}".format(diff.seconds, diff.microseconds))
 
     """
     FileParser
@@ -472,14 +473,12 @@ class RealTimeParser(Thread):
         if self.ship is None:
             ship = Parser.get_ship_for_dict(self.abilities)
             if len(ship) > 1:
-                print("[RealTimeParser] Could not determine ship with: {}".format(self.abilities))
                 return
             elif len(ship) == 0:
                 print("[RealTimeParser] Did not retrieve any ships with: {}".format(self.abilities))
                 self.abilities.clear()
                 return
             ship = ship[0]
-            print("[RealTimeParser] Ship determined: {}".format(ship))
             if self._character_db[self._character_data]["Faction"].lower() == "republic":
                 ship = rep_ships[ship]
             if self._screen_parsing_enabled is False:
@@ -499,9 +498,6 @@ class RealTimeParser(Thread):
         if name != self.player_name:
             self._character_data = (server, self.player_name)
             self._character_db_data = self._character_db[self._character_data]
-            messagebox.showwarning(
-                "Warning", "Different character login. The GSF Parser will adjust for the change, "
-                           "but may exhibit unexpected behaviour or show inaccurate results.")
 
     """
     ScreenParser
