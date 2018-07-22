@@ -70,7 +70,9 @@ systems = (  # Systems
     "Interdiction Mine",
     "Ion Mine",
     "Concussion Mine",
-    "Tensor Field"
+    "Tensor Field",
+    "Secondary Weapon Swap",
+    "Primary Weapon Swap"
 )
 shields = (  # Shield
     "Charged Plating",

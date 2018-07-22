@@ -21,6 +21,7 @@ from PIL import Image
 # Project Modules
 from data.keys import keys
 from data.abilities import rep_ships
+from data import abilities
 from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
 from parsing.parser import Parser
@@ -30,6 +31,7 @@ from parsing.guiparsing import get_player_guiname
 from parsing import vision
 from parsing.shipstats import ShipStats
 from parsing.pointer import PointerParser
+from parsing.rgb import RGBController
 from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
@@ -99,6 +101,7 @@ class RealTimeParser(Thread):
             minimap_address: str = None,
             minimap_window=None,
             dynamic_window=False,
+            rgb_enabled=True
     ):
         """
         :param character_db: Character database
@@ -116,6 +119,7 @@ class RealTimeParser(Thread):
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
         :param dynamic_window: Whether Dynamic Window Location is enabled
+        :param rgb_enabled: Whether RGB Keyboard effects are enabled
         """
         Thread.__init__(self)
 
@@ -188,6 +192,8 @@ class RealTimeParser(Thread):
         self._configured_flag = False
         self._pointer_parser = None
         self._rof = None
+        self._rgb = RGBController()
+        self._rgb_enabled = rgb_enabled
 
         """
         MiniMap Sharing
@@ -416,13 +422,16 @@ class RealTimeParser(Thread):
         line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
             self._healing += line["amount"]
+            self._rgb._data_queue.put(("press", "hr"))
         elif "Damage" in line["effect"]:
             if "Selfdamage" in line["ability"]:
                 self.dmg_s += line["amount"]
             elif line["source"] in self.active_ids:
                 self.dmg_d += line["amount"]
+                self._rgb._data_queue.put(("press", "dd"))
             else:
                 self.dmg_t += line["amount"]
+                self._rgb._data_queue.put(("press", "dt"))
 
         if line["ability"] in self.abilities:
             self.abilities[line["ability"]] += 1
@@ -442,6 +451,21 @@ class RealTimeParser(Thread):
             self.primary_weapon = not self.primary_weapon
         elif line["ability"] == "Secondary Weapon Swap":
             self.secondary_weapon = not self.secondary_weapon
+
+        """
+        RGB Keyboard Effects
+        """
+        if "AbilityActivate" in line["effect"] and line["source"] in self.active_ids:
+            ability = line["ability"]
+            if ability in abilities.systems:
+                self._rgb._data_queue.put(("press", "1"))
+            elif ability in abilities.shields:
+                self._rgb._data_queue.put(("press", "2"))
+            elif ability in abilities.engines:
+                self._rgb._data_queue.put(("press", "3"))
+            elif ability in abilities.copilots:
+                self._rgb._data_queue.put(("press", "4"))
+
         """
         Ship processing
         """
@@ -745,6 +769,7 @@ class RealTimeParser(Thread):
         Run the loop and exit if necessary and perform error-handling
         for everything
         """
+        self._rgb.start()
         self.start_listeners()
         while True:
             if not self._exit_queue.empty():
@@ -765,6 +790,12 @@ class RealTimeParser(Thread):
         # Perform closing actions
         self.stop_listeners()
 
+    def stop(self):
+        if self._pointer_parser is not None:
+            self._pointer_parser.stop()
+        self._exit_queue.put(True)
+        self._rgb.stop()
+
     """
     Input listener callbacks
     """
@@ -773,34 +804,20 @@ class RealTimeParser(Thread):
         if not self.is_match or key not in keys:
             return
         self.set_for_current_spawn("keys", datetime.now(), (keys[key], True))
+        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
+            self._rgb_data.put(("press", key))
 
     def _on_kb_release(self, key):
         if not self.is_match or key not in keys:
             return
         self.set_for_current_spawn("keys", datetime.now(), (keys[key], False))
+        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
+            self._rgb_data.put(("release", key))
 
     def _on_ms_press(self, x, y, button, pressed):
         if not self.is_match:
             return
         self.set_for_current_spawn("clicks", datetime.now(), (pressed, button))
-
-    """
-    General functions
-    """
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self):
-        if self._pointer_parser is not None:
-            self._pointer_parser.stop()
-        self._exit_queue.put(True)
-
-    def close(self):
-        self.__exit__()
-
-    def stop(self):
-        self.__exit__()
 
     """
     Callbacks
