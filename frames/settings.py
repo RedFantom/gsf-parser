@@ -41,10 +41,10 @@ class SettingsFrame(ttk.Frame):
         """
         self.frame = VerticalScrollFrame(self, canvasheight=295, canvaswidth=self.main_window.width - 30)
         self.gui_frame = ttk.Frame(self.frame.interior)
-        self.parsing_frame = ttk.Frame(self.frame.interior)
-        self.realtime_frame = ttk.Frame(self.frame.interior)
-        self.screen_frame = ttk.Frame(self.frame.interior)
-        self.sharing_frame = ttk.Frame(self.frame.interior)
+        self.pa_frame = ttk.Frame(self.frame.interior)
+        self.rt_frame = ttk.Frame(self.frame.interior)
+        self.sc_frame = ttk.Frame(self.frame.interior)
+        self.sh_frame = ttk.Frame(self.frame.interior)
         self.credits_frame = ttk.Frame(self)
 
         """
@@ -86,149 +86,143 @@ class SettingsFrame(ttk.Frame):
         """
         Sharing settings
         """
-        self.sharing_label = ttk.Label(
+        self.sh_label = ttk.Label(
             self.frame.interior, text="Discord Sharing", font=("default", 13, "bold"), justify=tk.LEFT)
-        self.sharing_enable = tk.BooleanVar()
-        self.sharing_enable_checkbox = ttk.Checkbutton(
-            self.sharing_frame, text="Enable Discord Sharing", variable=self.sharing_enable)
-        self.sharing_tag = tk.StringVar()
-        self.sharing_tag_label = ttk.Label(self.sharing_frame, text="Discord Tag:")
-        self.sharing_tag_entry = ttk.Entry(
-            self.sharing_frame, textvariable=self.sharing_tag, width=20)
-        self.sharing_auth = tk.StringVar()
-        self.sharing_auth_label = ttk.Label(self.sharing_frame, text="Authentication code:")
-        self.sharing_auth_entry = ttk.Entry(
-            self.sharing_frame, textvariable=self.sharing_auth, width=8)
-        self.sharing_host = tk.StringVar()
-        self.sharing_address_label = ttk.Label(self.sharing_frame, text="Server:")
-        self.sharing_host_entry = ttk.Entry(
-            self.sharing_frame, textvariable=self.sharing_host, width=35)
-        self.sharing_port = tk.StringVar()
-        self.sharing_port_entry = ttk.Entry(
-            self.sharing_frame, textvariable=self.sharing_port, width=8)
+        self.sh_enable = tk.BooleanVar()
+        self.sh_enable_checkbox = ttk.Checkbutton(
+            self.sh_frame, text="Enable Discord Sharing", variable=self.sh_enable)
+        self.sh_tag = tk.StringVar()
+        self.sh_tag_label = ttk.Label(self.sh_frame, text="Discord Tag:")
+        self.sh_tag_entry = ttk.Entry(
+            self.sh_frame, textvariable=self.sh_tag, width=20)
+        self.sh_auth = tk.StringVar()
+        self.sh_auth_label = ttk.Label(self.sh_frame, text="Authentication code:")
+        self.sh_auth_entry = ttk.Entry(
+            self.sh_frame, textvariable=self.sh_auth, width=8)
+        self.sh_host = tk.StringVar()
+        self.sh_address_label = ttk.Label(self.sh_frame, text="Server:")
+        self.sh_host_entry = ttk.Entry(
+            self.sh_frame, textvariable=self.sh_host, width=35)
+        self.sh_port = tk.StringVar()
+        self.sh_port_entry = ttk.Entry(
+            self.sh_frame, textvariable=self.sh_port, width=8)
 
         """
         Parsing settings
         """
-        self.parsing_label = ttk.Label(
+        self.pa_label = ttk.Label(
             self.frame.interior, text="Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
         # CombatLogs path
-        self.parsing_path = tk.StringVar()
-        self.parsing_path_label = ttk.Label(self.parsing_frame, text="CombatLogs folder:", justify=tk.LEFT)
-        self.parsing_path_entry = ttk.Entry(
-            self.parsing_frame, width=80 if sys.platform != "linux" else 60, textvariable=self.parsing_path)
-        self.parsing_path_entry.bind("<Key>", self.save_settings_delayed)
-        self.parsing_path_button = ttk.Button(self.parsing_frame, text="Browse", command=self.set_directory_dialog)
-        # Sharing server
-        self.parsing_sharing_server_frame = ttk.Frame(self.parsing_frame)
-        self.parsing_sharing_address = tk.StringVar()
-        self.parsing_sharing_port = tk.StringVar()
-        self.parsing_sharing_label = ttk.Label(self.parsing_sharing_server_frame, text="Sharing Server Address:")
-        self.parsing_sharing_address_label = ttk.Label(self.parsing_sharing_server_frame, text="Address:")
-        self.parsing_sharing_port_label = ttk.Label(self.parsing_sharing_server_frame, text="Port:")
-        self.parsing_sharing_address_entry = ttk.Entry(
-            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_address, width=40)
-        self.parsing_sharing_port_entry = ttk.Entry(
-            self.parsing_sharing_server_frame, textvariable=self.parsing_sharing_port, width=6)
-        self.parsing_sharing_address_entry.bind("<Key>", self.save_settings_delayed)
-        self.parsing_sharing_port_entry.bind("<Key>", self.save_settings_delayed)
+        self.pa_path = tk.StringVar()
+        self.pa_path_label = ttk.Label(self.pa_frame, text="CombatLogs folder:", justify=tk.LEFT)
+        self.pa_path_entry = ttk.Entry(
+            self.pa_frame, width=80 if sys.platform != "linux" else 60, textvariable=self.pa_path)
+        self.pa_path_entry.bind("<Key>", self.save_settings_delayed)
+        self.pa_path_button = ttk.Button(self.pa_frame, text="Browse", command=self.set_directory_dialog)
 
         """
         RealTime settings
         """
-        self.realtime_label = ttk.Label(
+        self.rt_label = ttk.Label(
             self.frame.interior, text="Real-time Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
         # Enable real-time overlay
-        self.realtime_overlay_enabled = tk.BooleanVar()
-        self.realtime_overlay_enabled_checkbox = ttk.Checkbutton(
-            self.realtime_frame, text="Enable overlay for real-time parsing", variable=self.realtime_overlay_enabled,
+        self.rt_overlay_enabled = tk.BooleanVar()
+        self.rt_overlay_enabled_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Enable overlay for real-time parsing", variable=self.rt_overlay_enabled,
             command=self.save_settings)
         # Overlay text color
-        self.realtime_overlay_text_color = tk.StringVar()
-        self.realtime_overlay_text_color_label = ttk.Label(
-            self.realtime_frame, text="Overlay text color:", justify=tk.LEFT)
-        self.realtime_overlay_text_color_dropdown = ttk.OptionMenu(
-            self.realtime_frame, self.realtime_overlay_text_color, *("Yellow", "Green", "Blue", "Red", "Black"),
+        self.rt_overlay_text_color = tk.StringVar()
+        self.rt_overlay_text_color_label = ttk.Label(
+            self.rt_frame, text="Overlay text color:", justify=tk.LEFT)
+        self.rt_overlay_text_color_dropdown = ttk.OptionMenu(
+            self.rt_frame, self.rt_overlay_text_color, *("Yellow", "Green", "Blue", "Red", "Black"),
             command=self.save_settings)
         # Overlay position
-        self.realtime_overlay_position_frame = ttk.Frame(self.realtime_frame)
-        self.realtime_overlay_position_label = ttk.Label(self.realtime_overlay_position_frame, text="Overlay position:")
-        self.realtime_overlay_position_x_label = ttk.Label(self.realtime_overlay_position_frame, text="X Coordinate:")
-        self.realtime_overlay_position_x = ttk.Entry(self.realtime_overlay_position_frame, width=4)
-        self.realtime_overlay_position_y_label = ttk.Label(self.realtime_overlay_position_frame, text="Y Coordinate:")
-        self.realtime_overlay_position_y = ttk.Entry(self.realtime_overlay_position_frame, width=4)
+        self.rt_overlay_position_frame = ttk.Frame(self.rt_frame)
+        self.rt_overlay_position_label = ttk.Label(self.rt_overlay_position_frame, text="Overlay position:")
+        self.rt_overlay_position_x_label = ttk.Label(self.rt_overlay_position_frame, text="X Coordinate:")
+        self.rt_overlay_position_x = ttk.Entry(self.rt_overlay_position_frame, width=4)
+        self.rt_overlay_position_y_label = ttk.Label(self.rt_overlay_position_frame, text="Y Coordinate:")
+        self.rt_overlay_position_y = ttk.Entry(self.rt_overlay_position_frame, width=4)
         help_text = "The overlay's position is set as a pair of coordinates, in pixels, measured from the top left " \
                     "corner of the screen."
-        for widget in [self.realtime_overlay_position_x_label, self.realtime_overlay_position_y_label,
-                       self.realtime_overlay_position_y, self.realtime_overlay_position_x]:
+        for widget in [self.rt_overlay_position_x_label, self.rt_overlay_position_y_label,
+                       self.rt_overlay_position_y, self.rt_overlay_position_x]:
             Balloon(widget, text=help_text, width=350)
-        self.realtime_overlay_position_y.bind("<Key>", self.save_settings_delayed)
-        self.realtime_overlay_position_x.bind("<Key>", self.save_settings_delayed)
+        self.rt_overlay_position_y.bind("<Key>", self.save_settings_delayed)
+        self.rt_overlay_position_x.bind("<Key>", self.save_settings_delayed)
         # Disable overlay when not in match
-        self.realtime_overlay_disable = tk.BooleanVar()
-        self.realtime_overlay_disable_checkbox = ttk.Checkbutton(
-            self.realtime_frame, text="Hide overlay when not in a GSF match", variable=self.realtime_overlay_disable,
+        self.rt_overlay_disable = tk.BooleanVar()
+        self.rt_overlay_disable_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Hide overlay when not in a GSF match", variable=self.rt_overlay_disable,
             command=self.save_settings)
         # Experimental overlay
-        self.realtime_overlay_experimental = tk.BooleanVar()
-        self.realtime_overlay_experimental_checkbox = ttk.Checkbutton(
-            self.realtime_frame, text="Enable experimental high-performance overlay",
-            variable=self.realtime_overlay_experimental)
+        self.rt_overlay_experimental = tk.BooleanVar()
+        self.rt_overlay_experimental_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Enable experimental high-performance overlay",
+            variable=self.rt_overlay_experimental)
         # EventOverlay
-        self.realtime_event_overlay = tk.BooleanVar()
-        self.realtime_event_overlay_checkbox = ttk.Checkbutton(
-            self.realtime_frame, text="Enable EventOverlay (bèta)", variable=self.realtime_event_overlay,
+        self.rt_event_overlay = tk.BooleanVar()
+        self.rt_event_overlay_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Enable EventOverlay (bèta)", variable=self.rt_event_overlay,
             command=self.save_settings)
         Balloon(
-            self.realtime_event_overlay_checkbox,
+            self.rt_event_overlay_checkbox,
             text="The EventOverlay shows the last few events in the CombatLog in a certain set of categories. This "
                  "feature can be useful for streamers to indicate the enemy weapons or other non-obvious events.")
         # EventOverlay position
-        self.realtime_event_position_frame = ttk.Frame(self.realtime_frame)
-        self.realtime_event_position_label = ttk.Label(
-            self.realtime_event_position_frame, text="EventOverlay position:")
-        self.realtime_event_position_x_label = ttk.Label(self.realtime_event_position_frame, text="X Coordinate:")
-        self.realtime_event_position_x = ttk.Entry(self.realtime_event_position_frame, width=4)
-        self.realtime_event_position_y_label = ttk.Label(self.realtime_event_position_frame, text="Y Coordinate:")
-        self.realtime_event_position_y = ttk.Entry(self.realtime_event_position_frame, width=4)
-        self.realtime_event_position_y.bind("<Key>", self.save_settings_delayed)
-        self.realtime_event_position_x.bind("<Key>", self.save_settings_delayed)
+        self.rt_event_position_frame = ttk.Frame(self.rt_frame)
+        self.rt_event_position_label = ttk.Label(
+            self.rt_event_position_frame, text="EventOverlay position:")
+        self.rt_event_position_x_label = ttk.Label(self.rt_event_position_frame, text="X Coordinate:")
+        self.rt_event_position_x = ttk.Entry(self.rt_event_position_frame, width=4)
+        self.rt_event_position_y_label = ttk.Label(self.rt_event_position_frame, text="Y Coordinate:")
+        self.rt_event_position_y = ttk.Entry(self.rt_event_position_frame, width=4)
+        self.rt_event_position_y.bind("<Key>", self.save_settings_delayed)
+        self.rt_event_position_x.bind("<Key>", self.save_settings_delayed)
+        # RealTimeParser Sleep
+        self.rt_sleep = tk.BooleanVar()
+        self.rt_sleep_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep)
+        Balloon(self.rt_sleep_checkbox,
+                text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
+                     "cycles per second but reduces CPU and IO usage significantly.")
 
         """
         Screen parsing settings
         """
-        self.screen_label = ttk.Label(
+        self.sc_label = ttk.Label(
             self.frame.interior, text="Screen Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
         # Screen parsing enabled
-        self.screen_enabled = tk.BooleanVar()
-        self.screen_checkbox = ttk.Checkbutton(
-            self.screen_frame, text="Enable screen parsing", variable=self.screen_enabled, command=self.save_settings)
+        self.sc_enabled = tk.BooleanVar()
+        self.sc_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
         # Screen parsing overlay
-        self.screen_overlay = tk.BooleanVar()
-        self.screen_overlay_checkbox = ttk.Checkbutton(
-            self.screen_frame, text="Enable screen parsing overlay", variable=self.screen_overlay,
+        self.sc_overlay = tk.BooleanVar()
+        self.sc_overlay_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Enable screen parsing overlay", variable=self.sc_overlay,
             command=self.save_settings)
         # Screen parsing features
-        self.screen_features_label = ttk.Label(self.screen_frame, text="Features enabled for screen parsing:")
-        self.screen_features = [
+        self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
+        self.sc_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
             "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing"
         ]
         beta = ["MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing"]
-        self.screen_checkboxes = OrderedDict()
-        self.screen_variables = {}
-        for feature in self.screen_features:
-            self.screen_variables[feature] = tk.BooleanVar()
+        self.sc_checkboxes = OrderedDict()
+        self.sc_variables = {}
+        for feature in self.sc_features:
+            self.sc_variables[feature] = tk.BooleanVar()
             text = feature if feature not in beta else "{} (bèta)".format(feature)
-            self.screen_checkboxes[feature] = ttk.Checkbutton(
-                self.screen_frame, text=text, variable=self.screen_variables[feature], command=self.save_settings)
+            self.sc_checkboxes[feature] = ttk.Checkbutton(
+                self.sc_frame, text=text, variable=self.sc_variables[feature], command=self.save_settings)
         # Dynamic Window Location Support
-        self.screen_dynamic_window = tk.BooleanVar()
-        self.screen_dynamic_window_checkbox = ttk.Checkbutton(
-            self.screen_frame, text="Enable Dynamic SWTOR Window Location Support (bèta)", command=self.save_settings,
-            variable=self.screen_dynamic_window)
+        self.sc_dynamic_window = tk.BooleanVar()
+        self.sc_dynamic_window_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Enable Dynamic SWTOR Window Location Support (bèta)", command=self.save_settings,
+            variable=self.sc_dynamic_window)
         Balloon(
-            self.screen_dynamic_window_checkbox,
+            self.sc_dynamic_window_checkbox,
             text="Dynamic SWTOR Window Location Support enables routines that makes GUI Parsing and thus Screen "
                  "Parsing work when SWTOR runs in Windowed mode. This introduces additional overhead, as the location "
                  "of the SWTOR window is determined every Screen Parsing cycle.")
@@ -261,11 +255,11 @@ class SettingsFrame(ttk.Frame):
         so the user does not have to enter the full path manually.
         """
         directory = filedialog.askdirectory(
-            initialdir=self.parsing_path.get(), mustexist=True, parent=self.main_window,
+            initialdir=self.pa_path.get(), mustexist=True, parent=self.main_window,
             title="GSF Parser: Choosing directory")
         if directory is None or directory == "" or not os.path.exists(directory):
             return
-        self.parsing_path.set(directory)
+        self.pa_path.set(directory)
 
     def grid_widgets(self):
         """Configure widgets in grid geometry manager"""
@@ -308,88 +302,83 @@ class SettingsFrame(ttk.Frame):
         Parsing settings
         """
         # General
-        self.parsing_label.grid(row=2, column=0, **padding_header, **sticky_default)
-        self.parsing_frame.grid(row=3, column=0, **padding_frame, **sticky_default)
+        self.pa_label.grid(row=2, column=0, **padding_header, **sticky_default)
+        self.pa_frame.grid(row=3, column=0, **padding_frame, **sticky_default)
         # CombatLogs path
-        self.parsing_path_label.grid(row=0, column=0, **padding_label, **sticky_default)
-        self.parsing_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
-        self.parsing_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
-        # Sharing server
-        # self.parsing_sharing_server_frame.grid(row=1, column=0, **padding_label, **sticky_default, **checkbox)
-        # self.parsing_sharing_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default, **checkbox)
-        # self.parsing_sharing_address_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        # self.parsing_sharing_address_entry.grid(row=1, column=1, **padding_default, **sticky_button)
-        # self.parsing_sharing_port_label.grid(row=1, column=2, **padding_default, **sticky_default)
-        # self.parsing_sharing_port_entry.grid(row=1, column=3, **padding_default, **sticky_button)
+        self.pa_path_label.grid(row=0, column=0, **padding_label, **sticky_default)
+        self.pa_path_entry.grid(row=0, column=1, **padding_default, **sticky_default)
+        self.pa_path_button.grid(row=0, column=2, **padding_default, **sticky_button)
 
         """
         Sharing settings
         """
-        self.sharing_label.grid(row=4, column=0, **padding_header, **sticky_default)
-        self.sharing_frame.grid(row=5, column=0, **padding_frame, **sticky_default)
-        self.sharing_enable_checkbox.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.sharing_tag_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        self.sharing_tag_entry.grid(row=2, column=1, **padding_default, **sticky_default)
-        self.sharing_auth_label.grid(row=3, column=0, **padding_label, **sticky_default)
-        self.sharing_auth_entry.grid(row=3, column=1, **padding_default, **sticky_default)
-        self.sharing_address_label.grid(row=5, column=0, **padding_label, **sticky_default)
-        self.sharing_host_entry.grid(row=5, column=1, **padding_default, **sticky_default)
-        self.sharing_port_entry.grid(row=5, column=2, **padding_default, **sticky_default)
+        self.sh_label.grid(row=4, column=0, **padding_header, **sticky_default)
+        self.sh_frame.grid(row=5, column=0, **padding_frame, **sticky_default)
+        self.sh_enable_checkbox.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.sh_tag_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.sh_tag_entry.grid(row=2, column=1, **padding_default, **sticky_default)
+        self.sh_auth_label.grid(row=3, column=0, **padding_label, **sticky_default)
+        self.sh_auth_entry.grid(row=3, column=1, **padding_default, **sticky_default)
+        self.sh_address_label.grid(row=5, column=0, **padding_label, **sticky_default)
+        self.sh_host_entry.grid(row=5, column=1, **padding_default, **sticky_default)
+        self.sh_port_entry.grid(row=5, column=2, **padding_default, **sticky_default)
 
-        self.sharing_host_entry.bind("<Key>", self.save_settings_delayed)
-        self.sharing_port_entry.bind("<Key>", self.save_settings_delayed)
-        self.sharing_auth_entry.bind("<Key>", self.save_settings_delayed)
-        self.sharing_tag_entry.bind("<Key>", self.save_settings_delayed)
+        self.sh_host_entry.bind("<Key>", self.save_settings_delayed)
+        self.sh_port_entry.bind("<Key>", self.save_settings_delayed)
+        self.sh_auth_entry.bind("<Key>", self.save_settings_delayed)
+        self.sh_tag_entry.bind("<Key>", self.save_settings_delayed)
 
         """
         RealTime settings
         """
         # General
-        self.realtime_label.grid(row=6, column=0, **padding_header, **sticky_default)
-        self.realtime_frame.grid(row=7, column=0, **padding_frame, **sticky_default)
+        self.rt_label.grid(row=6, column=0, **padding_header, **sticky_default)
+        self.rt_frame.grid(row=7, column=0, **padding_frame, **sticky_default)
         # Enable real-time overlay
-        self.realtime_overlay_enabled_checkbox.grid(row=0, column=0, **padding_label, **sticky_button, **checkbox)
+        self.rt_overlay_enabled_checkbox.grid(row=0, column=0, **padding_label, **sticky_button, **checkbox)
         # Overlay text color
-        self.realtime_overlay_text_color_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.realtime_overlay_text_color_dropdown.grid(row=1, column=1, **padding_default, **sticky_button)
+        self.rt_overlay_text_color_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.rt_overlay_text_color_dropdown.grid(row=1, column=1, **padding_default, **sticky_button)
         # Overlay position
-        self.realtime_overlay_position_frame.grid(row=2, column=0, columnspan=4, **padding_label, **sticky_default)
-        self.realtime_overlay_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
-        self.realtime_overlay_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.realtime_overlay_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
-        self.realtime_overlay_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        self.realtime_overlay_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
+        self.rt_overlay_position_frame.grid(row=2, column=0, columnspan=4, **padding_label, **sticky_default)
+        self.rt_overlay_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
+        self.rt_overlay_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.rt_overlay_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
+        self.rt_overlay_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.rt_overlay_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         # Disable overlay when not in match
-        self.realtime_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
+        self.rt_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Experimental Win32 Overlay
-        self.realtime_overlay_experimental_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
+        self.rt_overlay_experimental_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
         # EventOverlay
-        self.realtime_event_overlay_checkbox.grid(row=5, column=0, **padding_label, **sticky_default, **checkbox)
+        self.rt_event_overlay_checkbox.grid(row=5, column=0, **padding_label, **sticky_default, **checkbox)
         # EventOverlay Position
-        self.realtime_event_position_frame.grid(row=6, column=0, columnspan=4, **padding_label, **sticky_default)
-        self.realtime_event_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
-        self.realtime_event_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.realtime_event_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
-        self.realtime_event_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        self.realtime_event_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
+        self.rt_event_position_frame.grid(row=6, column=0, columnspan=4, **padding_label, **sticky_default)
+        self.rt_event_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
+        self.rt_event_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
+        self.rt_event_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
+        self.rt_event_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.rt_event_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
+        # RealTimeParser sleep
+        self.rt_sleep_checkbox.grid(row=1, column=0, **padding_label, **sticky_button)
         """
         Screen parsing settings
         """
         # General
-        self.screen_label.grid(row=8, column=0, **padding_header, **sticky_default)
-        self.screen_frame.grid(row=9, column=0, **padding_frame, **sticky_default)
+        self.sc_label.grid(row=8, column=0, **padding_header, **sticky_default)
+        self.sc_frame.grid(row=9, column=0, **padding_frame, **sticky_default)
         # Screen parsing enabled
-        self.screen_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
         # Screen parsing features
-        self.screen_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
+        self.sc_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
         row = 3
-        for feature in self.screen_checkboxes.values():
+        for feature in self.sc_checkboxes.values():
             feature.grid(row=row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
             row += 1
         # Screen parsing overlay
-        self.screen_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
         # Screen Dynamic Window Location
-        self.screen_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
@@ -407,58 +396,57 @@ class SettingsFrame(ttk.Frame):
         """
         Parsing Settings
         """
-        self.parsing_path.set(settings["parsing"]["path"])
-        self.parsing_sharing_port.set(settings["parsing"]["port"])
-        self.parsing_sharing_address.set(settings["parsing"]["address"])
+        self.pa_path.set(settings["parsing"]["path"])
         """
         Sharing Settings
         """
-        self.sharing_enable.set(settings["sharing"]["enabled"])
-        self.sharing_tag.set(settings["sharing"]["discord"])
-        self.sharing_auth.set(settings["sharing"]["auth"])
-        self.sharing_host.set(settings["sharing"]["host"])
-        self.sharing_port.set(settings["sharing"]["port"])
+        self.sh_enable.set(settings["sharing"]["enabled"])
+        self.sh_tag.set(settings["sharing"]["discord"])
+        self.sh_auth.set(settings["sharing"]["auth"])
+        self.sh_host.set(settings["sharing"]["host"])
+        self.sh_port.set(settings["sharing"]["port"])
         """
         Real-time Settings
         """
-        self.realtime_overlay_enabled.set(settings["realtime"]["overlay"])
-        self.realtime_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
+        self.rt_overlay_enabled.set(settings["realtime"]["overlay"])
+        self.rt_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
         # Overlay position
-        self.realtime_overlay_position_x.delete(0, tk.END)
-        self.realtime_overlay_position_y.delete(0, tk.END)
+        self.rt_overlay_position_x.delete(0, tk.END)
+        self.rt_overlay_position_y.delete(0, tk.END)
         x, y = settings["realtime"]["overlay_position"].split("y")
-        self.realtime_overlay_position_x.insert(tk.END, x[1:])
-        self.realtime_overlay_position_y.insert(tk.END, y)
-        self.realtime_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
+        self.rt_overlay_position_x.insert(tk.END, x[1:])
+        self.rt_overlay_position_y.insert(tk.END, y)
+        self.rt_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
         # EventOverlay
-        self.realtime_event_overlay.set(settings["realtime"]["event_overlay"])
-        self.realtime_event_position_x.delete(0, tk.END)
-        self.realtime_event_position_y.delete(0, tk.END)
+        self.rt_event_overlay.set(settings["realtime"]["event_overlay"])
+        self.rt_event_position_x.delete(0, tk.END)
+        self.rt_event_position_y.delete(0, tk.END)
         x, y = settings["realtime"]["event_location"].split("y")
-        self.realtime_event_position_x.insert(tk.END, x[1:])
-        self.realtime_event_position_y.insert(tk.END, y)
+        self.rt_event_position_x.insert(tk.END, x[1:])
+        self.rt_event_position_y.insert(tk.END, y)
+        self.rt_sleep.set(settings["realtime"]["sleep"])
         """
         Screen Parsing settings
         """
-        self.screen_enabled.set(settings["screen"]["enabled"])
-        self.screen_overlay.set(settings["screen"]["overlay"])
-        for feature in self.screen_features:
-            self.screen_variables[feature].set(feature in settings["screen"]["features"])
-        self.screen_dynamic_window.set(settings["screen"]["window"])
+        self.sc_enabled.set(settings["screen"]["enabled"])
+        self.sc_overlay.set(settings["screen"]["overlay"])
+        for feature in self.sc_features:
+            self.sc_variables[feature].set(feature in settings["screen"]["features"])
+        self.sc_dynamic_window.set(settings["screen"]["window"])
         """
         Widget states
         """
         if get_screen_resolution() not in timer_boxes:
-            self.screen_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
+            self.sc_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
             Balloon(
-                self.screen_checkboxes["Spawn Timer"],
+                self.sc_checkboxes["Spawn Timer"],
                 text="Your monitor resolution is not supported by this feature. If you would like "
                      "for your resolution to be supported, please send RedFantom a screenshot of the "
                      "unaltered user interface shown before the start of a match.")
         if sys.platform == "linux":
-            self.realtime_overlay_experimental.set(False)
-            self.realtime_overlay_experimental_checkbox.config(state=tk.DISABLED)
-            Balloon(self.realtime_overlay_experimental_checkbox,
+            self.rt_overlay_experimental.set(False)
+            self.rt_overlay_experimental_checkbox.config(state=tk.DISABLED)
+            Balloon(self.rt_overlay_experimental_checkbox,
                     text="This feature is only available on Windows due to API differences.")
         return
 
@@ -484,33 +472,32 @@ class SettingsFrame(ttk.Frame):
                 "debug": self.gui_debug_window.get()
             },
             "parsing": {
-                "path": self.parsing_path.get(),
-                "address": self.parsing_sharing_address.get(),
-                "port": self.parsing_sharing_port.get()
+                "path": self.pa_path.get(),
             },
             "realtime": {
-                "overlay": self.realtime_overlay_enabled.get(),
+                "overlay": self.rt_overlay_enabled.get(),
                 "overlay_position": "x{}y{}".format(
-                    self.realtime_overlay_position_x.get(), self.realtime_overlay_position_y.get()),
-                "overlay_when_gsf": self.realtime_overlay_disable.get(),
-                "overlay_text": self.realtime_overlay_text_color.get(),
-                "overlay_experimental": self.realtime_overlay_experimental.get(),
-                "event_overlay": self.realtime_event_overlay.get(),
+                    self.rt_overlay_position_x.get(), self.rt_overlay_position_y.get()),
+                "overlay_when_gsf": self.rt_overlay_disable.get(),
+                "overlay_text": self.rt_overlay_text_color.get(),
+                "overlay_experimental": self.rt_overlay_experimental.get(),
+                "event_overlay": self.rt_event_overlay.get(),
                 "event_location": "x{}y{}".format(
-                    self.realtime_event_position_x.get(), self.realtime_event_position_y.get()),
+                    self.rt_event_position_x.get(), self.rt_event_position_y.get()),
+                "realtime": self.rt_sleep.get()
             },
             "screen": {
-                "enabled": self.screen_enabled.get(),
-                "overlay": self.screen_overlay.get(),
-                "features": [key for key, value in self.screen_variables.items() if value.get() is True],
-                "window": self.screen_dynamic_window.get()
+                "enabled": self.sc_enabled.get(),
+                "overlay": self.sc_overlay.get(),
+                "features": [key for key, value in self.sc_variables.items() if value.get() is True],
+                "window": self.sc_dynamic_window.get()
             },
             "sharing": {
-                "enabled": self.sharing_enable.get(),
-                "host": self.sharing_host.get(),
-                "port": int(self.sharing_port.get()),
-                "discord": self.sharing_tag.get(),
-                "auth": self.sharing_auth.get()
+                "enabled": self.sh_enable.get(),
+                "host": self.sh_host.get(),
+                "port": int(self.sh_port.get()),
+                "discord": self.sh_tag.get(),
+                "auth": self.sh_auth.get()
             }
         }
         settings.write_settings(dictionary)
@@ -526,32 +513,32 @@ class SettingsFrame(ttk.Frame):
     def check_settings(self):
         """Check if the settings entered by the user are valid."""
         # Parsing path
-        if not os.path.exists(self.parsing_path.get()):
+        if not os.path.exists(self.pa_path.get()):
             messagebox.showerror("Error", "The CombatLogs folder path entered is not valid.")
             return False
         # Overlay position
-        x = self.realtime_overlay_position_x.get()
-        y = self.realtime_overlay_position_y.get()
+        x = self.rt_overlay_position_x.get()
+        y = self.rt_overlay_position_y.get()
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
             return False
         # EventOverlay Position
-        x, y = self.realtime_event_position_x.get(), self.realtime_event_position_y.get()
+        x, y = self.rt_event_position_x.get(), self.rt_event_position_y.get()
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
             return False
         # Port
-        if not self.parsing_sharing_port.get().isdigit():
+        if not self.pa_sharing_port.get().isdigit():
             messagebox.showerror("Error", "The port entered is not a valid number.")
             return False
         # Sharing settings
-        if not self.sharing_port.get().isdigit():
+        if not self.sh_port.get().isdigit():
             messagebox.showerror("Error", "The port number entered for Discord Sharing is invalid.")
-        if not DiscordClient.validate_tag(self.sharing_tag.get()) and not self.sharing_tag.get() == "":
+        if not DiscordClient.validate_tag(self.sh_tag.get()) and not self.sh_tag.get() == "":
             messagebox.showerror("Error", "Invalid Discord tag entered. The only accepted format is:\n\n"
                                           "@Name#0000")
             return False
-        if len(self.sharing_auth.get()) > 0 and not self.sharing_auth.get().isdigit():
+        if len(self.sh_auth.get()) > 0 and not self.sh_auth.get().isdigit():
             messagebox.showerror("Error", "Invalid Discord Sharing authentication code entered.")
             return False
         return True
