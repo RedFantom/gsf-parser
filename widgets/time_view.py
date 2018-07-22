@@ -88,7 +88,8 @@ class TimeView(ttk.Treeview):
             image = self.icons[line_dict["ability"]]
         iid = (repr(line_dict["time"]) + line_dict["source"] + line_dict["target"] +
                line_dict["effect"] + str(self.index))
-        self.insert("", tk.END, values=values, tags=(tag,), image=image, iid=iid)
+        self.after(5, lambda: self.insert(
+            "", tk.END, values=values, tags=(tag,), image=image, iid=iid))
         self.index += 1
         if line_dict["effects"] is None:
             return
@@ -109,7 +110,7 @@ class TimeView(ttk.Treeview):
             kwargs = {"values": values, "tags": (tag,)}
             if effect["name"] in self.icons:
                 kwargs.update({"image": self.icons[effect["name"]]})
-            self.insert(iid, tk.END, **kwargs)
+            self.after(10, lambda: self.insert(iid, tk.END, **kwargs))
 
     def insert_spawn(self, spawn, player_name, active_ids:list=None):
         """
