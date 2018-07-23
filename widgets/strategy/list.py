@@ -13,6 +13,7 @@ from parsing.strategies import *
 from toplevels.strategy.add_phase import AddPhase
 from toplevels.strategy.add_strategy import AddStrategy
 from network.strategy.client import StrategyClient
+from network.discord import DiscordClient, DiscordSplash
 
 
 class StrategiesList(ttk.Frame):
@@ -58,6 +59,7 @@ class StrategiesList(ttk.Frame):
     def setup_menus(self):
         """Configure the various menus with their commands"""
         self._strategy_menu.add_command(label="Add phase", command=self.add_phase)
+        self._strategy_menu.add_command(label="Upload to Discord Bot", command=self.upload_strategy)
         self._phase_menu.add_command(label="Rename", command=self.edit_phase)
         self._phase_menu.add_command(label="Delete", command=self.del_phase)
 
@@ -203,6 +205,16 @@ class StrategiesList(ttk.Frame):
         del self.db[self.selected_strategy][self.selected_phase]
         self.db.save_database()
         self.update_tree()
+
+    def upload_strategy(self):
+        """Upload a single Phase to the Discord bot"""
+        if self.selected_strategy is None:
+            return
+        splash = DiscordSplash(self.master)
+        splash.update()
+        client = DiscordClient()
+        client.send_strategy(self.db[self.selected_strategy])
+        splash.destroy()
 
     def edit_phase(self):
         """Take user input to change the name of the selected Phase"""

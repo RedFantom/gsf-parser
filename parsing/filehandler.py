@@ -10,7 +10,6 @@ from datetime import datetime
 # Packages
 from pynput.mouse import Button
 # Project Modules
-from utils.directories import get_temp_directory
 from utils.colors import *
 from parsing.parser import Parser
 from parsing.vision import *

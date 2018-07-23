@@ -25,3 +25,5 @@ path = settings["parsing"]["path"]
 
 screen_w = 0
 screen_h = 0
+
+raven = None

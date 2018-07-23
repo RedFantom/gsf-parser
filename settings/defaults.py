@@ -38,10 +38,6 @@ defaults = {
     "parsing": {
         # CombatLogs path
         "path": get_combatlogs_folder(),
-        # Sharing Server address
-        "address": "parser.thrantasquadron.tk",
-        # Sharing Server port
-        "port": 65088
     },
     # Real-time parsing settings
     "realtime": {
@@ -57,6 +53,10 @@ defaults = {
         "event_overlay": False,
         # Location of EventOverlay
         "event_location": "x0y0",
+        # RealTimeParser sleep
+        "sleep": False,
+        # RGB Keyboard Lighting Effects
+        "rgb": False,
     },
     "screen": {
         # Whether screen parsing is enabled

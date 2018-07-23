@@ -70,7 +70,9 @@ systems = (  # Systems
     "Interdiction Mine",
     "Ion Mine",
     "Concussion Mine",
-    "Tensor Field"
+    "Tensor Field",
+    "Secondary Weapon Swap",
+    "Primary Weapon Swap"
 )
 shields = (  # Shield
     "Charged Plating",
@@ -111,7 +113,7 @@ legionAbilities = [
     "Proton Torpedo", "Concussion Missile", "Seeker Mine",
     "Shield Power Converter", "Interdiction Drive",
     "Railgun", "Railgun Sentry Drone",  # Railgun = Railgun Sentry Drone
-        "Interdiction Sentry Drone", "Missile Sentry Drone",
+    "Interdiction Sentry Drone", "Missile Sentry Drone",
     "Shield Projector", "Repair Drone", "Overcharged Shield"
 ]
 razorwireAbilities = [
@@ -197,7 +199,7 @@ excluded_abilities = [
     "Selfdamage", "Secondary Weapon Swap", "Primary Weapon Swap", "Sabotage Probe",
     "Plasma Burn", "Plasma Warheads", "Space Exhaustion", "Invulnerable", "Self Destruct",
     "Tutorial", "Melting Hull", "Contamination", "Scope Mode", "Launch Projectile",
-    "Railgun Charge"
+    "Railgun Charge", "Hyperspace Slingshot",
 ]
 
 # All ships with their Imperial Faction names available in GSF

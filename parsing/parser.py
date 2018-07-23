@@ -403,12 +403,13 @@ class Parser(object):
         """
         ships_list = abilities.ships
         for ability in abilities_dict.keys():
-            if ability in abilities.excluded_abilities:
+            if ability not in abilities.components:
                 continue
-            temp_list = ships_list
+            temp_list = ships_list.copy()
             for ship in temp_list:
                 if ability not in abilities.ships_abilities[ship]:
                     ships_list.remove(ship)
+                    print("[Parser] Removed {} for {}".format(ship, ability))
         return ships_list
 
     @staticmethod
@@ -860,4 +861,9 @@ class Parser(object):
                 if "Tutorial" in line["line"] or "Invulnerable" in line["line"]:
                     return True
         return False
+
+    @staticmethod
+    def is_gsf_event(event: dict):
+        """Determine whether the event given is valid GSF event"""
+        return event["source"].isdigit() and event["target"].isdigit()
 

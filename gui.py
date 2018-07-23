@@ -31,11 +31,9 @@ import variables
 import pyscreenshot
 from PIL import Image
 from PIL.ImageTk import PhotoImage
+from raven import Client as RavenClient
 
 
-# Class that contains all code to start the parser
-# Creates various frames and gets all widgets into place
-# Main loop is started at the end
 class MainWindow(ThemedTk):
     """
     Child class of tk.Tk that creates the main windows of the parser.
@@ -89,7 +87,8 @@ class MainWindow(ThemedTk):
         # Update the files in the file_select frame
         self.splash.label_var.set("Parsing files...")
         self.notebook.grid(column=0, row=0, padx=2, pady=2)
-        self.file_select_frame.add_files(silent=True)
+        if not os.path.exists("development"):
+            self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
         # Check for updates
         self.splash.label_var.set("Checking for updates...")
@@ -100,6 +99,11 @@ class MainWindow(ThemedTk):
             self.splash.label_var.set("Synchronizing with Discord Bot Server...")
             self.update()
             self.discord.send_files(self)
+        # Connect to Sentry
+        self.splash.label_var.set("Connecting to Sentry...")
+        with open("sentry") as fi:
+            link = fi.read().strip()
+        self.raven = variables.raven = RavenClient(link)
         # Give focus to the main window
         self.deiconify()
         self.finished = True
@@ -238,6 +242,13 @@ class MainWindow(ThemedTk):
         screenshot.save(file_name, "PNG")
 
     def destroy(self):
+        """
+        Destroy the MainWindow after checking for running processes
+
+        Destroying the MainWindow is not allowed while connected to a
+        Strategy Server or running one, the user will have to exit the
+        server first.
+        """
         if self.strategies_frame.settings is not None:
             if self.strategies_frame.settings.server:
                 messagebox.showerror("Error", "You cannot exit the GSF Parser while running a Strategy Server.")
@@ -251,3 +262,8 @@ class MainWindow(ThemedTk):
                 self.realtime_frame.stop_parsing()
         ThemedTk.destroy(self)
         return True
+
+    def report_callback_exception(self, exc, val, tb):
+        """Redirect Exceptions in the mainloop to RavenClient"""
+        self.raven.captureException()
+        ThemedTk.report_callback_exception(self, exc, val, tb)

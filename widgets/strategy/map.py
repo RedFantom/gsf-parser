@@ -4,8 +4,6 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-# Standard Library
-from ast import literal_eval
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -282,7 +280,7 @@ class Map(ttk.Frame):
         self.items.clear()
         type, map = phase.map
         self.set_background(type, map)
-        for item, value in phase:
+        for _, value in phase:
             item, rectangle, _, _, _ = self.add_item(text=value["name"], color=value["color"], font=value["font"])
             self.canvas.coords(
                 item, int(value["x"] / 768 * self._canvas_width), int(value["y"] / 768 * self._canvas_height))
@@ -306,5 +304,3 @@ class Map(ttk.Frame):
         if result is None or len(result) == 0:
             return None
         return result[0]
-
-

@@ -101,10 +101,11 @@ class DiscordClient(Connection):
         """Connect the DiscordClient to the server"""
         host, port = settings["sharing"]["host"], settings["sharing"]["port"]
         try:
+            socket.setdefaulttimeout(4)
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((host, port))
             self.connected = True
-        except socket.error:
+        except (socket.error, socket.timeout):
             self.connected = False
             if self.notified is False:
                 mb.showwarning("Warning", "Failed to connect to the Discord Bot Server.")
@@ -122,7 +123,7 @@ class DiscordClient(Connection):
         if self.validate_tag(tag) is False:
             return False
         message = "{}_{}_{}_{}".format(tag, auth, settings["misc"]["version"], command)
-        print("[DiscordClient] {}".format(message))
+        # print("[DiscordClient] {}".format(message))
         self.send(message)
         self.receive()
         response = None
@@ -172,7 +173,7 @@ class DiscordClient(Connection):
         date = DiscordClient.date_to_str(date)
         start = DiscordClient.time_to_str(start)
         if faction == "Republic":
-            score = 1 / score
+            score = 1 / score if score != 0 else 0
         return self.send_command("score_{}_{}_{}_{}_{}".format(server, date, start, id_fmt, score))
 
     def send_match_map(self, server: str, date: datetime, start: datetime, id_fmt: str, map: tuple):
@@ -239,12 +240,19 @@ class DiscordClient(Connection):
 
     @staticmethod
     def datetime_to_utc(dt: datetime):
+        """Convert a given datetime to UTC time for timezone compatibility"""
         if dt.strftime(DiscordClient.DATE_FORMAT) == "1900-01-01":
             dt = datetime.combine(datetime.now().date(), dt.time())
         to_zone = tz.tzutc()
         from_zone = tz.tzlocal()
         local = dt.replace(tzinfo=from_zone)
         return local.astimezone(to_zone)
+
+    def send_strategy(self, strategy):
+        """Send a single Strategy serialized to the Discord bot"""
+        print("[DiscordClient] Uploading strategy:", strategy.name)
+        string = strategy.serialize()
+        self.send_command("strategy_{}".format(string[len("strategy_"):]))
 
     def send_files(self, window: tk.Tk, files: list = None):
         """
@@ -262,6 +270,8 @@ class DiscordClient(Connection):
         synchronized. If files have to be synchronized, this function
         will take long to complete.
         """
+        if os.path.exists("development"):
+            return
         splash = DiscordSplash(window.splash if window.splash is not None else window)
         splash.update_state()
         if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:

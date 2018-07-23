@@ -14,7 +14,6 @@ import traceback
 from tkinter import messagebox, filedialog
 # Project Modules
 from utils.directories import get_temp_directory
-from widgets import toplevel
 
 
 def create_window():
