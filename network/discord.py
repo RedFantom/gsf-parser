@@ -240,12 +240,19 @@ class DiscordClient(Connection):
 
     @staticmethod
     def datetime_to_utc(dt: datetime):
+        """Convert a given datetime to UTC time for timezone compatibility"""
         if dt.strftime(DiscordClient.DATE_FORMAT) == "1900-01-01":
             dt = datetime.combine(datetime.now().date(), dt.time())
         to_zone = tz.tzutc()
         from_zone = tz.tzlocal()
         local = dt.replace(tzinfo=from_zone)
         return local.astimezone(to_zone)
+
+    def send_strategy(self, strategy):
+        """Send a single Strategy serialized to the Discord bot"""
+        print("[DiscordClient] Uploading strategy:", strategy.name)
+        string = strategy.serialize()
+        self.send_command("strategy_{}".format(string[len("strategy_"):]))
 
     def send_files(self, window: tk.Tk, files: list = None):
         """

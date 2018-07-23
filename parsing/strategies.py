@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import _pickle as pickle  # cPickle
-import os
 from ast import literal_eval
+from collections import OrderedDict
+import os
+import _pickle as pickle  # cPickle
 # Project Modules
 from utils.directories import get_temp_directory
 
@@ -25,7 +26,7 @@ class StrategyDatabase(object):
             default is used in a temporary directory.
         """
         self._file_name = kwargs.pop("file_name", os.path.join(get_temp_directory(), "strategy.db"))
-        self.data = {}
+        self.data = OrderedDict()
         if not os.path.exists(self._file_name):
             self.save_database()
         self.load_database()

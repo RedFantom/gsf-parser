@@ -527,10 +527,6 @@ class SettingsFrame(ttk.Frame):
         if not x.isdigit() or not y.isdigit():
             messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
             return False
-        # Port
-        if not self.pa_sharing_port.get().isdigit():
-            messagebox.showerror("Error", "The port entered is not a valid number.")
-            return False
         # Sharing settings
         if not self.sh_port.get().isdigit():
             messagebox.showerror("Error", "The port number entered for Discord Sharing is invalid.")

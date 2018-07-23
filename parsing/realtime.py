@@ -801,14 +801,14 @@ class RealTimeParser(Thread):
             return
         self.set_for_current_spawn("keys", datetime.now(), (keys[key], True))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self._rgb_data.put(("press", key))
+            self._rgb._data_queue.put(("press", key))
 
     def _on_kb_release(self, key):
         if not self.is_match or key not in keys:
             return
         self.set_for_current_spawn("keys", datetime.now(), (keys[key], False))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self._rgb_data.put(("release", key))
+            self._rgb._data_queue.put(("release", key))
 
     def _on_ms_press(self, x, y, button, pressed):
         if not self.is_match:
