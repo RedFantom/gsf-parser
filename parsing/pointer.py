@@ -24,6 +24,11 @@ from utils.utilities import get_cursor_position, open_icon_pil
 class PointerParser(Thread):
     """
     Determine for each shot whether it was a successful hit or not
+
+    Runs yet another Thread, receiving mouse presses and taking
+    screenshots to check if the pointer has the properties of being
+    on-target (which is displayed using additional markers around the
+    default pointer indicator).
     """
 
     ICONS = {

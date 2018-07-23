@@ -693,7 +693,7 @@ class RealTimeParser(Thread):
                 key = "PrimaryWeapon" if self.primary_weapon is False else "PrimaryWeapon2"
                 if key in self.ship_stats:
                     print("[PointerParser] Weapon not properly configured.")
-                    rof = 1 / self.ship_stats[key]["Weapon_Rate_of_Fire"]
+                    rof = self.ship_stats[key]["Weapon_Rate_of_Fire"]
                     self._pointer_parser.set_rate_of_fire(rof, type)
                     self._rof = rof
 
