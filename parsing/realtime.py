@@ -35,7 +35,7 @@ from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
 from utils.window import Window
-from variables import settings
+from variables import settings, raven
 
 
 try:
@@ -782,6 +782,7 @@ class RealTimeParser(Thread):
                 self.update()
             except Exception as e:
                 # Errors are not often handled well in Threads
+                raven.captureException()
                 error = traceback.format_exc()
                 print("RealTimeParser encountered an error: ", error)
                 messagebox.showerror(

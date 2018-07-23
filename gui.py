@@ -103,7 +103,7 @@ class MainWindow(ThemedTk):
         self.splash.label_var.set("Connecting to Sentry...")
         with open("sentry") as fi:
             link = fi.read().strip()
-        self.raven = RavenClient(link)
+        self.raven = variables.raven = RavenClient(link)
         # Give focus to the main window
         self.deiconify()
         self.finished = True
