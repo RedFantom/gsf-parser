@@ -5,16 +5,15 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from os import path
 from queue import Queue
 from threading import Thread
 # Project Modules
 from parsing.shipstats import ShipStats
-from utils.directories import get_assets_directory
 # Packages
 from rgbkeyboards import \
     Keyboards, KeyboardController, BaseKeyboard,\
     keygroups, effects
+
 from pynput.keyboard import Key
 
 

@@ -146,6 +146,7 @@ class RealTimeFrame(ttk.Frame):
             "minimap_address": self.minimap_address.get(),
             "minimap_window": self.minimap,
             "dynamic_window": settings["screen"]["window"],
+            "rgb_enabled": settings["realtime"]["rgb"],
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)

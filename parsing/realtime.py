@@ -31,12 +31,20 @@ from parsing.guiparsing import get_player_guiname
 from parsing import vision
 from parsing.shipstats import ShipStats
 from parsing.pointer import PointerParser
-from parsing.rgb import RGBController
 from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
 from utils.window import Window
 from variables import settings
+
+
+try:
+    from parsing.rgb import RGBController
+except ImportError:
+    print("[ImportSystem] rgbkeyboards package is not available")
+    class RGBController(Thread):
+        enabled = False
+        _data_queue = Queue()
 
 
 def pair_wise(iterable: (list, tuple)):
@@ -790,7 +798,8 @@ class RealTimeParser(Thread):
         if self._pointer_parser is not None:
             self._pointer_parser.stop()
         self._exit_queue.put(True)
-        self._rgb.stop()
+        if self._rgb.is_alive():
+            self._rgb.stop()
 
     """
     Input listener callbacks

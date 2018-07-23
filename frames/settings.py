@@ -187,6 +187,14 @@ class SettingsFrame(ttk.Frame):
         Balloon(self.rt_sleep_checkbox,
                 text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
                      "cycles per second but reduces CPU and IO usage significantly.")
+        # RGB Lighting Effects
+        self.rt_rgb = tk.BooleanVar()
+        self.rt_rgb_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Enable RGB Keyboard Lighting Effects (bèta)",
+            variable=self.rt_rgb)
+        Balloon(self.rt_rgb_checkbox, text="Not all keyboards are supported. Support depends on the "
+                                           "rgbkeyboards package, which may contain bugs and thus"
+                                           "cause errors.")
 
         """
         Screen parsing settings
@@ -360,7 +368,9 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
         self.rt_event_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         # RealTimeParser sleep
-        self.rt_sleep_checkbox.grid(row=1, column=0, **padding_label, **sticky_button)
+        self.rt_sleep_checkbox.grid(row=7, column=0, **padding_label, **sticky_button)
+        # RGB Effects
+        self.rt_rgb_checkbox.grid(row=8, column=0, **padding_label, **sticky_button)
         """
         Screen parsing settings
         """
@@ -425,6 +435,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_position_x.insert(tk.END, x[1:])
         self.rt_event_position_y.insert(tk.END, y)
         self.rt_sleep.set(settings["realtime"]["sleep"])
+        self.rt_rgb.set(settings["realtime"]["rgb"])
         """
         Screen Parsing settings
         """
@@ -484,7 +495,8 @@ class SettingsFrame(ttk.Frame):
                 "event_overlay": self.rt_event_overlay.get(),
                 "event_location": "x{}y{}".format(
                     self.rt_event_position_x.get(), self.rt_event_position_y.get()),
-                "realtime": self.rt_sleep.get()
+                "realtime": self.rt_sleep.get(),
+                "rgb": self.rt_rgb.get()
             },
             "screen": {
                 "enabled": self.sc_enabled.get(),

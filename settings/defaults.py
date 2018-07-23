@@ -55,6 +55,8 @@ defaults = {
         "event_location": "x0y0",
         # RealTimeParser sleep
         "sleep": False,
+        # RGB Keyboard Lighting Effects
+        "rgb": False,
     },
     "screen": {
         # Whether screen parsing is enabled
