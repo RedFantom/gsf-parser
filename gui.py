@@ -32,6 +32,7 @@ import pyscreenshot
 from PIL import Image
 from PIL.ImageTk import PhotoImage
 from raven import Client as RavenClient
+from pypresence import Presence
 
 
 class MainWindow(ThemedTk):
@@ -104,12 +105,28 @@ class MainWindow(ThemedTk):
         with open("sentry") as fi:
             link = fi.read().strip()
         self.raven = variables.raven = RavenClient(link)
+        # Discord Rich Presence
+        if settings["realtime"]["drp"] is True:
+            self.rpc = Presence(436173115064713216)
+            try:
+                self.rpc.connect()
+            except Exception:
+                messagebox.showwarning("Error", "Discord Rich Presence failed to connect.")
+                self.rpc = None
+        self.update_presence()
         # Give focus to the main window
         self.deiconify()
         self.finished = True
         self.splash.destroy()
         self.splash = None
         # Mainloop start (main.py)
+
+    def update_presence(self):
+        """Update to the basic GSF Parser presence"""
+        if self.rpc is None:
+            return
+        assert isinstance(self.rpc, Presence)
+        self.rpc.update(state="Not real-time parsing", large_image="logo_green_png")
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
@@ -261,6 +278,9 @@ class MainWindow(ThemedTk):
             if self.realtime_frame.parser.is_alive():
                 self.realtime_frame.stop_parsing()
         ThemedTk.destroy(self)
+        if self.rpc is not None:
+            self.rpc.update()
+            self.rpc.close()
         return True
 
     def report_callback_exception(self, exc, val, tb):

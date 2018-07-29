@@ -195,6 +195,12 @@ class SettingsFrame(ttk.Frame):
         Balloon(self.rt_rgb_checkbox, text="Not all keyboards are supported. Support depends on the "
                                            "rgbkeyboards package, which may contain bugs and thus"
                                            "cause errors.")
+        # Discord Rich Presence
+        self.rt_drp = tk.BooleanVar()
+        self.rt_drp_checkbox = ttk.Checkbutton(self.rt_frame, text="Discord Rich Presence", variable=self.rt_drp)
+        Balloon(self.rt_drp_checkbox, text="Shows off the character you play on, your in-game "
+                                           "status and more, but only if your discord sharing "
+                                           "for that character is enabled.")
 
         """
         Screen parsing settings
@@ -371,6 +377,9 @@ class SettingsFrame(ttk.Frame):
         self.rt_sleep_checkbox.grid(row=7, column=0, **padding_label, **sticky_button)
         # RGB Effects
         self.rt_rgb_checkbox.grid(row=8, column=0, **padding_label, **sticky_button)
+        # Rich Presence
+        self.rt_drp_checkbox.grid(row=9, column=0, **padding_label, **sticky_button)
+
         """
         Screen parsing settings
         """
@@ -436,6 +445,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_position_y.insert(tk.END, y)
         self.rt_sleep.set(settings["realtime"]["sleep"])
         self.rt_rgb.set(settings["realtime"]["rgb"])
+        self.rt_drp.set(settings["realtime"]["drp"])
         """
         Screen Parsing settings
         """
@@ -496,7 +506,8 @@ class SettingsFrame(ttk.Frame):
                 "event_location": "x{}y{}".format(
                     self.rt_event_position_x.get(), self.rt_event_position_y.get()),
                 "realtime": self.rt_sleep.get(),
-                "rgb": self.rt_rgb.get()
+                "rgb": self.rt_rgb.get(),
+                "drp": self.rt_drp.get(),
             },
             "screen": {
                 "enabled": self.sc_enabled.get(),

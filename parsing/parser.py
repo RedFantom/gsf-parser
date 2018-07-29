@@ -402,15 +402,15 @@ class Parser(object):
         abilities dictionary
         """
         ships_list = abilities.ships
+        proper_list = ships_list.copy()
         for ability in abilities_dict.keys():
-            if ability not in abilities.components:
+            if ability not in abilities.components or ability in abilities.excluded_abilities:
                 continue
-            temp_list = ships_list.copy()
+            temp_list = proper_list.copy()
             for ship in temp_list:
                 if ability not in abilities.ships_abilities[ship]:
-                    ships_list.remove(ship)
-                    print("[Parser] Removed {} for {}".format(ship, ability))
-        return ships_list
+                    proper_list.remove(ship)
+        return proper_list
 
     @staticmethod
     def get_gsf_in_file(file_name):

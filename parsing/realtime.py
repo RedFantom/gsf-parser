@@ -18,10 +18,12 @@ from tkinter import messagebox
 import mss
 import pynput
 from PIL import Image
+from pypresence import Presence
 # Project Modules
 from data.keys import keys
 from data.abilities import rep_ships
 from data import abilities
+from data.maps import MAP_TYPE_NAMES, MAP_NAMES
 from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
 from parsing.parser import Parser
@@ -35,7 +37,7 @@ from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
 from utils.window import Window
-from variables import settings, raven
+import variables
 
 
 try:
@@ -109,7 +111,8 @@ class RealTimeParser(Thread):
             minimap_address: str = None,
             minimap_window=None,
             dynamic_window=False,
-            rgb_enabled=True
+            rgb_enabled=True,
+            rpc: Presence = None
     ):
         """
         :param character_db: Character database
@@ -131,7 +134,8 @@ class RealTimeParser(Thread):
         """
         Thread.__init__(self)
 
-        self.options = settings.dict()
+        self.options = variables.settings.dict()
+        self.raven = variables.raven
 
         """
         Attributes
@@ -157,6 +161,8 @@ class RealTimeParser(Thread):
         self.diff = None
         self.ships_db = ships_db
         self.companions_db = companions_db
+        # Discord Rich Presence
+        self._rpc = rpc
 
         """
         File parsing
@@ -170,6 +176,7 @@ class RealTimeParser(Thread):
         self.player_name = "Player Name"
         self.is_match = False
         self.start_match = None
+        self.end_match = None
         self.start_spawn = None
         self.lines = []
         self.primary_weapon = False
@@ -204,6 +211,7 @@ class RealTimeParser(Thread):
         self._rof = None
         self._rgb = RGBController()
         self._rgb_enabled = rgb_enabled
+        self._active_map = None
 
         """
         MiniMap Sharing
@@ -220,6 +228,8 @@ class RealTimeParser(Thread):
         """
         self._file_name = os.path.join(get_temp_directory(), "realtime.db")
         self.read_data_dictionary()
+
+        self.update_presence()
 
     def setup_screen_parsing(self):
         """
@@ -263,6 +273,35 @@ class RealTimeParser(Thread):
             return
         self._kb_listener.stop()
         self._ms_listener.stop()
+
+    def update_presence(self):
+        """Update the Discord Rich Presence with new data"""
+        if self._rpc is None:
+            return
+        assert isinstance(self._rpc, Presence)
+        pid = os.getpid()
+        if self._character_db_data["Discord"] is False:
+            state = "Activity Hidden"
+            self._rpc.update(pid, state, large_image="logo_green_png")
+            return
+        state = "In match" if self.is_match else "Out of match"
+        large_image, large_text, small_image, small_text = "starfighter", "Galactic StarFighter", None, None
+        if self.is_match and self._active_map is not None:
+            map_type, map_name = self._active_map
+            large_text = MAP_TYPE_NAMES[map_type][map_name]
+            large_image = MAP_NAMES[large_text]
+        if self.is_match and self.ship is not None:
+            small_image = self.ship.name.lower().replace(" ", "_")
+            small_text = self.ship.ship_name
+        details = "{}: {}".format(self._character_db_data["Server"], self._character_db_data["Name"])
+        start = None
+        if self.start_match is not None and self.is_match:
+            assert isinstance(self.start_match, datetime)
+            start = datetime.combine(datetime.now().date(), self.start_match.time()).timestamp()
+        self._rpc.update(
+            pid=pid, state=state, details=details, start=start,
+            large_image=large_image, large_text=large_text,
+            small_image=small_image, small_text=small_text)
 
     """
     Data dictionary interaction
@@ -365,7 +404,7 @@ class RealTimeParser(Thread):
                 match_map = self.get_for_current_spawn("map")
                 if match_map is not None:
                     self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
-            self.start_match = None
+            self.end_match = line["time"]
             # No longer a match
             self.is_match = False
             self.tutorial = False
@@ -380,6 +419,8 @@ class RealTimeParser(Thread):
             if self._pointer_parser is not None:
                 self._pointer_parser.stop()
                 self._pointer_parser = None
+            self._active_map = None
+            self.update_presence()
             return
         # Handle out-of-match events
         if not self.is_match:
@@ -390,6 +431,7 @@ class RealTimeParser(Thread):
                 print("[RealTimeParser] Match start.")
                 self.start_match = datetime.combine(datetime.now().date(), line["time"].time())
                 self.is_match = True
+                self.update_presence()
                 # Call the new match callback
                 self.match_callback()
         # Handle changes of player ID (new spawns)
@@ -402,6 +444,7 @@ class RealTimeParser(Thread):
             self.ship = None
             self.ship_stats = None
             self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
+            self.update_presence()
         # Update player ID if possible and required
         if self.active_id == "" and line["source"] == line["destination"]:
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
@@ -483,7 +526,6 @@ class RealTimeParser(Thread):
             if len(ship) > 1:
                 return
             elif len(ship) == 0:
-                print("[RealTimeParser] Did not retrieve any ships with: {}".format(self.abilities))
                 self.abilities.clear()
                 return
             ship = ship[0]
@@ -498,6 +540,7 @@ class RealTimeParser(Thread):
             args = (self.ship, self.ships_db, self.companions_db)
             self.ship_stats = ShipStats(*args)
             self.set_for_current_spawn("ship", self.ship)
+            self.update_presence()
         return
 
     def process_login(self):
@@ -506,6 +549,7 @@ class RealTimeParser(Thread):
         if name != self.player_name:
             self._character_data = (server, self.player_name)
             self._character_db_data = self._character_db[self._character_data]
+        self.update_presence()
 
     """
     ScreenParser
@@ -629,16 +673,20 @@ class RealTimeParser(Thread):
         point, detection is not attempted again.
         """
         if ("Map and match type" in self._screen_parsing_features and
-                self.get_for_current_spawn("map") is None and self.active_id != ""):
+                self._active_map is None and self.active_id != ""):
             minimap = screenshot.crop(self.get_coordinates("minimap"))
             match_map = vision.get_map(minimap)
             if match_map is not None:
                 self.set_for_current_spawn("map", match_map)
+                self._active_map = match_map
                 if self.discord is not None:
                     server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
-            print("[RealTimeParser] Minimap: {}".format(match_map))
+                print("[RealTimeParser] Minimap: {}".format(match_map))
+                self.update_presence()
+        if self._active_map is not None and self.get_for_current_spawn("map") is None:
+            self.set_for_current_spawn("map", self._active_map)
 
         """
         Match score
@@ -782,7 +830,7 @@ class RealTimeParser(Thread):
                 self.update()
             except Exception as e:
                 # Errors are not often handled well in Threads
-                raven.captureException()
+                self.raven.captureException()
                 error = traceback.format_exc()
                 print("RealTimeParser encountered an error: ", error)
                 messagebox.showerror(
@@ -895,7 +943,7 @@ class RealTimeParser(Thread):
 
     @property
     def overlay_string(self):
-        if self.is_match is False and settings["realtime"]["overlay_when_gsf"]:
+        if self.is_match is False and self.options["realtime"]["overlay_when_gsf"]:
             return ""
         overlay_string = ""
         tracking = self.get_tracking_string()

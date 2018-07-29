@@ -18,3 +18,4 @@ screeninfo
 opencv-python
 python-dateutil
 raven
+pypresence

@@ -14,7 +14,7 @@ from tkinter import messagebox as mb
 # Packages
 from PIL import Image, ImageTk
 # Project Modules
-from data.maps import map_names
+from data.maps import MAP_NAMES
 from utils.directories import get_assets_directory
 from network.minimap.client import MiniMapClient
 
@@ -46,7 +46,7 @@ class MiniMap(tk.Toplevel):
         # Widget Creation
         self._canvas = tk.Canvas(self)
         self._map = tk.StringVar()
-        self._map_dropdown = ttk.OptionMenu(self, self._map, "Choose Environment", *tuple(map_names.keys()))
+        self._map_dropdown = ttk.OptionMenu(self, self._map, "Choose Environment", *tuple(MAP_NAMES.keys()))
         self._map_update = ttk.Button(self, text="Update", command=self.set_map)
         self._users_list = tk.Listbox(self, height=12, width=20)
         self._magnification = tk.StringVar()
@@ -72,10 +72,10 @@ class MiniMap(tk.Toplevel):
     def set_map(self):
         """Update map background"""
         map_name = self._map.get()
-        if map_name not in map_names:
+        if map_name not in MAP_NAMES:
             mb.showerror("Error", "Invalid map entered.")
             return
-        file_name = map_names[map_name]
+        file_name = MAP_NAMES[map_name]
         file_path = os.path.join(get_assets_directory(), "maps", file_name + ".jpg")
         size = self._canvas.winfo_width(), self._canvas.winfo_height()
         image = Image.open(file_path).resize((800, 800), Image.ANTIALIAS)

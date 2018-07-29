@@ -57,6 +57,8 @@ defaults = {
         "sleep": False,
         # RGB Keyboard Lighting Effects
         "rgb": False,
+        # Discord Rich Presence
+        "drp": True,
     },
     "screen": {
         # Whether screen parsing is enabled

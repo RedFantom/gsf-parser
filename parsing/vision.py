@@ -32,7 +32,7 @@ timer_boxes = {
     (1920, 1080): (1466, 835, 1536, 875),
 }
 
-MIN_MATCHES = 30
+MIN_MATCHES = 25
 
 
 def get_pointer_middle(coordinates, size=(44, 44)):

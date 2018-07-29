@@ -147,6 +147,7 @@ class RealTimeFrame(ttk.Frame):
             "minimap_window": self.minimap,
             "dynamic_window": settings["screen"]["window"],
             "rgb_enabled": settings["realtime"]["rgb"],
+            "rpc": self.window.rpc
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)
@@ -189,6 +190,7 @@ class RealTimeFrame(ttk.Frame):
         self.close_overlay()
         self.close_event_overlay()
         DiscordClient().send_recent_files(self.window)
+        self.window.update_presence()
 
     def file_callback(self, file_name):
         """

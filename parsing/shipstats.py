@@ -47,11 +47,9 @@ class ShipStats(object):
         self.stats["Ship"] = self.ships_data[self.ship.ship_name]["Stats"].copy()
         # Go over components
         for category in components:
-            print("[ShipStats] Processing component {}".format(category))
             category = component_types_reverse[category]
             # The categories are gone over in a certain order
             if category not in self.ship.components:
-                print("[ShipStats] Category not found: {}".format(category))
                 continue
             component = self.ship.components[category]
             # If component is None, then the component is not correctly set
@@ -62,7 +60,6 @@ class ShipStats(object):
             category = component_types[category]
             # Get the data belonging to the component
             component_data = self.ships_data[self.ship.ship_name][category][component.index].copy()
-            print("[ShipStats] Retrieved component data for {} in category {}".format(component_data["Name"], category))
             # Go over the upgrades for the component first
             base_stats = component_data["Base"]["Stats"].copy()
             if base_stats == {}:
@@ -93,8 +90,6 @@ class ShipStats(object):
                 for stat, value in upgrade_data["Stats"].items():
                     statistic, multiplicative = ShipStats.is_multiplicative(stat)
                     if upgrade_data["Target"] == "":
-                        print("[ShipStats] Updating statistic {} with target None".format(statistic))
-                        print("[ShipStats] Base stats keys: {}".format(list(base_stats.keys())))
                         if statistic in base_stats:
                             base_stats = ShipStats.update_statistic(
                                 base_stats, statistic, multiplicative, value
@@ -103,21 +98,15 @@ class ShipStats(object):
                             self.stats["Ship"] = ShipStats.update_statistic(
                                 self.stats["Ship"], statistic, multiplicative, value
                             )
-                        else:
-                            print("[ShipStats] I have absolutely no idea what to do with this one:", statistic)
                     elif upgrade_data["Target"] == "Self":
-                        print("[ShipStats] Updating statistic {} with target Self".format(statistic))
                         self.stats[category] = ShipStats.update_statistic(
                             self.stats[category], statistic, multiplicative, value
                         )
                     elif upgrade_data["Target"] == "PrimaryWeapons" or upgrade_data["Target"] == "SecondaryWeapons":
-                        print("[ShipStats] Updating statistic {} with target {}".format(statistic, upgrade_data["Target"]))
                         key = upgrade_data["Target"][:-1]
                         for key in (key, key+"2"):
                             if key not in self.stats:
-                                print("[ShipStats] Key {} was not found in statistics.".format(key))
                                 continue
-                            print("[ShipStats] Updating statistic for {} to {} based on {}")
                             self.stats[key] = ShipStats.update_statistic(
                                 self.stats[key], statistic, multiplicative, value
                             )
@@ -153,7 +142,6 @@ class ShipStats(object):
                         self.stats[category] = ShipStats.update_statistic(
                             self.stats[category], statistic, multiplicative, value
                         )
-        pprint(self.stats)
 
     """
     Functions to process statistics
@@ -185,8 +173,6 @@ class ShipStats(object):
         :return: real statistic name str,  multiplicative bool
         """
         multiplicative = "[Pc]" in statistic
-        if "[Pb]" in statistic:
-            print("[ShipStats] Pb marker!", statistic)
         statistic = statistic.replace("[Pc]", "").replace("[Pb]", "")
         return statistic, multiplicative
 

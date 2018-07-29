@@ -49,6 +49,8 @@ class LogStalker(object):
         """Backlog only the lines of a match that are match lines"""
         print("[LogStalker] Processing new file.")
         lines = self.read_file(self.path, 0)
+        if len(lines) == 0:
+            return
         player_list = Parser.get_player_id_list(lines)
         file_cube, _, _ = Parser.split_combatlog(lines, player_list)
         if len(file_cube) == 0:
