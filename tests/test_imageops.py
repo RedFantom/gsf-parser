@@ -40,3 +40,9 @@ class TestImageOps(TestCase):
     def test_brightest_pixel_cl(self):
         result = imageops.get_brightest_pixel_cl(self.image)
         self.assertIsInstance(result, tuple)
+
+    def test_image_similarity_transparent(self):
+        template = Image.open(path.join(get_assets_directory(), "vision", "pointer.png"))
+        to_match = Image.open(path.join(get_assets_directory(), "vision", "test_pointer.png"))
+        r = imageops.get_similarity_transparent(template, to_match)
+        print("[TestImageOps] Result: {}".format(r))

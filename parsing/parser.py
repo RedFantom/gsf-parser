@@ -34,12 +34,14 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
+    IGNORABLE = ("SetLevel", "Infection")
+
     # Date format
     TIME_FORMAT = "%H:%M:%S.%f"
     DATE_FORMAT = ""
 
     @staticmethod
-    def line_to_dictionary(line, enemies: dict=None):
+    def line_to_dictionary(line: str, enemies: dict=None):
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
@@ -111,7 +113,10 @@ class Parser(object):
         }
         """
         # Get the base dictionary
+        if isinstance(line, dict) and "color" in line:
+            return line
         line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
+        line_dict = line_dict.copy()
         # Determine line type
         if "Damage" in line["effect"] or "Heal" in line["effect"]:
             line_type = Parser.LINE_NUMBER
@@ -252,6 +257,8 @@ class Parser(object):
         """
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
+        if "icon" in line_dict:
+            return "dmgd_pri"
         # If the ability is empty, this is a Gunship scope activation
         if ability == "":
             return "other"
@@ -858,7 +865,7 @@ class Parser(object):
     def is_tutorial(match: dict):
         for spawn in match:
             for line in spawn:
-                if "Tutorial" in line["line"] or "Invulnerable" in line["line"]:
+                if Parser.is_tutorial_event(line):
                     return True
         return False
 
@@ -867,3 +874,20 @@ class Parser(object):
         """Determine whether the event given is valid GSF event"""
         return event["source"].isdigit() and event["target"].isdigit()
 
+    @staticmethod
+    def is_login(line: dict):
+        """Determine whether the event given is a Login event"""
+        return (line["source"] == line["destination"] and
+                "@" in line["source"] and
+                "Login" in line["ability"] and
+                ":" not in line["source"])
+
+    @staticmethod
+    def is_ignorable(event: dict):
+        """Determine whether the event given should be ignored"""
+        return any(a in event["line"] for a in Parser.IGNORABLE)
+
+    @staticmethod
+    def is_tutorial_event(line: dict):
+        """Determine whether this event belongs to a Tutorial match"""
+        return any(a in line["line"] for a in ("Tutorial", "Invulnerable"))

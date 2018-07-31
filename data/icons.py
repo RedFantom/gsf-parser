@@ -11,7 +11,7 @@ icons = {
     "Laser Cannon": "spvp_blaster_red",
     "Light Laser Cannon": "spvp_blaster_black_orange",
     "Quad Laser Cannon": "spvp_blaster_black_yellow",
-    "Rapid-Fire Laser Cannon": "spvp_blaster_yellow",
+    "Rapid-fire Laser Cannon": "spvp_blaster_yellow",
     "Ion Cannon": "spvp_blaster_black_light_blue",
     "Burst Laser Cannon": "spvp_blaster_black_purple",
     # Secondary Weapons

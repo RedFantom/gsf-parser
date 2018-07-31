@@ -46,6 +46,23 @@ class Simulator(threading.Thread):
                 delta_sec = delta.total_seconds()
 
                 fo.write(line)
+                print(line.strip())
                 fo.flush()
                 time.sleep(delta_sec)
+
+    def stop(self):
+        self.exit_queue.put(True)
+
+
+if __name__ == '__main__':
+    import variables
+    folder = variables.settings["parsing"]["cl_path"]
+    most_recent = list(sorted(os.listdir(folder), reverse=True))[0]
+    simulator = Simulator(most_recent, folder)
+    try:
+        simulator.start()
+        while True:
+            pass
+    except KeyboardInterrupt:
+        simulator.stop()
 

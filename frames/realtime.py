@@ -147,7 +147,7 @@ class RealTimeFrame(ttk.Frame):
             "minimap_window": self.minimap,
             "dynamic_window": settings["screen"]["window"],
             "rgb_enabled": settings["realtime"]["rgb"],
-            "rpc": self.window.rpc
+            "rpc": self.window.rpc,
         }
         try:
             self.parser = RealTimeParser(*args, **kwargs)
@@ -181,7 +181,8 @@ class RealTimeFrame(ttk.Frame):
         self.exit_queue, self.data_queue, self.return_queue = None, None, None
         time.sleep(1)
         try:
-            self.parser.join()
+            assert isinstance(self.parser, RealTimeParser)
+            self.parser.join(timeout=2)
         except Exception as e:
             messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
             raise

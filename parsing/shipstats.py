@@ -108,10 +108,7 @@ class ShipStats(object):
                             if key not in self.stats:
                                 continue
                             self.stats[key] = ShipStats.update_statistic(
-                                self.stats[key], statistic, multiplicative, value
-                            )
-                    else:
-                        raise ValueError("Unknown upgrade target found: {}".format(upgrade_data["Target"]))
+                                self.stats[key], statistic, multiplicative, value)
             # These are the statistics to go over
             component_stats = base_stats
             for stat, value in component_stats.items():
