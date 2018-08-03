@@ -6,9 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from utils.directories import get_combatlogs_folder
 
-"""
-Default settings for the GSF Parser
-"""
+
 defaults = {
     # Miscellaneous settings
     "misc": {
@@ -54,7 +52,7 @@ defaults = {
         # Location of EventOverlay
         "event_location": "x0y0",
         # RealTimeParser sleep
-        "sleep": False,
+        "sleep": True,
         # RGB Keyboard Lighting Effects
         "rgb": False,
         # Discord Rich Presence

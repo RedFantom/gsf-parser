@@ -297,7 +297,7 @@ class Parser(object):
                 return "shield"
             elif line_dict["ability"] in abilities.systems:
                 return "system"
-            elif line_dict["ability"] == "Player Death":
+            elif line_dict["ability"] in ("Player Death", "Game End"):
                 return "death"
             else:
                 return "other"
@@ -824,7 +824,7 @@ class Parser(object):
     def build_spawn_from_match(match: list)->list:
         """Join the spawns of a match together to a single big spawn"""
         result = list()
-        for spawn in match:
+        for i, spawn in enumerate(match):
             result.extend(spawn)
             id_list = Parser.get_player_id_list(spawn)
             line = spawn[-1]
@@ -832,7 +832,7 @@ class Parser(object):
                 line["time"].strftime(Parser.TIME_FORMAT),
                 line["source"],
                 Parser.get_player_id_from_line(line, id_list),
-                "Player Death",
+                "Player Death" if i + 1 < len(match) else "Game End",
                 "ApplyEffect {}: AbilityActivate {}")
             result.append(Parser.line_to_dictionary(death_event))
         return result

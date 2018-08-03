@@ -99,7 +99,7 @@ class TimeView(ttk.Treeview):
         iid = (repr(line["time"]) + line["source"] + line["target"] +
                line["effect"] + str(self.index))
         ref, start = map(partial(datetime.combine, datetime(1970, 1, 1).date()), (line["time"].time(), start_time.time()))
-        index = int((ref - start).total_seconds() * 10e6)
+        index = int((ref - start).total_seconds() * 10e2)
         self.insert("", index, values=values, tags=(tag,), image=image, iid=iid)
         if index == tk.END:
             self._contents.append(line["time"])

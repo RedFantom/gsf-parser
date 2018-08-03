@@ -47,8 +47,10 @@ def pair_wise(iterable: (list, tuple)):
 
 
 """
-These classes use data in a dictionary structure, dumped to a file in the temporary directory of the GSF Parser. This
-dictionary contains all the data acquired by screen parsing and is stored with the following structure:
+These classes use data in a dictionary structure, dumped to a file in 
+the temporary directory of the GSF Parser. This dictionary contains all 
+the data acquired by screen parsing and is stored with the following 
+structure:
 
 Dictionary structure:
 data_dictionary[filename] = file_dictionary
@@ -76,9 +78,11 @@ spawn_dictionary["ship_name"]
 
 class RealTimeParser(Thread):
     """
-    Class to parse Galactic StarFighter in real-time. Manages LogStalker
-    instance to gather all data and save it to a data dictionary, in
-    realtime.db.
+    Class to parse Galactic StarFighter in real-time
+
+    Runs a LogStalker to monitor the log files and parse the lines in
+    the CombatLogs.
+    Additionally, Python-MSS is used to re
     """
 
     TIMER_MARGIN = 10
@@ -123,7 +127,6 @@ class RealTimeParser(Thread):
         :param minimap_user: Username for the MiniMap sharing server
         :param dynamic_window: Whether Dynamic Window Location is enabled
         :param rgb_enabled: Whether RGB Keyboard effects are enabled
-        :param insert_time: Callback to call to insert event at time
         """
         Thread.__init__(self)
 
@@ -569,15 +572,11 @@ class RealTimeParser(Thread):
             self.setup_screen_parsing()
         now = datetime.now()
         if self._stalker.file not in self._realtime_db:
-            print("[RealTimeParser] Processing screenshot while file is not in DB yet.")
             return
         elif self.start_match not in self._realtime_db[self._stalker.file]:
-            print("[RealTimeParser] Processing screenshot while match is not in DB yet.")
             return
         elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
             self.create_keys()
-            print("[RealTimeParser] Processing screenshot while spawn is not in DB yet.")
-            return
 
         if "Spawn Timer" in self._screen_parsing_features:
             self.update_timer_parser(screenshot, screenshot_time)
@@ -603,8 +602,7 @@ class RealTimeParser(Thread):
         Attempts to parse a screenshot that is expected to show the
         GSF pre-match interface with a spawn timer.
         """
-        if ("Spawn Timer" in self._screen_parsing_features and self._waiting_for_timer and not self.is_match and
-                self._spawn_time is None):
+        if self._waiting_for_timer and not self.is_match and self._spawn_time is None:
             print("[TimerParser] Spawn timer parsing activating.")
             # Only activates after a login event was detected and no
             # match is active and no time was already determined.
@@ -623,9 +621,7 @@ class RealTimeParser(Thread):
             # Attempt to determine the spawn timer status
             status = vision.get_timer_status(source)
             # Now status is a string of format "%M:%S" or None
-            if status is None:
-                print("[TimerParser] Failed to detect a valid timer value.")
-            else:
+            if status is not None:
                 print("[TimerParser] Successfully determined timer status as:", status)
                 # Spawn timer was successfully determined. Now parse the string
                 minutes, seconds = (int(elem) for elem in status.split(":"))

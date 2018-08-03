@@ -112,6 +112,7 @@ icons = {
     "Railgun Charge": "spvp_hyperspacebeacon",  # Custom Effect
     "Lingering Damage": "spvp_damageovertime",  # Lingering Effect
     "Player Death": "spvp_aoedamage",
+    "Game End": "spvp_combatcloakingdevice",
     # Default
     "default": "republic.png"
 }

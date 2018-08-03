@@ -11,9 +11,9 @@ from os import path
 from tkinter import messagebox
 import tkinter as tk
 # Packages
+from screeninfo import get_monitors
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
-from screeninfo import get_monitors
 # Project Modules
 from utils.directories import get_assets_directory
 
@@ -92,8 +92,11 @@ def get_screen_resolution():
     """
     try:  # Not supported on Travis-CI
         monitors = get_monitors()
-        return monitors[0].width, monitors[0].height
-    except (NotImplementedError, ValueError):
+        primary = monitors[0]
+        w, h = primary.width, primary.height
+        return w, h
+    except (NotImplementedError, ValueError) as e:
+        print("[Utilities] Screen resolution error:", repr(e))
         window = tk.Tk()
         width, height = window.winfo_screenwidth(), window.winfo_screenheight()
         window.destroy()

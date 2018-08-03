@@ -18,7 +18,7 @@ from queue import Queue
 from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
-from utils.utilities import get_cursor_position, open_icon_pil
+from utils.utilities import get_cursor_position
 
 
 class PointerParser(Thread):
