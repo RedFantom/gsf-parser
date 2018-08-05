@@ -291,6 +291,9 @@ class RealTimeFrame(ttk.Frame):
             string = string[:-1]
         self.overlay.update_text(string)
         self.overlay_after_id = self.after(1000, self.update_overlay)
+        if self._event_overlay is not None:
+            assert isinstance(self._event_overlay, EventOverlay)
+            self._event_overlay.update_events()
 
     def close_overlay(self):
         """Close the overlay"""
@@ -300,6 +303,9 @@ class RealTimeFrame(ttk.Frame):
             self.overlay.destroy()
         self.overlay = None
         self.overlay_after_id = None
+        if self._event_overlay is not None:
+            self._event_overlay.destroy()
+            self._event_overlay = None
 
     """
     Character handling

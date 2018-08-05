@@ -134,6 +134,20 @@ class Ship(object):
         for key, value in self.components.items():
             yield (key, value)
 
+    @property
+    def ship_class(self):
+        ident = self.ship_name.split("_")[1]
+        if "B" in ident or "M" in ident:
+            return "Bomber"
+        elif "G" in ident:
+            return "Gunship"
+        elif "S" in ident:
+            return "Scout"
+        elif "F" in ident:
+            return "Strike Fighter"
+        else:
+            return None
+
 
 class Component(object):
     """

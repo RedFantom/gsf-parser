@@ -13,7 +13,8 @@ import sys
 
 class TkinterOverlay(Overlay, tk.Toplevel):
     """
-    A class that can display text on the screen through the default Tkinter Toplevel interface.
+    A class that can display text on the screen through the default
+    Tkinter Toplevel interface.
     """
 
     def __init__(self, position, text_variable, wait_time=20, font=("default", 11, "bold"), master=None,
@@ -47,7 +48,6 @@ class TkinterOverlay(Overlay, tk.Toplevel):
         else:  # Windows
             print("[TkinterOverlay] Setting special Overlay attributes for Windows.")
             self.wm_attributes("-transparentcolor", "darkblue")
-        return
 
     def update_geometry(self):
         size = self.text_label.winfo_reqwidth(), self.text_label.winfo_reqheight()

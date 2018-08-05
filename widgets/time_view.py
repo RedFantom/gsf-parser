@@ -17,7 +17,7 @@ from PIL import Image
 from PIL.ImageTk import PhotoImage
 # Project Modules
 from parsing.parser import Parser
-from data.icons import icons
+from data.icons import ICONS
 from data.effects import all_effects
 from utils.directories import get_assets_directory
 import variables
@@ -62,7 +62,7 @@ class TimeView(ttk.Treeview):
                 resize((24, 24), Image.ANTIALIAS))
             for name in os.listdir(os.path.join(get_assets_directory(), "icons"))
         }
-        for icon, file_name in icons.items():
+        for icon, file_name in ICONS.items():
             self.icons[icon] = self._icons[file_name]
         self.style = ttk.Style(self)
         self.style.configure("TimeView.Treeview", rowheight=32)
@@ -96,10 +96,14 @@ class TimeView(ttk.Treeview):
         if line["ability"] not in self.icons and "icon" not in line:
             print("[TimeView] {} missing icon".format(line["ability"]))
             image = self.icons["default"]
-        elif "icon" not in line:
+        elif line["ability"] in self.icons:
             image = self.icons[line["ability"]]
+        elif "icon" in line:
+            d = self._icons if line["icon"] in self._icons else self.icons
+            image = d[line["icon"]]
         else:
-            image = self._icons[line["icon"]]
+            print("[TimeView] Missing Icon for: '{}'".format(line["ability"]))
+            return
         iid = (repr(line["time"]) + line["source"] + line["target"] +
                line["effect"] + str(self.index))
         ref, start = map(partial(datetime.combine, datetime(1970, 1, 1).date()), (line["time"].time(), start_time.time()))
@@ -110,7 +114,7 @@ class TimeView(ttk.Treeview):
         self.index += 1
         if "effects" not in line or line["effects"] is None:
             return
-        if "attack" not in line or line["attack"] is False:
+        if "custom" not in line or line["custom"] is False:
             self.insert_effects_for_event(iid, line, tag)
         else:
             self.insert_effects(iid, line["effects"], tag)
@@ -166,7 +170,7 @@ class TimeView(ttk.Treeview):
         start_time = spawn[0]["time"]
         active_ids = Parser.get_player_id_list(spawn) if active_ids is None else active_ids
         for line in spawn:
-            if "attack" not in line or line["attack"] is False:
+            if "custom" not in line or line["custom"] is False:
                 line_event_dict = Parser.line_to_event_dictionary(line, active_ids, spawn)
             else:
                 line_event_dict = line
@@ -188,7 +192,7 @@ class TimeView(ttk.Treeview):
         values = (
             TimeView.format_time_diff(line_dict["time"], start_time),
             player_name if Parser.compare_ids(line_dict["source"], active_ids) else line_dict["source"],
-            player_name if Parser.compare_ids(line_dict["destination"], active_ids) else line_dict["destination"],
+            player_name if Parser.compare_ids(line_dict["target"], active_ids) else line_dict["target"],
             line_dict["ability"],
             line_dict["amount"]
         )

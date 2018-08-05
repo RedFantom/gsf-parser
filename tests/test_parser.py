@@ -36,7 +36,7 @@ class TestParser(TestCase):
     def test_line_to_dictionary(self):
         line_dict = Parser.line_to_dictionary(self.LINE)
         self.assertIsInstance(line_dict, dict)
-        KEYS = ["time", "source", "target", "destination", "amount", "ability", "effect"]
+        KEYS = ["time", "source", "target", "target", "amount", "ability", "effect"]
         for key in KEYS:
             self.assertTrue(key in line_dict)
         self.assertIsInstance(line_dict["time"], datetime)

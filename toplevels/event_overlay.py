@@ -12,7 +12,7 @@ from datetime import datetime
 # UI Libraries
 import tkinter as tk
 # Project Modules
-from data.icons import icons
+from data.icons import ICONS
 from parsing import Parser
 from utils.utilities import open_icon
 import variables
@@ -23,7 +23,7 @@ class EventOverlay(tk.Toplevel):
     Overlay with shifting events view of certain types of events that
     can be observed during the match.
     """
-    def __init__(self, master, timeout=4, types=None, bg="darkblue", location=(0, 0), after=100):
+    def __init__(self, master, timeout=10, bg="darkblue", location=(0, 0), after=100):
         """
         :param master: master widget
         :param timeout: Amount of time an event is displayed in seconds
@@ -31,12 +31,10 @@ class EventOverlay(tk.Toplevel):
         :param bg: Background color of the window
         :param location: Location tuple for the window in pixels
         """
+        print("[EventOverlay] Initializing")
         tk.Toplevel.__init__(self, master)
-        if types is None:
-            types = ["selfheal", "healing", "dmgt_sec", "dmgt_pri", "selfdmg"]
 
         # Arguments
-        self._types = types
         self._background = bg
         self._timeout = timeout
         self._location = location
@@ -44,9 +42,8 @@ class EventOverlay(tk.Toplevel):
         # Attributes
         self._labels = OrderedDict()
         self._queue = Queue()
-        self._icons = {name: open_icon(path) for name, path in icons.items()}
+        self._icons = {name: open_icon(path, (24, 24)) for name, path in ICONS.items()}
         self._destroyed = False
-        self._after_id = None
 
         self._parent = tk.Frame(self, background=self._background)
 
@@ -66,30 +63,27 @@ class EventOverlay(tk.Toplevel):
         Linux: -alpha, makes window transparent by a certain amount,
             inherited by child widgets
         """
-        self.update_geometry()
         self.wm_attributes("-topmost", True)
         self.wm_overrideredirect(True)
-        self.config(background=self._background)
+        self.config(background="darkblue")
         if sys.platform == "linux":
             print("[EventOverlay] Setting special Overlay attributes for Linux.")
             self.wm_attributes("-alpha", 0.75)
         else:  # Windows
             print("[EventOverlay] Setting special Overlay attributes for Windows.")
             self.wm_attributes("-transparentcolor", self._background)
-
-    def update_geometry(self):
-        """Update the geometry of the window"""
-        size = self._parent.winfo_reqwidth(), self._parent.winfo_reqheight()
-        self.wm_geometry("{}x{}+{}+{}".format(*size, *self._location))
+        self.wm_geometry("+{}+{}".format(*self._location))
 
     def process_event(self, event: dict, active_id: str):
         """Process a given event dictionary for display"""
         if event is None:
-            return False
+            return
         event_type = Parser.get_event_category(event, active_id)
-        if event_type not in self._types:
-            return False
-        self._queue.put((event, self.generate_widget(event, event_type)))
+        widget = self.generate_widget(event, event_type)
+        if widget is None:
+            return
+        time = datetime.combine(datetime.now().date(), event["time"].time())
+        self._queue.put((time, widget))
 
     def update_events(self):
         """Update the events shown in the Overlay"""
@@ -98,42 +92,49 @@ class EventOverlay(tk.Toplevel):
         while not self._queue.empty():
             event, label = self._queue.get()
             self._labels[event] = label
+        if len(self._labels) == 0:
+            return
         # Process out of time events
-        for event in list(self._labels.keys()):
-            if (datetime.now() - event["time"]).total_seconds() > self._timeout:
-                self._labels[event].grid_forget()
-                self._labels[event].destroy()  # Prevent memory leak
-                del self._labels[event]
+        for time in list(self._labels.keys()):
+            if (datetime.now() - time).total_seconds() > self._timeout:
+                self._labels[time].grid_forget()
+                self._labels[time].destroy()  # Prevent memory leak
+                del self._labels[time]
+                continue
+            self._labels[time].grid_forget()
         # Grid the events
-        for index, label in enumerate(self._labels.values()):
-            label.grid(row=index, column=0, sticky="nsw", padx=5, pady=(0, 5))
-        self.update_geometry()
-        # Create after command
-        self._after_id = self.after(self._after, self.update_events)
+        gridded = 0
+        for index, label in reversed(list(enumerate(self._labels.values()))):
+            label.grid(row=index, column=0, sticky="nsw", padx=5, pady=(0, 2))
+            gridded += 1
+            if gridded == 5:
+                break
 
     def match_end(self):
         """Clear all widgets"""
+        print("[EventOverlay] Match end.")
         while not self._queue.empty():
             self._queue.get()
         self._labels.clear()
-        self.update_geometry()
 
-    def generate_widget(self, event: dict, event_type: str):
+    def generate_widget(self, event: dict, event_type: str) -> (tk.Label, None):
         """Build a abel widget for an event"""
-        if event["ability"] not in self._icons:
-            print("[EventOverlay] Passing on event: {}".format(event))
-            return
+        if (datetime.now() - datetime.combine(datetime.now().date(), event["time"].time())).total_seconds() > self._timeout:
+            return None
+        ability = event["ability"]
+        if ability not in self._icons:
+            ability = ability.split(":")[0]
+        if ability not in self._icons:
+            return None
+        amount = "" if event["amount"] in ("", "0", 0) else " - {}".format(event["amount"])
         label = tk.Label(
-            self, image=self._icons[event["ability"]], compound=tk.LEFT,
-            text="{:<16} - {}".format(event["ability"], event["amount"]),
+            self._parent, image=self._icons[ability], compound=tk.LEFT,
+            text="{:<16}{}".format(event["ability"], amount),
             background=self._background, foreground=variables.colors[event_type][0],
-            font=("Consolas", 11))
-        print("[EventOverlay] Generated Label for:", event)
+            font=("Consolas", 10, True))
         return label
 
     def destroy(self):
         """Set destroyed attribute and destroy"""
         self._destroyed = True
-        if self._after_id is not None:
-            self.after_cancel(self._after_id)
         tk.Toplevel.destroy(self)

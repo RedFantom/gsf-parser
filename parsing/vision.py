@@ -78,7 +78,7 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
     """
-    return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
+    return max(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 0) * 100
 
 
 def get_timer_status(source, treshold=15.0):

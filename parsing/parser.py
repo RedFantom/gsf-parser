@@ -72,7 +72,7 @@ class Parser(object):
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
             "amount": elements[5],
-            "destination": log["target"]
+            "target": log["target"]
         })
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
@@ -85,7 +85,6 @@ class Parser(object):
                 log["source"] = enemies[log["source"]]
             if log["target"] in enemies:
                 log["target"] = enemies[log["target"]]
-        log["destination"] = log["target"]
         log["self"] = log["source"] == log["target"]
         amount = log["amount"].replace("*", "")
         log["damage"] = int(amount) if amount.isdigit() else 0
@@ -262,7 +261,7 @@ class Parser(object):
             return line_dict["category"]
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
-        if "attack" in line_dict and line_dict["attack"] is True:
+        if "custom" in line_dict and line_dict["custom"] is True:
             return "death"
         if "icon" in line_dict:
             return "dmgd_pri"
@@ -272,7 +271,7 @@ class Parser(object):
         # Damage events
         if "Damage" in line_dict['effect']:
             # Check for damage taken
-            if Parser.compare_ids(line_dict["destination"], active_id):
+            if Parser.compare_ids(line_dict["target"], active_id):
                 # Selfdamage
                 if line_dict['source'] == line_dict['target']:
                     return "selfdmg"
@@ -362,7 +361,7 @@ class Parser(object):
             lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
-            if "attack" in line or "@" in line["line"]:
+            if "custom" in line or "@" in line["line"]:
                 continue
             dictionary = Parser.line_to_dictionary(line)
             if dictionary["source"] == dictionary["target"] and dictionary["source"] not in player_list:
@@ -565,7 +564,7 @@ class Parser(object):
                 continue
             lines_decoded.append(line)
         enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
-        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
+        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded if "Invulnerable" not in line]
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
@@ -884,7 +883,7 @@ class Parser(object):
     @staticmethod
     def is_login(line: dict):
         """Determine whether the event given is a Login event"""
-        return (line["source"] == line["destination"] and
+        return (line["source"] == line["target"] and
                 "@" in line["source"] and
                 "Login" in line["ability"] and
                 ":" not in line["source"])
@@ -973,7 +972,7 @@ class Parser(object):
             "time": attack_start["time"] - timedelta(milliseconds=1),
             "source": "Attack",
             "target": name,
-            "destination": name,
+            "target": name,
             "ability": "Attack {}".format(i + 1),
             "amount": sum(e["damage"] for e in attack),
             "effect": "Attack",
@@ -986,7 +985,7 @@ class Parser(object):
                 ("", "Attack Duration:", "{}s".format(
                     (attack_end["time"] - attack_start["time"]).total_seconds()), "", "", "spvp_reducelockontime")
             ],
-            "attack": True,
+            "custom": True,
             "self": False,
             "crit": False,
             "type": Parser.LINE_ABILITY,

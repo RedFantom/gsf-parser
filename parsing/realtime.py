@@ -32,7 +32,9 @@ from parsing.gsfinterface import GSFInterface
 from parsing.guiparsing import get_player_guiname
 from parsing.pointer import PointerParser
 from parsing.rgb import RGBController
+from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
+from parsing.timer import TimerParser
 from parsing import vision
 from utils.utilities import get_screen_resolution
 from utils.directories import get_temp_directory
@@ -210,6 +212,9 @@ class RealTimeParser(Thread):
         self._rgb_enabled = rgb_enabled
         self._rgb = RGBController()
         self._active_map = None
+        self._timer_parser = None
+        if "Power Regeneration Delays" in self._screen_parsing_features:
+            self._timer_parser = TimerParser()
 
         """
         MiniMap Sharing
@@ -372,45 +377,16 @@ class RealTimeParser(Thread):
         if Parser.is_login(line):
             self.handle_login(line)
         # First check if this is still a match event
-        if self.is_match and ("@" in line["source"] or "@" in line["destination"]):
-            print("[RealTimeParser] Match end.")
-            server, date, time = self._character_db_data["Server"], line["time"], line["time"]
-            id_fmt = self.active_id[:8]
-            if not self.tutorial:
-                self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
-                match_map = self.get_for_current_spawn("map")
-                if match_map is not None:
-                    self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
-            self.end_match = line["time"]
-            # No longer a match
-            self.is_match = False
-            self.tutorial = False
-            self.lines.clear()
-            # Spawn timer
-            self._spawn_time = None  # if-statement is slower than just calling this always
-            # Reset match statistics
-            self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
-            self.abilities.clear()
-            self.active_id = ""
-            self.primary_weapon, self.secondary_weapon = False, False
-            if self._pointer_parser is not None:
-                self._pointer_parser.stop()
-                self._pointer_parser = None
-            self._active_map = None
-            self.update_presence()
+        if self.is_match and ("@" in line["source"] or "@" in line["target"]):
+            self.handle_match_end(line)
             return
         # Handle out-of-match events
         if not self.is_match:
             # Check if this event is still not in-match
-            if "@" in line["source"] or "@" in line["destination"]:
+            if "@" in line["source"] or "@" in line["target"]:
                 return
             else:  # Valid match event
-                print("[RealTimeParser] Match start.")
-                self.start_match = datetime.combine(datetime.now().date(), line["time"].time())
-                self.is_match = True
-                self.update_presence()
-                # Call the new match callback
-                self.match_callback()
+                self.handle_match_start(line)
         if Parser.is_tutorial_event(line):
             self.tutorial = True
         self.handle_spawn(line)
@@ -424,9 +400,50 @@ class RealTimeParser(Thread):
         self.update_rgb_keyboard(line)
         self.update_ship()
 
+    def handle_match_end(self, line: dict):
+        """Handle the end of a GSF match"""
+        print("[RealTimeParser] Match end.")
+        server, date, time = self._character_db_data["Server"], line["time"], line["time"]
+        id_fmt = self.active_id[:8]
+        if not self.tutorial:
+            self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
+            match_map = self.get_for_current_spawn("map")
+            if match_map is not None:
+                self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
+        self.end_match = line["time"]
+        # No longer a match
+        self.is_match = False
+        self.tutorial = False
+        self.lines.clear()
+        # Spawn timer
+        self._spawn_time = None
+        # Reset match statistics
+        self.dmg_d, self.dmg_t, self.dmg_s, self._healing = 0, 0, 0, 0
+        self.abilities.clear()
+        self.active_id = ""
+        self.primary_weapon, self.secondary_weapon = False, False
+        if self._pointer_parser is not None:
+            self._pointer_parser.stop()
+            self._pointer_parser = None
+        self._active_map = None
+        self.update_presence()
+        if self._timer_parser is not None:
+            self._timer_parser.match_end()
+
+    def handle_match_start(self, line: dict):
+        """Handle the start of a new GSF match"""
+        print("[RealTimeParser] Match start.")
+        self.start_match = datetime.combine(datetime.now().date(), line["time"].time())
+        self.is_match = True
+        self.update_presence()
+        # Call the new match callback
+        self.match_callback()
+        if self._timer_parser is not None:
+            self._timer_parser.match_start()
+
     def handle_spawn(self, line: dict):
         """Check for a new spawn and handle it if required"""
-        if line["source"] != self.active_id and line["destination"] != self.active_id:
+        if line["source"] != self.active_id and line["target"] != self.active_id:
             self.abilities.clear()
             self.active_id = ""
             # Call the spawn callback
@@ -439,7 +456,7 @@ class RealTimeParser(Thread):
 
     def update_player_id(self, line: dict):
         """Update the Player ID if this line allows it"""
-        if self.active_id == "" and line["source"] == line["destination"]:
+        if self.active_id == "" and line["source"] == line["target"]:
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
@@ -506,6 +523,8 @@ class RealTimeParser(Thread):
             self.scope_mode = not self.scope_mode
         elif line["ability"] == "Primary Weapon Swap":
             self.primary_weapon = not self.primary_weapon
+            if self._timer_parser is not None:
+                self._timer_parser.primary_weapon_swap()
         elif line["ability"] == "Secondary Weapon Swap":
             self.secondary_weapon = not self.secondary_weapon
 
@@ -546,6 +565,8 @@ class RealTimeParser(Thread):
         self.ship_stats = ShipStats(*args)
         self.set_for_current_spawn("ship", self.ship)
         self.update_presence()
+        if self._timer_parser is not None:
+            self._timer_parser.set_ship_stats(self.ship_stats)
 
     def update_pointer_parser_ship(self):
         """Update the PointerParser data after the Ship has been set"""
@@ -826,9 +847,6 @@ class RealTimeParser(Thread):
         for and then retrieve that data from the ship statistics object
         stored in the self.ship_stats attribute.
         """
-        if self.ship_stats is None:
-            print("[RealTimeParser] get_tracking_penalty was called while ship_stats is None")
-            return 0, 0  # Fail silently
         primaries = ["PrimaryWeapon", "PrimaryWeapon2"]
         secondaries = ["SecondaryWeapon", "SecondaryWeapon2"]
         if self.scope_mode is True:
@@ -873,7 +891,7 @@ class RealTimeParser(Thread):
             "amount": 0,
             "source": self.active_id,
             "target": self.active_id,
-            "destination": self.active_id,
+            "target": self.active_id,
             "icon": self.primary,
             "effects": None
         }
@@ -886,6 +904,8 @@ class RealTimeParser(Thread):
         """
         self._rgb.start()
         self.start_listeners()
+        if self._timer_parser is not None:
+            self._timer_parser.start()
         while True:
             if not self._exit_queue.empty():
                 break
@@ -912,13 +932,19 @@ class RealTimeParser(Thread):
         self._exit_queue.put(True)
         if self._rgb.is_alive():
             self._rgb.stop()
+        if self._timer_parser is not None:
+            self._timer_parser.stop()
 
     def _on_kb_press(self, key):
         if not self.is_match or key not in keys:
             return
-        self.set_for_current_spawn("keys", datetime.now(), (keys[key], True))
+        time = datetime.now()
+        self.set_for_current_spawn("keys", time, (keys[key], True))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
             self._rgb.data_queue.put(("press", key))
+        if "F" in key and len(key) == 2:
+            effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
+            self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
     def _on_kb_release(self, key):
         if not self.is_match or key not in keys:

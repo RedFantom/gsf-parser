@@ -164,7 +164,7 @@ class SettingsFrame(ttk.Frame):
         # EventOverlay
         self.rt_event_overlay = tk.BooleanVar()
         self.rt_event_overlay_checkbox = ttk.Checkbutton(
-            self.rt_frame, text="Enable EventOverlay (bèta)", variable=self.rt_event_overlay,
+            self.rt_frame, text="Enable EventOverlay", variable=self.rt_event_overlay,
             command=self.save_settings)
         Balloon(
             self.rt_event_overlay_checkbox,
@@ -183,7 +183,7 @@ class SettingsFrame(ttk.Frame):
         # RealTimeParser Sleep
         self.rt_sleep = tk.BooleanVar()
         self.rt_sleep_checkbox = ttk.Checkbutton(
-            self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep)
+            self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep, command=self.save_settings)
         Balloon(self.rt_sleep_checkbox,
                 text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
                      "cycles per second but reduces CPU and IO usage significantly.")
@@ -197,7 +197,8 @@ class SettingsFrame(ttk.Frame):
                                            "cause errors.")
         # Discord Rich Presence
         self.rt_drp = tk.BooleanVar()
-        self.rt_drp_checkbox = ttk.Checkbutton(self.rt_frame, text="Discord Rich Presence", variable=self.rt_drp)
+        self.rt_drp_checkbox = ttk.Checkbutton(
+            self.rt_frame, text="Discord Rich Presence", variable=self.rt_drp, command=self.save_settings)
         Balloon(self.rt_drp_checkbox, text="Shows off the character you play on, your in-game "
                                            "status and more, but only if your discord sharing "
                                            "for that character is enabled.")
@@ -220,9 +221,13 @@ class SettingsFrame(ttk.Frame):
         self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
         self.sc_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
-            "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing"
+            "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing",
+            "Power Regeneration Delays"
         ]
-        beta = ["MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing"]
+        beta = [
+            "MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing",
+            "Power Regeneration Delays"
+        ]
         self.sc_checkboxes = OrderedDict()
         self.sc_variables = {}
         for feature in self.sc_features:
@@ -505,7 +510,7 @@ class SettingsFrame(ttk.Frame):
                 "event_overlay": self.rt_event_overlay.get(),
                 "event_location": "x{}y{}".format(
                     self.rt_event_position_x.get(), self.rt_event_position_y.get()),
-                "realtime": self.rt_sleep.get(),
+                "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
             },

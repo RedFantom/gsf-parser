@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 
-icons = {
+ICONS = {
     # Primary Weapons
     "Heavy Laser Cannon": "spvp_blaster_black_red",
     "Laser Cannon": "spvp_blaster_red",

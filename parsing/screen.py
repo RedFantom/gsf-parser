@@ -59,7 +59,8 @@ class ScreenParser(object):
     """
     Parser that can create TimeView events from screen parsing data
 
-    These events are built from specific
+    These events are built from specific screen parsing events that are
+    recorded in the screen parsing data dictionary.
     """
 
     @staticmethod
@@ -83,8 +84,9 @@ class ScreenParser(object):
         """Extend the given events list with new screen parsing events"""
         if "ship" not in screen_data or screen_data["ship"] is None:
             print("[ScreenParser] Failed to fetch ship for this spawn")
-            return events
-        ship = ShipStats(screen_data["ship"], None, None)
+            ship = None
+        else:
+            ship = ShipStats(screen_data["ship"], None, None)
         if "keys" in screen_data and len(screen_data["keys"]) != 0:
             print("[ScreenParser] Building key events")
             events.extend(ScreenParser._build_key_events(screen_data["keys"], player_name, ship))
@@ -100,6 +102,8 @@ class ScreenParser(object):
         distance = screen_data["distance"]
         primary = "PrimaryWeapon"
         for i, event in enumerate(events):
+            if "custom" in event and event["custom"] is True:
+                continue
             if "Primary Weapon Swap" in event["ability"] and event["self"] is True:
                 primary = "PrimaryWeapon2" if primary == "PrimaryWeapon" else "PrimaryWeapon"
                 continue
@@ -164,8 +168,8 @@ class ScreenParser(object):
                 "for {:.1f}s".format(duration),
                 "{:.0f}%".format(ship["Ship"]["Booster_Speed_Multiplier"] * 100),
                 "spvp_enginespeed"
-            ),),
-            "attack": True,
+            ),) if ship is not None else None,
+            "custom": True,
             "self": True,
             "crit": False,
             "type": Parser.LINE_ABILITY,
@@ -181,11 +185,11 @@ class ScreenParser(object):
             "time": time,
             "source": player_name,
             "target": player_name,
-            "destination": player_name,
+            "target": player_name,
             "ability": POWER_MODES[power_mode],
             "effect": "ApplyEffect: ChangePowerMode",
             "effects": ScreenParser._build_power_mode_effects(ship, power_mode),
-            "attack": True,
+            "custom": True,
             "self": True,
             "crit": False,
             "type": Parser.LINE_ABILITY,
@@ -197,6 +201,8 @@ class ScreenParser(object):
     @staticmethod
     def _build_power_mode_effects(ship: ShipStats, mode: str):
         """Build a tuple of power mode effects to display in TimeView"""
+        if ship is None:
+            return None
         get_mod = partial(ScreenParser._get_power_modifier, ship)
         if mode == "F1":
             return (
