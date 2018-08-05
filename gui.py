@@ -42,7 +42,8 @@ class MainWindow(ThemedTk):
     the parser and provides exit-handling.
     """
 
-    def __init__(self):
+    def __init__(self, raven: RavenClient):
+        self.raven = variables.raven = raven
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
@@ -100,11 +101,6 @@ class MainWindow(ThemedTk):
             self.splash.label_var.set("Synchronizing with Discord Bot Server...")
             self.update()
             self.discord.send_files(self)
-        # Connect to Sentry
-        self.splash.label_var.set("Connecting to Sentry...")
-        with open("sentry") as fi:
-            link = fi.read().strip()
-        self.raven = variables.raven = RavenClient(link)
         # Discord Rich Presence
         if settings["realtime"]["drp"] is True:
             self.rpc = Presence(436173115064713216)
@@ -133,7 +129,6 @@ class MainWindow(ThemedTk):
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
-        # self.ship_frame.grid(column=3, row=1, sticky="nswe")
         self.settings_frame.grid()
         self.graphs_frame.grid(column=0, row=0)
 
