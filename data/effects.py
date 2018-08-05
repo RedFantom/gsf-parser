@@ -67,7 +67,6 @@ ability_to_effects = {
     'Koiogran Turn': ['Koiogran Turn', 'Staying on Target'],
     'Laser Cannon': ['Damage'],
     'Light Laser Cannon': ['Damage'],
-    'Lingering Damage': ['Damage'],
     'Lingering Effect': ['Lingering Damage'],
     'Melting Hull': ['Damage'],
     'Missile Sentry Drone': ['Missile Sentry Drone'],

@@ -96,7 +96,6 @@ class PointerParser(Thread):
             screenshot = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
             screenshot = screenshot.convert("RGBA")
             match = get_similarity_transparent(self.pointer, screenshot)
-            print("[PointerParser] On-target: {}".format(match))
             self.chance_queue.put((self.last, match > 95))
         self.mouse.stop()
 

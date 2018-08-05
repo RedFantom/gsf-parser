@@ -137,6 +137,8 @@ class FileHandler(object):
         name, match datetime and spawn datetime. Uses a lot of code to
         make the searching as reliable as possible.
         """
+        if data is None:
+            data = FileHandler.get_data_dictionary()
         print("[FileHandler] Spawn data requested for: {}/{}/{}".format(file_name, match_dt.time(), spawn_dt.time()))
         # First check if the file_name is available
         if file_name not in data:

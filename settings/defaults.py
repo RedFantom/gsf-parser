@@ -15,7 +15,7 @@ defaults = {
         # Whether checks for updates are enabled
         "autoupdate": True,
         # assets/ships.db SWTOR patch level
-        "patch_level": "5.6.0",
+        "patch_level": "5.9.2",
         # SWTOR Temporary directory, for use on Linux
         "temp_dir": ""
     },

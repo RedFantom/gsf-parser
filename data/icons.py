@@ -11,7 +11,7 @@ icons = {
     "Laser Cannon": "spvp_blaster_red",
     "Light Laser Cannon": "spvp_blaster_black_orange",
     "Quad Laser Cannon": "spvp_blaster_black_yellow",
-    "Rapid-fire Laser Cannon": "spvp_blaster_yellow",
+    "Rapid-Fire Laser Cannon": "spvp_blaster_yellow",
     "Ion Cannon": "spvp_blaster_black_light_blue",
     "Burst Laser Cannon": "spvp_blaster_black_purple",
     # Secondary Weapons
@@ -113,6 +113,7 @@ icons = {
     "Lingering Damage": "spvp_damageovertime",  # Lingering Effect
     "Player Death": "spvp_aoedamage",
     "Game End": "spvp_combatcloakingdevice",
+    "Unknown Primary Weapon": "spvp_blaster_blue",
     # Default
-    "default": "republic.png"
+    "default": "republic"
 }

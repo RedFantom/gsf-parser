@@ -8,8 +8,9 @@ Copyright (C) 2016-2018 RedFantom
 from os import path
 import pickle as pickle
 # Project Modules
+from data import abilities
+from data.components import *
 from data.ships import ship_names, ships_names_reverse
-from data.components import component_types_reverse
 from utils.directories import get_assets_directory
 
 
@@ -29,6 +30,12 @@ def get_ship_category(ship_name: str):
     return None
 
 
+def load_ship_data()->dict:
+    with open(path.join(get_assets_directory(), "ships.db"), "rb") as f:
+        ships_data = pickle.load(f)
+    return ships_data
+
+
 class Ship(object):
     """
     Data class that contains the data required to perform calculations
@@ -39,14 +46,15 @@ class Ship(object):
     :attribute ship_name: Fully-Qualified Ship name
     """
 
-    def __init__(self, ship_name: str):
+    def __init__(self, ship_name: str, ships_data: dict = None):
         """
         :param ship_name: FQ or Simple ship name
         """
-        with open(path.join(get_assets_directory(), "ships.db"), "rb") as f:
-            ships_data = pickle.load(f)  # Garbage-collected after __init__
+        if ships_data is None:
+            ships_data = load_ship_data()
         # Find FQN and simple ship name
-        self.ship_name = ship_name if ship_name in ships_data else ship_names[ship_name]
+        self.ship_name = ship_name if ship_name in ships_data else ship_names[ship_name]  # FQN
+        self.faction = self.ship_name.split("_")[0]
         self.name = ship_name if ship_name in ship_names else ships_names_reverse[self.ship_name]
         # Initialize attributes
         self.data = ships_data[self.ship_name]
@@ -73,27 +81,12 @@ class Ship(object):
             "CoPilot": None
         }
 
-    @property
-    def ship_class(self):
-        ident = self.ship_name.split("_")[1]
-        if "B" in ident or "M" in ident:
-            return "Bomber"
-        elif "G" in ident:
-            return "Gunship"
-        elif "S" in ident:
-            return "Scout"
-        elif "F" in ident:
-            return "Strike Fighter"
-        else:
-            return None
-
     def __setitem__(self, item: str, value):
         """
         Update a given Component or Crew
         :param item: Component or Crew category
         :param value: Component instance or Crew member name
         """
-        print("[Ship] Setting {} to {} for Ship {}".format(item, value, self.ship_name))
         item = self.process_key(item)
         if item in self.components:
             self.components[item] = value
@@ -125,10 +118,12 @@ class Ship(object):
         from those used in this Ship.components dictionary, and thus,
         must be translated appropriately.
         """
-        if item in component_types_reverse:
-            return component_types_reverse[item]
+        if item in COMP_TYPES_REVERSE:
+            return COMP_TYPES_REVERSE[item]
         elif item.lower() in self.components:
             item = item.lower()
+        if item not in self.components and item not in self.crew:
+            return None
         return item
 
     def update(self, dictionary):
@@ -162,9 +157,8 @@ class Component(object):
         self.category = category
         self.name = data["Name"]
         self.upgrades = {
-            0: False,
-            1: False,
-            2: False,
+            (0, 0): False,
+            (1, 0): False,
             (2, 0): False,
             (2, 1): False,
             (3, 0): False,
@@ -172,6 +166,17 @@ class Component(object):
             (4, 0): False,
             (4, 1): False
         }
+        for category in COMPONENT_TYPES.keys():
+            category = category.replace("2", str())
+            if self.name in getattr(abilities, category).values():
+                for type in ["majors", "middle", "minors"]:
+                    if category in getattr(abilities, type):
+                        self.type = type.replace("s", str())
+                        break
+                if hasattr(self, "type"):
+                    break
+        if not hasattr(self, "type"):
+            raise ValueError("Invalid component: {}".format(self.name))
 
     def __setitem__(self, key, value):
         if isinstance(key, tuple):

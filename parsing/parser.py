@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from data import abilities, effects, durations
 from variables import settings, colors
 
@@ -173,7 +173,10 @@ class Parser(object):
         for event in lines[lines.index(line_dict):]:
             if (event["time"] - line_dict["time"]).total_seconds() > ability_duration[1] + 5:
                 break
-            effect = event["effect"].split(":")[1].split("{")[0].strip()
+            try:
+                effect = event["effect"].split(":")[1].split("{")[0].strip()
+            except IndexError:
+                effect = event["effect"]
             if "RemoveEffect" in event["effect"] and effect in ability_effects:
                 time_diff = (event["time"] - ability_effects[effect]["start"]["time"]).total_seconds()
                 ability_effects[effect]["duration"] = time_diff
@@ -255,8 +258,12 @@ class Parser(object):
         :param active_id: active ID for the log or list of IDs
         :return: str category
         """
+        if "category" in line_dict and line_dict["category"] is not None:
+            return line_dict["category"]
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
+        if "attack" in line_dict and line_dict["attack"] is True:
+            return "death"
         if "icon" in line_dict:
             return "dmgd_pri"
         # If the ability is empty, this is a Gunship scope activation
@@ -355,7 +362,7 @@ class Parser(object):
             lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
-            if "@" in line["line"]:
+            if "attack" in line or "@" in line["line"]:
                 continue
             dictionary = Parser.line_to_dictionary(line)
             if dictionary["source"] == dictionary["target"] and dictionary["source"] not in player_list:
@@ -829,7 +836,7 @@ class Parser(object):
             id_list = Parser.get_player_id_list(spawn)
             line = spawn[-1]
             death_event = "[{}] [{}] [{}] [{}] [{}] ()".format(
-                line["time"].strftime(Parser.TIME_FORMAT),
+                (line["time"] + timedelta(milliseconds=1)).strftime(Parser.TIME_FORMAT),
                 line["source"],
                 Parser.get_player_id_from_line(line, id_list),
                 "Player Death" if i + 1 < len(match) else "Game End",
@@ -891,3 +898,97 @@ class Parser(object):
     def is_tutorial_event(line: dict):
         """Determine whether this event belongs to a Tutorial match"""
         return any(a in line["line"] for a in ("Tutorial", "Invulnerable"))
+
+    @staticmethod
+    def parse_player_reaction_time(spawn: list, name: str)->list:
+        """
+        Parse a spawn for player attack reaction time
+
+        Find individual attacks on the player and determine how fast
+        the player was in responding to the threat. Build a new set of
+        events that include these reaction times as normal events that
+        can be displayed in a TimeView.
+
+        Supports matches transformed into spawn event lists as given by
+        Parser.build_spawn_from_match.
+        """
+        player = Parser.get_player_id_list(spawn)
+        # Build list of all damage taken type events
+        dmgt_events = list()
+        for event in [e for e in spawn if "Damage Overcharge" not in e["line"]]:
+            event_type = Parser.get_event_category(event, player)
+            if "dmgt" not in event_type:
+                continue
+            dmgt_events.append(event)
+        # Build list of individual attacks
+        attacks = dict()
+        for attack in dmgt_events.copy():
+            if attack not in dmgt_events:
+                continue
+            player_id, attack_start = attack["target"], attack["time"]
+            attacks[attack_start] = [attack]
+            for event in dmgt_events[dmgt_events.copy().index(attack):]:
+                if event["target"] != player_id:  # Death in between
+                    break
+                elif (event["time"] - attack_start).total_seconds() > 5:
+                    break
+                attacks[attack["time"]].append(event)
+                attack_start = event["time"]
+                dmgt_events.remove(event)
+            if attack in dmgt_events:
+                dmgt_events.remove(attack)
+        for time, events in attacks.copy().items():
+            if len(events) < 2:
+                del attacks[time]
+        enemies = {time: [event["source"] for event in events] for time, events in attacks.items()}
+        # Find responses of player for each attack
+        responses = list()
+        for i, (time, attack) in enumerate(sorted(attacks.items(), key=lambda t: t[0])):
+            attack_start, attack_end = attack[0], attack[-1]
+            events = spawn[spawn.index(attack_start):]
+            applied = False
+            for event in events:
+                if event["target"] not in enemies[time] and event["self"] is False:
+                    continue
+                elif "AbilityActivate" not in event["line"] or event["ability"] in abilities.systems:
+                    continue
+                elif event["ability"] in ("Railgun Charge", "Wingman", "Lingering Effect", "Scope Mode"):
+                    continue
+                if (event["time"] - attack_start["time"]).total_seconds() > 10:
+                    break
+                responses.append(Parser.create_response_event(attack_start, attack_end, event, name, attack, i))
+                applied = True
+                break
+            if applied is False:
+                event = events[-1]
+                responses.append(Parser.create_response_event(attack_start, attack_end, event, name, attack, i))
+        spawn.extend(responses)
+        return spawn
+
+    @staticmethod
+    def create_response_event(
+            attack_start: dict, attack_end: dict, event: dict, name: str, attack: list,  i: int) -> dict:
+        """Create an attack response event dictionary"""
+        return {
+            "time": attack_start["time"] - timedelta(milliseconds=1),
+            "source": "Attack",
+            "target": name,
+            "destination": name,
+            "ability": "Attack {}".format(i + 1),
+            "amount": sum(e["damage"] for e in attack),
+            "effect": "Attack",
+            "effects": [
+                ("", e["time"].strftime("%M:%S"), t, e["ability"], "", e["ability"])
+                for t, e in zip(("Start", "Response", "End"), (attack_start, event, attack_end))
+            ] + [
+                ("", "Response time:", "{}s".format(
+                    (event["time"] - attack_start["time"]).total_seconds()), "", "", "spvp_time"),
+                ("", "Attack Duration:", "{}s".format(
+                    (attack_end["time"] - attack_start["time"]).total_seconds()), "", "", "spvp_reducelockontime")
+            ],
+            "attack": True,
+            "self": False,
+            "crit": False,
+            "type": Parser.LINE_ABILITY,
+            "icon": "spvp_damageovertime",
+        }

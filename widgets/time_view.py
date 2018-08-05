@@ -55,12 +55,15 @@ class TimeView(ttk.Treeview):
             self.heading(column, text=column.title())
         self.setup_columns()
         self.icons = {}
+        self._icons = {
+            name[:-4]: PhotoImage(
+                Image.open(
+                    os.path.join(get_assets_directory(), "icons", name)).
+                resize((24, 24), Image.ANTIALIAS))
+            for name in os.listdir(os.path.join(get_assets_directory(), "icons"))
+        }
         for icon, file_name in icons.items():
-            path = os.path.join(
-                get_assets_directory(), "icons", file_name + (".jpg" if not file_name.endswith(".png") else "")
-            )
-            image = Image.open(path)
-            self.icons[icon] = PhotoImage(image.resize((24, 24), Image.ANTIALIAS), master=self)
+            self.icons[icon] = self._icons[file_name]
         self.style = ttk.Style(self)
         self.style.configure("TimeView.Treeview", rowheight=32)
         self.config(style="TimeView.Treeview")
@@ -80,35 +83,49 @@ class TimeView(ttk.Treeview):
         """Insert a new line into the Treeview"""
         if line is None or line["type"] == Parser.LINE_EFFECT:
             return
-        source, destination = map(partial(self.process_player, player_name, active_ids),
-                                  (line["source"], line["destination"]))
+        source, target = \
+            map(partial(self.process_player, player_name, active_ids), (line["source"], line["target"]))
+        source, target = map(self.format_id, (source, target))
         values = (
             TimeView.format_time_diff(line["time"], start_time),
-            source, destination,
+            source, target,
             line["ability"],
             line["amount"] if line["amount"] != 0 else ""
         )
         tag = Parser.get_event_category(line, active_ids)
         if line["ability"] not in self.icons and "icon" not in line:
-            print("[TimeView] Icon for ability '{}' is missing.".format(line["ability"]))
+            print("[TimeView] {} missing icon".format(line["ability"]))
             image = self.icons["default"]
         elif "icon" not in line:
             image = self.icons[line["ability"]]
         else:
-            image = self.icons[line["icon"]]
+            image = self._icons[line["icon"]]
         iid = (repr(line["time"]) + line["source"] + line["target"] +
                line["effect"] + str(self.index))
         ref, start = map(partial(datetime.combine, datetime(1970, 1, 1).date()), (line["time"].time(), start_time.time()))
-        index = int((ref - start).total_seconds() * 10e2)
+        index = int((ref - start).total_seconds() * 10e3)
+        self._contents.append(index)
+        index = list(sorted(self._contents)).index(index)
         self.insert("", index, values=values, tags=(tag,), image=image, iid=iid)
-        if index == tk.END:
-            self._contents.append(line["time"])
-        else:
-            self._contents.insert(index, line["time"])
         self.index += 1
         if "effects" not in line or line["effects"] is None:
             return
-        self.insert_effects_for_event(iid, line, tag)
+        if "attack" not in line or line["attack"] is False:
+            self.insert_effects_for_event(iid, line, tag)
+        else:
+            self.insert_effects(iid, line["effects"], tag)
+
+    def insert_effects(self, iid: str, effects: tuple, tag: str):
+        """Insert the raw defined effects of an event"""
+        for effect in effects:
+            image = None
+            if len(effect) == 6:
+                image, effect = effect[5], effect[:5]
+                if image in self.icons:
+                    image = self.icons[image]
+                else:
+                    image = self._icons[image]
+            self.insert(iid, tk.END, values=effect, image=image, tags=(tag,))
 
     def insert_effects_for_event(self, iid: str, line: dict, tag: str):
         """Insert the effects for an event dictionary"""
@@ -140,20 +157,19 @@ class TimeView(ttk.Treeview):
             return "System"
         return player
 
-    def insert_spawn(self, spawn, player_name, active_ids:list=None):
-        """
-        Insert the events of a spawn into the Treeview
-        :param spawn: A set of lines or line_dicts
-        :param player_name: player name str
-        :return: None
-        """
+    def insert_spawn(self, spawn, player_name, active_ids: list=None):
+        """Insert the events of a spawn into the Treeview"""
+        self.delete_all()
         if len(spawn) == 0:
             raise ValueError("Invalid spawn passed.")
         spawn = spawn if isinstance(spawn[0], dict) else [Parser.line_to_dictionary(line) for line in spawn]
         start_time = spawn[0]["time"]
         active_ids = Parser.get_player_id_list(spawn) if active_ids is None else active_ids
-        for line_dict in spawn:
-            line_event_dict = Parser.line_to_event_dictionary(line_dict, active_ids, spawn)
+        for line in spawn:
+            if "attack" not in line or line["attack"] is False:
+                line_event_dict = Parser.line_to_event_dictionary(line, active_ids, spawn)
+            else:
+                line_event_dict = line
             self.insert_event(line_event_dict, player_name, active_ids, start_time)
 
     @staticmethod
@@ -181,6 +197,7 @@ class TimeView(ttk.Treeview):
     def delete_all(self):
         self.delete(*self.get_children())
         self.index = 0
+        self._contents.clear()
 
     @staticmethod
     def validate_effect(effect: str):
@@ -188,3 +205,6 @@ class TimeView(ttk.Treeview):
         if len(elems) < 2:
             return True
         return elems[1].split("{")[0].strip() in all_effects
+
+    def format_id(self, id: str):
+        return id if not id.isdigit() else id[8:]

@@ -435,9 +435,11 @@ class TimeLine(ttk.Frame):
         kwargs = kwargs if marker is None else marker
         if category not in self._categories:
             raise ValueError("category argument not a valid category: {}".format(category))
-        if start < self._start or finish > self._finish:
-            raise ValueError("time out of bounds. bounds: {}-{}. requested: {}-{}".format(self._start, self._finish,
-                                                                                          start, finish))
+        if start < self._start:
+            start = self._start
+        if finish > self._finish:
+            finish = self._finish
+
         self.check_marker_kwargs(kwargs)
         # Update the options based on the tags. The last tag always takes precedence over the ones before it, and the
         # marker specific options take precedence over tag options
@@ -752,8 +754,10 @@ class TimeLine(ttk.Frame):
         Get the location as a pixel coordinate (only the x-coordinate)
         of a certain time value
         """
-        if time < self._start or time > self._finish:
-            raise ValueError("time argument out of bounds")
+        if time < self._start:
+            time = self._start
+        elif time > self._finish:
+            time = self._finish
         return (time - self._start) / (self._resolution / self._zoom_factor)
 
     def get_position_time(self, position):

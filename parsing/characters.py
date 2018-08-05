@@ -13,7 +13,7 @@ from semantic_version import Version
 # Project Modules
 from data import ships, servers
 from variables import settings
-from parsing.ships import Ship
+from parsing.ships import Ship, Component
 from data import ships as ships_data
 from utils.swtor import get_swtor_directory
 
@@ -73,6 +73,20 @@ class CharacterDatabase(dict):
                 self[character] = data
             settings["misc"]["patch_level"] = "5.6.0"
             settings.save_settings()
+        if version < Version("5.9.2"):
+            print("[CharacterDatabase] Updating database for new upgrade indices")
+            for character, data in self.items():
+                for ship, ship_obj in data["Ship Objects"].items():
+                    if ship_obj is None:
+                        continue
+                    for ctg, comp in ship_obj.components.items():
+                        if comp is None:
+                            continue
+                        for upgrade, state in comp.upgrades.copy().items():
+                            if not isinstance(upgrade, int):
+                                continue
+                            del self[character]["Ship Objects"][ship].components[ctg].upgrades[upgrade]
+                            self[character]["Ship Objects"][ship].components[ctg].upgrades[(upgrade, 0)] = state
         self.version = settings["misc"]["patch_level"]
         self.update_characters()
 

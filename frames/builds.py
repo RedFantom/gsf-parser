@@ -14,7 +14,7 @@ from tkinter import ttk
 # Project Modules
 from frames.shipstats import ShipStatsFrame
 from data.ships import companion_indices
-from data.components import components
+from data.components import COMPONENTS
 from parsing.ships import Ship, Component
 from utils.directories import get_assets_directory
 from utils.utilities import open_icon
@@ -63,7 +63,7 @@ class BuildsFrame(ttk.Frame):
         self.components_lists_header_label = ttk.Label(
             self.components_lists_frame.interior, text="Components",
             justify=tk.LEFT, font=("Calibiri", 12))
-        for category in components:
+        for category in COMPONENTS:
             # Bloodmark is the default around which the widgets are created
             if category not in self.ships_data["Imperial_S-SC4_Bloodmark"]:
                 continue
@@ -135,7 +135,7 @@ class BuildsFrame(ttk.Frame):
             if isinstance(widget, ToggledFrame):
                 if widget.show.get():
                     widget.toggle()
-        for type in components:
+        for type in COMPONENTS:
             if type not in self.ship.data:
                 # Not all ships have all component types
                 print("type not in self.ship.data: {0}".format(type))
