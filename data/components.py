@@ -44,15 +44,14 @@ COMPONENTS = [
     "PrimaryWeapon2",
     "SecondaryWeapon",
     "SecondaryWeapon2",
-    "Engine",
-    "ShieldProjector",
     "Systems",
+    "Engine",
     "Armor",
-    "Reactor",
+    "Capacitor",
     "Magazine",
+    "Reactor",
     "Sensor",
     "Thruster",
-    "Capacitor"
 ]
 
 PLURAL_TO_SINGULAR = {
@@ -62,3 +61,5 @@ PLURAL_TO_SINGULAR = {
     "systems": "systems",
     "shields": "shields"
 }
+
+SINGULAR_TO_PLURAL = {v: k for k, v in PLURAL_TO_SINGULAR.items()}

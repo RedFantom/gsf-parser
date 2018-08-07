@@ -146,7 +146,7 @@ class BuildsFrame(ttk.Frame):
             if self.ship[type] is None:
                 continue
             index = self.ship[type].index
-            print("Setting type {0} to index {1}".format(type, index))
+            print("[BuildsFrame] Setting type {0} to index {1}".format(type, index))
             self.components_lists[type].variable.set(index)
         for button in self.ship_select_frame.ship_buttons.values():
             button.config(state=tk.ACTIVE)
@@ -226,7 +226,10 @@ class BuildsFrame(ttk.Frame):
         self.current_component.grid_widgets()
         self.components_lists_header_label.grid(row=0, column=0, sticky="w", pady=5)
         set_row = 1
-        for frame in self.components_lists.values():
+        for ctg in COMPONENTS:
+            if ctg not in self.components_lists:
+                continue
+            frame = self.components_lists[ctg]
             frame.grid(row=set_row, column=0, sticky="nswe")
             frame.grid_widgets()
             set_row += 1
