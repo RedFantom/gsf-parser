@@ -21,7 +21,7 @@ from utils.directories import get_assets_directory
 EXTENSIONS = (".jpg", ".png")
 
 
-def open_icon_pil(image_name, size=None, ext=".jpg"):
+def open_icon_pil(image_name: str, size: tuple=None, ext: str=".jpg") -> Image.Image:
     """Open an image from the assets folder and return a PIL Image"""
     # Type check for PyCharm completion
     if not isinstance(image_name, str):
@@ -42,7 +42,7 @@ def open_icon_pil(image_name, size=None, ext=".jpg"):
     return image
 
 
-def open_icon(*args, **kwargs):
+def open_icon(*args, **kwargs) -> Photo:
     """Open an image from the assets folder"""
     return Photo(open_icon_pil(*args, **kwargs))
 
