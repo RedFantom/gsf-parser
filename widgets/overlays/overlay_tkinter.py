@@ -6,19 +6,17 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter as tk
 from tkinter import ttk
-from widgets.overlays.overlay import Overlay
 from variables import settings
 import sys
 
 
-class TkinterOverlay(Overlay, tk.Toplevel):
+class TkinterOverlay(tk.Toplevel):
     """
     A class that can display text on the screen through the default
     Tkinter Toplevel interface.
     """
 
-    def __init__(self, position, text_variable, wait_time=20, font=("default", 11, "bold"), master=None,
-                 color=(255, 255, 0), opacity=255, auto_init=True):
+    def __init__(self, position, text_variable, font=("default", 11, "bold"), master=None, opacity=255):
         tk.Toplevel.__init__(self, master)
         self._master = master
         self._opacity = opacity
@@ -34,13 +32,12 @@ class TkinterOverlay(Overlay, tk.Toplevel):
         self.text_label.grid()
 
     def setup_window(self):
-        """
-        Configure the window with the options given in instance attributes
-        """
+        """Configure window with Tkinter window attributes"""
         self.update_geometry()
         self.wm_attributes("-topmost", True)
         self.wm_overrideredirect(True)
-        self.text_label.config(background="darkblue")
+        if hasattr(self, "text_label"):
+            self.text_label.config(background="darkblue")
         tk.Toplevel.config(self, background="darkblue")
         if sys.platform == "linux":
             print("[TkinterOverlay] Setting special Overlay attributes for Linux.")
@@ -60,48 +57,5 @@ class TkinterOverlay(Overlay, tk.Toplevel):
     def initialize_window(self):
         self.wm_deiconify()
 
-    def update(self):
-        tk.Toplevel.update(self)
-
     def destroy(self):
         tk.Toplevel.destroy(self)
-
-    def cget(self, key):
-        if key == "opacity":
-            return self._opacity
-        elif key == "color":
-            return self._color
-        elif key == "text_variable":
-            return self._text_variable
-        elif key == "position":
-            return self._position
-        elif key == "font":
-            return self._font
-        elif key == "master":
-            return self._master
-        else:
-            return tk.Toplevel.cget(self, key)
-
-    def config(self, **kwargs):
-        self._position = kwargs.pop("position", self._position)
-        self._font = kwargs.pop("font", self._font)
-        self._opacity = kwargs.pop("opacity", self._opacity)
-        if isinstance(self._font, dict):
-            self._font = (self._font["family"], self._font["size"])
-        self.setup_window()
-        return tk.Toplevel.config(**kwargs)
-
-    @property
-    def rectangle(self):
-        geometry = self.wm_geometry()
-        coordinates, width, height = geometry.split("+")
-        x, y = coordinates.split("x")
-        width, height, x, y = int(width), int(height), int(x), int(y)
-        return x, y, x + width, y + height
-
-    @property
-    def position(self):
-        return self.rectangle[0], self.rectangle[1]
-
-
-

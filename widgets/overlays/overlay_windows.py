@@ -9,7 +9,6 @@ import win32con as con
 import win32gui as gui
 from tkinter import StringVar, Tk
 from variables import main_window
-from widgets.overlays.overlay import Overlay
 import random
 
 """
@@ -18,7 +17,7 @@ https://stackoverflow.com/questions/21840133
 """
 
 
-class WindowsOverlay(Overlay):
+class WindowsOverlay(object):
     """
     A class that can display text on the screen without ragged edges and with higher performance
     than Tkinter Toplevels can. Also supports clicking through the Text.
@@ -40,8 +39,6 @@ class WindowsOverlay(Overlay):
         :param wait_time: time in ms for after call
         :param color: color tuple for the text
         """
-        Overlay.__init__(self, position, text_variable, wait_time=20, font=font, master=master, color=color,
-                         opacity=opacity, auto_init=auto_init)
         # Argument attributes
         self._position = position
         self._text_var = text_variable
@@ -134,7 +131,7 @@ class WindowsOverlay(Overlay):
             self._position[1],  # y coorinate
             0,  # width (resizes automatically)
             0,  # height (resizes automatically)
-            # The does not:
+            # It does not:
             # - Activate
             # - Move
             # - Resize
@@ -215,63 +212,6 @@ class WindowsOverlay(Overlay):
         if self._after_code is not None:
             self._master.after_cancel(self._after_code)
         gui.SendMessage(self._window, con.WM_CLOSE, None, None)
-
-    def cget(self, key):
-        """Returns the option for a key"""
-        if key == "position":
-            return self._position
-        elif key == "wait_time":
-            return self._wait_time
-        elif key == "text_var":
-            return self._text_var
-        elif key == "font_family":
-            return self._font_family
-        elif key == "font_size":
-            return self._font_size
-        elif key == "master":
-            return self._master
-        else:
-            return None
-
-    def config(self, **kwargs):
-        """
-        Change the options of the window. Some options cannot be changed
-        """
-        self._position = kwargs.pop("position", self._position)
-        self._wait_time = kwargs.pop("wait_time", self._wait_time)
-        self._font_family = kwargs.pop("font_family", self._font_family)
-        self._font_size = kwargs.pop("font_size", self._font_size)
-        self._opacity = kwargs.pop("opacity", self._opacity)
-        if "master" in kwargs:
-            raise RuntimeError("Master widget cannot be changed after window is initialized")
-        if "text_var" in kwargs:
-            raise RuntimeError("Text variable cannot be changed after window is initialized")
-        return True
-
-    def configure(self, **kwargs):
-        return self.config(**kwargs)
-
-    def __getitem__(self, item):
-        return self.cget(item)
-
-    def __setitem__(self, key, value):
-        return self.config(**{key: value})
-
-    @property
-    def rectangle(self):
-        return gui.GetClientRect(self._window)
-
-    @property
-    def position(self):
-        rectangle = self.rectangle
-        x = rectangle[0]
-        y = rectangle[1]
-        w = rectangle[2] - x
-        h = rectangle[3] - y
-        return x, y, w, h
-
-    def __exit__(self):
-        self.destroy()
 
     def update_text(self, text):
         self._text_var.set(text)
