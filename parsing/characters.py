@@ -64,6 +64,7 @@ class CharacterDatabase(dict):
         self.version = str(self.version)
         if not self.version.endswith(".0"):
             self.version += ".0"
+        self.version = ".".join(str(int(v)) for v in self.version.split(".")[:3])
         version = Version(self.version)
         print("[CharacterDatabase] This version: ", version)
         if version < Version("5.6.0"):
