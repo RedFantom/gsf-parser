@@ -1013,7 +1013,7 @@ class TimeLine(ttk.Frame):
         The width of the whole TimeLine in pixels (so not just the
         visible part)
         """
-        return self.zoom_factor * ((self._finish - self._start) / self._resolution)
+        return int(self.zoom_factor * ((self._finish - self._start) / self._resolution))
 
     @property
     def options(self):
