@@ -6,10 +6,10 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
-from queue import Queue
+from queue import Queue, Empty as QueueEmpty
 from threading import Thread, Lock
 from time import sleep
-from tkinter import StringVar
+from tkinter import StringVar, Tk
 # Packages
 from pynput.keyboard import Listener as KBListener, Key
 from pynput.mouse import Listener as MSListener, Button
@@ -28,17 +28,17 @@ class TimerParser(Thread):
         "Power_Engine_Regen_Delay": "Engine"
     }
 
-    def __init__(self):
+    def __init__(self, root: Tk, string: StringVar):
         """Initialize as Thread and create attributes"""
         Thread.__init__(self)
-        self._delays = {k: 0.0 for k in self.DELAYS.values()}
+        self._root = root
+        self._after_id = None
+        self._delays = {k: 1.0 for k in self.DELAYS.values()}
         self._lock = Lock()
         self._exit_queue = Queue()
+        self._data_queue = Queue()
         self.primary = "PrimaryWeapon"
         self.__delays = dict()
-        self._string = StringVar()
-        self._overlay = Overlay((0, 0), self._string)
-        self._overlay.update()
         self._internal_q = Queue()
         self._match = False
         self._ms_listener = MSListener(on_click=self._on_click)
@@ -96,7 +96,8 @@ class TimerParser(Thread):
             else:
                 remaining = "Regenerating"
             string += "{}: {}\n".format(pool, remaining)
-        self._string.set(string)
+        if len(string) != 0:
+            self._data_queue.put(string)
         sleep(0.1)
 
     def process_event(self, event: dict, active_ids: list):
@@ -110,7 +111,6 @@ class TimerParser(Thread):
 
     def cleanup(self):
         """Clean up everything in use"""
-        self._overlay.destroy()
         self._ms_listener.stop()
         self._kb_listener.stop()
 

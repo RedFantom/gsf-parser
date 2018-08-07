@@ -9,7 +9,7 @@ import time
 import psutil
 import os
 import sys
-from queue import Queue
+from queue import Queue, Empty
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -161,12 +161,15 @@ class RealTimeFrame(ttk.Frame):
         # Change Button state
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
+        print("[RealTimeFrame] Opening Overlays")
         self.open_overlay()
         self.open_event_overlay()
         self.update_data_string()
         # Start the parser
+        print("[RealTimeFrame] RealTimeParser Thread started")
         self.parser.start()
         self.after(1000, self.check_alive)
+        print("[RealTimeFrame] Real-time parsing started")
 
     def stop_parsing(self):
         """Stop the parsing process"""
@@ -235,17 +238,15 @@ class RealTimeFrame(ttk.Frame):
         """Open an overlay if the settings given by the user allow for it"""
         if settings["realtime"]["overlay"] is False and settings["screen"]["overlay"] is False:
             return
-        if settings["screen"]["experimental"] is True and sys.platform != "linux":
-            from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
-        else:  # Linux or non-experimental
-            from widgets import Overlay
+        from widgets.overlays import Overlay
         # Generate arguments for Overlay.__init__
         position = settings["realtime"]["overlay_position"]
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
         try:
-            self.overlay = Overlay((x, y), self.overlay_string, master=self.window, auto_init=True)
+            self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+            print("[RealTimeFrame] Overlay opened")
         except Exception as e:
             messagebox.showerror(
                 "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
@@ -253,12 +254,13 @@ class RealTimeFrame(ttk.Frame):
                          "\n\n{}.".format(e))
             raise
         self.update_overlay()
+        print("[RealTimeFrame] Overlay initialized")
 
     def open_event_overlay(self):
         """Open an EventOverlay if it is enabled in settings"""
         if settings["realtime"]["event_overlay"] is False:
             return
-        x, y = settings["realtime"]["event_location"].split("y")
+        x, y = settings["realtime"]["event_position"].split("y")
         x, y = int(x[1:]), int(y)
         self._event_overlay = EventOverlay(self.window, location=(x, y))
 
@@ -289,11 +291,16 @@ class RealTimeFrame(ttk.Frame):
         string = self.parser.overlay_string
         if string.endswith("\n"):
             string = string[:-1]
+        if self.parser._timer_parser is not None:
+            try:
+                string += "\n" + self.parser._timer_parser._data_queue.get(block=False)
+            except Empty:
+                pass
         self.overlay.update_text(string)
-        self.overlay_after_id = self.after(1000, self.update_overlay)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()
+        self.overlay_after_id = self.after(100, self.update_overlay)
 
     def close_overlay(self):
         """Close the overlay"""

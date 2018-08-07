@@ -27,7 +27,6 @@ class EventOverlay(tk.Toplevel):
         """
         :param master: master widget
         :param timeout: Amount of time an event is displayed in seconds
-        :param types: list of event types displayed
         :param bg: Background color of the window
         :param location: Location tuple for the window in pixels
         """

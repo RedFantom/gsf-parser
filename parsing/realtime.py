@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 import os
 import _pickle as pickle  # known as cPickle
 from queue import PriorityQueue
-from time import sleep
 from threading import Thread, Lock
+import tkinter as tk
+from time import sleep
 import traceback
 # UI Libraries
 from tkinter import messagebox
@@ -110,26 +111,7 @@ class RealTimeParser(Thread):
             minimap_window=None,
             dynamic_window=False,
             rgb_enabled=True,
-            rpc: Presence = None,
-    ):
-        """
-        :param character_db: Character database
-        :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
-        :param match_callback: Callback called with match_timing when a new match has been detected
-        :param file_callback: Callback called with file_timing when a new file has been detected
-        :param event_callback: Callback called with line_dict when a new event has been detected
-        :param screen_parsing_enabled: boolean that enables screen parsing features
-        :param screen_parsing_features: list of screen parsing features
-        :param data_queue: Queue to communicate queries for data with
-        :param return_queue: Queue to answer queries for data with
-        :param exit_queue: Queue to make the RealTimeParser stop activities
-        :param character_data: Character tuple with the character name and network to retrieve data with
-        :param minimap_share: Whether to share minimap location with a server
-        :param minimap_address: Address of the MiniMap sharing server
-        :param minimap_user: Username for the MiniMap sharing server
-        :param dynamic_window: Whether Dynamic Window Location is enabled
-        :param rgb_enabled: Whether RGB Keyboard effects are enabled
-        """
+            rpc: Presence = None):
         Thread.__init__(self)
 
         self.options = variables.settings.dict()
@@ -214,7 +196,7 @@ class RealTimeParser(Thread):
         self._active_map = None
         self._timer_parser = None
         if "Power Regeneration Delays" in self._screen_parsing_features:
-            self._timer_parser = TimerParser()
+            self._timer_parser = TimerParser(self._window, tk.StringVar(self._window))
 
         """
         MiniMap Sharing
