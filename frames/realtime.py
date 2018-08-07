@@ -238,14 +238,16 @@ class RealTimeFrame(ttk.Frame):
         if settings["screen"]["experimental"] is True and sys.platform != "linux":
             from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
         else:  # Linux or non-experimental
-            from widgets import Overlay
+            from widgets.overlays import Overlay
         # Generate arguments for Overlay.__init__
         position = settings["realtime"]["overlay_position"]
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
         try:
-            self.overlay = Overlay((x, y), self.overlay_string, master=self.window, auto_init=True)
+            self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+            if hasattr(self.overlay, "start") and callable(self.overlay.start):
+                self.overlay.start()
         except Exception as e:
             messagebox.showerror(
                 "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
@@ -289,6 +291,8 @@ class RealTimeFrame(ttk.Frame):
         string = self.parser.overlay_string
         if string.endswith("\n"):
             string = string[:-1]
+        if len(string) == 0:
+            print("[RealTimeFrame] Empty string!")
         self.overlay.update_text(string)
         self.overlay_after_id = self.after(1000, self.update_overlay)
         if self._event_overlay is not None:

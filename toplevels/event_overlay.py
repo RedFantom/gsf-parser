@@ -131,7 +131,7 @@ class EventOverlay(tk.Toplevel):
             self._parent, image=self._icons[ability], compound=tk.LEFT,
             text="{:<16}{}".format(event["ability"], amount),
             background=self._background, foreground=variables.colors[event_type][0],
-            font=("Consolas", 10, True))
+            font=("Consolas", 10, "bold"))
         return label
 
     def destroy(self):
