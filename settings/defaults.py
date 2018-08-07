@@ -50,7 +50,7 @@ defaults = {
         # Whether to enable EventOverlay
         "event_overlay": False,
         # Location of EventOverlay
-        "event_location": "x0y0",
+        "event_position": "x0y0",
         # RealTimeParser sleep
         "sleep": True,
         # RGB Keyboard Lighting Effects

@@ -138,19 +138,7 @@ class SettingsFrame(ttk.Frame):
             self.rt_frame, self.rt_overlay_text_color, *("Yellow", "Green", "Blue", "Red", "Black"),
             command=self.save_settings)
         # Overlay position
-        self.rt_overlay_position_frame = ttk.Frame(self.rt_frame)
-        self.rt_overlay_position_label = ttk.Label(self.rt_overlay_position_frame, text="Overlay position:")
-        self.rt_overlay_position_x_label = ttk.Label(self.rt_overlay_position_frame, text="X Coordinate:")
-        self.rt_overlay_position_x = ttk.Entry(self.rt_overlay_position_frame, width=4)
-        self.rt_overlay_position_y_label = ttk.Label(self.rt_overlay_position_frame, text="Y Coordinate:")
-        self.rt_overlay_position_y = ttk.Entry(self.rt_overlay_position_frame, width=4)
-        help_text = "The overlay's position is set as a pair of coordinates, in pixels, measured from the top left " \
-                    "corner of the screen."
-        for widget in [self.rt_overlay_position_x_label, self.rt_overlay_position_y_label,
-                       self.rt_overlay_position_y, self.rt_overlay_position_x]:
-            Balloon(widget, text=help_text, width=350)
-        self.rt_overlay_position_y.bind("<Key>", self.save_settings_delayed)
-        self.rt_overlay_position_x.bind("<Key>", self.save_settings_delayed)
+        self.rt_overlay_position_frame = OverlayPositionFrame(self.rt_frame, self, "Overlay")
         # Disable overlay when not in match
         self.rt_overlay_disable = tk.BooleanVar()
         self.rt_overlay_disable_checkbox = ttk.Checkbutton(
@@ -171,15 +159,7 @@ class SettingsFrame(ttk.Frame):
             text="The EventOverlay shows the last few events in the CombatLog in a certain set of categories. This "
                  "feature can be useful for streamers to indicate the enemy weapons or other non-obvious events.")
         # EventOverlay position
-        self.rt_event_position_frame = ttk.Frame(self.rt_frame)
-        self.rt_event_position_label = ttk.Label(
-            self.rt_event_position_frame, text="EventOverlay position:")
-        self.rt_event_position_x_label = ttk.Label(self.rt_event_position_frame, text="X Coordinate:")
-        self.rt_event_position_x = ttk.Entry(self.rt_event_position_frame, width=4)
-        self.rt_event_position_y_label = ttk.Label(self.rt_event_position_frame, text="Y Coordinate:")
-        self.rt_event_position_y = ttk.Entry(self.rt_event_position_frame, width=4)
-        self.rt_event_position_y.bind("<Key>", self.save_settings_delayed)
-        self.rt_event_position_x.bind("<Key>", self.save_settings_delayed)
+        self.rt_event_position_frame = OverlayPositionFrame(self.rt_frame, self, "EventOverlay")
         # RealTimeParser Sleep
         self.rt_sleep = tk.BooleanVar()
         self.rt_sleep_checkbox = ttk.Checkbutton(
@@ -360,11 +340,6 @@ class SettingsFrame(ttk.Frame):
         self.rt_overlay_text_color_dropdown.grid(row=1, column=1, **padding_default, **sticky_button)
         # Overlay position
         self.rt_overlay_position_frame.grid(row=2, column=0, columnspan=4, **padding_label, **sticky_default)
-        self.rt_overlay_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
-        self.rt_overlay_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.rt_overlay_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
-        self.rt_overlay_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        self.rt_overlay_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         # Disable overlay when not in match
         self.rt_overlay_disable_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Experimental Win32 Overlay
@@ -373,11 +348,6 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_overlay_checkbox.grid(row=5, column=0, **padding_label, **sticky_default, **checkbox)
         # EventOverlay Position
         self.rt_event_position_frame.grid(row=6, column=0, columnspan=4, **padding_label, **sticky_default)
-        self.rt_event_position_label.grid(row=0, column=0, padx=0, pady=(0, 5), **sticky_default)
-        self.rt_event_position_x_label.grid(row=1, column=0, **padding_label, **sticky_default)
-        self.rt_event_position_x.grid(row=1, column=1, **padding_default, **sticky_default)
-        self.rt_event_position_y_label.grid(row=2, column=0, **padding_label, **sticky_default)
-        self.rt_event_position_y.grid(row=2, column=1, **padding_default, **sticky_default)
         # RealTimeParser sleep
         self.rt_sleep_checkbox.grid(row=7, column=0, **padding_label, **sticky_button)
         # RGB Effects
@@ -435,19 +405,11 @@ class SettingsFrame(ttk.Frame):
         self.rt_overlay_enabled.set(settings["realtime"]["overlay"])
         self.rt_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
         # Overlay position
-        self.rt_overlay_position_x.delete(0, tk.END)
-        self.rt_overlay_position_y.delete(0, tk.END)
-        x, y = settings["realtime"]["overlay_position"].split("y")
-        self.rt_overlay_position_x.insert(tk.END, x[1:])
-        self.rt_overlay_position_y.insert(tk.END, y)
+        self.rt_overlay_position_frame.set(settings["realtime"]["overlay_position"])
         self.rt_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
         # EventOverlay
         self.rt_event_overlay.set(settings["realtime"]["event_overlay"])
-        self.rt_event_position_x.delete(0, tk.END)
-        self.rt_event_position_y.delete(0, tk.END)
-        x, y = settings["realtime"]["event_location"].split("y")
-        self.rt_event_position_x.insert(tk.END, x[1:])
-        self.rt_event_position_y.insert(tk.END, y)
+        self.rt_event_position_frame.set(settings["realtime"]["event_position"])
         self.rt_sleep.set(settings["realtime"]["sleep"])
         self.rt_rgb.set(settings["realtime"]["rgb"])
         self.rt_drp.set(settings["realtime"]["drp"])
@@ -485,7 +447,7 @@ class SettingsFrame(ttk.Frame):
         if self.check_settings() is False:
             self.update_settings()
             return
-        print("[MainWindow] Saving settings")
+        print("[SettingsFrame] Saving settings")
         dictionary = {
             "misc": {
                 "version": settings["misc"]["version"],
@@ -502,14 +464,12 @@ class SettingsFrame(ttk.Frame):
             },
             "realtime": {
                 "overlay": self.rt_overlay_enabled.get(),
-                "overlay_position": "x{}y{}".format(
-                    self.rt_overlay_position_x.get(), self.rt_overlay_position_y.get()),
+                "overlay_position": self.rt_overlay_position_frame.get(),
                 "overlay_when_gsf": self.rt_overlay_disable.get(),
                 "overlay_text": self.rt_overlay_text_color.get(),
                 "overlay_experimental": self.rt_overlay_experimental.get(),
                 "event_overlay": self.rt_event_overlay.get(),
-                "event_location": "x{}y{}".format(
-                    self.rt_event_position_x.get(), self.rt_event_position_y.get()),
+                "event_position": self.rt_event_position_frame.get(),
                 "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
@@ -545,14 +505,11 @@ class SettingsFrame(ttk.Frame):
             messagebox.showerror("Error", "The CombatLogs folder path entered is not valid.")
             return False
         # Overlay position
-        x = self.rt_overlay_position_x.get()
-        y = self.rt_overlay_position_y.get()
-        if not x.isdigit() or not y.isdigit():
+        if not self.rt_overlay_position_frame.validate():
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
             return False
         # EventOverlay Position
-        x, y = self.rt_event_position_x.get(), self.rt_event_position_y.get()
-        if not x.isdigit() or not y.isdigit():
+        if self.rt_event_position_frame.validate():
             messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
             return False
         # Sharing settings
@@ -566,3 +523,65 @@ class SettingsFrame(ttk.Frame):
             messagebox.showerror("Error", "Invalid Discord Sharing authentication code entered.")
             return False
         return True
+
+
+class OverlayPositionFrame(ttk.Frame):
+    """Frame containing the widgets to set an overlay position"""
+
+    def __init__(self, master, frame: SettingsFrame, name: str):
+        """Initialize Frame and subwidgets"""
+        ttk.Frame.__init__(self, master)
+        self._frame = frame
+
+        self._label = ttk.Label(self, text="{} position:".format(name))
+        self._x_label = ttk.Label(self, text="X Coordinate:")
+        self._y_label = ttk.Label(self, text="Y Coordinate:")
+
+        self._x_entry = ttk.Entry(self, width=4)
+        self._y_entry = ttk.Entry(self, width=4)
+
+        self.setup_bindings()
+        self.setup_balloons()
+        self.grid_widgets()
+
+    def setup_bindings(self):
+        """Setup the bindings to the master frame"""
+        self._x_entry.bind("<Key>", self._frame.save_settings_delayed)
+        self._y_entry.bind("<Key>", self._frame.save_settings_delayed)
+
+    def setup_balloons(self):
+        """Initialize help Balloons for widgets"""
+        for widget in (self._label, self._x_label, self._y_label, self._x_entry, self._y_entry):
+            Balloon(widget, text="The overlay's position is set as a pair of"
+                                 "coordinates in pixels, from the left top "
+                                 "corner of the screen to the left top corner "
+                                 "of the Overlay window.")
+
+    def grid_widgets(self):
+        """Configure the widgets in the grid geometry manager"""
+        self._label.grid(row=0, column=0, padx=0, pady=(0, 5), sticky="nsw")
+        self._x_label.grid(row=1, column=0, padx=(40, 5), pady=(0, 5), sticky="nsw")
+        self._y_label.grid(row=2, column=0, padx=(40, 5), pady=(0, 5), sticky="nsw")
+        self._x_entry.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
+        self._y_entry.grid(row=2, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
+
+    def get(self):
+        """Return the coordinates in x{}y{} formatted manner"""
+        return "x{}y{}".format(self._x_entry.get(), self._y_entry.get())
+
+    def validate(self):
+        """Validate the contents of the Entries"""
+        x, y = self._x_entry.get(), self._y_entry.get()
+        if not x.isdigit() or not y.isdigit():
+            return False
+        x, y = map(int, (x, y))
+        return x >= 0 and y >= 0
+
+    def set(self, string: str):
+        """Update the coordinates show in the Entries"""
+        print("[OverlayPositionFrame] Updating with {}".format(string))
+        x, y = string.strip("x").split("y")
+        self._x_entry.delete(0, tk.END)
+        self._y_entry.delete(0, tk.END)
+        self._x_entry.insert(tk.END, x)
+        self._y_entry.insert(tk.END, y)
