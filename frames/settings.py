@@ -148,7 +148,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_overlay_experimental = tk.BooleanVar()
         self.rt_overlay_experimental_checkbox = ttk.Checkbutton(
             self.rt_frame, text="Enable experimental high-performance overlay",
-            variable=self.rt_overlay_experimental)
+            variable=self.rt_overlay_experimental, command=self.save_settings)
         # EventOverlay
         self.rt_event_overlay = tk.BooleanVar()
         self.rt_event_overlay_checkbox = ttk.Checkbutton(
@@ -233,9 +233,7 @@ class SettingsFrame(ttk.Frame):
         self.update_settings()
 
     def set_custom_event_colors(self):
-        """
-        Opens a Toplevel to show the settings for the colors of the events view.
-        """
+        """Open EventColors Toplevel"""
         color_toplevel = EventColors(self.main_window)
         color_toplevel.grid_widgets()
         color_toplevel.focus_set()
@@ -396,12 +394,11 @@ class SettingsFrame(ttk.Frame):
         """
         self.rt_overlay_enabled.set(settings["realtime"]["overlay"])
         self.rt_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
-        # Overlay position
         self.rt_overlay_position_frame.set(settings["realtime"]["overlay_position"])
         self.rt_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
-        # EventOverlay
-        self.rt_event_overlay.set(settings["realtime"]["event_overlay"])
-        self.rt_event_position_frame.set(settings["realtime"]["event_position"])
+        self.rt_overlay_experimental.set(settings["screen"]["experimental"])
+        self.rt_event_overlay.set(settings["event"]["enabled"])
+        self.rt_event_position_frame.set(settings["event"]["position"])
         self.rt_sleep.set(settings["realtime"]["sleep"])
         self.rt_rgb.set(settings["realtime"]["rgb"])
         self.rt_drp.set(settings["realtime"]["drp"])
@@ -422,12 +419,6 @@ class SettingsFrame(ttk.Frame):
                 text="Your monitor resolution is not supported by this feature. If you would like "
                      "for your resolution to be supported, please send RedFantom a screenshot of the "
                      "unaltered user interface shown before the start of a match.")
-        if sys.platform == "linux":
-            self.rt_overlay_experimental.set(False)
-            self.rt_overlay_experimental_checkbox.config(state=tk.DISABLED)
-            Balloon(self.rt_overlay_experimental_checkbox,
-                    text="This feature is only available on Windows due to API differences.")
-        return
 
     def save_settings(self, *args):
         """
@@ -458,14 +449,16 @@ class SettingsFrame(ttk.Frame):
                 "overlay_position": self.rt_overlay_position_frame.get(),
                 "overlay_when_gsf": self.rt_overlay_disable.get(),
                 "overlay_text": self.rt_overlay_text_color.get(),
-                "overlay_experimental": self.rt_overlay_experimental.get(),
-                "event_overlay": self.rt_event_overlay.get(),
-                "event_position": self.rt_event_position_frame.get(),
                 "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
             },
+            "event": {
+                "enabled": self.rt_event_overlay.get(),
+                "position": self.rt_event_position_frame.get(),
+            },
             "screen": {
+                "experimental": self.rt_overlay_experimental.get(),
                 "enabled": self.sc_enabled.get(),
                 "features": [key for key, value in self.sc_variables.items() if value.get() is True],
                 "window": self.sc_dynamic_window.get()

@@ -9,7 +9,6 @@ import time
 import psutil
 import os
 import sys
-from queue import Queue
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -219,9 +218,9 @@ class RealTimeFrame(ttk.Frame):
 
     def open_event_overlay(self):
         """Open an EventOverlay if it is enabled in settings"""
-        if settings["realtime"]["event_overlay"] is False:
+        if settings["event"]["enabled"] is False:
             return
-        x, y = settings["realtime"]["event_location"].split("y")
+        x, y = settings["event"]["position"].split("y")
         x, y = int(x[1:]), int(y)
         self._event_overlay = EventOverlay(self.window, location=(x, y))
 
@@ -265,10 +264,6 @@ class RealTimeFrame(ttk.Frame):
         if self._event_overlay is not None:
             self._event_overlay.destroy()
             self._event_overlay = None
-
-    """
-    Character handling
-    """
 
     def update_characters(self, *args):
         """Update the characters shown in the character dropdown"""

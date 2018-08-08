@@ -27,7 +27,6 @@ class EventOverlay(tk.Toplevel):
         """
         :param master: master widget
         :param timeout: Amount of time an event is displayed in seconds
-        :param types: list of event types displayed
         :param bg: Background color of the window
         :param location: Location tuple for the window in pixels
         """
@@ -96,7 +95,8 @@ class EventOverlay(tk.Toplevel):
             return
         # Process out of time events
         for time in list(self._labels.keys()):
-            if (datetime.now() - time).total_seconds() > self._timeout:
+            elapsed = abs((datetime.now() - time).total_seconds())
+            if elapsed > self._timeout:
                 self._labels[time].grid_forget()
                 self._labels[time].destroy()  # Prevent memory leak
                 del self._labels[time]
@@ -119,12 +119,16 @@ class EventOverlay(tk.Toplevel):
 
     def generate_widget(self, event: dict, event_type: str) -> (tk.Label, None):
         """Build a abel widget for an event"""
-        if (datetime.now() - datetime.combine(datetime.now().date(), event["time"].time())).total_seconds() > self._timeout:
+        now = datetime.now()
+        elapsed = (now - datetime.combine(now.date(), event["time"].time())).total_seconds()
+        if elapsed > self._timeout:
+            return None
+        if "AbilityActivate" not in event["effect"] and "Damage" not in event["effect"]:
             return None
         ability = event["ability"]
         if ability not in self._icons:
             ability = ability.split(":")[0]
-        if ability not in self._icons:
+        if ability not in self._icons or ability in Parser.IGNORABLE:
             return None
         amount = "" if event["amount"] in ("", "0", 0) else " - {}".format(event["amount"])
         label = tk.Label(

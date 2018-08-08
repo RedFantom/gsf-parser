@@ -477,6 +477,7 @@ class RealTimeParser(Thread):
 
     def parse_line(self, line: dict):
         """Parse an actual GSF event line"""
+        Parser.get_event_category(line, self.active_id)
         if line["amount"] == "":
             line["amount"] = "0"
         line["amount"] = int(line["amount"].replace("*", ""))

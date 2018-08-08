@@ -10,10 +10,15 @@ from sys import platform
 from variables import settings
 
 if settings["screen"]["experimental"] is True and platform == "win32":
+    print("[ImportSystem] Importing Windows experimental overlay")
     from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
-else:
+elif settings["screen"]["experimental"] is True and platform == "linux":
+    print("[ImportSystem] Importing GtkOverlay")
     try:
         from widgets.overlays.overlay_gtk import GtkOverlay as Overlay
     except ImportError as e:
-        print("[ImportSystem] {}".format(e))
+        print("[ImportSystem] Could not import GtkOverlay: {}".format(e))
         from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
+else:
+    print("[ImportSystem] Importing default TkinterOverlay")
+    from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
