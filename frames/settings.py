@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import sys
-import os
 from collections import OrderedDict
+from datetime import datetime
+import os
+import sys
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -31,6 +32,8 @@ class SettingsFrame(ttk.Frame):
     the settings from the file. The settings.settings instance used is created
     in the variables.py file.
     """
+
+    DELAY = 3000
 
     def __init__(self, root_frame, main_window):
         self.after_id = None
@@ -135,7 +138,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_overlay_text_color_label = ttk.Label(
             self.rt_frame, text="Overlay text color:", justify=tk.LEFT)
         self.rt_overlay_text_color_dropdown = ttk.OptionMenu(
-            self.rt_frame, self.rt_overlay_text_color, *("Yellow", "Green", "Blue", "Red", "Black"),
+            self.rt_frame, self.rt_overlay_text_color, *("Choose", "Yellow", "Green", "Blue", "Red", "Black"),
             command=self.save_settings)
         # Overlay position
         self.rt_overlay_position_frame = OverlayPositionFrame(self.rt_frame, self, "Overlay")
@@ -230,6 +233,16 @@ class SettingsFrame(ttk.Frame):
                  "Available under the GNU GPLv3 License\n\n"
                  "Special thanks to everyone who has provided feedback, and to JediPedia for the the clean GSF map "
                  "textures.")
+
+        self.canvas = tk.Canvas(
+            self.credits_frame, width=800, height=15,
+            background=self.main_window.style.lookup("TFrame", "background"))
+        self._canvas_start = None
+        self._saved = False
+        self._save_after_id = None
+        self._canvas_box = None
+        self._canvas_text = None
+
         self.update_settings()
 
     def set_custom_event_colors(self):
@@ -268,6 +281,7 @@ class SettingsFrame(ttk.Frame):
         self.separator.grid(row=1, column=0, **padding_default, sticky="we")
         self.credits_frame.grid(row=2, column=0, **padding_default, **sticky_default)
         self.credits_label.grid(row=0, column=0, **padding_default, **sticky_default)
+        self.canvas.grid(row=3, column=0, **padding_default, **sticky_default)
 
         """
         UI settings
@@ -475,11 +489,53 @@ class SettingsFrame(ttk.Frame):
         self.update_settings()
         colors.set_scheme(self.gui_event_colors_scheme.get())
         self.after_id = None
+        self._saved = True
+        if self._save_after_id is None:
+            self._save_after_id = self.after(1, self.update_canvas)
 
     def save_settings_delayed(self, *args):
+        """Save the settings after two seconds"""
         if self.after_id is not None:
             self.after_cancel(self.after_id)
-        self.after_id = self.after(2000, self.save_settings)
+        self.after_id = self.after(self.DELAY, self.save_settings)
+        self._canvas_start = datetime.now()
+        if self._save_after_id is not None:
+            self.after_cancel(self._save_after_id)
+        self._save_after_id = self.after(1, self.update_canvas)
+
+    def update_canvas(self):
+        """Update the Canvas"""
+        if self._canvas_start is None:
+            self._canvas_start = datetime.now()
+        elapsed = (datetime.now() - self._canvas_start).total_seconds()
+        delay = self.DELAY / 1000
+        if self._saved is True:
+            if self._canvas_box is not None:
+                self.canvas.delete(self._canvas_box)
+                self._canvas_box = None
+            if self._canvas_text is None:
+                self._canvas_start = datetime.now()
+                self._canvas_text = self.canvas.create_text(
+                    0, 0, text="Saved!", fill=settings["gui"]["color"], anchor=tk.NW)
+                x1, y1, x2, y2 = self.canvas.bbox(self._canvas_text)
+                x = self.canvas.winfo_width() - (x2 - x1)
+                self.canvas.coords(self._canvas_text, (x, 0))
+            elif elapsed > delay:
+                self.canvas.delete(self._canvas_text)
+                self._canvas_text, self._canvas_box = None, None
+                self._save_after_id, self._canvas_start = None, None
+                self._saved = False
+                return
+        else:  # self._saved is False
+            if self._canvas_box is not None:
+                self.canvas.delete(self._canvas_box)
+            if elapsed < delay:
+                x = int(elapsed / delay * 800)
+                self._canvas_box = self.canvas.create_rectangle(
+                    (0, 5, x, 10), fill=settings["gui"]["color"])
+            else:  # elapsed > self.DELAY: settings are saved
+                self._canvas_box = None
+        self._save_after_id = self.after(33, self.update_canvas)
 
     def check_settings(self):
         """Check if the settings entered by the user are valid."""
