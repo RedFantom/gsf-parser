@@ -132,9 +132,7 @@ class MainWindow(ThemedTk):
         self.graphs_frame.grid(column=0, row=0)
 
     def child_grid_widgets(self):
-        """
-        Call grid_widgets on all child widgets that must contain widgets
-        """
+        """Configure the child widgets of the Frames in grid geometry"""
         self.file_select_frame.grid_widgets()
         self.middle_frame.grid_widgets()
         self.realtime_frame.grid_widgets()
@@ -176,10 +174,6 @@ class MainWindow(ThemedTk):
     def set_variables(self):
         """Set program global variables in the shared variables module"""
         variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
-        # Get the screen properties
-        variables.screen_w = self.winfo_screenwidth()
-        variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings["parsing"]["path"]
 
     def get_scaling_factor(self):
         """Return the DPI scaling factor (float)"""
