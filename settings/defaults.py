@@ -66,7 +66,9 @@ defaults = {
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
         # Whether to enable experimental Dynamic Window Location
-        "window": False
+        "window": False,
+        # SWTOR Dynamic window support
+        "dynamic": False,
     },
     "sharing": {
         "enabled": True,

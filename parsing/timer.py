@@ -10,7 +10,7 @@ from queue import Queue
 from threading import Thread, Lock
 from time import sleep
 # Packages
-from pynput.keyboard import Listener as KBListener, Key
+from pynput.keyboard import Listener as KBListener, Key, KeyCode
 from pynput.mouse import Listener as MSListener, Button
 # Project Modules
 from parsing import Parser
@@ -94,7 +94,7 @@ class TimerParser(Thread):
             return
         if self._mouse is True:
             self.__delays["Weapon"] = datetime.now()
-        string, time = str(), datetime.now()
+        string, time = "\n", datetime.now()
         for pool, start in self.__delays.items():
             elapsed = (time - start).total_seconds()
             remaining = max(stats[pool]["Delay"] - elapsed, 0.0)
@@ -107,6 +107,10 @@ class TimerParser(Thread):
 
     def process_event(self, event: dict, active_ids: list):
         """Process an event to check for shield power pool usage"""
+        ctg = Parser.get_event_category(event, active_ids)
+        if event["self"] is True and ctg == "engine":
+            self._internal_q.put(("Engine", event["time"]))
+            return
         if event["self"] is True or Parser.compare_ids(event["target"], active_ids) is False:
             return
         if "Damage" not in event["effect"]:
@@ -141,9 +145,9 @@ class TimerParser(Thread):
         if button == Button.left:
             self._internal_q.put("mouse")
 
-    def _on_press(self, key: (Key, str)):
+    def _on_press(self, key: (Key, KeyCode)):
         """Process a key press to check for engine power usage"""
-        if key == Key.space or key == "3":
+        if key == Key.space:
             self._internal_q.put(("Engine", datetime.now()))
 
     @property
