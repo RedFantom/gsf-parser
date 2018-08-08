@@ -39,6 +39,7 @@ class GtkOverlay(Gtk.Window, Thread):
 
     def run(self):
         Gtk.main()
+        print("[GtkOverlay] Loop ended")
 
     def init_window_attr(self):
         """Initialize Window attributes"""

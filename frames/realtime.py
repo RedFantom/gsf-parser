@@ -111,6 +111,8 @@ class RealTimeFrame(ttk.Frame):
 
     def start_parsing(self):
         """Start the parsing process and open the Overlay"""
+        self.parsing_control_button.config(state=tk.DISABLED)
+        self.parsing_control_button.update()
         if self.check_parser_start() is False:
             return
         # Setup attributes
@@ -147,11 +149,14 @@ class RealTimeFrame(ttk.Frame):
         self.update_data_string()
         # Start the parser
         self.parser.start()
-        self._rtp_id = self.after(500, self.check_alive)
+        self._rtp_id = self.after(100, self.check_alive)
         self.data_after_id = self.after(1000, self.update_data_string)
+        self.parsing_control_button.config(state=tk.NORMAL)
 
     def stop_parsing(self):
         """Stop the parsing process"""
+        self.parsing_control_button.config(state=tk.DISABLED)
+        self.parsing_control_button.update()
         if self.minimap_enabled.get() is True and self.minimap is not None:
             self.minimap.destroy()
         self.close_overlay()
@@ -169,6 +174,7 @@ class RealTimeFrame(ttk.Frame):
         self.close_event_overlay()
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
+        self.parsing_control_button.config(state=tk.NORMAL)
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
@@ -302,4 +308,4 @@ class RealTimeFrame(ttk.Frame):
         if self.parser.is_alive() is False:
             self.stop_parsing()
             return
-        self._rtp_id = self.after(500, self.check_alive)
+        self._rtp_id = self.after(100, self.check_alive)
