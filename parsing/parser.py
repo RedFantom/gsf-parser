@@ -262,54 +262,57 @@ class Parser(object):
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
         if "custom" in line_dict and line_dict["custom"] is True:
-            return "death"
-        if "icon" in line_dict:
-            return "dmgd_pri"
+            ctg = "death"
+        elif "icon" in line_dict:
+            ctg = "dmgd_pri"
         # If the ability is empty, this is a Gunship scope activation
-        if ability == "":
-            return "other"
+        elif ability == "":
+            ctg = "other"
         # Damage events
-        if "Damage" in line_dict['effect']:
+        elif "Damage" in line_dict['effect']:
             # Check for damage taken
             if Parser.compare_ids(line_dict["target"], active_id):
                 # Selfdamage
                 if line_dict['source'] == line_dict['target']:
-                    return "selfdmg"
+                    ctg = "selfdmg"
                 # Damage taken
                 else:
                     if ability in abilities.secondaries:
-                        return "dmgt_sec"
+                        ctg = "dmgt_sec"
                     else:
-                        return "dmgt_pri"
+                        ctg = "dmgt_pri"
             # Damage dealt
             else:
                 if ability in abilities.secondaries:
-                    return "dmgd_sec"
+                    ctg = "dmgd_sec"
                 else:
-                    return "dmgd_pri"
+                    ctg = "dmgd_pri"
         # Healing
         elif "Heal" in line_dict['effect']:
             # Selfhealing
             if Parser.compare_ids(line_dict["source"], active_id):
-                return "selfheal"
+                ctg = "selfheal"
             # Other healing
             else:
-                return "healing"
+                ctg = "healing"
         # AbilityActivate
         elif "AbilityActivate" in line_dict['effect']:
             if line_dict["ability"] in abilities.engines:
-                return "engine"
+                ctg = "engine"
             elif line_dict["ability"] in abilities.shields:
-                return "shield"
+                ctg = "shield"
             elif line_dict["ability"] in abilities.systems:
-                return "system"
+                ctg = "system"
             elif line_dict["ability"] in ("Player Death", "Game End"):
-                return "death"
+                ctg = "death"
             else:
-                return "other"
+                ctg = "other"
         elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
-            return "other"
-        raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
+            ctg = "other"
+        else:
+            raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
+        line_dict["category"] = ctg
+        return ctg
 
     @staticmethod
     def compare_ids(id: str, active_ids: (list, str)):
