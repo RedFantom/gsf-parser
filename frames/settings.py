@@ -26,11 +26,11 @@ from widgets import VerticalScrollFrame
 
 class SettingsFrame(ttk.Frame):
     """
-    A rather complicated Frame with lots of widgets containing the widgets for
-    all user-changable settings of the parser. The instance calls on functions
-    of a settings.settings instance to write the settings to the file and read
-    the settings from the file. The settings.settings instance used is created
-    in the variables.py file.
+    A rather complicated Frame with lots of widgets containing the
+    widgets for all user-changable settings of the parser. The instance
+    calls on functions of a settings.settings instance to write the
+    settings to the file and read the settings from the file. The
+    settings.settings instance used is created in the variables.py file.
     """
 
     DELAY = 3000
@@ -242,6 +242,7 @@ class SettingsFrame(ttk.Frame):
         self._save_after_id = None
         self._canvas_box = None
         self._canvas_text = None
+        self._restart_required = False
 
         self.update_settings()
 
@@ -372,7 +373,7 @@ class SettingsFrame(ttk.Frame):
         # Screen parsing features
         self.sc_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
         row = 3
-        for feature in self.sc_checkboxes.values():
+        for _, feature in sorted(self.sc_checkboxes.items(), key=lambda t: t[0]):
             feature.grid(row=row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
             row += 1
         # Screen Dynamic Window Location
@@ -515,8 +516,9 @@ class SettingsFrame(ttk.Frame):
                 self._canvas_box = None
             if self._canvas_text is None:
                 self._canvas_start = datetime.now()
+                text = "Saved!" if not self._restart_required else "Restart Required"
                 self._canvas_text = self.canvas.create_text(
-                    0, 0, text="Saved!", fill=settings["gui"]["color"], anchor=tk.NW)
+                    0, 0, text=text, fill=settings["gui"]["color"], anchor=tk.NW)
                 x1, y1, x2, y2 = self.canvas.bbox(self._canvas_text)
                 x = self.canvas.winfo_width() - (x2 - x1)
                 self.canvas.coords(self._canvas_text, (x, 0))
@@ -561,7 +563,15 @@ class SettingsFrame(ttk.Frame):
         if len(self.sh_auth.get()) > 0 and not self.sh_auth.get().isdigit():
             messagebox.showerror("Error", "Invalid Discord Sharing authentication code entered.")
             return False
+        self.check_restart_required()
         return True
+
+    def check_restart_required(self):
+        """Check if the changed setting requires a restart"""
+        if self.rt_overlay_experimental.get() is not settings["screen"]["experimental"]:
+            self._restart_required = True
+        if self.gui_debug_window.get() is not settings["gui"]["debug"]:
+            self._restart_required = True
 
 
 class OverlayPositionFrame(ttk.Frame):
