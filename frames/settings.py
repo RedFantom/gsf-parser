@@ -259,7 +259,7 @@ class SettingsFrame(ttk.Frame):
         so the user does not have to enter the full path manually.
         """
         directory = filedialog.askdirectory(
-            initialdir=self.pa_path.get(), mustexist=True, parent=self.main_window,
+            initialdir=self.pa_path.get().strip(), mustexist=True, parent=self.main_window,
             title="GSF Parser: Choosing directory")
         if directory is None or directory == "" or not os.path.exists(directory):
             return
@@ -456,7 +456,7 @@ class SettingsFrame(ttk.Frame):
                 "debug": self.gui_debug_window.get()
             },
             "parsing": {
-                "path": self.pa_path.get(),
+                "path": self.pa_path.get().strip(),
             },
             "realtime": {
                 "overlay": self.rt_overlay_enabled.get(),
@@ -540,7 +540,7 @@ class SettingsFrame(ttk.Frame):
     def check_settings(self):
         """Check if the settings entered by the user are valid."""
         # Parsing path
-        if not os.path.exists(self.pa_path.get()):
+        if not os.path.exists(self.pa_path.get().strip()):
             messagebox.showerror("Error", "The CombatLogs folder path entered is not valid.")
             return False
         # Overlay position

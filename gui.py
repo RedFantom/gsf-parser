@@ -5,9 +5,9 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
+from datetime import datetime
 import os
 import sys
-from sys import exit
 # UI Libraries
 from ttkthemes import ThemedTk
 from tkinter import ttk
@@ -27,11 +27,11 @@ from utils.update import check_update
 from variables import settings
 import variables
 # Packages
-import pyscreenshot
+from mss import mss
 from PIL import Image
 from PIL.ImageTk import PhotoImage
-from raven import Client as RavenClient
 from pypresence import Presence
+from raven import Client as RavenClient
 
 
 class MainWindow(ThemedTk):
@@ -234,16 +234,20 @@ class MainWindow(ThemedTk):
         :return: SystemExit(0)
         """
         if self.destroy():
-            exit()
+            sys.exit()
 
     def screenshot(self, *args):
         """Take a screenshot of the GSF Parser window and save"""
         x = self.winfo_x()
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)
-        screenshot = pyscreenshot.grab(result_box)
-        file_name = os.path.join(get_temp_directory(), "screenshot.png")
-        screenshot.save(file_name, "PNG")
+        file_name = os.path.join(
+            get_temp_directory(),
+            "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".png")
+        with mss() as sct:
+            image = sct.grab(result_box)
+        image = Image.frombytes("RGB", image.size, image.rgb)
+        image.save(file_name)
 
     def destroy(self):
         """
