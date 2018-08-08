@@ -61,8 +61,6 @@ defaults = {
     "screen": {
         # Whether screen parsing is enabled
         "enabled": True,
-        # Whether screen parsing data is in the Overlay
-        "overlay": True,
         # List of enabled screen parsing features
         "features": ["Tracking penalty", "Ship health", "Power management"],
         # Whether to use the experimental WindowsOverlay

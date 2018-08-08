@@ -89,6 +89,9 @@ class RealTimeParser(Thread):
 
     TIMER_MARGIN = 10
 
+    SCREEN_DATA_DEF = {
+        "tracking": "", "health": (None, None, None), "map": None}
+
     def __init__(
             self,
             character_db,
@@ -197,7 +200,7 @@ class RealTimeParser(Thread):
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
         self._interface = None
         self._coordinates = {}
-        self.screen_data = {"tracking": "", "health": (None, None, None)}
+        self.screen_data = self.SCREEN_DATA_DEF.copy()
         self._resolution = resolution
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
@@ -891,7 +894,6 @@ class RealTimeParser(Thread):
             "amount": 0,
             "source": self.active_id,
             "target": self.active_id,
-            "target": self.active_id,
             "icon": self.primary,
             "effects": None
         }
@@ -998,6 +1000,13 @@ class RealTimeParser(Thread):
         self.release()
 
     def set_for_current_spawn(self, *args):
+        """
+        Update a value for the current spawn in the real-time parsing db
+
+        The real-time parsing database supports two different formats:
+        - A single value for a spawn :param args: (value,)
+        - A value keyed for a time for a spawn :param args: (time, val)
+        """
         self.acquire()
         file, match, spawn = self._stalker.file, self.start_match, self.start_spawn
         if len(args) == 2:
@@ -1005,7 +1014,7 @@ class RealTimeParser(Thread):
         elif len(args) == 3:
             self._realtime_db[file][match][spawn][args[0]][args[1]] = args[2]
         else:
-            raise ValueError()
+            print("[RealTimeParser: set_for_current_spawn] Invalid: '{}'".format(args))
         self.release()
 
     def get_for_current_spawn(self, category):
@@ -1019,34 +1028,45 @@ class RealTimeParser(Thread):
 
     @property
     def overlay_string(self):
-        if self.is_match is False and self.options["realtime"]["overlay_when_gsf"]:
+        """String of text to set in the Overlay"""
+        if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
             return ""
-        overlay_string = ""
-        tracking = self.get_tracking_string()
-        parsing = self.get_parsing_string()
-        for string in [parsing, tracking]:
-            overlay_string += string
-        return overlay_string
-
-    def get_tracking_string(self):
+        string = self.parsing_data_string
+        if "Spawn Timer" in self._screen_parsing_features:
+            string += self.spawn_timer_string
         if "Tracking penalty" not in self._screen_parsing_features:
-            return ""
+            string += self.tracking_string
+        if "Map and match type" in self._screen_parsing_features:
+            string += self.map_match_type_string
+        if self._timer_parser is not None and self._timer_parser.is_alive():
+            string += self._timer_parser.string
+        return string.strip()
+
+    @property
+    def tracking_string(self):
         return "Tracking: {}\n".format(self.screen_data["tracking"])
 
-    def get_parsing_string(self):
-        string = "Damage Dealt: {}\n" \
-                 "Damage Taken: {}\n" \
-                 "Selfdamage: {}\n" \
-                 "Healing Recv: {}\n".format(
-            self.dmg_d, self.dmg_t, self.dmg_s, self._healing)
-        return string
+    @property
+    def parsing_data_string(self):
+        """Simple normal parsing data string"""
+        return "Damage Dealt: {}\n" \
+               "Damage Taken: {}\n" \
+               "Selfdamage: {}\n" \
+               "Healing Recv: {}\n". \
+            format(self.dmg_d, self.dmg_t, self.dmg_s, self._healing)
 
-    def get_timer_string(self):
+    @property
+    def spawn_timer_string(self):
+        """Spawn timer parsing string for the Overlay"""
         if self._spawn_time is None:
             return ""
-        return "Spawn in {:02d}s".format(
-            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1]
-        )
+        return "Spawn in {:02d}s\n".format(
+            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
 
-    def get_health_string(self):
-        return ""
+    @property
+    def map_match_type_string(self):
+        """Map and match type string"""
+        if self.screen_data["map"] is None:
+            return "Map: Unknown\n"
+        map_type, map_name = self.screen_data["map"]
+        return "Map: {}\n".format(MAP_TYPE_NAMES[map_type][map_name])

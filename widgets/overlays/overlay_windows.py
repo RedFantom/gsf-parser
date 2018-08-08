@@ -215,3 +215,6 @@ class WindowsOverlay(object):
 
     def update_text(self, text):
         self._text_var.set(text)
+
+    def start(self):
+        pass

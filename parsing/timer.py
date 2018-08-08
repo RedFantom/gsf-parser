@@ -9,14 +9,12 @@ from datetime import datetime
 from queue import Queue
 from threading import Thread, Lock
 from time import sleep
-from tkinter import StringVar
 # Packages
 from pynput.keyboard import Listener as KBListener, Key
 from pynput.mouse import Listener as MSListener, Button
 # Project Modules
 from parsing import Parser
 from parsing.shipstats import ShipStats
-from widgets.overlays import Overlay
 
 
 class TimerParser(Thread):
@@ -28,28 +26,36 @@ class TimerParser(Thread):
         "Power_Engine_Regen_Delay": "Engine"
     }
 
+    POOLS = ["Weapon", "Shield", "Engine"]
+    STATS = {
+        "Delay": "Power_{}_Regen_Delay",
+        "Regen": "Power_{}_Regen_Rate",
+        "Recent": "Power_{}_Regen_Rate_(when_Recently_Consumed)"
+    }
+
     def __init__(self):
         """Initialize as Thread and create attributes"""
         Thread.__init__(self)
-        self._delays = {k: 0.0 for k in self.DELAYS.values()}
+        self._stats = {p: {k: 0.0 for k in self.STATS} for p in self.POOLS}
         self._lock = Lock()
         self._exit_queue = Queue()
         self.primary = "PrimaryWeapon"
         self.__delays = dict()
-        self._string = StringVar()
-        self._overlay = Overlay((0, 0), self._string)
-        self._overlay.update()
         self._internal_q = Queue()
         self._match = False
         self._ms_listener = MSListener(on_click=self._on_click)
         self._kb_listener = KBListener(on_press=self._on_press)
         self._mouse = False
+        self._string = str()
         print("[TimerParser] Initialized")
 
     def set_ship_stats(self, ship: ShipStats):
         """Update the ship statistics used for delay tracking"""
         self._lock.acquire()
-        self._delays = {k: ship["Ship"][v] for v, k in self.DELAYS.items()}
+        self._stats =  {
+            p: {k: ship["Ship"][v.format(p)] for k, v in self.STATS.items()}
+            for p in self.POOLS
+        }
         self.primary = "PrimaryWeapon"
         self._lock.release()
         print("[TimerParser] Updated ship to: {}".format(ship.ship.name))
@@ -70,7 +76,7 @@ class TimerParser(Thread):
     def update(self):
         """Update the state of the TimerParser"""
         self._lock.acquire()
-        delays, key = self._delays.copy(), self.primary
+        stats, key = self._stats.copy(), self.primary
         self._lock.release()
 
         while not self._internal_q.empty():
@@ -91,12 +97,12 @@ class TimerParser(Thread):
         string, time = str(), datetime.now()
         for pool, start in self.__delays.items():
             elapsed = (time - start).total_seconds()
-            if elapsed < delays[pool]:
-                remaining = "{:.1f}s".format(delays[pool] - elapsed)
-            else:
-                remaining = "Regenerating"
-            string += "{}: {}\n".format(pool, remaining)
-        self._string.set(string)
+            remaining = max(stats[pool]["Delay"] - elapsed, 0.0)
+            rate = stats[pool]["Regen"] if remaining == 0.0 else stats[pool]["Recent"]
+            string += "{}: {:.1f}s, {:.1f}pps\n".format(pool[0], remaining, rate)
+        self._lock.acquire()
+        self._string = string
+        self._lock.release()
         sleep(0.1)
 
     def process_event(self, event: dict, active_ids: list):
@@ -110,7 +116,6 @@ class TimerParser(Thread):
 
     def cleanup(self):
         """Clean up everything in use"""
-        self._overlay.destroy()
         self._ms_listener.stop()
         self._kb_listener.stop()
 
@@ -140,3 +145,11 @@ class TimerParser(Thread):
         """Process a key press to check for engine power usage"""
         if key == Key.space or key == "3":
             self._internal_q.put(("Engine", datetime.now()))
+
+    @property
+    def string(self):
+        """String to show in the Overlay"""
+        self._lock.acquire()
+        string = self._string
+        self._lock.release()
+        return string

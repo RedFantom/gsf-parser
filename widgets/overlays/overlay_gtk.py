@@ -8,15 +8,11 @@ import os
 from threading import Thread
 # Packages
 import cairo
-from gi.repository import Gtk, Gdk  # python3-gi
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk  # python3-gi
 # Project Modules
 from utils.directories import get_assets_directory
-
-
-class GtkRunner(Thread):
-    def run(self):
-        """Run the Gtk main loop in a separate thread"""
-        Gtk.main()
 
 
 class GtkOverlay(Gtk.Window, Thread):
@@ -28,7 +24,7 @@ class GtkOverlay(Gtk.Window, Thread):
         Thread.__init__(self)
         self._string = string
         self.connect("destroy", Gtk.main_quit)
-        self.move(*(0, 200))
+        self.move(*position)
         self._grid = Gtk.Grid()
         self.add(self._grid)
         if standard is True:

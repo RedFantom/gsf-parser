@@ -112,9 +112,7 @@ class RealTimeFrame(ttk.Frame):
         if self.character_data is None:
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return
-        if (settings["realtime"]["overlay"] or
-                settings["screen"]["overlay"] or
-                settings["screen"]["enabled"]):
+        if settings["realtime"]["overlay"] or settings["screen"]["enabled"]:
             if get_swtor_screen_mode() is False:
                 return
         if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
@@ -233,7 +231,7 @@ class RealTimeFrame(ttk.Frame):
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
-        if settings["realtime"]["overlay"] is False and settings["screen"]["overlay"] is False:
+        if settings["realtime"]["overlay"] is False:
             return
         if settings["screen"]["experimental"] is True and sys.platform != "linux":
             from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
@@ -244,16 +242,8 @@ class RealTimeFrame(ttk.Frame):
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
-        try:
-            self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
-            if hasattr(self.overlay, "start") and callable(self.overlay.start):
-                self.overlay.start()
-        except Exception as e:
-            messagebox.showerror(
-                "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
-                         "message below to the developer. This error is fatal. The GSF Parser cannot continue."
-                         "\n\n{}.".format(e))
-            raise
+        self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+        self.overlay.start()
         self.update_overlay()
 
     def open_event_overlay(self):
@@ -278,26 +268,19 @@ class RealTimeFrame(ttk.Frame):
                 self.after_cancel(self.data_after_id)
                 self.data_after_id = None
             return
-        self.data_label.config(text=self.parser.overlay_string)
+        self.data_label.config(text=self.parser.parsing_data_string)
         self.data_after_id = self.after(1000, self.update_data_string)
 
     def update_overlay(self):
-        """
-        Periodically called function to update the text shown in the Overlay
-        """
+        """Update the Overlay with the text from the RealTimeParser"""
         if self.parser is None or not isinstance(self.parser, RealTimeParser):
             print("[RealTimeFrame] Cancelling Overlay update.")
             return
-        string = self.parser.overlay_string
-        if string.endswith("\n"):
-            string = string[:-1]
-        if len(string) == 0:
-            print("[RealTimeFrame] Empty string!")
-        self.overlay.update_text(string)
-        self.overlay_after_id = self.after(1000, self.update_overlay)
+        self.overlay.update_text(self.parser.overlay_string)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()
+        self.overlay_after_id = self.after(100, self.update_overlay)
 
     def close_overlay(self):
         """Close the overlay"""

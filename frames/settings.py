@@ -192,11 +192,6 @@ class SettingsFrame(ttk.Frame):
         self.sc_enabled = tk.BooleanVar()
         self.sc_checkbox = ttk.Checkbutton(
             self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
-        # Screen parsing overlay
-        self.sc_overlay = tk.BooleanVar()
-        self.sc_overlay_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Enable screen parsing overlay", variable=self.sc_overlay,
-            command=self.save_settings)
         # Screen parsing features
         self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
         self.sc_features = [
@@ -206,7 +201,6 @@ class SettingsFrame(ttk.Frame):
         ]
         beta = [
             "MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing",
-            "Power Regeneration Delays"
         ]
         self.sc_checkboxes = OrderedDict()
         self.sc_variables = {}
@@ -369,8 +363,6 @@ class SettingsFrame(ttk.Frame):
         for feature in self.sc_checkboxes.values():
             feature.grid(row=row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
             row += 1
-        # Screen parsing overlay
-        self.sc_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
         # Screen Dynamic Window Location
         self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
 
@@ -417,7 +409,6 @@ class SettingsFrame(ttk.Frame):
         Screen Parsing settings
         """
         self.sc_enabled.set(settings["screen"]["enabled"])
-        self.sc_overlay.set(settings["screen"]["overlay"])
         for feature in self.sc_features:
             self.sc_variables[feature].set(feature in settings["screen"]["features"])
         self.sc_dynamic_window.set(settings["screen"]["window"])
@@ -476,7 +467,6 @@ class SettingsFrame(ttk.Frame):
             },
             "screen": {
                 "enabled": self.sc_enabled.get(),
-                "overlay": self.sc_overlay.get(),
                 "features": [key for key, value in self.sc_variables.items() if value.get() is True],
                 "window": self.sc_dynamic_window.get()
             },
@@ -505,11 +495,11 @@ class SettingsFrame(ttk.Frame):
             messagebox.showerror("Error", "The CombatLogs folder path entered is not valid.")
             return False
         # Overlay position
-        if not self.rt_overlay_position_frame.validate():
+        if not self.rt_overlay_position_frame.valid:
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
             return False
         # EventOverlay Position
-        if self.rt_event_position_frame.validate():
+        if not self.rt_event_position_frame.valid:
             messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
             return False
         # Sharing settings
@@ -540,6 +530,9 @@ class OverlayPositionFrame(ttk.Frame):
         self._x_entry = ttk.Entry(self, width=4)
         self._y_entry = ttk.Entry(self, width=4)
 
+        self._pos_button = ttk.Button(
+            self, text="Position Overlay", command=self._open_toplevel)
+
         self.setup_bindings()
         self.setup_balloons()
         self.grid_widgets()
@@ -564,12 +557,14 @@ class OverlayPositionFrame(ttk.Frame):
         self._y_label.grid(row=2, column=0, padx=(40, 5), pady=(0, 5), sticky="nsw")
         self._x_entry.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
         self._y_entry.grid(row=2, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
+        self._pos_button.grid(row=3, column=0, padx=(40, 5), pady=(0, 5), sticky="nswe")
 
     def get(self):
         """Return the coordinates in x{}y{} formatted manner"""
         return "x{}y{}".format(self._x_entry.get(), self._y_entry.get())
 
-    def validate(self):
+    @property
+    def valid(self):
         """Validate the contents of the Entries"""
         x, y = self._x_entry.get(), self._y_entry.get()
         if not x.isdigit() or not y.isdigit():
@@ -577,11 +572,56 @@ class OverlayPositionFrame(ttk.Frame):
         x, y = map(int, (x, y))
         return x >= 0 and y >= 0
 
-    def set(self, string: str):
+    def set(self, string: str, callback: bool = False):
         """Update the coordinates show in the Entries"""
-        print("[OverlayPositionFrame] Updating with {}".format(string))
         x, y = string.strip("x").split("y")
         self._x_entry.delete(0, tk.END)
         self._y_entry.delete(0, tk.END)
         self._x_entry.insert(tk.END, x)
         self._y_entry.insert(tk.END, y)
+        if callback is True:
+            self._frame.save_settings()
+
+    def _open_toplevel(self):
+        """Open an OverlayPositionPlaceholder"""
+        OverlayPositionPlaceholder(self._frame.main_window, self.set, self.get())
+
+
+class OverlayPositionPlaceholder(tk.Toplevel):
+    """Open a Toplevel to define the position of an Overlay"""
+
+    def __init__(self, master: tk.Tk, callback: callable, original: str):
+        """Initialize the Toplevel and widgets"""
+        tk.Toplevel.__init__(self, master)
+        self.wm_geometry("+{}+{}".format(*map(int, original[1:].split("y"))))
+        self.label = ttk.Label(self)
+        self.button = ttk.Button(self, text="Save", command=self.save)
+        self._callback = callback
+        self.grid_widgets()
+        self.configure_window()
+
+    def grid_widgets(self):
+        """Configure widgets in the grid geometry manager"""
+        self.label.grid(row=0, column=0, padx=5, pady=5, sticky="nswe")
+        self.button.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="nswe")
+
+    def configure_window(self):
+        """Configure window attributes"""
+        self.wm_title("Overlay Positioner")
+        self.wm_protocol("WM_DELETE_WINDOW", self.destroy)
+        self.bind("<Configure>", self.configure_event)
+        self.wm_resizable(False, False)
+
+    def configure_event(self, event: tk.Event):
+        """Callback for <Configure> event"""
+        if not hasattr(event, "widget") or event.widget is not self:
+            return
+        _, x, y = self.wm_geometry().split("+")
+        self.label.configure(text="Coordinates X: {}, Y: {}".format(x, y))
+
+    def save(self):
+        """Destroy the window and call the callback"""
+        _, x, y = self.wm_geometry().split("+")
+        x, y = map(lambda v: max(0, int(v)), (x, y))
+        self._callback("x{}y{}".format(x, y), callback=True)
+        self.destroy()

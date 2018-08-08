@@ -8,7 +8,6 @@ Copyright (C) 2016-2018 RedFantom
 import os
 import sys
 from sys import exit
-from datetime import datetime
 # UI Libraries
 from ttkthemes import ThemedTk
 from tkinter import ttk
@@ -249,8 +248,7 @@ class MainWindow(ThemedTk):
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)
         screenshot = pyscreenshot.grab(result_box)
-        file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
-                                 ".png")
+        file_name = os.path.join(get_temp_directory(), "screenshot.png")
         screenshot.save(file_name, "PNG")
 
     def destroy(self):

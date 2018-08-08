@@ -59,3 +59,6 @@ class TkinterOverlay(tk.Toplevel):
 
     def destroy(self):
         tk.Toplevel.destroy(self)
+
+    def start(self):
+        pass
