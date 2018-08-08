@@ -39,17 +39,12 @@ class RealTimeFrame(ttk.Frame):
         self.after_id = None
         self._rtp_id = None
         self.parser = None
-        self.exit_queue = None
-        self.data_queue = None
-        self.return_queue = None
         self.overlay = None
         self.overlay_after_id = None
         self.overlay_string = None
         self.data_after_id = None
         self._event_overlay = None
-        """
-        Widget creation
-        """
+
         # Watching Label
         self.watching_stringvar = tk.StringVar(self, value="Watching no file...")
         self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
@@ -89,42 +84,38 @@ class RealTimeFrame(ttk.Frame):
         self.character_dropdown.grid(row=1, column=0, sticky="nswe", padx=5, pady=(0, 5))
         self.parsing_control_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=5)
 
-        """Data label is deprecated. Use Overlay."""
-        # self.data_label.grid(row=0, column=1, rowspan=3, columnspan=2, sticky="nswe", padx=5, pady=5)
+        self.minimap_checkbox.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
+        self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
+        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
+
+        self.data_label.grid(row=0, column=2, rowspan=3, columnspan=1, sticky="nsw", padx=5, pady=5)
         self.time_view.grid(row=3, column=0, columnspan=3, sticky="nswe", padx=5, pady=5)
 
         self.watching_label.grid(row=4, column=0, columnspan=3, sticky="nw", padx=5, pady=5)
         self.cpu_label.grid(row=4, column=2, sticky="nw", padx=5, pady=5)
 
-        self.minimap_checkbox.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
-        self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
-        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
-
-    """
-    Parsing Functions
-    """
-
-    def start_parsing(self):
-        """
-        Check if parsing can be started, and if so, start the
-        parsing process
-        """
+    def check_parser_start(self) -> bool:
+        """Check if a RealTimeParser can be started"""
         if self.character_data is None:
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
-            return
+            return False
         if settings["realtime"]["overlay"] or settings["screen"]["enabled"]:
             if get_swtor_screen_mode() is False:
-                return
+                return False
         if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
             if not check_privileges():
                 messagebox.showinfo(
                     "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
                             "administrator, which prevents reading input from the SWTOR window. Please restart the "
                             "GSF Parser as administrator for this feature to work.")
+        return True
 
+    def start_parsing(self):
+        """Start the parsing process and open the Overlay"""
+        if self.check_parser_start() is False:
+            return
         # Setup attributes
-        self.exit_queue, self.data_queue, self.return_queue = Queue(), Queue(), Queue()
-        args = (self.window.characters_frame.characters, self.character_data, self.exit_queue,
+        args = (self.window.characters_frame.characters, self.character_data,
                 self.window.builds_frame.ships_data, self.window.builds_frame.companions_data)
         # Create MiniMap window
         if self.minimap_enabled.get() is True:
@@ -135,16 +126,10 @@ class RealTimeFrame(ttk.Frame):
             "match_callback": self.match_callback,
             "file_callback": self.file_callback,
             "event_callback": self.event_callback,
-            "screen_parsing_enabled": settings["screen"]["enabled"],
-            "screen_parsing_features": settings["screen"]["features"],
-            "data_queue": self.data_queue,
-            "return_queue": self.return_queue,
             "minimap_share": self.minimap_enabled.get(),
             "minimap_user": self.minimap_name.get(),
             "minimap_address": self.minimap_address.get(),
             "minimap_window": self.minimap,
-            "dynamic_window": settings["screen"]["window"],
-            "rgb_enabled": settings["realtime"]["rgb"],
             "rpc": self.window.rpc,
         }
         try:
@@ -153,8 +138,7 @@ class RealTimeFrame(ttk.Frame):
             messagebox.showerror(
                 "Error",
                 "An error occurred during the initialization of the RealTimeParser. Please report the error given "
-                "below, as well as, if possible, the full stack-trace to the developer.\n\n{}".format(e)
-            )
+                "below, as well as, if possible, the full stack-trace to the developer.\n\n{}".format(e))
             raise
         # Change Button state
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
@@ -164,22 +148,18 @@ class RealTimeFrame(ttk.Frame):
         self.update_data_string()
         # Start the parser
         self.parser.start()
-        self.after(1000, self.check_alive)
+        self._rtp_id = self.after(500, self.check_alive)
+        self.data_after_id = self.after(1000, self.update_data_string)
 
     def stop_parsing(self):
         """Stop the parsing process"""
-        if self._rtp_id is not None:
-            self.after_cancel(self._rtp_id)
-            self._rtp_id = None
         if self.minimap_enabled.get() is True and self.minimap is not None:
             self.minimap.destroy()
         self.close_overlay()
         self.parser.stop()
         self.parsing_control_button.config(text="Start Parsing", command=self.start_parsing)
-        self.exit_queue, self.data_queue, self.return_queue = None, None, None
-        time.sleep(1)
+        time.sleep(0.1)
         try:
-            assert isinstance(self.parser, RealTimeParser)
             self.parser.join(timeout=2)
         except Exception as e:
             messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
@@ -192,10 +172,7 @@ class RealTimeFrame(ttk.Frame):
         self.window.update_presence()
 
     def file_callback(self, file_name):
-        """
-        Callback for the RealTimeParser's LogStalker to set the file
-        name in the watching label
-        """
+        """LogStalker new file callback to set file name in label"""
         print("[RealTimeParser] New file {}".format(file_name))
         self.watching_stringvar.set("Watching: {}".format(file_name))
 
@@ -208,9 +185,7 @@ class RealTimeFrame(ttk.Frame):
         self.time_view.delete_all()
 
     def event_callback(self, event, player_name, active_ids, start_time):
-        """
-        Callback for the RealTimeParser to insert an event into the TimeView
-        """
+        """RealTimeParser event callback for TimeView insertion"""
         self.time_view.insert_event(event, player_name, active_ids, start_time)
         self.time_view.yview_moveto(1.0)
         if self._event_overlay is not None:
@@ -224,10 +199,6 @@ class RealTimeFrame(ttk.Frame):
             diff = self.parser.diff
             string += ", {:.03f}s".format(diff.total_seconds())
         self.cpu_stringvar.set(string)
-
-    """
-    Overlay Handling
-    """
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
@@ -263,6 +234,7 @@ class RealTimeFrame(ttk.Frame):
         self._event_overlay = None
 
     def update_data_string(self):
+        """Update the string in the data label with the parser stats"""
         if self.parser is None:
             if self.data_after_id is not None:
                 self.after_cancel(self.data_after_id)
@@ -334,5 +306,5 @@ class RealTimeFrame(ttk.Frame):
             return
         if self.parser.is_alive() is False:
             self.stop_parsing()
-        else:
-            self._rtp_id = self.after(1000, self.check_alive)
+            return
+        self._rtp_id = self.after(500, self.check_alive)

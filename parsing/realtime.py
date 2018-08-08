@@ -8,7 +8,7 @@ Copyright (C) 2016-2018 RedFantom
 from datetime import datetime, timedelta
 import os
 import _pickle as pickle  # known as cPickle
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 from time import sleep
 from threading import Thread, Lock
 import traceback
@@ -96,23 +96,16 @@ class RealTimeParser(Thread):
             self,
             character_db,
             character_data,
-            exit_queue,
             ships_db,
             companions_db,
             spawn_callback=None,
             match_callback=None,
             file_callback=None,
             event_callback=None,
-            screen_parsing_enabled=False,
-            screen_parsing_features=None,
-            data_queue=None,
-            return_queue=None,
             minimap_share=False,
             minimap_user=None,
             minimap_address: str = None,
             minimap_window=None,
-            dynamic_window=False,
-            rgb_enabled=True,
             rpc: Presence = None,
     ):
         """
@@ -121,17 +114,10 @@ class RealTimeParser(Thread):
         :param match_callback: Callback called with match_timing when a new match has been detected
         :param file_callback: Callback called with file_timing when a new file has been detected
         :param event_callback: Callback called with line_dict when a new event has been detected
-        :param screen_parsing_enabled: boolean that enables screen parsing features
-        :param screen_parsing_features: list of screen parsing features
-        :param data_queue: Queue to communicate queries for data with
-        :param return_queue: Queue to answer queries for data with
-        :param exit_queue: Queue to make the RealTimeParser stop activities
         :param character_data: Character tuple with the character name and network to retrieve data with
         :param minimap_share: Whether to share minimap location with a server
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
-        :param dynamic_window: Whether Dynamic Window Location is enabled
-        :param rgb_enabled: Whether RGB Keyboard effects are enabled
         """
         Thread.__init__(self)
 
@@ -147,13 +133,11 @@ class RealTimeParser(Thread):
         self._file_callback = file_callback
         self.event_callback = event_callback
         # Settings
-        self._screen_parsing_enabled = screen_parsing_enabled
-        self._screen_parsing_features = screen_parsing_features if screen_parsing_features is not None else []
+        self._screen_parsing_enabled = self.options["screen"]["enabled"]
+        self._screen_parsing_features = self.options["screen"]["features"]
         # Queues
-        self._data_queue = data_queue
-        self._return_queue = return_queue
-        self._exit_queue = exit_queue
         self.shots_queue = PriorityQueue()
+        self._exit_queue = Queue()
         # Data
         self._character_data = character_data
         self._character_db = character_db
@@ -205,14 +189,14 @@ class RealTimeParser(Thread):
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
         self._spawn_time = None
-        self._window = Window("swtor.exe") if dynamic_window else None
+        self._window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
         self.setup_screen_parsing()
         self._lock = Lock()
         self._configured_flag = False
         self._pointer_parser = None
         self._delayed_shots = list()
         self._rof = None
-        self._rgb_enabled = rgb_enabled
+        self._rgb_enabled = self.options["realtime"]["rgb"]
         self._rgb = RGBController()
         self._active_map = None
         self._timer_parser = None
@@ -929,6 +913,7 @@ class RealTimeParser(Thread):
         self.stop_listeners()
 
     def stop(self):
+        """Stop the RealTimeParser activities"""
         if self._pointer_parser is not None:
             self._pointer_parser.stop()
         self._exit_queue.put(True)
