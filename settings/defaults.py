@@ -68,7 +68,9 @@ defaults = {
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
         # Whether to enable experimental Dynamic Window Location
-        "window": False
+        "window": False,
+        # Delay Overlay Position
+        "delay_position": "x0y0"
     },
     "sharing": {
         "enabled": True,

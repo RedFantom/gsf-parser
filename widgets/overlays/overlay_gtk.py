@@ -8,7 +8,7 @@ import os
 from threading import Thread
 # Packages
 import cairo
-from gi.repository import Gtk, Gdk  # python3-gi
+from gi.repository import Gtk  # python3-gi
 # Project Modules
 from utils.directories import get_assets_directory
 
@@ -16,13 +16,14 @@ from utils.directories import get_assets_directory
 class GtkRunner(Thread):
     def run(self):
         """Run the Gtk main loop in a separate thread"""
+        print("[GtkRunner] Starting Gtk loop")
         Gtk.main()
 
 
 class GtkOverlay(Gtk.Window):
     """Window that represents the actual Overlay and draws the text"""
 
-    def __init__(self, position: tuple, standard=True):
+    def __init__(self, position: tuple, standard=True, **kwargs):
         """Initialize window and attributes"""
         Gtk.Window.__init__(self)
         self.connect("destroy", Gtk.main_quit)
@@ -69,7 +70,7 @@ class GtkOverlay(Gtk.Window):
     def update_text(self, string: str):
         """Update the text in the Label"""
         if not hasattr(self, "_label"):
-            raise RuntimeError("This is not a standard GtkOverlay")
+            return
         self._label.set_use_markup(True)
         self._label.set_markup("<b><span color=\"yellow\">{}</span></b>".format(string))
 

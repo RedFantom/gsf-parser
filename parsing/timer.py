@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
-from queue import Queue, Empty as QueueEmpty
+from queue import Queue
 from threading import Thread, Lock
 from time import sleep
 from tkinter import StringVar, Tk
@@ -16,7 +16,12 @@ from pynput.mouse import Listener as MSListener, Button
 # Project Modules
 from parsing import Parser
 from parsing.shipstats import ShipStats
-from widgets.overlays import Overlay
+
+
+NORMAL = "Power_{}_Regen_Rate"
+RECENT = "Power_{}_Regen_Rate_(when_Recently_Consumed)"
+DELAY = "Power_{}_Regen_Delay"
+POOLS = ["Shield", "Weapon", "Engine"]
 
 
 class TimerParser(Thread):
@@ -28,15 +33,14 @@ class TimerParser(Thread):
         "Power_Engine_Regen_Delay": "Engine"
     }
 
-    def __init__(self, root: Tk, string: StringVar):
+    def __init__(self, root: Tk, *args):
         """Initialize as Thread and create attributes"""
         Thread.__init__(self)
         self._root = root
         self._after_id = None
-        self._delays = {k: 1.0 for k in self.DELAYS.values()}
         self._lock = Lock()
         self._exit_queue = Queue()
-        self._data_queue = Queue()
+        self.data_queue = Queue()
         self.primary = "PrimaryWeapon"
         self.__delays = dict()
         self._internal_q = Queue()
@@ -49,7 +53,14 @@ class TimerParser(Thread):
     def set_ship_stats(self, ship: ShipStats):
         """Update the ship statistics used for delay tracking"""
         self._lock.acquire()
-        self._delays = {k: ship["Ship"][v] for v, k in self.DELAYS.items()}
+        stats = {
+            pool: {
+                "Normal": ship["Ship"][NORMAL.format(pool)],
+                "Recent": ship["Ship"][RECENT.format(pool)],
+                "Delay": ship["Ship"][DELAY.format(pool)]
+            } for pool in POOLS
+        }
+        self.data_queue.put({"Stats": stats.copy()})
         self.primary = "PrimaryWeapon"
         self._lock.release()
         print("[TimerParser] Updated ship to: {}".format(ship.ship.name))
@@ -62,15 +73,16 @@ class TimerParser(Thread):
     def match_end(self):
         """Match ended callback"""
         self._internal_q.put("end")
+        self.data_queue.put("end")
 
     def match_start(self):
         """Match start callback"""
         self._internal_q.put("start")
+        self.data_queue.put("start")
 
     def update(self):
         """Update the state of the TimerParser"""
         self._lock.acquire()
-        delays, key = self._delays.copy(), self.primary
         self._lock.release()
 
         while not self._internal_q.empty():
@@ -83,21 +95,11 @@ class TimerParser(Thread):
                 self._mouse = not self._mouse
             else:
                 pool, time = v
-                self.__delays[pool] = time
+                self.data_queue.put({pool: time})
         if self._match is False:
             return
         if self._mouse is True:
-            self.__delays["Weapon"] = datetime.now()
-        string, time = str(), datetime.now()
-        for pool, start in self.__delays.items():
-            elapsed = (time - start).total_seconds()
-            if elapsed < delays[pool]:
-                remaining = "{:.1f}s".format(delays[pool] - elapsed)
-            else:
-                remaining = "Regenerating"
-            string += "{}: {}\n".format(pool, remaining)
-        if len(string) != 0:
-            self._data_queue.put(string)
+            self.data_queue.put({"Weapon": datetime.now()})
         sleep(0.1)
 
     def process_event(self, event: dict, active_ids: list):

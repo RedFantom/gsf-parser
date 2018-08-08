@@ -118,6 +118,8 @@ class EventOverlay(tk.Toplevel):
 
     def generate_widget(self, event: dict, event_type: str) -> (tk.Label, None):
         """Build a abel widget for an event"""
+        if "AbilityActivate" not in event["line"] and "Damage" not in event["line"]:
+            return None
         if (datetime.now() - datetime.combine(datetime.now().date(), event["time"].time())).total_seconds() > self._timeout:
             return None
         ability = event["ability"]
@@ -130,7 +132,7 @@ class EventOverlay(tk.Toplevel):
             self._parent, image=self._icons[ability], compound=tk.LEFT,
             text="{:<16}{}".format(event["ability"], amount),
             background=self._background, foreground=variables.colors[event_type][0],
-            font=("Consolas", 10, True))
+            font=("Consolas", 10, "bold"))
         return label
 
     def destroy(self):

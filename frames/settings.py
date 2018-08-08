@@ -148,7 +148,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_overlay_experimental = tk.BooleanVar()
         self.rt_overlay_experimental_checkbox = ttk.Checkbutton(
             self.rt_frame, text="Enable experimental high-performance overlay",
-            variable=self.rt_overlay_experimental)
+            variable=self.rt_overlay_experimental, command=self.save_settings)
         # EventOverlay
         self.rt_event_overlay = tk.BooleanVar()
         self.rt_event_overlay_checkbox = ttk.Checkbutton(
@@ -215,6 +215,8 @@ class SettingsFrame(ttk.Frame):
             text = feature if feature not in beta else "{} (bèta)".format(feature)
             self.sc_checkboxes[feature] = ttk.Checkbutton(
                 self.sc_frame, text=text, variable=self.sc_variables[feature], command=self.save_settings)
+        # DelayOverlay position
+        self.sc_delay_overlay = OverlayPositionFrame(self.sc_frame, self, "DelayOverlay")
         # Dynamic Window Location Support
         self.sc_dynamic_window = tk.BooleanVar()
         self.sc_dynamic_window_checkbox = ttk.Checkbutton(
@@ -369,10 +371,11 @@ class SettingsFrame(ttk.Frame):
         for feature in self.sc_checkboxes.values():
             feature.grid(row=row, column=0, padx=(80, 5), pady=(0, 5), **sticky_default)
             row += 1
+        self.sc_delay_overlay.grid(row=row, column=0, **padding_label, **sticky_default)
         # Screen parsing overlay
-        self.sc_overlay_checkbox.grid(row=row, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_overlay_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
         # Screen Dynamic Window Location
-        self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_dynamic_window_checkbox.grid(row=row+2, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
@@ -410,6 +413,7 @@ class SettingsFrame(ttk.Frame):
         # EventOverlay
         self.rt_event_overlay.set(settings["realtime"]["event_overlay"])
         self.rt_event_position_frame.set(settings["realtime"]["event_position"])
+        self.rt_overlay_experimental.set(settings["screen"]["experimental"])
         self.rt_sleep.set(settings["realtime"]["sleep"])
         self.rt_rgb.set(settings["realtime"]["rgb"])
         self.rt_drp.set(settings["realtime"]["drp"])
@@ -420,6 +424,7 @@ class SettingsFrame(ttk.Frame):
         self.sc_overlay.set(settings["screen"]["overlay"])
         for feature in self.sc_features:
             self.sc_variables[feature].set(feature in settings["screen"]["features"])
+        self.sc_delay_overlay.set(settings["screen"]["delay_position"])
         self.sc_dynamic_window.set(settings["screen"]["window"])
         """
         Widget states
@@ -431,11 +436,6 @@ class SettingsFrame(ttk.Frame):
                 text="Your monitor resolution is not supported by this feature. If you would like "
                      "for your resolution to be supported, please send RedFantom a screenshot of the "
                      "unaltered user interface shown before the start of a match.")
-        if sys.platform == "linux":
-            self.rt_overlay_experimental.set(False)
-            self.rt_overlay_experimental_checkbox.config(state=tk.DISABLED)
-            Balloon(self.rt_overlay_experimental_checkbox,
-                    text="This feature is only available on Windows due to API differences.")
         return
 
     def save_settings(self, *args):
@@ -467,7 +467,6 @@ class SettingsFrame(ttk.Frame):
                 "overlay_position": self.rt_overlay_position_frame.get(),
                 "overlay_when_gsf": self.rt_overlay_disable.get(),
                 "overlay_text": self.rt_overlay_text_color.get(),
-                "overlay_experimental": self.rt_overlay_experimental.get(),
                 "event_overlay": self.rt_event_overlay.get(),
                 "event_position": self.rt_event_position_frame.get(),
                 "sleep": self.rt_sleep.get(),
@@ -478,7 +477,9 @@ class SettingsFrame(ttk.Frame):
                 "enabled": self.sc_enabled.get(),
                 "overlay": self.sc_overlay.get(),
                 "features": [key for key, value in self.sc_variables.items() if value.get() is True],
-                "window": self.sc_dynamic_window.get()
+                "window": self.sc_dynamic_window.get(),
+                "delay_position": self.sc_delay_overlay.get(),
+                "experimental": self.rt_overlay_experimental.get(),
             },
             "sharing": {
                 "enabled": self.sh_enable.get(),
@@ -509,8 +510,11 @@ class SettingsFrame(ttk.Frame):
             messagebox.showerror("Error", "The coordinates entered for the real-time overlay are not valid.")
             return False
         # EventOverlay Position
-        if self.rt_event_position_frame.validate():
+        if self.rt_event_position_frame.validate() is False:
             messagebox.showerror("Error", "The coordinates entered for the EventOverlay are not valid.")
+            return False
+        if self.sc_delay_overlay.validate() is False:
+            messagebox.showerror("Error", "The coordinates entered for the DelayOverlay are not valid.")
             return False
         # Sharing settings
         if not self.sh_port.get().isdigit():
@@ -540,6 +544,9 @@ class OverlayPositionFrame(ttk.Frame):
         self._x_entry = ttk.Entry(self, width=4)
         self._y_entry = ttk.Entry(self, width=4)
 
+        self._pos_button = ttk.Button(
+            self, text="Position Overlay", command=self._open_toplevel)
+
         self.setup_bindings()
         self.setup_balloons()
         self.grid_widgets()
@@ -564,6 +571,7 @@ class OverlayPositionFrame(ttk.Frame):
         self._y_label.grid(row=2, column=0, padx=(40, 5), pady=(0, 5), sticky="nsw")
         self._x_entry.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
         self._y_entry.grid(row=2, column=1, padx=(0, 5), pady=(0, 5), sticky="nsw")
+        self._pos_button.grid(row=3, column=0, padx=(40, 5), pady=(0, 5), sticky="nswe")
 
     def get(self):
         """Return the coordinates in x{}y{} formatted manner"""
@@ -577,11 +585,45 @@ class OverlayPositionFrame(ttk.Frame):
         x, y = map(int, (x, y))
         return x >= 0 and y >= 0
 
-    def set(self, string: str):
+    def set(self, string: str, callback: bool = False):
         """Update the coordinates show in the Entries"""
-        print("[OverlayPositionFrame] Updating with {}".format(string))
         x, y = string.strip("x").split("y")
         self._x_entry.delete(0, tk.END)
         self._y_entry.delete(0, tk.END)
         self._x_entry.insert(tk.END, x)
         self._y_entry.insert(tk.END, y)
+        if callback is True:
+            self._frame.save_settings()
+
+    def _open_toplevel(self):
+        """Open an OverlayPositionPlaceholder"""
+        OverlayPositionPlaceholder(self._frame.main_window, self.set)
+
+
+class OverlayPositionPlaceholder(tk.Toplevel):
+    """Open a Toplevel to define the position of an Overlay"""
+
+    def __init__(self, master: tk.Tk, callback: callable):
+        """Initialize the Toplevel and widgets"""
+        tk.Toplevel.__init__(self, master)
+        self.wm_title("Overlay Positioner")
+        self.label = ttk.Label(self)
+        self.label.grid()
+        self._callback = callback
+        self.wm_protocol("WM_DELETE_WINDOW", self.destroy)
+        self.bind("<Configure>", self.configure_event)
+        self.wm_resizable(False, False)
+
+    def configure_event(self, event: tk.Event):
+        """Callback for <Configure> event"""
+        if event.widget is not self:
+            return
+        _, x, y = self.wm_geometry().split("+")
+        self.label.configure(text="Coordinates X: {}, Y: {}".format(x, y))
+
+    def destroy(self):
+        """Destroy the window and call the callback"""
+        _, x, y = self.wm_geometry().split("+")
+        x, y = map(lambda v: max(0, int(v)), (x, y))
+        tk.Toplevel.destroy(self)
+        self._callback("x{}y{}".format(x, y), callback=True)

@@ -5,6 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+from datetime import datetime
 import time
 import psutil
 import os
@@ -18,6 +19,7 @@ from tkinter import messagebox
 from network.discord import DiscordClient
 from parsing.realtime import RealTimeParser
 from toplevels.minimap import MiniMap
+from toplevels.delay_overlay import DelayOverlay
 from toplevels.event_overlay import EventOverlay
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
@@ -47,6 +49,7 @@ class RealTimeFrame(ttk.Frame):
         self.overlay_string = None
         self.data_after_id = None
         self._event_overlay = None
+        self._delay_overlay = None
         """
         Widget creation
         """
@@ -99,10 +102,6 @@ class RealTimeFrame(ttk.Frame):
         self.minimap_checkbox.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
         self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
         self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
-
-    """
-    Parsing Functions
-    """
 
     def start_parsing(self):
         """
@@ -161,6 +160,7 @@ class RealTimeFrame(ttk.Frame):
         # Change Button state
         self.parsing_control_button.config(text="Stop Parsing", command=self.stop_parsing)
         self.watching_stringvar.set("Waiting for a CombatLog...")
+        self.after(1000, self.check_alive)
         print("[RealTimeFrame] Opening Overlays")
         self.open_overlay()
         self.open_event_overlay()
@@ -168,7 +168,6 @@ class RealTimeFrame(ttk.Frame):
         # Start the parser
         print("[RealTimeFrame] RealTimeParser Thread started")
         self.parser.start()
-        self.after(1000, self.check_alive)
         print("[RealTimeFrame] Real-time parsing started")
 
     def stop_parsing(self):
@@ -207,6 +206,8 @@ class RealTimeFrame(ttk.Frame):
     def match_callback(self):
         """Callback for the RealTimeParser to clear the TimeView"""
         self.time_view.delete_all()
+        if self._delay_overlay is not None:
+            self._delay_overlay.show()
 
     def spawn_callback(self):
         """Callback for the RealTimeParser to clear the TimeView"""
@@ -230,10 +231,6 @@ class RealTimeFrame(ttk.Frame):
             string += ", {:.03f}s".format(diff.total_seconds())
         self.cpu_stringvar.set(string)
 
-    """
-    Overlay Handling
-    """
-
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
         if settings["realtime"]["overlay"] is False and settings["screen"]["overlay"] is False:
@@ -244,15 +241,15 @@ class RealTimeFrame(ttk.Frame):
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
+        self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+        if self.parser._timer_parser is not None:
+            self._delay_overlay = DelayOverlay(settings["screen"]["delay_position"], self.window)
         try:
-            self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
-            print("[RealTimeFrame] Overlay opened")
-        except Exception as e:
-            messagebox.showerror(
-                "Error", "The GSF Parser encountered an error while initializing the Overlay. Please report the error "
-                         "message below to the developer. This error is fatal. The GSF Parser cannot continue."
-                         "\n\n{}.".format(e))
-            raise
+            from gi.repository import Gtk
+            from widgets.overlays.overlay_gtk import GtkRunner
+            GtkRunner().start()
+        except ImportError:
+            pass
         self.update_overlay()
         print("[RealTimeFrame] Overlay initialized")
 
@@ -291,16 +288,24 @@ class RealTimeFrame(ttk.Frame):
         string = self.parser.overlay_string
         if string.endswith("\n"):
             string = string[:-1]
-        if self.parser._timer_parser is not None:
-            try:
-                string += "\n" + self.parser._timer_parser._data_queue.get(block=False)
-            except Empty:
-                pass
+        self.update_delay_overlay()
         self.overlay.update_text(string)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()
         self.overlay_after_id = self.after(100, self.update_overlay)
+
+    def update_delay_overlay(self):
+        """Update the elements in the DelayOverlay if it available"""
+        if self.parser._timer_parser is None or self._delay_overlay is None:
+            return
+        try:
+            results = self.parser._timer_parser.data_queue.get(block=False)
+        except Empty:
+            return
+        # start = datetime.now()
+        self._delay_overlay.update_state(results)
+        # print("[DelayOverlay] Update time: {:.3f}".format((datetime.now() - start).total_seconds()))
 
     def close_overlay(self):
         """Close the overlay"""
@@ -313,6 +318,9 @@ class RealTimeFrame(ttk.Frame):
         if self._event_overlay is not None:
             self._event_overlay.destroy()
             self._event_overlay = None
+        if self._delay_overlay is not None:
+            self._delay_overlay.destroy()
+            self._delay_overlay = None
 
     """
     Character handling

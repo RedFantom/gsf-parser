@@ -27,13 +27,13 @@ class TkinterOverlay(tk.Toplevel):
         self.text_label = ttk.Label(
             self, textvariable=self._text_variable, font=self._font, background="white", foreground=self._color)
         # Setup window
+        self.update_geometry()
         self.setup_window()
         # Create label
         self.text_label.grid()
 
     def setup_window(self):
         """Configure window with Tkinter window attributes"""
-        self.update_geometry()
         self.wm_attributes("-topmost", True)
         self.wm_overrideredirect(True)
         if hasattr(self, "text_label"):
@@ -59,3 +59,9 @@ class TkinterOverlay(tk.Toplevel):
 
     def destroy(self):
         tk.Toplevel.destroy(self)
+
+    def show(self):
+        self.wm_deiconify()
+
+    def hide(self):
+        self.wm_iconify()
