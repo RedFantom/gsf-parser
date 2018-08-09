@@ -126,12 +126,14 @@ class RealTimeDB(object):
             if self._file not in data:
                 data[self._file] = dict()
             if self._match not in data:
-                data[self._match] = dict()
+                data[self._file][self._match] = dict()
             data[self._file][self._match][self._spawn] = self._spawn_data
         self.save_data(data)
 
     def set_for_spawn(self, key: str, *args: (Tuple[Any], Tuple[datetime, Any])):
         """Set a value for a spawn in either spawn or key dict"""
+        if self._spawn_data is None:
+            return
         with self._lock:
             if len(args) == 1:
                 value, = args
