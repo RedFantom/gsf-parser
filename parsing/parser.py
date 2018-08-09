@@ -115,7 +115,6 @@ class Parser(object):
         if isinstance(line, dict) and "color" in line:
             return line
         line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
-        line_dict = line_dict.copy()
         # Determine line type
         if "Damage" in line["effect"] or "Heal" in line["effect"]:
             line_type = Parser.LINE_NUMBER
@@ -131,7 +130,6 @@ class Parser(object):
             return None
         additional = {
             "effects": effects,
-            "line": line,
             "type": line_type,
             "color": color,
             "active_id": active_id
