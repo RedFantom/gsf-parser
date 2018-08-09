@@ -9,13 +9,25 @@ from os.path import dirname, join, basename, exists
 import sys
 import shutil
 import platform
-import traceback
 # Packages
 from raven import Client as RavenClient
 # UI Libraries
-from tkinter import messagebox, filedialog
-# Project Modules
-from utils.directories import get_temp_directory
+from tkinter import messagebox
+
+
+def handle_exception(raven: RavenClient):
+    """Handle an occurred exception"""
+    try:
+        from settings import Settings
+        Settings().write_defaults()
+        written = True
+    except Exception:
+        written = False
+    raven.captureException()
+    messagebox.showerror(
+        "Error", "Window initialization failed. The error has been "
+                 "reported. {}".format(
+            "Settings have been reset to defaults." if written is True else ""))
 
 
 def create_window():
@@ -24,7 +36,6 @@ def create_window():
     user interaction for when an error occurs which causes the
     window creation to fail.
     """
-    import gui
     try:
         raven = connect_to_sentry()
     except Exception:
@@ -33,19 +44,17 @@ def create_window():
                      "reporting service.")
         raise
     try:
+        import gui
         main_window = gui.MainWindow(raven)
     except Exception:
         if exists("development"):
             raise
-        messagebox.showerror(
-            "Error", "Window initialization failed. The error has been "
-                     "reported.")
-        raven.captureException()
+        handle_exception(raven)
         raise
     try:
         main_window.mainloop()
     except KeyboardInterrupt:
-        exit(0)
+        main_window.exit()
 
 
 def connect_to_sentry() -> RavenClient:
