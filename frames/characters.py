@@ -16,13 +16,13 @@ from tkinter import messagebox as mb
 from ttkwidgets.frames import Balloon
 # Project Modules
 from data import ships as ships_data
+from data.servers import servers
+from network.discord import DiscordClient
+from parsing.ships import Ship
+from parsing.characters import CharacterDatabase
 from utils import directories
 from utils import utilities
 from widgets import VerticalScrollFrame
-from parsing.ships import Ship
-from parsing.characters import CharacterDatabase
-from network.sharing.data import servers
-from network.discord import DiscordClient
 
 
 class CharactersFrame(ttk.Frame):
