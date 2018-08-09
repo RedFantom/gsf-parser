@@ -47,5 +47,9 @@ keys = {
     Key.enter: "enter",
     Key.menu: "app",
     Key.print_screen: "printscreen",
-    Key.pause: "pause"
+    Key.pause: "pause",
+    "w": "w",
+    "a": "a",
+    "s": "s",
+    "d": "d",
 }

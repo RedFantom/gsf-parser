@@ -7,18 +7,23 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime
 import os
-from threading import Thread
 from time import sleep
 # Packages
 from mss import mss
 from PIL import Image
 from pynput.mouse import Button, Listener
-from queue import Queue
 # Project Modules
 from parsing.gsfinterface import GSFInterface
-from parsing import opencv
+from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
-from utils.utilities import get_cursor_position, open_icon_pil
+from utils.utilities import get_cursor_position
+# Processes or Threads
+from variables import multi
+if multi is True:
+    from multiprocessing import Process as Thread, Queue
+else:
+    from queue import Queue
+    from threading import Thread
 
 
 class PointerParser(Thread):
@@ -30,14 +35,6 @@ class PointerParser(Thread):
     on-target (which is displayed using additional markers around the
     default pointer indicator).
     """
-
-    ICONS = {
-        "spvp_evasion": 0.15,
-        "spvp_distortionfield": 0.35,
-    }
-
-    ICON_SIZE = 23
-    ICON_SCALE = 0.9
 
     def __init__(self, gui_profile: GSFInterface):
         """
@@ -59,13 +56,6 @@ class PointerParser(Thread):
         self.mss = mss()
         self.mouse = Listener(on_click=self.on_click)
 
-        self.icons = dict()
-        scale = self.interface.get_pixels_per_degree() / 10
-        size = int(PointerParser.ICON_SIZE * (scale / PointerParser.ICON_SCALE))
-        for icon in PointerParser.ICONS:
-            image = open_icon_pil(icon)
-            self.icons[icon] = image.resize((size, size), Image.ANTIALIAS)
-
     def on_click(self, _: int, __: int, button: Button, pressed: bool):
         """Process a click of the mouse"""
         if not button == Button.left:
@@ -84,10 +74,10 @@ class PointerParser(Thread):
         of this process is passed on to the Thread owner.
         """
         print("[PointerParser] Starting...")
+        self.mouse.start()
         while self.exit_queue.empty():
-            if self.rof is None or self.ship_class == "Gunship":
+            if self.rof is None:
                 sleep(1)  # Reduce performance impact when not active
-                print("[PointerParser] Does not have required data...")
                 continue
             while not self.mouse_queue.empty():
                 self.pressed = self.mouse_queue.get()
@@ -96,20 +86,29 @@ class PointerParser(Thread):
             # Button is pressed
             if (datetime.now() - self.last).total_seconds() < self.rof:
                 continue
-            print("[PointerParser] Processing a shot...")
             self.last = datetime.now()
             loc = get_cursor_position()
-            pointer_box = tuple(c - 30 for c in loc) + (30, 30)
-            screenshot = self.mss.grab({list(zip(("left", "top", "width, height"), pointer_box))})
+            pointer_box = tuple(c - 22 for c in loc) + (44, 44)
+            if min(pointer_box) < 0 or max(pointer_box) > 1920:
+                self.chance_queue.put((self.last, False))
+                continue
+            monitor = {k: v for k, v in zip(("left", "top", "width", "height"), pointer_box)}
+            try:
+                screenshot = self.mss.grab(monitor)
+            except Exception as e:
+                print("[PointerParser] Error: {}".format(e))
+                continue
             screenshot = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-            match, _ = opencv.template_match(screenshot, self.pointer)
-            print("[PointerParser] On-target: {}".format(match))
-            self.chance_queue.put((self.last, match))
+            screenshot = screenshot.convert("RGBA")
+            match = get_similarity_transparent(self.pointer, screenshot)
+            self.chance_queue.put((self.last, match > 95))
+        self.mouse.stop()
 
     def stop(self):
-        """Stop the Thread's activities by notifying it it needs to exit"""
+        """Stop the Threads activities by notifying it it needs to exit"""
         self.exit_queue.put(True)
-        self.join()
+        self.join(timeout=2)
+        print("[PointerParser] Stopped.")
 
     def set_rate_of_fire(self, rof: float, ship_class: str):
         """
@@ -118,5 +117,6 @@ class PointerParser(Thread):
         The class depends on the ship for providing accurate rate of
         fire numbers.
         """
+        print("[PointerParser] Rate of Fire updated: {}".format(rof))
         self.rof = 1 / rof
         self.ship_class = ship_class

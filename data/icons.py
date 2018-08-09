@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 
-icons = {
+ICONS = {
     # Primary Weapons
     "Heavy Laser Cannon": "spvp_blaster_black_red",
     "Laser Cannon": "spvp_blaster_red",
@@ -112,6 +112,8 @@ icons = {
     "Railgun Charge": "spvp_hyperspacebeacon",  # Custom Effect
     "Lingering Damage": "spvp_damageovertime",  # Lingering Effect
     "Player Death": "spvp_aoedamage",
+    "Game End": "spvp_combatcloakingdevice",
+    "Unknown Primary Weapon": "spvp_blaster_blue",
     # Default
-    "default": "republic.png"
+    "default": "republic"
 }

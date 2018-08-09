@@ -6,9 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 from utils.directories import get_combatlogs_folder
 
-"""
-Default settings for the GSF Parser
-"""
+
 defaults = {
     # Miscellaneous settings
     "misc": {
@@ -17,7 +15,7 @@ defaults = {
         # Whether checks for updates are enabled
         "autoupdate": True,
         # assets/ships.db SWTOR patch level
-        "patch_level": "5.6.0",
+        "patch_level": "5.9.2",
         # SWTOR Temporary directory, for use on Linux
         "temp_dir": ""
     },
@@ -49,28 +47,36 @@ defaults = {
         "overlay_position": "x0y0",
         # Whether the Overlay hides outside of GSF
         "overlay_when_gsf": True,
-        # Whether to enable EventOverlay
-        "event_overlay": False,
-        # Location of EventOverlay
-        "event_location": "x0y0",
         # RealTimeParser sleep
-        "sleep": False,
+        "sleep": True,
         # RGB Keyboard Lighting Effects
         "rgb": False,
         # Discord Rich Presence
         "drp": True,
     },
+    # Event Overlay Settings
+    "event": {
+        # Whether to enable EventOverlay
+        "enabled": False,
+        # Location of EventOverlay
+        "position": "x0y0"
+    },
     "screen": {
         # Whether screen parsing is enabled
         "enabled": True,
-        # Whether screen parsing data is in the Overlay
-        "overlay": True,
         # List of enabled screen parsing features
         "features": ["Tracking penalty", "Ship health", "Power management"],
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
         # Whether to enable experimental Dynamic Window Location
-        "window": False
+        "window": False,
+        # SWTOR Dynamic window support
+        "dynamic": False,
+        # Screen parsing performance monitoring
+        "perf": True,
+        "disable": True,
+        # Multiprocessing support
+        "multi": False,
     },
     "sharing": {
         "enabled": True,

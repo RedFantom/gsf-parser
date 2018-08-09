@@ -7,6 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 # Standard library
 from datetime import timedelta, datetime
 # Project modules
+from data.components import PLURAL_TO_SINGULAR
 from data.patterns import Patterns
 from data import abilities
 from parsing.ships import Ship, Component, get_ship_category
@@ -184,8 +185,9 @@ class PatternParser(object):
         """Compare two line event dictionaries for subset"""
         for key, value in subset.items():
             if key in ("amount", "damage"):
-                string = subset[key].format(superset[key])
-                if eval(string) is False:
+                amount = superset["amount"] if superset["amount"] not in (0, "") else 0
+                string = subset[key].format(amount)
+                if eval(string.replace("*", "")) is False:
                     return False
                 continue
             if key in ("ability",) and hasattr(abilities, value):
@@ -310,8 +312,14 @@ class PatternParser(object):
         if ship is None:  # Ship option not available at parsing time
             return False
         _, event_type, (ability, available) = descriptor
-        category = PatternParser.get_component_category(ability)
-        if ship[category].name != ability:
+        if ability in dir(abilities):
+            category = PLURAL_TO_SINGULAR[ability]
+            ability = list(getattr(abilities, ability))
+        else:
+            category = PatternParser.get_component_category(ability)
+        if ship[category] is None:  # Not correctly configured
+            return False
+        elif ship[category].name in ability:  # list/str __contains__
             return False
         if "Weapon" in ability:  # PrimaryWeapon, SecondaryWeapon
             return True

@@ -5,10 +5,9 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
+from datetime import datetime
 import os
 import sys
-from sys import exit
-from datetime import datetime
 # UI Libraries
 from ttkthemes import ThemedTk
 from tkinter import ttk
@@ -28,11 +27,11 @@ from utils.update import check_update
 from variables import settings
 import variables
 # Packages
-import pyscreenshot
+from mss import mss
 from PIL import Image
 from PIL.ImageTk import PhotoImage
-from raven import Client as RavenClient
 from pypresence import Presence
+from raven import Client as RavenClient
 
 
 class MainWindow(ThemedTk):
@@ -42,7 +41,8 @@ class MainWindow(ThemedTk):
     the parser and provides exit-handling.
     """
 
-    def __init__(self):
+    def __init__(self, raven: RavenClient):
+        self.raven = variables.raven = raven
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
@@ -100,11 +100,6 @@ class MainWindow(ThemedTk):
             self.splash.label_var.set("Synchronizing with Discord Bot Server...")
             self.update()
             self.discord.send_files(self)
-        # Connect to Sentry
-        self.splash.label_var.set("Connecting to Sentry...")
-        with open("sentry") as fi:
-            link = fi.read().strip()
-        self.raven = variables.raven = RavenClient(link)
         # Discord Rich Presence
         if settings["realtime"]["drp"] is True:
             self.rpc = Presence(436173115064713216)
@@ -133,14 +128,11 @@ class MainWindow(ThemedTk):
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
-        # self.ship_frame.grid(column=3, row=1, sticky="nswe")
         self.settings_frame.grid()
         self.graphs_frame.grid(column=0, row=0)
 
     def child_grid_widgets(self):
-        """
-        Call grid_widgets on all child widgets that must contain widgets
-        """
+        """Configure the child widgets of the Frames in grid geometry"""
         self.file_select_frame.grid_widgets()
         self.middle_frame.grid_widgets()
         self.realtime_frame.grid_widgets()
@@ -182,10 +174,6 @@ class MainWindow(ThemedTk):
     def set_variables(self):
         """Set program global variables in the shared variables module"""
         variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
-        # Get the screen properties
-        variables.screen_w = self.winfo_screenwidth()
-        variables.screen_h = self.winfo_screenheight()
-        variables.path = variables.settings["parsing"]["path"]
 
     def get_scaling_factor(self):
         """Return the DPI scaling factor (float)"""
@@ -246,17 +234,20 @@ class MainWindow(ThemedTk):
         :return: SystemExit(0)
         """
         if self.destroy():
-            exit()
+            sys.exit()
 
     def screenshot(self, *args):
         """Take a screenshot of the GSF Parser window and save"""
         x = self.winfo_x()
         y = self.winfo_y()
         result_box = (x, y, self.winfo_reqwidth() + x + 13, self.winfo_reqheight() + y + 15)
-        screenshot = pyscreenshot.grab(result_box)
-        file_name = os.path.join(get_temp_directory(), "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") +
-                                 ".png")
-        screenshot.save(file_name, "PNG")
+        file_name = os.path.join(
+            get_temp_directory(),
+            "screenshot_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".png")
+        with mss() as sct:
+            image = sct.grab(result_box)
+        image = Image.frombytes("RGB", image.size, image.rgb)
+        image.save(file_name)
 
     def destroy(self):
         """

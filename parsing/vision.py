@@ -78,7 +78,7 @@ def get_tracking_penalty(degrees, tracking_penalty, upgrade_c, firing_arc):
     :param tracking_penalty: The tracking penalty in %/degree
     :param upgrade_c: The upgrade constant
     """
-    return max(round(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 1), 0)
+    return max(min(degrees, firing_arc) * tracking_penalty - upgrade_c, 0) * 100
 
 
 def get_timer_status(source, treshold=15.0):
@@ -226,6 +226,8 @@ def get_score(image: Image.Image):
     """
     red, green = get_brightest_pixel_loc(image, 0), get_brightest_pixel_loc(image, 1)
     # Assume one of the bars is full
+    if red is None or green is None:
+        return 0.0
     (xr, yr), (xg, yg) = red, green
     pixels = image.load()
     # Move over pixels in left direction from brightest point on

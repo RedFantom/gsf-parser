@@ -12,7 +12,7 @@ import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
 # Project Modules
 from widgets import ToggledFrame
-from data.components import component_strings
+from data.components import COMPONENT_STRINGS
 from utils.utilities import open_icon
 
 
@@ -34,7 +34,7 @@ class ComponentListFrame(ttk.Frame):
         self.category = category
         self.callback = callback
         self.toggled_frame = ToggledFrame(
-            self, text=component_strings[category], callback=toggle_callback)
+            self, text=COMPONENT_STRINGS[category], callback=toggle_callback)
         self.frame = self.toggled_frame.sub_frame
         self.icons = {}
         self.buttons = {}

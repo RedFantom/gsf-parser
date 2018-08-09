@@ -22,6 +22,7 @@ from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from parsing.filehandler import FileHandler
+from parsing.screen import ScreenParser
 
 
 # Class for the _frame in the fileTab of the parser
@@ -246,6 +247,7 @@ class FileFrame(ttk.Frame):
         for enemy in enemies:
             self.insert_enemy_into_treeview(enemy, enemydamaged, enemydamaget)
         self.main_window.ship_frame.update_ship(ships_list)
+        print("[FileFrame] Inserting spawn of {} items.".format(len(spawn)))
         self.main_window.middle_frame.time_view.insert_spawn(spawn, name)
 
     def update_parse(self, *args):
@@ -333,11 +335,17 @@ class FileFrame(ttk.Frame):
         file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
         lines = Parser.read_file(file_name)
         player_list = Parser.get_player_id_list(lines)
+        player_name = Parser.get_player_name(lines)
         file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
         match = file_cube[match_index]
         spawn = match[spawn_index]
-        results = spawnstats.spawn_statistics(
-            file_name, spawn, spawn_timings[match_index][spawn_index])
+        results = list(spawnstats.spawn_statistics(
+            file_name, spawn, spawn_timings[match_index][spawn_index]))
+        results[1] = Parser.parse_player_reaction_time(spawn, player_name)
+        orig = len(results[1])
+        results[1] = ScreenParser.build_spawn_events(
+            file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index], spawn, player_name)
+        print("[FileFrame] ScreenParser built {} events. Total: {}".format(len(results[1]) - orig, len(results[1])))
         self.update_widgets_spawn(*results)
         arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
         string = FileHandler.get_features_string(*arguments)

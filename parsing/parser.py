@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from data import abilities, effects, durations
 from variables import settings, colors
 
@@ -34,12 +34,14 @@ class Parser(object):
     LINE_ABILITY = "ability"
     LINE_EFFECT = "effect"
 
+    IGNORABLE = ("SetLevel", "Infection")
+
     # Date format
     TIME_FORMAT = "%H:%M:%S.%f"
     DATE_FORMAT = ""
 
     @staticmethod
-    def line_to_dictionary(line, enemies: dict=None):
+    def line_to_dictionary(line: str, enemies: dict=None):
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
@@ -70,7 +72,7 @@ class Parser(object):
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
             "amount": elements[5],
-            "destination": log["target"]
+            "target": log["target"]
         })
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
@@ -83,7 +85,6 @@ class Parser(object):
                 log["source"] = enemies[log["source"]]
             if log["target"] in enemies:
                 log["target"] = enemies[log["target"]]
-        log["destination"] = log["target"]
         log["self"] = log["source"] == log["target"]
         amount = log["amount"].replace("*", "")
         log["damage"] = int(amount) if amount.isdigit() else 0
@@ -111,7 +112,10 @@ class Parser(object):
         }
         """
         # Get the base dictionary
+        if isinstance(line, dict) and "color" in line:
+            return line
         line_dict = line if isinstance(line, dict) else Parser.line_to_dictionary(line)
+        line_dict = line_dict.copy()
         # Determine line type
         if "Damage" in line["effect"] or "Heal" in line["effect"]:
             line_type = Parser.LINE_NUMBER
@@ -168,7 +172,10 @@ class Parser(object):
         for event in lines[lines.index(line_dict):]:
             if (event["time"] - line_dict["time"]).total_seconds() > ability_duration[1] + 5:
                 break
-            effect = event["effect"].split(":")[1].split("{")[0].strip()
+            try:
+                effect = event["effect"].split(":")[1].split("{")[0].strip()
+            except IndexError:
+                effect = event["effect"]
             if "RemoveEffect" in event["effect"] and effect in ability_effects:
                 time_diff = (event["time"] - ability_effects[effect]["start"]["time"]).total_seconds()
                 ability_effects[effect]["duration"] = time_diff
@@ -250,53 +257,62 @@ class Parser(object):
         :param active_id: active ID for the log or list of IDs
         :return: str category
         """
+        if "category" in line_dict and line_dict["category"] is not None:
+            return line_dict["category"]
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
+        if "custom" in line_dict and line_dict["custom"] is True:
+            ctg = "death"
+        elif "icon" in line_dict:
+            ctg = "dmgd_pri"
         # If the ability is empty, this is a Gunship scope activation
-        if ability == "":
-            return "other"
+        elif ability == "":
+            ctg = "other"
         # Damage events
-        if "Damage" in line_dict['effect']:
+        elif "Damage" in line_dict['effect']:
             # Check for damage taken
-            if Parser.compare_ids(line_dict["destination"], active_id):
+            if Parser.compare_ids(line_dict["target"], active_id):
                 # Selfdamage
                 if line_dict['source'] == line_dict['target']:
-                    return "selfdmg"
+                    ctg = "selfdmg"
                 # Damage taken
                 else:
                     if ability in abilities.secondaries:
-                        return "dmgt_sec"
+                        ctg = "dmgt_sec"
                     else:
-                        return "dmgt_pri"
+                        ctg = "dmgt_pri"
             # Damage dealt
             else:
                 if ability in abilities.secondaries:
-                    return "dmgd_sec"
+                    ctg = "dmgd_sec"
                 else:
-                    return "dmgd_pri"
+                    ctg = "dmgd_pri"
         # Healing
         elif "Heal" in line_dict['effect']:
             # Selfhealing
             if Parser.compare_ids(line_dict["source"], active_id):
-                return "selfheal"
+                ctg = "selfheal"
             # Other healing
             else:
-                return "healing"
+                ctg = "healing"
         # AbilityActivate
         elif "AbilityActivate" in line_dict['effect']:
             if line_dict["ability"] in abilities.engines:
-                return "engine"
+                ctg = "engine"
             elif line_dict["ability"] in abilities.shields:
-                return "shield"
+                ctg = "shield"
             elif line_dict["ability"] in abilities.systems:
-                return "system"
-            elif line_dict["ability"] == "Player Death":
-                return "death"
+                ctg = "system"
+            elif line_dict["ability"] in ("Player Death", "Game End"):
+                ctg = "death"
             else:
-                return "other"
+                ctg = "other"
         elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
-            return "other"
-        raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
+            ctg = "other"
+        else:
+            raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
+        line_dict["category"] = ctg
+        return ctg
 
     @staticmethod
     def compare_ids(id: str, active_ids: (list, str)):
@@ -348,7 +364,7 @@ class Parser(object):
             lines = [Parser.line_to_dictionary(line) for line in lines]
         player_list = []
         for line in lines:
-            if "@" in line["line"]:
+            if "custom" in line or "@" in line["line"]:
                 continue
             dictionary = Parser.line_to_dictionary(line)
             if dictionary["source"] == dictionary["target"] and dictionary["source"] not in player_list:
@@ -551,7 +567,7 @@ class Parser(object):
                 continue
             lines_decoded.append(line)
         enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
-        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded]
+        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded if "Invulnerable" not in line]
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
@@ -817,15 +833,15 @@ class Parser(object):
     def build_spawn_from_match(match: list)->list:
         """Join the spawns of a match together to a single big spawn"""
         result = list()
-        for spawn in match:
+        for i, spawn in enumerate(match):
             result.extend(spawn)
             id_list = Parser.get_player_id_list(spawn)
             line = spawn[-1]
             death_event = "[{}] [{}] [{}] [{}] [{}] ()".format(
-                line["time"].strftime(Parser.TIME_FORMAT),
+                (line["time"] + timedelta(milliseconds=1)).strftime(Parser.TIME_FORMAT),
                 line["source"],
                 Parser.get_player_id_from_line(line, id_list),
-                "Player Death",
+                "Player Death" if i + 1 < len(match) else "Game End",
                 "ApplyEffect {}: AbilityActivate {}")
             result.append(Parser.line_to_dictionary(death_event))
         return result
@@ -858,7 +874,7 @@ class Parser(object):
     def is_tutorial(match: dict):
         for spawn in match:
             for line in spawn:
-                if "Tutorial" in line["line"] or "Invulnerable" in line["line"]:
+                if Parser.is_tutorial_event(line):
                     return True
         return False
 
@@ -867,3 +883,114 @@ class Parser(object):
         """Determine whether the event given is valid GSF event"""
         return event["source"].isdigit() and event["target"].isdigit()
 
+    @staticmethod
+    def is_login(line: dict):
+        """Determine whether the event given is a Login event"""
+        return (line["source"] == line["target"] and
+                "@" in line["source"] and
+                "Login" in line["ability"] and
+                ":" not in line["source"])
+
+    @staticmethod
+    def is_ignorable(event: dict):
+        """Determine whether the event given should be ignored"""
+        return any(a in event["line"] for a in Parser.IGNORABLE)
+
+    @staticmethod
+    def is_tutorial_event(line: dict):
+        """Determine whether this event belongs to a Tutorial match"""
+        return any(a in line["line"] for a in ("Tutorial", "Invulnerable"))
+
+    @staticmethod
+    def parse_player_reaction_time(spawn: list, name: str)->list:
+        """
+        Parse a spawn for player attack reaction time
+
+        Find individual attacks on the player and determine how fast
+        the player was in responding to the threat. Build a new set of
+        events that include these reaction times as normal events that
+        can be displayed in a TimeView.
+
+        Supports matches transformed into spawn event lists as given by
+        Parser.build_spawn_from_match.
+        """
+        player = Parser.get_player_id_list(spawn)
+        # Build list of all damage taken type events
+        dmgt_events = list()
+        for event in [e for e in spawn if "Damage Overcharge" not in e["line"]]:
+            event_type = Parser.get_event_category(event, player)
+            if "dmgt" not in event_type:
+                continue
+            dmgt_events.append(event)
+        # Build list of individual attacks
+        attacks = dict()
+        for attack in dmgt_events.copy():
+            if attack not in dmgt_events:
+                continue
+            player_id, attack_start = attack["target"], attack["time"]
+            attacks[attack_start] = [attack]
+            for event in dmgt_events[dmgt_events.copy().index(attack):]:
+                if event["target"] != player_id:  # Death in between
+                    break
+                elif (event["time"] - attack_start).total_seconds() > 5:
+                    break
+                attacks[attack["time"]].append(event)
+                attack_start = event["time"]
+                dmgt_events.remove(event)
+            if attack in dmgt_events:
+                dmgt_events.remove(attack)
+        for time, events in attacks.copy().items():
+            if len(events) < 2:
+                del attacks[time]
+        enemies = {time: [event["source"] for event in events] for time, events in attacks.items()}
+        # Find responses of player for each attack
+        responses = list()
+        for i, (time, attack) in enumerate(sorted(attacks.items(), key=lambda t: t[0])):
+            attack_start, attack_end = attack[0], attack[-1]
+            events = spawn[spawn.index(attack_start):]
+            applied = False
+            for event in events:
+                if event["target"] not in enemies[time] and event["self"] is False:
+                    continue
+                elif "AbilityActivate" not in event["line"] or event["ability"] in abilities.systems:
+                    continue
+                elif event["ability"] in ("Railgun Charge", "Wingman", "Lingering Effect", "Scope Mode"):
+                    continue
+                if (event["time"] - attack_start["time"]).total_seconds() > 10:
+                    break
+                responses.append(Parser.create_response_event(attack_start, attack_end, event, name, attack, i))
+                applied = True
+                break
+            if applied is False:
+                event = events[-1]
+                responses.append(Parser.create_response_event(attack_start, attack_end, event, name, attack, i))
+        spawn.extend(responses)
+        return spawn
+
+    @staticmethod
+    def create_response_event(
+            attack_start: dict, attack_end: dict, event: dict, name: str, attack: list,  i: int) -> dict:
+        """Create an attack response event dictionary"""
+        return {
+            "time": attack_start["time"] - timedelta(milliseconds=1),
+            "source": "Attack",
+            "target": name,
+            "target": name,
+            "ability": "Attack {}".format(i + 1),
+            "amount": sum(e["damage"] for e in attack),
+            "effect": "Attack",
+            "effects": [
+                ("", e["time"].strftime("%M:%S"), t, e["ability"], "", e["ability"])
+                for t, e in zip(("Start", "Response", "End"), (attack_start, event, attack_end))
+            ] + [
+                ("", "Response time:", "{}s".format(
+                    (event["time"] - attack_start["time"]).total_seconds()), "", "", "spvp_time"),
+                ("", "Attack Duration:", "{}s".format(
+                    (attack_end["time"] - attack_start["time"]).total_seconds()), "", "", "spvp_reducelockontime")
+            ],
+            "custom": True,
+            "self": False,
+            "crit": False,
+            "type": Parser.LINE_ABILITY,
+            "icon": "spvp_damageovertime",
+        }

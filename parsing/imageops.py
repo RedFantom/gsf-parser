@@ -4,6 +4,21 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+from PIL import Image
+
+
+def get_similarity_transparent(template: Image.Image, to_match: Image.Image):
+    """Compare two images in RGBA format"""
+    if template.size != to_match.size:
+        raise ValueError("These images are not the same size")
+    if not template.mode == "RGBA":
+        template = template.convert("RGBA")
+    if not to_match.mode == "RGBA":
+        to_match.convert("RGBA")
+    diff = sum(abs(c1 - c2) for p1, p2 in zip(template.getdata(), to_match.getdata())
+               for c1, c2 in zip(p1[:3], p2[:3]) if not p1[3] == 0)
+    n_comps = template.size[0] * template.size[1] * 3
+    return 100 - (diff / 255.0 * 100) / n_comps
 
 
 def get_similarity(template, to_match):

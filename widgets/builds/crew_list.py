@@ -22,7 +22,7 @@ class CrewListFrame(ttk.Frame):
     companions in that category
     """
 
-    def __init__(self, parent, faction, data_dictionary, callback):
+    def __init__(self, parent: tk.Widget, faction: str, data_dictionary: dict, callback: callable):
         """
         :param parent: parent widget
         :param faction: faction
@@ -35,6 +35,7 @@ class CrewListFrame(ttk.Frame):
         self.callback = callback
         self.window = variables.main_window
         self.data = data_dictionary
+        self.faction_data = data_dictionary[faction]
         self.roles = ["CoPilot", "Engineering", "Defensive", "Offensive", "Tactical"]
         self.header_label = ttk.Label(self, text="Crew", font=("default", 12), justify=tk.LEFT)
 
@@ -49,9 +50,28 @@ class CrewListFrame(ttk.Frame):
 
         self.build_widgets()
 
+    def set_faction(self, faction):
+        """Update the faction of the widgets in this list"""
+        self.faction = faction
+        for member, button in self.member_buttons.items():
+            button.grid_forget()
+            button.destroy()
+        for widget in self.copilot_buttons.values():
+            widget.grid_forget()
+            widget.destroy()
+        for frame in self.category_frames.values():
+            frame.grid_forget()
+            frame.destroy()
+        self.category_frames.clear()
+        self.member_buttons.clear()
+        self.copilot_buttons.clear()
+        self.faction_data: dict = self.data[faction]
+        self.build_widgets()
+        self.grid_widgets()
+
     def build_widgets(self):
         """Build widgets for the Crew Members"""
-        for category in self.data:  # {crew_role: [dict, dict, ...]}
+        for category in self.faction_data:  # {crew_role: [dict, dict, ...]}
             crew_role, = category.keys()  # CoPilot, Engineering, etc...
             category,  = category.values()  # [dict, dict, ...]
             # The CoPilot is selected from selected crew members

@@ -4,7 +4,6 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-from network.sharing.server import SharingServer
 from network.minimap.server import MiniMapServer
 import argparse
 import time
@@ -42,7 +41,7 @@ if __name__ == '__main__':
         default=DEFAULT_CLIENTS)
     # Type
     parser.add_argument(
-        "-t", type=str, nargs=1, help="Server type (sharing, minimap)", default="sharing")
+        "-t", type=str, nargs=1, help="Server type (minimap)", default="minimap")
 
     args = parser.parse_args()
 
@@ -58,9 +57,7 @@ if __name__ == '__main__':
     """
     Start the network
     """
-    if type == "sharing":
-        server = SharingServer(address=(address, port), max_clients=clients)
-    elif type == "minimap":
+    if type == "minimap":
         server = MiniMapServer(address, port)
     else:
         raise ValueError("Invalid server type: {}".format(type))

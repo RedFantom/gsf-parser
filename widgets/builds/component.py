@@ -90,7 +90,7 @@ class ComponentWidget(ttk.Frame):
         # Simple upgrade level
         else:
             item = self.vars[index][0]
-            self.ship[self.category][index] = item.get()
+            self.ship[self.category][(index, 0)] = item.get()
         # Access CharacterDatabase managed by CharactersFrame
         self.window.characters_frame.characters[self.window.builds_frame.character]["Ship Objects"][
             self.ship.name] = self.ship
@@ -133,8 +133,7 @@ class ComponentWidget(ttk.Frame):
             return
         for index in range(len(self.vars)):
             for choice in range(len(self.vars[index])):
-                boolean = (index, choice) if len(self.vars[index]) == 2 else index
-                self.vars[index][choice].set(self.ship[self.category][boolean])
+                self.vars[index][choice].set(self.ship[self.category][(index, choice)])
 
     def grid_widgets(self):
         """

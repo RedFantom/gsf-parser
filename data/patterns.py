@@ -80,11 +80,13 @@ class Patterns:
         ),
         "events": [
             # Mitigation availability
-            ((0, 0), (SHIP, "ability", "Running Interference", True), 2),
-            ((0, 0), (SHIP, "ability", "Distortion Field", True), 2),
+            ((0, 0), (SHIP, "ability", ("Running Interference", True)), 2),
+            ((0, 0), (SHIP, "ability", ("Distortion Field", True)), 2),
             # Mitigation usage
             ((-5, 5), (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Running Interference"}), 3),
             ((-5, 5), (FILE, {"self": True, "effect": "AbilityActivate", "ability": "Distortion Field"}), 3),
+            # ((-5, 5), (SCREEN, "")) Strafing
+            # ((-5, 5), (SCREEN, "")) Boosting
             # Second hit
             ((0, 10), (FILE, {"self": False, "ability": "railguns", "effect": "ApplyEffect: Damage", "enemy": True}), 1)
         ],

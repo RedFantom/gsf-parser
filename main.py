@@ -9,11 +9,25 @@ from os.path import dirname, join, basename, exists
 import sys
 import shutil
 import platform
-import traceback
+# Packages
+from raven import Client as RavenClient
 # UI Libraries
-from tkinter import messagebox, filedialog
-# Project Modules
-from utils.directories import get_temp_directory
+from tkinter import messagebox
+
+
+def handle_exception(raven: RavenClient):
+    """Handle an occurred exception"""
+    try:
+        from settings import Settings
+        Settings().write_defaults()
+        written = True
+    except Exception:
+        written = False
+    raven.captureException()
+    messagebox.showerror(
+        "Error", "Window initialization failed. The error has been "
+                 "reported. {}".format(
+            "Settings have been reset to defaults." if written is True else ""))
 
 
 def create_window():
@@ -22,30 +36,34 @@ def create_window():
     user interaction for when an error occurs which causes the
     window creation to fail.
     """
-    import gui
     try:
-        main_window = gui.MainWindow()
-    except Exception as e:
-        trace = traceback.format_exc()
-        with open(join(get_temp_directory(), "debug.txt"), "w") as fo:
-            fo.write(trace)
+        raven = connect_to_sentry()
+    except Exception:
+        messagebox.showerror(
+            "Error", "The GSF Parser failed to connect to the error "
+                     "reporting service.")
+        raise
+    try:
+        import gui
+        main_window = gui.MainWindow(raven)
+    except Exception:
         if exists("development"):
             raise
-        save = messagebox.askyesno(
-            "Error", "The GSF Parser window failed to correctly initialize. Please report this "
-                     "error along with the debug output below.\n\n{}\n\nWould you like to "
-                     "save the debug output to a file?".format(trace))
-        if save is True:
-            filename = filedialog.asksaveasfilename()
-            if filename is None:
-                raise ValueError("Invalid filename provided")
-            with open(filename, "w") as fo:
-                fo.write(repr(trace))
+        handle_exception(raven)
         raise
     try:
         main_window.mainloop()
     except KeyboardInterrupt:
-        exit(0)
+        main_window.exit()
+
+
+def connect_to_sentry() -> RavenClient:
+    """Connect to Sentry and enable sys hook for pyinstaller failures"""
+    with open("sentry") as fi:
+        link = fi.read().strip()
+    raven = RavenClient(link)
+    raven.install_sys_hook()
+    return raven
 
 
 def setup_tkinter():

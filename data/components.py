@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 
-component_types = {
+COMPONENT_TYPES = {
     "primary": "PrimaryWeapon",
     "primary2": "PrimaryWeapon2",
     "secondary": "SecondaryWeapon",
@@ -21,9 +21,9 @@ component_types = {
     "capacitor": "Capacitor"
 }
 
-component_types_reverse = {value: key for key, value in component_types.items()}
+COMP_TYPES_REVERSE = {value: key for key, value in COMPONENT_TYPES.items()}
 
-component_strings = {
+COMPONENT_STRINGS = {
     "PrimaryWeapon": "Primary Weapon",
     "PrimaryWeapon2": "Primary Weapon II",
     "SecondaryWeapon": "Secondary Weapon",
@@ -39,18 +39,27 @@ component_strings = {
     "Capacitor": "Capacitor"
 }
 
-components = [
+COMPONENTS = [
     "PrimaryWeapon",
     "PrimaryWeapon2",
     "SecondaryWeapon",
     "SecondaryWeapon2",
-    "Engine",
-    "ShieldProjector",
     "Systems",
+    "Engine",
     "Armor",
-    "Reactor",
+    "Capacitor",
     "Magazine",
+    "Reactor",
     "Sensor",
     "Thruster",
-    "Capacitor"
 ]
+
+PLURAL_TO_SINGULAR = {
+    "primaries": "primary",
+    "secondaries": "secondary",
+    "engines": "engine",
+    "systems": "systems",
+    "shields": "shields"
+}
+
+SINGULAR_TO_PLURAL = {v: k for k, v in PLURAL_TO_SINGULAR.items()}
