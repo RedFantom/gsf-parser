@@ -208,6 +208,12 @@ except ImportError:
             def put(self):
                 pass
 
+        def is_alive(self):
+            return False
+
+        def start(self):
+            pass
+
         enabled = False
         data_queue = DummyQueue()
 
