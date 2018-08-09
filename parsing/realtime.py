@@ -9,9 +9,10 @@ from datetime import datetime, timedelta
 import os
 import _pickle as pickle  # known as cPickle
 from queue import PriorityQueue, Queue
-from time import sleep
 from threading import Thread, Lock
+from time import sleep
 import traceback
+from typing import Any, Tuple, Dict
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -77,6 +78,43 @@ spawn_dictionary["ship"]
 spawn_dictionary["ship_name"]
 """
 
+screen_perf: Dict[str, Tuple[int, float]] = dict()
+screen_slow: Dict[str, float] = dict()
+
+
+def screen_func(feature: str) -> callable:
+    """Function decorator that records the performance of function"""
+
+    def outer(func: callable) -> callable:
+        """Enable function performance measurement if enabled"""
+        if not variables.settings["screen"]["perf"] is True:
+            return func
+
+        def benchmark(*args) -> Tuple[Any, float]:
+            """Call the function and record its performance"""
+            start = datetime.now()
+            r = func(*args)
+            elapsed = (datetime.now() - start).total_seconds()
+            screen_perf[feature][0] += 1
+            screen_perf[feature][1] += elapsed
+            return r, elapsed
+
+        # Record slow features if disabling them is enabled
+        if variables.settings["screen"]["disable"] is True:
+            def inner(*args) -> Any:
+                r, elapsed = benchmark(*args)
+                v = 1.0 if elapsed > 0.10 else -0.5
+                if feature not in screen_slow:
+                    screen_slow[feature] = 0
+                screen_slow[feature] += v
+                return r
+        else:
+            def inner(*args) -> Any:
+                return benchmark(*args)[0]
+
+        return inner
+    return outer
+
 
 class RealTimeParser(Thread):
     """
@@ -133,8 +171,8 @@ class RealTimeParser(Thread):
         self._file_callback = file_callback
         self.event_callback = event_callback
         # Settings
-        self._screen_parsing_enabled = self.options["screen"]["enabled"]
-        self._screen_parsing_features = self.options["screen"]["features"]
+        self._screen_enabled = self.options["screen"]["enabled"]
+        self._screen_features = self.options["screen"]["features"]
         # Queues
         self.shots_queue = PriorityQueue()
         self._exit_queue = Queue()
@@ -200,8 +238,11 @@ class RealTimeParser(Thread):
         self._rgb = RGBController()
         self._active_map = None
         self._timer_parser = None
-        if "Power Regeneration Delays" in self._screen_parsing_features:
+        if "Power Regeneration Delays" in self._screen_features:
             self._timer_parser = TimerParser()
+        global screen_perf
+        screen_perf.clear()
+        screen_perf = {feature: [0, 0.0] for feature in self._screen_features}
 
         """
         MiniMap Sharing
@@ -242,7 +283,7 @@ class RealTimeParser(Thread):
 
     def setup_minimap_share(self):
         """Create a MiniMapClient and setup everything to share location"""
-        if "MiniMap Location" not in self._screen_parsing_features:
+        if "MiniMap Location" not in self._screen_features:
             raise ValueError("MiniMap Location parsing not enabled.")
         print("[RealTimeParser: MiniMap]", self._address)
         addr, port = self._address.split(":")
@@ -251,7 +292,7 @@ class RealTimeParser(Thread):
 
     def start_listeners(self):
         """Start the keyboard and mouse listeners"""
-        if not self._screen_parsing_enabled or "Mouse and Keyboard" not in self._screen_parsing_features:
+        if not self._screen_enabled or "Mouse and Keyboard" not in self._screen_features:
             return
         print("[RealTimeParser] Mouse and Keyboard parsing enabled.")
         self._kb_listener.start()
@@ -259,7 +300,7 @@ class RealTimeParser(Thread):
 
     def stop_listeners(self):
         """Stop the keyboard and mouse listeners"""
-        if not self._screen_parsing_enabled:
+        if not self._screen_enabled:
             return
         self._kb_listener.stop()
         self._ms_listener.stop()
@@ -344,7 +385,7 @@ class RealTimeParser(Thread):
             self.diff = datetime.now() - now
             return
         # Screen parsing
-        if self._screen_parsing_enabled:
+        if self._screen_enabled:
             screenshot = self._mss.grab(self._monitor)
             screenshot_time = datetime.now()
             image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
@@ -462,7 +503,7 @@ class RealTimeParser(Thread):
         print("[RealTimeParser] Login: {}".format(self.player_name))
         self.process_login()
         # Spawn Timer
-        if (self._screen_parsing_enabled and "Spawn Timer" in self._screen_parsing_features and
+        if (self._screen_enabled and "Spawn Timer" in self._screen_features and
                 self._waiting_for_timer is False and self.is_match is False):
             # Only activates if the Spawn Timer screen parsing
             # feature is enabled and there is no match active.
@@ -542,7 +583,7 @@ class RealTimeParser(Thread):
         ship = ship[0]
         if self._character_db[self._character_data]["Faction"].lower() == "republic":
             ship = rep_ships[ship]
-        if self._screen_parsing_enabled is False:
+        if self._screen_enabled is False:
             return
         ship_objects = self._character_db[self._character_data]["Ship Objects"]
         if ship not in ship_objects:
@@ -587,23 +628,43 @@ class RealTimeParser(Thread):
         elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
             self.create_keys()
 
-        if "Spawn Timer" in self._screen_parsing_features:
+        if "Spawn Timer" in self._screen_features:
             self.update_timer_parser(screenshot, screenshot_time)
-        if "Tracking penalty" in self._screen_parsing_features:
+        if "Tracking penalty" in self._screen_features:
             self.update_tracking_penalty(now)
-        if "Ship health" in self._screen_parsing_features:
+        if "Ship health" in self._screen_features:
             self.update_ship_health(screenshot, now)
-        if "Map and match type" in self._screen_parsing_features:
+        if "Map and match type" in self._screen_features:
             self.update_map_match_type(screenshot)
-        if "MiniMap Location" in self._screen_parsing_features:
+        if "MiniMap Location" in self._screen_features:
             self.update_minimap_location(screenshot)
-        if "Match score" in self._screen_parsing_features:
+        if "Match score" in self._screen_features:
             self.update_match_score(screenshot)
-        if "Pointer Parsing" in self._screen_parsing_features:
+        if "Pointer Parsing" in self._screen_features:
             self.update_pointer_parser()
+
+        if self.options["screen"]["perf"] is True and self.options["screen"]["disable"] is True:
+            self.disable_slow_features()
 
         self.save_data_dictionary()
 
+    def disable_slow_features(self):
+        """
+        Remove slow performing features from the screen feature list
+
+        Screen parsing features have their performance recorded by the
+        @screen_func decorator. For each fast run, a feature has their
+        slow count reduced by 0.5, for each slow run it is increased by
+        1. If a feature consistently performs slow and their count
+        increases to 3, it is disabled.
+        """
+        global screen_slow
+        for feature, count in screen_slow.items():
+            if count > 3 and feature in self._screen_features:
+                self._screen_features.remove(feature)
+                print("[RealTimeParser] Disabled feature {}".format(feature))
+
+    @screen_func("Spawn Timer")
     def update_timer_parser(self, screenshot: Image.Image, screenshot_time: datetime):
         """
         TimerParser
@@ -638,6 +699,7 @@ class RealTimeParser(Thread):
                 # Now delta contains the amount of time left until the spawn starts
                 self._spawn_time = screenshot_time + delta
 
+    @screen_func("Tracking penalty")
     def update_tracking_penalty(self, now: datetime):
         """
         Tracking penalty
@@ -666,9 +728,10 @@ class RealTimeParser(Thread):
         string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
         self.screen_data["tracking"] = string
 
+    @screen_func("Ship health")
     def update_ship_health(self, screenshot: Image.Image, now: datetime):
         """
-        Ship Health
+        Ship health
 
         Crops the screenshot to the hull and shield health indicator
         portions of the interface and then determines the hull and
@@ -678,12 +741,13 @@ class RealTimeParser(Thread):
         (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
             screenshot, self.get_coordinates("health"))
         self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
-        if "minimap" in self._screen_parsing_features and self._client is not None:
+        if "minimap" in self._screen_features and self._client is not None:
             self._client.send_health(int(health_hull))
 
+    @screen_func("MiniMap Location")
     def update_minimap_location(self, screenshot: Image.Image):
         """
-        Minimap Location
+        MiniMap Location
 
         Determines the location of the player marker on the MiniMap for
         a given screenshot. The screenshot is cropped to the MiniMap
@@ -696,6 +760,7 @@ class RealTimeParser(Thread):
         self._client.send_location(fracs)
         self._minimap.update_location("location_{}_{}".format(self.player_name, fracs))
 
+    @screen_func("Map and match type")
     def update_map_match_type(self, screenshot: Image.Image):
         """
         Map and match type
@@ -720,6 +785,7 @@ class RealTimeParser(Thread):
         if self._active_map is not None and self.get_for_current_spawn("map") is None:
             self.set_for_current_spawn("map", self._active_map)
 
+    @screen_func("Match score")
     def update_match_score(self, screenshot: Image.Image):
         """
         Match score
@@ -748,6 +814,7 @@ class RealTimeParser(Thread):
                 self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
                 self._character_db_data["Faction"], score)
 
+    @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
         """
         Pointer Parsing
@@ -902,13 +969,11 @@ class RealTimeParser(Thread):
                 # Errors are not often handled well in Threads
                 self.raven.captureException()
                 error = traceback.format_exc()
-                print("RealTimeParser encountered an error: ", error)
+                print("[RealTimeParser] encountered an error: ", error)
                 messagebox.showerror(
                     "Error",
-                    "The real-time parsing back-end encountered an error while performing operations. Please report "
-                    "this to the developer with the debug message below and, if possible, the full strack-trace. "
-                    "\n\n{}".format(error)
-                )
+                    "The real-time parsing back-end encountered an error while performing operations. "
+                    "The error has been reported to the developer.")
                 raise
         # Perform closing actions
         self.stop_listeners()
@@ -1013,27 +1078,45 @@ class RealTimeParser(Thread):
         self._lock.release()
 
     @property
-    def overlay_string(self):
+    def perf_string(self) -> str:
+        """Return a string with screen parsing feature performance"""
+        if len(self._screen_features) == 0:
+            return "No screen parsing features enabled"
+        string = str()
+        global screen_perf
+        for feature, (count, time) in screen_perf.items():
+            if count == 0 or time / count < 0.10:
+                continue
+            avg = time / count
+            if feature not in self._screen_features:
+                # Feature has been disabled by perf profiler
+                string += "{}: {:.3f}s, disabled\n".format(feature, avg)
+            else:
+                string += "{}: {:.3f}s\n".format(feature, avg)
+        return string
+
+    @property
+    def overlay_string(self) -> str:
         """String of text to set in the Overlay"""
         if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
             return ""
         string = self.parsing_data_string
-        if "Spawn Timer" in self._screen_parsing_features:
+        if "Spawn Timer" in self._screen_features:
             string += self.spawn_timer_string
-        if "Tracking penalty" not in self._screen_parsing_features:
+        if "Tracking penalty" not in self._screen_features:
             string += self.tracking_string
-        if "Map and match type" in self._screen_parsing_features:
+        if "Map and match type" in self._screen_features:
             string += self.map_match_type_string
         if self._timer_parser is not None and self._timer_parser.is_alive():
             string += self._timer_parser.string
         return string.strip()
 
     @property
-    def tracking_string(self):
+    def tracking_string(self) -> str:
         return "Tracking: {}\n".format(self.screen_data["tracking"])
 
     @property
-    def parsing_data_string(self):
+    def parsing_data_string(self) -> str:
         """Simple normal parsing data string"""
         return "Damage Dealt: {}\n" \
                "Damage Taken: {}\n" \
@@ -1042,7 +1125,7 @@ class RealTimeParser(Thread):
             format(self.dmg_d, self.dmg_t, self.dmg_s, self._healing)
 
     @property
-    def spawn_timer_string(self):
+    def spawn_timer_string(self) -> str:
         """Spawn timer parsing string for the Overlay"""
         if self._spawn_time is None:
             return ""
@@ -1050,7 +1133,7 @@ class RealTimeParser(Thread):
             divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
 
     @property
-    def map_match_type_string(self):
+    def map_match_type_string(self) -> str:
         """Map and match type string"""
         if self.screen_data["map"] is None:
             return "Map: Unknown\n"

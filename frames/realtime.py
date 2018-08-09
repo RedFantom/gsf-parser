@@ -29,6 +29,13 @@ class RealTimeFrame(ttk.Frame):
     A Frame that contains all the necessary widgets to control a
     RealTimeParser instance.
     """
+
+    DATA_STR_BASE = \
+        "Slow screen parsing features:\n" \
+        "{}\n" \
+        "Average time spent per cycle per feature that takes more than " \
+        "0.10s to complete operations."
+
     def __init__(self, master, window):
         ttk.Frame.__init__(self, master)
         """
@@ -59,7 +66,9 @@ class RealTimeFrame(ttk.Frame):
 
         # Data widgets
         self.data = tk.StringVar()
-        self.data_label = ttk.Label(self, textvariable=self.data)
+        self.data_label = ttk.Label(
+            self, textvariable=self.data, font=("default", 9), justify=tk.LEFT,
+            wraplength=300)
         self.time_view = TimeView(self, height=6, width=1.5)
         self.time_scroll = ttk.Scrollbar(self, command=self.time_view.yview)
         self.time_view.config(yscrollcommand=self.time_scroll.set)
@@ -87,10 +96,10 @@ class RealTimeFrame(ttk.Frame):
         self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
         self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
 
-        self.data_label.grid(row=0, column=2, rowspan=3, columnspan=1, sticky="nsw", padx=5, pady=5)
-        self.time_view.grid(row=3, column=0, columnspan=3, sticky="nswe", padx=5, pady=5)
+        self.data_label.grid(row=0, column=2, rowspan=3, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
+        self.time_view.grid(row=3, column=0, columnspan=4, sticky="nswe", padx=5, pady=5)
 
-        self.watching_label.grid(row=4, column=0, columnspan=3, sticky="nw", padx=5, pady=5)
+        self.watching_label.grid(row=4, column=0, columnspan=4, sticky="nw", padx=5, pady=5)
         self.cpu_label.grid(row=4, column=2, sticky="nw", padx=5, pady=5)
 
     def check_parser_start(self) -> bool:
@@ -175,6 +184,7 @@ class RealTimeFrame(ttk.Frame):
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
+        self.data.set("")
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
@@ -245,7 +255,12 @@ class RealTimeFrame(ttk.Frame):
                 self.after_cancel(self.data_after_id)
                 self.data_after_id = None
             return
-        self.data_label.config(text=self.parser.parsing_data_string)
+        perf = self.parser.perf_string
+        if len(perf) == 0:
+            string = self.DATA_STR_BASE.format("No slow screen parsing features\n")
+        else:
+            string = self.DATA_STR_BASE.format(perf)
+        self.data.set(string)
         self.data_after_id = self.after(1000, self.update_data_string)
 
     def update_overlay(self):

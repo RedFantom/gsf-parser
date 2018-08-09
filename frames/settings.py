@@ -222,6 +222,21 @@ class SettingsFrame(ttk.Frame):
             text="Dynamic SWTOR Window Location Support enables routines that makes GUI Parsing and thus Screen "
                  "Parsing work when SWTOR runs in Windowed mode. This introduces additional overhead, as the location "
                  "of the SWTOR window is determined every Screen Parsing cycle.")
+        # Screen parsing performance profiling
+        self.sc_perf = tk.BooleanVar()
+        self.sc_perf_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Screen parsing feature performance profiling",
+            command=self.save_settings, variable=self.sc_perf)
+        Balloon(
+            self.sc_perf_checkbox,
+            text="If this setting is enabled, the average amount of time spent on each enabled screen parsing feature "
+                 "is recorded. If the feature is taking up a lot of processing time, it will be displayed in the "
+                 "real-time parsing frame.")
+        # Screen parsing feature disable
+        self.sc_disable = tk.BooleanVar()
+        self.sc_disable_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Automatically disable features that are slow",
+            command=self.save_settings, variable=self.sc_disable)
 
         """
         Miscellaneous
@@ -378,6 +393,9 @@ class SettingsFrame(ttk.Frame):
             row += 1
         # Screen Dynamic Window Location
         self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
+        # Screen parsing performance profiling
+        self.sc_perf_checkbox.grid(row=row+2, column=0, **padding_label, **sticky_default, **checkbox)
+        self.sc_disable_checkbox.grid(row=row+3, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
@@ -424,6 +442,8 @@ class SettingsFrame(ttk.Frame):
         for feature in self.sc_features:
             self.sc_variables[feature].set(feature in settings["screen"]["features"])
         self.sc_dynamic_window.set(settings["screen"]["window"])
+        self.sc_perf.set(settings["screen"]["perf"])
+        self.sc_disable.set(settings["screen"]["disable"])
         """
         Widget states
         """
@@ -434,6 +454,10 @@ class SettingsFrame(ttk.Frame):
                 text="Your monitor resolution is not supported by this feature. If you would like "
                      "for your resolution to be supported, please send RedFantom a screenshot of the "
                      "unaltered user interface shown before the start of a match.")
+        if self.sc_perf.get() is False:
+            self.sc_disable_checkbox.config(state=tk.DISABLED)
+        else:
+            self.sc_disable_checkbox.config(state=tk.NORMAL)
 
     def save_settings(self, *args):
         """
@@ -476,7 +500,9 @@ class SettingsFrame(ttk.Frame):
                 "experimental": self.rt_overlay_experimental.get(),
                 "enabled": self.sc_enabled.get(),
                 "features": [key for key, value in self.sc_variables.items() if value.get() is True],
-                "window": self.sc_dynamic_window.get()
+                "window": self.sc_dynamic_window.get(),
+                "perf": self.sc_perf.get(),
+                "disable": self.sc_disable.get(),
             },
             "sharing": {
                 "enabled": self.sh_enable.get(),
@@ -532,9 +558,9 @@ class SettingsFrame(ttk.Frame):
             if self._canvas_box is not None:
                 self.canvas.delete(self._canvas_box)
             if elapsed < delay:
-                x = int(elapsed / delay * 800)
+                x = int(elapsed / delay * 790)
                 self._canvas_box = self.canvas.create_rectangle(
-                    (0, 5, x, 10), fill=settings["gui"]["color"])
+                    (5, 5, x, 10), fill=settings["gui"]["color"])
             else:  # elapsed > self.DELAY: settings are saved
                 self._canvas_box = None
         self._save_after_id = self.after(33, self.update_canvas)
@@ -571,6 +597,8 @@ class SettingsFrame(ttk.Frame):
         if self.rt_overlay_experimental.get() is not settings["screen"]["experimental"]:
             self._restart_required = True
         if self.gui_debug_window.get() is not settings["gui"]["debug"]:
+            self._restart_required = True
+        if self.sc_perf.get() is not settings["screen"]["perf"]:
             self._restart_required = True
 
 

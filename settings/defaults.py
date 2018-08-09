@@ -72,6 +72,9 @@ defaults = {
         "window": False,
         # SWTOR Dynamic window support
         "dynamic": False,
+        # Screen parsing performance monitoring
+        "perf": True,
+        "disable": True,
     },
     "sharing": {
         "enabled": True,
