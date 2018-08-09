@@ -30,11 +30,7 @@ class RealTimeFrame(ttk.Frame):
     RealTimeParser instance.
     """
 
-    DATA_STR_BASE = \
-        "Slow screen parsing features:\n" \
-        "{}\n" \
-        "Average time spent per cycle per feature that takes more than " \
-        "0.10s to complete operations."
+    DATA_STR_BASE = "Slow screen parsing features:\n\n{}"
 
     def __init__(self, master, window):
         ttk.Frame.__init__(self, master)
@@ -55,7 +51,7 @@ class RealTimeFrame(ttk.Frame):
         self.watching_stringvar = tk.StringVar(self, value="Watching no file...")
         self.watching_label = ttk.Label(self, textvariable=self.watching_stringvar, justify=tk.LEFT)
         self.cpu_stringvar = tk.StringVar()
-        self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar, justify=tk.LEFT)
+        self.cpu_label = ttk.Label(self, textvariable=self.cpu_stringvar, justify=tk.LEFT, font="TkFixedFont")
 
         # Control widgets
         servers = ("Choose Server",) + tuple(self.window.characters_frame.servers.values())
@@ -65,7 +61,7 @@ class RealTimeFrame(ttk.Frame):
         self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
 
         # Data widgets
-        self.data = tk.StringVar()
+        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time parsing\n"))
         self.data_label = ttk.Label(
             self, textvariable=self.data, font=("default", 9), justify=tk.LEFT,
             wraplength=300)
@@ -84,7 +80,7 @@ class RealTimeFrame(ttk.Frame):
 
         # Start monitoring CPU usage
         self.process = psutil.Process(os.getpid())
-        self.after(2000, self.update_cpu_usage)
+        self.after(1000, self.update_cpu_usage)
 
     def grid_widgets(self):
         """Put all widgets into place"""
@@ -184,7 +180,7 @@ class RealTimeFrame(ttk.Frame):
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
-        self.data.set("")
+        self.data.set(self.DATA_STR_BASE.format("Not real-time parsing\n"))
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
@@ -208,11 +204,16 @@ class RealTimeFrame(ttk.Frame):
 
     def update_cpu_usage(self):
         """Update the CPU usage Label every two seconds"""
-        string = "CPU usage: {}%".format(self.process.cpu_percent())
+        string = "CPU: {:4.1f}%".format(self.process.cpu_percent())
+        assert isinstance(self.process, psutil.Process)
+        memory = self.process.memory_full_info().rss / 1024 ** 2
+        string += ", Memory: {:5.1f}MiB".format(memory)
         self.after(2000, self.update_cpu_usage)
         if self.parser is not None and self.parser.diff is not None:
             diff = self.parser.diff
-            string += ", {:.03f}s".format(diff.total_seconds())
+            string += ", Cycle Time: {:.03f}s".format(diff.total_seconds())
+        else:
+            string += ", Cycle Time: -.---s"
         self.cpu_stringvar.set(string)
 
     def open_overlay(self):
@@ -254,6 +255,10 @@ class RealTimeFrame(ttk.Frame):
             if self.data_after_id is not None:
                 self.after_cancel(self.data_after_id)
                 self.data_after_id = None
+            return
+        if settings["screen"]["perf"] is False:
+            string = self.DATA_STR_BASE.format("Screen feature performance profiling disabled\n")
+            self.data.set(string)
             return
         perf = self.parser.perf_string
         if len(perf) == 0:
