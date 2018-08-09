@@ -11,3 +11,4 @@ colors = ColorScheme()
 files_done = 0
 main_window = None
 raven = None
+multi = settings["screen"]["multi"]

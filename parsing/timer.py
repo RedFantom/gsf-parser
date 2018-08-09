@@ -6,8 +6,6 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
-from queue import Queue
-from threading import Thread, Lock
 from time import sleep
 # Packages
 from pynput.keyboard import Listener as KBListener, Key, KeyCode
@@ -15,6 +13,13 @@ from pynput.mouse import Listener as MSListener, Button
 # Project Modules
 from parsing import Parser
 from parsing.shipstats import ShipStats
+# Processes or Threads
+from variables import multi
+if multi is True:
+    from multiprocessing import Process as Thread, Queue, Lock
+else:
+    from queue import Queue
+    from threading import Thread, Lock
 
 
 class TimerParser(Thread):
@@ -138,7 +143,11 @@ class TimerParser(Thread):
         if not self.is_alive():
             return
         self._exit_queue.put(True)
-        self.join()
+        try:
+            self.join(timeout=1)
+        except Exception as e:
+            print("[TimerParser] Failed to terminate process: {}".format(e))
+            self.terminate()
 
     def _on_click(self, x: int, y: int, button: Button, state: bool):
         """Process a click to check for weapon power usage"""

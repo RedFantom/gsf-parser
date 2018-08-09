@@ -237,6 +237,19 @@ class SettingsFrame(ttk.Frame):
         self.sc_disable_checkbox = ttk.Checkbutton(
             self.sc_frame, text="Automatically disable features that are slow",
             command=self.save_settings, variable=self.sc_disable)
+        Balloon(
+            self.sc_disable_checkbox,
+            text="If this setting is enabled, screen parsing features that perform slow on a consistent basis are "
+                 "disabled while real-time parsing continues normally.")
+        # Multiprocessing support
+        self.sc_multi = tk.BooleanVar()
+        self.sc_multi_checkbox = ttk.Checkbutton(
+            self.sc_frame, text="Enable multiprocessing support (alpha)",
+            command=self.save_settings, variable=self.sc_multi)
+        Balloon(
+            self.sc_multi_checkbox,
+            text="Multiprocessing is a Python library that allows execution in different Processes instead of "
+                 "different Threads, leveraging multi-core CPUs.")
 
         """
         Miscellaneous
@@ -396,6 +409,8 @@ class SettingsFrame(ttk.Frame):
         # Screen parsing performance profiling
         self.sc_perf_checkbox.grid(row=row+2, column=0, **padding_label, **sticky_default, **checkbox)
         self.sc_disable_checkbox.grid(row=row+3, column=0, **padding_label, **sticky_default, **checkbox)
+        # Multiprocessing support
+        self.sc_multi_checkbox.grid(row=row+4, column=0, **padding_label, **sticky_default, **checkbox)
 
     def update_settings(self):
         """
@@ -444,6 +459,7 @@ class SettingsFrame(ttk.Frame):
         self.sc_dynamic_window.set(settings["screen"]["window"])
         self.sc_perf.set(settings["screen"]["perf"])
         self.sc_disable.set(settings["screen"]["disable"])
+        self.sc_multi.set(settings["screen"]["multi"])
         """
         Widget states
         """
@@ -503,6 +519,7 @@ class SettingsFrame(ttk.Frame):
                 "window": self.sc_dynamic_window.get(),
                 "perf": self.sc_perf.get(),
                 "disable": self.sc_disable.get(),
+                "multi": self.sc_multi.get(),
             },
             "sharing": {
                 "enabled": self.sh_enable.get(),
@@ -599,6 +616,8 @@ class SettingsFrame(ttk.Frame):
         if self.gui_debug_window.get() is not settings["gui"]["debug"]:
             self._restart_required = True
         if self.sc_perf.get() is not settings["screen"]["perf"]:
+            self._restart_required = True
+        if self.sc_multi.get() is not settings["screen"]["multi"]:
             self._restart_required = True
 
 

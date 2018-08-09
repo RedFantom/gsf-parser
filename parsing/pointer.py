@@ -7,18 +7,23 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime
 import os
-from threading import Thread
 from time import sleep
 # Packages
 from mss import mss
 from PIL import Image
 from pynput.mouse import Button, Listener
-from queue import Queue
 # Project Modules
 from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
 from utils.utilities import get_cursor_position
+# Processes or Threads
+from variables import multi
+if multi is True:
+    from multiprocessing import Process as Thread, Queue
+else:
+    from queue import Queue
+    from threading import Thread
 
 
 class PointerParser(Thread):
@@ -102,7 +107,7 @@ class PointerParser(Thread):
     def stop(self):
         """Stop the Threads activities by notifying it it needs to exit"""
         self.exit_queue.put(True)
-        self.join()
+        self.join(timeout=2)
         print("[PointerParser] Stopped.")
 
     def set_rate_of_fire(self, rof: float, ship_class: str):

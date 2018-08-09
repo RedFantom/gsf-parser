@@ -75,6 +75,8 @@ defaults = {
         # Screen parsing performance monitoring
         "perf": True,
         "disable": True,
+        # Multiprocessing support
+        "multi": False,
     },
     "sharing": {
         "enabled": True,
