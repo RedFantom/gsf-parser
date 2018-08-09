@@ -7,7 +7,6 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime, timedelta
 import os
-import _pickle as pickle  # known as cPickle
 from queue import PriorityQueue, Queue
 from threading import Thread, Lock
 from time import sleep
@@ -20,25 +19,28 @@ import mss
 import pynput
 from PIL import Image
 from pypresence import Presence
-# Project Modules
+# Data Modules
 from data.keys import keys
 from data.abilities import rep_ships
 from data import abilities
 from data.maps import MAP_TYPE_NAMES, MAP_NAMES
+# network Modules
 from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
-from parsing.parser import Parser
+# Parsing Modules
 from parsing.logstalker import LogStalker
 from parsing.gsfinterface import GSFInterface
 from parsing.guiparsing import get_player_guiname
+from parsing.parser import Parser
 from parsing.pointer import PointerParser
+from parsing.realtimedb import RealTimeDB
 from parsing.rgb import RGBController
 from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
 from parsing.timer import TimerParser
 from parsing import vision
+# Utility Modules
 from utils.utilities import get_screen_resolution
-from utils.directories import get_temp_directory
 from utils.utilities import get_cursor_position
 from utils.window import Window
 import variables
@@ -48,35 +50,6 @@ def pair_wise(iterable: (list, tuple)):
     """Create generator to loop over iterable in pairs"""
     return list(zip(*tuple(iterable[i::2] for i in range(2))))
 
-
-"""
-These classes use data in a dictionary structure, dumped to a file in 
-the temporary directory of the GSF Parser. This dictionary contains all 
-the data acquired by screen parsing and is stored with the following 
-structure:
-
-Dictionary structure:
-data_dictionary[filename] = file_dictionary
-file_dictionary[datetime_obj] = match_dictionary
-match_dictionary[datetime_obj] = spawn_dictionary
-spawn_dictionary["cursor_pos"] = cursor_pos_dict
-    cursor_pos_dict[datetime_obj] = (x, y)
-spawn_dictionary["tracking"] = tracking_dict
-    tracking_dict[datetime_obj] = percentage
-spawn_dictionary["clicks"] = clicks_dict
-    clicks_dict[datetime_obj] = (left, right)
-spawn_dictionary["keys"] = keys_dict
-    keys_dict[datetime_obj] = keyname
-spawn_dictionary["health"] = health_dict
-    health_dict[datetime_obj] = (hull, shieldsf, shieldsr), all ints
-spawn_dictionary["distance"] = distance_dict
-    distance_dict[datetime_obj] = distance, float
-spawn_dictionary["target"] = target_dict
-    target_dict[datetime_obj] = (type, name)
-spawn_dictionary["player_name"]
-spawn_dictionary["ship"]
-spawn_dictionary["ship_name"]
-"""
 
 screen_perf: Dict[str, Tuple[int, float]] = dict()
 screen_slow: Dict[str, float] = dict()
@@ -122,7 +95,10 @@ class RealTimeParser(Thread):
 
     Runs a LogStalker to monitor the log files and parse the lines in
     the CombatLogs.
-    Additionally, Python-MSS is used to re
+    Additionally, Python-MSS is used to capture screenshots of the
+    game if screen parsing is enabled. Those screenshots are used for
+    additional advanced parsing purposes, for which the functions can
+    be identified with update_*feature_name*.
     """
 
     TIMER_MARGIN = 10
@@ -180,7 +156,7 @@ class RealTimeParser(Thread):
         self._character_data = character_data
         self._character_db = character_db
         self._character_db_data = self._character_db[self._character_data]
-        self._realtime_db = {}
+        self._realtime_db = RealTimeDB()
         self.diff = None
         self.ships_db = ships_db
         self.companions_db = companions_db
@@ -191,7 +167,7 @@ class RealTimeParser(Thread):
         File parsing
         """
         # LogStalker
-        self._stalker = LogStalker(watching_callback=self.file_callback)
+        self._stalker = LogStalker(watching_callback=self._file_callback)
         # Data attributes
         self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
         self.active_id, self.active_ids = "", []
@@ -216,6 +192,7 @@ class RealTimeParser(Thread):
         self._mss = None
         self._kb_listener = None
         self._ms_listener = None
+        self._key_states = None
         self.ship = None
         self.ship_stats = None
         resolution = get_screen_resolution()
@@ -253,12 +230,6 @@ class RealTimeParser(Thread):
         self._client = None
         if minimap_share is True:
             self.setup_minimap_share()
-
-        """
-        Data processing
-        """
-        self._file_name = os.path.join(get_temp_directory(), "realtime.db")
-        self.read_data_dictionary()
 
         self.update_presence()
 
@@ -304,6 +275,8 @@ class RealTimeParser(Thread):
             return
         self._kb_listener.stop()
         self._ms_listener.stop()
+        self._kb_listener = None
+        self._ms_listener = None
 
     def update_presence(self):
         """Update the Discord Rich Presence with new data"""
@@ -340,36 +313,6 @@ class RealTimeParser(Thread):
             large_image=large_image, large_text=large_text,
             small_image=small_image, small_text=small_text)
 
-    """
-    Data dictionary interaction
-    """
-
-    def save_data_dictionary(self):
-        """Save the data dictionary from memory to pickle"""
-        with open(self._file_name, "wb") as fo:
-            self._lock.acquire(timeout=4)
-            pickle.dump(self._realtime_db, fo)
-            self.release()
-
-    def read_data_dictionary(self, create_new_database=False):
-        """Read the data dictionary with backwards compatibility"""
-        if not os.path.exists(self._file_name) or create_new_database is True:
-            messagebox.showinfo("Info", "The GSF Parser is creating a new real-time parsing database.")
-            self.save_data_dictionary()
-        try:
-            with open(self._file_name, "rb") as fi:
-                self._realtime_db = pickle.load(fi)
-        except OSError:  # Inaccessible
-            messagebox.showerror(
-                "Error", "An OS Error occurred while trying to read the real-time parsing database. This likely means "
-                         "that either it does not exist, or your user account does not have permission to access it.")
-            self.read_data_dictionary(create_new_database=True)
-        except EOFError:  # Corrupted
-            messagebox.showerror(
-                "Error", "The real-time parsing database has been corrupted, and cannot be restored. The GSF Parser "
-                         "will create a new database, discarding all your old real-time parsing data.")
-            self.read_data_dictionary(create_new_database=True)
-
     def update(self):
         """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
@@ -389,7 +332,9 @@ class RealTimeParser(Thread):
             screenshot = self._mss.grab(self._monitor)
             screenshot_time = datetime.now()
             image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+            del screenshot
             self.process_screenshot(image, screenshot_time)
+            del image
         # RealTimeParser sleep limiting
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
@@ -435,7 +380,7 @@ class RealTimeParser(Thread):
         id_fmt = self.active_id[:8]
         if not self.tutorial:
             self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
-            match_map = self.get_for_current_spawn("map")
+            match_map = self._realtime_db.get_for_spawn("map")
             if match_map is not None:
                 self.discord.send_match_map(server, date, self.start_match, id_fmt, match_map)
         self.end_match = line["time"]
@@ -457,6 +402,8 @@ class RealTimeParser(Thread):
         self.update_presence()
         if self._timer_parser is not None:
             self._timer_parser.match_end()
+        self._active_map = None
+        self._realtime_db.write_spawn_data()
 
     def handle_match_start(self, line: dict):
         """Handle the start of a new GSF match"""
@@ -465,7 +412,7 @@ class RealTimeParser(Thread):
         self.is_match = True
         self.update_presence()
         # Call the new match callback
-        self.match_callback()
+        self._match_callback()
         if self._timer_parser is not None:
             self._timer_parser.match_start()
 
@@ -476,11 +423,12 @@ class RealTimeParser(Thread):
             self.active_id = ""
             # Call the spawn callback
             self.start_spawn = line["time"]
-            self.spawn_callback()
+            self._spawn_callback()
             self.ship = None
             self.ship_stats = None
             self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
             self.update_presence()
+            self._realtime_db.set_spawn(self._stalker.file, self.start_match, self.start_spawn)
 
     def update_player_id(self, line: dict):
         """Update the Player ID if this line allows it"""
@@ -592,7 +540,7 @@ class RealTimeParser(Thread):
         self.ship = ship_objects[ship]
         args = (self.ship, self.ships_db, self.companions_db)
         self.ship_stats = ShipStats(*args)
-        self.set_for_current_spawn("ship", self.ship)
+        self._realtime_db.set_for_spawn("ship", self.ship)
         self.update_presence()
         if self._timer_parser is not None:
             self._timer_parser.set_ship_stats(self.ship_stats)
@@ -621,12 +569,6 @@ class RealTimeParser(Thread):
         if self._screen_parsing_setup is False:
             self.setup_screen_parsing()
         now = datetime.now()
-        if self._stalker.file not in self._realtime_db:
-            return
-        elif self.start_match not in self._realtime_db[self._stalker.file]:
-            return
-        elif self.start_spawn not in self._realtime_db[self._stalker.file][self.start_match]:
-            self.create_keys()
 
         if "Spawn Timer" in self._screen_features:
             self.update_timer_parser(screenshot, screenshot_time)
@@ -645,8 +587,6 @@ class RealTimeParser(Thread):
 
         if self.options["screen"]["perf"] is True and self.options["screen"]["disable"] is True:
             self.disable_slow_features()
-
-        self.save_data_dictionary()
 
     def disable_slow_features(self):
         """
@@ -710,11 +650,13 @@ class RealTimeParser(Thread):
         - Tracking penalty percentage
         """
         # Absolute cursor position
+        if not self.is_match:
+            return
         mouse_coordinates = get_cursor_position()
-        self.set_for_current_spawn("cursor_pos", now, mouse_coordinates)
+        self._realtime_db.set_for_spawn("cursor_pos", now, mouse_coordinates)
         # Relative cursor position
         distance = vision.get_distance_from_center(mouse_coordinates, self._resolution)
-        self.set_for_current_spawn("distance", now, distance)
+        self._realtime_db.set_for_spawn("distance", now, distance)
         # Tracking penalty
         degrees = vision.get_tracking_degrees(distance, self._pixels_per_degree)
         if self.ship_stats is not None:
@@ -722,7 +664,7 @@ class RealTimeParser(Thread):
             penalty = vision.get_tracking_penalty(degrees, *constants)
         else:
             penalty = None
-        self.set_for_current_spawn("tracking", now, penalty)
+        self._realtime_db.set_for_spawn("tracking", now, penalty)
         # Set the data for the string building
         unit = "°" if penalty is None else "%"
         string = "{:.1f}{}".format(degrees if penalty is None else penalty, unit)
@@ -740,7 +682,9 @@ class RealTimeParser(Thread):
         health_hull = vision.get_ship_health_hull(screenshot.crop(self.get_coordinates("hull")))
         (health_shields_f, health_shields_r) = vision.get_ship_health_shields(
             screenshot, self.get_coordinates("health"))
-        self.set_for_current_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
+        if None in (health_hull, health_shields_f, health_shields_r):
+            return
+        self._realtime_db.set_for_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
         if "minimap" in self._screen_features and self._client is not None:
             self._client.send_health(int(health_hull))
 
@@ -774,7 +718,7 @@ class RealTimeParser(Thread):
         minimap = screenshot.crop(self.get_coordinates("minimap"))
         match_map = vision.get_map(minimap)
         if match_map is not None:
-            self.set_for_current_spawn("map", match_map)
+            self._realtime_db.set_for_spawn("map", match_map)
             self._active_map = match_map
             if self.discord is not None:
                 server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
@@ -782,8 +726,8 @@ class RealTimeParser(Thread):
                 self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))
             self.update_presence()
-        if self._active_map is not None and self.get_for_current_spawn("map") is None:
-            self.set_for_current_spawn("map", self._active_map)
+        if self._active_map is not None and self._realtime_db.get_for_spawn("map") is None:
+            self._realtime_db.set_for_spawn("map", self._active_map)
 
     @screen_func("Match score")
     def update_match_score(self, screenshot: Image.Image):
@@ -808,7 +752,7 @@ class RealTimeParser(Thread):
             return
         scorecard = screenshot.crop(self.get_coordinates("scorecard"))
         score = vision.get_score(scorecard)
-        self.set_for_current_spawn("score", score)
+        self._realtime_db.set_for_spawn("score", score)
         if self.discord is not None:
             self.discord.send_match_score(
                 self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
@@ -952,10 +896,7 @@ class RealTimeParser(Thread):
         return line
 
     def run(self):
-        """
-        Run the loop and exit if necessary and perform error-handling
-        for everything
-        """
+        """Run the loop and provide error handling, cleanup afterwards"""
         self._rgb.start()
         self.start_listeners()
         if self._timer_parser is not None:
@@ -975,8 +916,20 @@ class RealTimeParser(Thread):
                     "The real-time parsing back-end encountered an error while performing operations. "
                     "The error has been reported to the developer.")
                 raise
+        self._realtime_db.write_spawn_data()
         # Perform closing actions
         self.stop_listeners()
+        self.cleanup()
+
+    def cleanup(self):
+        """Clean up all the object references"""
+        self.lines.clear()
+        if self._rgb is not None and hasattr(self._rgb, "stop"):
+            self._rgb.stop()
+            self._rgb = None
+        if self._timer_parser is not None:
+            self._timer_parser.stop()
+            self._timer_parser = None
 
     def stop(self):
         """Stop the RealTimeParser activities"""
@@ -991,8 +944,12 @@ class RealTimeParser(Thread):
     def _on_kb_press(self, key):
         if not self.is_match or key not in keys:
             return
+        key = keys[key]
+        if key in self._key_states and self._key_states[key] is True:
+            return  # Ignore press hold repeat
         time = datetime.now()
-        self.set_for_current_spawn("keys", time, (keys[key], True))
+        self._realtime_db.set_for_spawn("keys", time, (key, True))
+        self._key_states[key] = True
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
             self._rgb.data_queue.put(("press", key))
         if "F" in key and len(key) == 2:
@@ -1002,80 +959,15 @@ class RealTimeParser(Thread):
     def _on_kb_release(self, key):
         if not self.is_match or key not in keys:
             return
-        self.set_for_current_spawn("keys", datetime.now(), (keys[key], False))
+        self._key_states[keys[key]] = False
+        self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
             self._rgb.data_queue.put(("release", key))
 
     def _on_ms_press(self, x, y, button, pressed):
         if not self.is_match:
             return
-        self.set_for_current_spawn("clicks", datetime.now(), (pressed, button))
-
-    def file_callback(self, *args):
-        self.acquire()
-        self._realtime_db[self._stalker.file] = {}
-        self.release()
-        self._file_callback(*args)
-
-    def match_callback(self):
-        self.acquire()
-        self._realtime_db[self._stalker.file][self.start_match] = {}
-        self.release()
-        if callable(self._match_callback):
-            self._match_callback()
-
-    def spawn_callback(self):
-        self.acquire()
-        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {}
-        self.release()
-        self.create_keys()
-        if callable(self._spawn_callback):
-            self._spawn_callback()
-
-    def create_keys(self):
-        self.acquire()
-        self._realtime_db[self._stalker.file][self.start_match][self.start_spawn] = {
-            "keys": {},
-            "clicks": {},
-            "target": {},
-            "distance": {},
-            "health": {},
-            "tracking": {},
-            "cursor_pos": {},
-            "power_mgmt": {},
-            "player_name": None,
-            "ship": None,
-            "ship_name": None,
-            "map": None
-        }
-        self.release()
-
-    def set_for_current_spawn(self, *args):
-        """
-        Update a value for the current spawn in the real-time parsing db
-
-        The real-time parsing database supports two different formats:
-        - A single value for a spawn :param args: (value,)
-        - A value keyed for a time for a spawn :param args: (time, val)
-        """
-        self.acquire()
-        file, match, spawn = self._stalker.file, self.start_match, self.start_spawn
-        if len(args) == 2:
-            self._realtime_db[file][match][spawn][args[0]] = args[1]
-        elif len(args) == 3:
-            self._realtime_db[file][match][spawn][args[0]][args[1]] = args[2]
-        else:
-            print("[RealTimeParser: set_for_current_spawn] Invalid: '{}'".format(args))
-        self.release()
-
-    def get_for_current_spawn(self, category):
-        return self._realtime_db[self._stalker.file][self.start_match][self.start_spawn][category]
-
-    def acquire(self):
-        self._lock.acquire()
-
-    def release(self):
-        self._lock.release()
+        self._realtime_db.set_for_spawn("clicks", datetime.now(), (pressed, button))
 
     @property
     def perf_string(self) -> str:

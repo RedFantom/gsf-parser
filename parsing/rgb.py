@@ -187,7 +187,7 @@ try:
         def stop(self):
             """Stop the thread"""
             self._exit_queue.put(True)
-            self.join()
+            self.join(timeout=2)
 
         def update_stats(self, stats: ShipStats):
             """Update the cooldowns in the cooldowns dictionary"""

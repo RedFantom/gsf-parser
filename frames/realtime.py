@@ -174,6 +174,7 @@ class RealTimeFrame(ttk.Frame):
             messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
             raise
         self.watching_stringvar.set("Watching no file...")
+        print("[RealTimeFrame] RealTimeParser reference count: {}".format(sys.getrefcount(self.parser)))
         self.parser = None
         self.close_overlay()
         self.close_event_overlay()
