@@ -15,7 +15,6 @@ from parsing.logstalker import LogStalker
 from parsing.matchstats import match_statistics
 from parsing.parser import Parser
 from parsing.realtime import RealTimeParser
-from parsing.shipops import get_ship_from_lineup, get_time_to_kill, get_time_to_kill_stats
 from parsing.ships import Ship, Component
 from parsing.shipstats import ShipStats
 from parsing.spawnstats import spawn_statistics
