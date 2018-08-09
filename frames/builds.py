@@ -78,7 +78,7 @@ class BuildsFrame(ttk.Frame):
             self.ship, "PrimaryWeapon")
         self.crew_select_frame = CrewListFrame(
             self.components_lists_frame.interior, self.faction,
-            self.companions_data[self.faction], self.set_crew_member)
+            self.companions_data, self.set_crew_member)
         # Image for on the ShipStats button
         self.ship_stats_image = open_icon("spvp_targettracker", (49, 49))
         self.ship_stats_button = ttk.Button(
@@ -103,7 +103,8 @@ class BuildsFrame(ttk.Frame):
                 value = index
                 break
         if value is None:
-            raise ValueError()
+            print("[BuildsFrame] Failed to set crew member")
+            return
         member_dict = self.companions_data[faction][category_index][category][value]
         self.current_component.destroy()
         self.current_component = CrewAbilitiesFrame(self.component_frame, member_dict)
@@ -130,7 +131,7 @@ class BuildsFrame(ttk.Frame):
 
         # Remove component list ToggledFrames from the UI
         for widget in self.components_lists_frame.interior.winfo_children():
-            print(widget)
+            print("[BuildsFrame]", widget)
             widget.grid_forget()
             if isinstance(widget, ToggledFrame):
                 if widget.show.get():
@@ -138,7 +139,6 @@ class BuildsFrame(ttk.Frame):
         for type in COMPONENTS:
             if type not in self.ship.data:
                 # Not all ships have all component types
-                print("type not in self.ship.data: {0}".format(type))
                 continue
             self.components_lists[type] = ComponentListFrame(
                 self.components_lists_frame.interior, type, self.ship.data[type], self.set_component,
@@ -179,7 +179,7 @@ class BuildsFrame(ttk.Frame):
         # Remove the current ComponentWidget
         self.current_component.grid_forget()
         self.current_component.destroy()
-        print("set_component(%s, %s)" % (category, component))
+        print("[BuildsFrame] set_component(%s, %s)" % (category, component))
         # To update the data, we need the index of the component in the list of dictionaries in the category
         index = -1
         for i, dictionary in enumerate(self.ships_data[self.ship.ship_name][category]):
@@ -199,9 +199,9 @@ class BuildsFrame(ttk.Frame):
         # Check if it is indeed a different component
         if self.ship[category] is None or self.ship[category].name != component:
             # Set the new component
-            print("Updating component {} in category {} of ship {}".format(component, category, self.ship.ship_name))
+            print("[BuildsFrame] Updating component {} in category {} of ship {}".format(component, category, self.ship.ship_name))
             if self.ship[category] is not None:
-                print("Replacing old component '{}' with a new one.".format(self.ship[category].name))
+                print("[BuildsFrame] Replacing old component '{}' with a new one.".format(self.ship[category].name))
             self.ship[category] = new_component
         # Put the new ComponentWidget in place
         self.current_component.grid_widgets()
@@ -268,6 +268,7 @@ class BuildsFrame(ttk.Frame):
         ship widgets that are displayed for the appropriate faction.
         """
         self.faction = faction
+        self.crew_select_frame.set_faction(faction)
         self.grid_widgets()
 
     def save_ship_data(self):
