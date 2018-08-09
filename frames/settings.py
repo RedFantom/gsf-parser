@@ -14,14 +14,13 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-from ttkwidgets.frames import Balloon
 # Project Modules
 from network.discord import DiscordClient
 from parsing.vision import timer_boxes
 from toplevels.event_colors import EventColors
 from utils.utilities import get_screen_resolution
 from variables import settings, colors
-from widgets import VerticalScrollFrame
+from widgets import VerticalScrollFrame, Balloon
 
 
 class SettingsFrame(ttk.Frame):
@@ -169,7 +168,9 @@ class SettingsFrame(ttk.Frame):
             self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep, command=self.save_settings)
         Balloon(self.rt_sleep_checkbox,
                 text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
-                     "cycles per second but reduces CPU and IO usage significantly.")
+                     "cycles per second but reduces CPU, Memory and IO usage significantly.\n\n"
+                     "Only disable if you need the utmost level of precision and have plenty of computing resources "
+                     "to spare.")
         # RGB Lighting Effects
         self.rt_rgb = tk.BooleanVar()
         self.rt_rgb_checkbox = ttk.Checkbutton(
