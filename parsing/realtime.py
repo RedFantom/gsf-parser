@@ -76,7 +76,7 @@ def screen_func(feature: str) -> callable:
         if variables.settings["screen"]["disable"] is True:
             def inner(*args) -> Any:
                 r, elapsed = benchmark(*args)
-                v = 1.0 if elapsed > 0.10 else -0.5
+                v = 1.0 if elapsed > 0.25 else -0.5
                 if feature not in screen_slow:
                     screen_slow[feature] = 0
                 screen_slow[feature] += v
@@ -600,7 +600,7 @@ class RealTimeParser(Thread):
         """
         global screen_slow
         for feature, count in screen_slow.items():
-            if count > 3 and feature in self._screen_features:
+            if count > 10 and feature in self._screen_features:
                 self._screen_features.remove(feature)
                 print("[RealTimeParser] Disabled feature {}".format(feature))
 
@@ -977,7 +977,7 @@ class RealTimeParser(Thread):
         string = str()
         global screen_perf
         for feature, (count, time) in screen_perf.items():
-            if count == 0 or time / count < 0.10:
+            if count == 0 or time / count < 0.25:
                 continue
             avg = time / count
             if feature not in self._screen_features:
