@@ -116,10 +116,10 @@ class RealTimeFrame(ttk.Frame):
 
     def start_parsing(self):
         """Start the parsing process and open the Overlay"""
-        self.parsing_control_button.config(state=tk.DISABLED)
-        self.parsing_control_button.update()
         if self.check_parser_start() is False:
             return
+        self.parsing_control_button.config(state=tk.DISABLED)
+        self.parsing_control_button.update()
         # Setup attributes
         args = (self.window.characters_frame.characters, self.character_data,
                 self.window.builds_frame.ships_data, self.window.builds_frame.companions_data)
