@@ -108,6 +108,8 @@ class MainWindow(ThemedTk):
             except Exception:
                 messagebox.showwarning("Error", "Discord Rich Presence failed to connect.")
                 self.rpc = None
+        else:
+            self.rpc = None
         self.update_presence()
         # Give focus to the main window
         self.deiconify()

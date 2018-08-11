@@ -205,8 +205,14 @@ except ImportError:
 
     class RGBController(object):
         class DummyQueue(object):
-            def put(self):
+            def put(*args):
                 pass
+
+        def is_alive(*args):
+            return False
+
+        def start(*args):
+            pass
 
         enabled = False
         data_queue = DummyQueue()

@@ -264,7 +264,7 @@ class SettingsFrame(ttk.Frame):
                  "textures.")
 
         self.canvas = tk.Canvas(
-            self.credits_frame, width=800, height=15,
+            self.credits_frame, width=self.main_window.width - 10, height=15,
             background=self.main_window.style.lookup("TFrame", "background"))
         self._canvas_start = None
         self._saved = False
@@ -576,7 +576,7 @@ class SettingsFrame(ttk.Frame):
             if self._canvas_box is not None:
                 self.canvas.delete(self._canvas_box)
             if elapsed < delay:
-                x = int(elapsed / delay * 790)
+                x = int(elapsed / delay * (self.main_window.width - 20))
                 self._canvas_box = self.canvas.create_rectangle(
                     (5, 5, x, 10), fill=settings["gui"]["color"])
             else:  # elapsed > self.DELAY: settings are saved

@@ -67,8 +67,8 @@ if __name__ == '__main__':
         admin.escalate_privileges()
     # Check the Python version
     major, minor = sys.version_info.major, sys.version_info.minor
-    if major != 3 or minor != 5:
-        printw("Only Python 3.5 is supported.\n")
+    if major != 3 or minor != 6:
+        printw("Only Python 3.6 is supported.\n")
         exit(-1)
     # List of arguments to pyinstaller:
     pyinstaller_args = ["../main.py", "--icon=../assets/logos/icon_green.ico", "--noconfirm"]
@@ -154,10 +154,14 @@ if __name__ == '__main__':
     site_packages = os.path.join(os.path.dirname(sys.executable), "Lib", "site-packages")
     copytree(os.path.join(site_packages, "ttkthemes"), os.path.join(build_dir, "ttkthemes"))
     copytree(os.path.join(site_packages, "ttkwidgets"), os.path.join(build_dir, "ttkwidgets"))
+    copytree(os.path.join(site_packages, "pypresence"), os.path.join(build_dir, "pypresence"))
+    copytree(os.path.join(site_packages, "asyncio"), os.path.join(build_dir, "asyncio"))
+    copyfile(os.path.join(os.path.dirname(sys.executable), "DLLs", "_overlapped.pyd"), os.path.join(build_dir, "_overlapped.pyd"))
     copytree("../tools", os.path.join(build_dir, "tools"))
     copytree("../assets", os.path.join(build_dir, "assets"))
     copyfile("../README.md", os.path.join(build_dir, "README.md"))
     copyfile("../LICENSE.md", os.path.join(build_dir, "LICENSE.md"))
+    copyfile("../sentry", os.path.join(build_dir, "sentry"))
     printw("Done.\n")
     # Build Setup File
     if target == "s" or target == "b":

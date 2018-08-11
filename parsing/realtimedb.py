@@ -121,17 +121,21 @@ class RealTimeDB(object):
 
     def write_spawn_data(self):
         """Write the data stored in the current spawn dict to the file"""
+        if None in (self._file, self._match, self._spawn):
+            return
         data = self.data
         with self._lock:
             if self._file not in data:
                 data[self._file] = dict()
             if self._match not in data:
-                data[self._match] = dict()
+                data[self._file][self._match] = dict()
             data[self._file][self._match][self._spawn] = self._spawn_data
         self.save_data(data)
 
     def set_for_spawn(self, key: str, *args: (Tuple[Any], Tuple[datetime, Any])):
         """Set a value for a spawn in either spawn or key dict"""
+        if self._spawn_data is None:
+            return
         with self._lock:
             if len(args) == 1:
                 value, = args
@@ -142,6 +146,8 @@ class RealTimeDB(object):
 
     def get_for_spawn(self, key: str) -> Any:
         """Get a value from the cached data for the set spawn"""
+        if self._spawn_data is None:
+            return None
         with self._lock:
             return self._spawn_data[key]
 
