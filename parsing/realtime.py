@@ -720,10 +720,11 @@ class RealTimeParser(Thread):
         if match_map is not None:
             self._realtime_db.set_for_spawn("map", match_map)
             self._active_map = match_map
-            if self.discord is not None and self.start_match is not None:
+            if self.discord is not None:
                 server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
-                id_fmt = self.active_id[:8]
-                self.discord.send_match_map(server, date, start, id_fmt, match_map)
+                if None not in (server, date, start):
+                    id_fmt = self.active_id[:8]
+                    self.discord.send_match_map(server, date, start, id_fmt, match_map)
             print("[RealTimeParser] Minimap: {}".format(match_map))
             self.update_presence()
         if self._active_map is not None and self._realtime_db.get_for_spawn("map") is None:
