@@ -352,3 +352,7 @@ railguns = (
     "Ion Railgun",
     "Plasma Railgun"
 )
+
+majors = ["primary", "primary2", "secondary", "secondary2", "systems"]
+middle = ["engine", "shields"]
+minors = ["reactor", "magazine", "thrusters", "sensors", "capacitor", "armor"]
