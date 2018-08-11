@@ -62,9 +62,6 @@ if __name__ == '__main__':
     if sys.platform != "win32":
         printw("This script is only supported on Windows.\n")
         exit(-1)
-    # Check for admin permissions
-    if not admin.check_privileges():
-        admin.escalate_privileges()
     # Check the Python version
     major, minor = sys.version_info.major, sys.version_info.minor
     if major != 3 or minor != 6:
