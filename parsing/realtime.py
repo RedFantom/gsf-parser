@@ -203,6 +203,7 @@ class RealTimeParser(Thread):
         self._resolution = resolution
         self._pixels_per_degree = 10
         self._waiting_for_timer = False
+        self._spawn_timer_res_flag = False
         self._spawn_time = None
         self._window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
         self.setup_screen_parsing()
@@ -535,8 +536,10 @@ class RealTimeParser(Thread):
             return
         ship_objects = self._character_db[self._character_data]["Ship Objects"]
         if ship not in ship_objects:
+            self._configured_flag = True
             print("[RealTimeParser] Ship not configured: {}".format(ship))
             return
+        self._configured_flag = False
         self.ship = ship_objects[ship]
         args = (self.ship, self.ships_db, self.companions_db)
         self.ship_stats = ShipStats(*args)
@@ -624,8 +627,8 @@ class RealTimeParser(Thread):
                 self._waiting_for_timer = False
             # Check if the resolution is supported
             if self._resolution not in vision.timer_boxes:
-                messagebox.showerror("Error", "Spawn Timer parsing is enabled for an unsupported resolution.")
-                raise ValueError("Unsupported resolution for spawn timer parsing.")
+                self._spawn_timer_res_flag = True
+                return
             # Now crop the screenshot, see vision.timer_boxes for details
             source = screenshot.crop(vision.timer_boxes[self._resolution])
             # Attempt to determine the spawn timer status
@@ -856,8 +859,6 @@ class RealTimeParser(Thread):
         if weapon_key not in self.ship_stats:
             if self._configured_flag is False:
                 print("Failed to retrieve stats for weapon: {}".format(weapon_key))
-                messagebox.showinfo("User Warning", "The ship you have currently selected has not "
-                                                    "been properly configured in the BuildsFrame.")
                 self._configured_flag = True
             return 0, 0, 0
         firing_arc = self.ship_stats[weapon_key]["Weapon_Firing_Arc"]
@@ -1020,6 +1021,8 @@ class RealTimeParser(Thread):
     @property
     def spawn_timer_string(self) -> str:
         """Spawn timer parsing string for the Overlay"""
+        if self._spawn_timer_res_flag:
+            return "Unsupported resolution for Spawn Timer\n"
         if self._spawn_time is None:
             return ""
         return "Spawn in {:02d}s\n".format(
@@ -1032,3 +1035,14 @@ class RealTimeParser(Thread):
             return "Map: Unknown\n"
         map_type, map_name = self.screen_data["map"]
         return "Map: {}\n".format(MAP_TYPE_NAMES[map_type][map_name])
+
+    @property
+    def notification_string(self):
+        """String that notifies the user of special situations"""
+        string = "Character: {}\n".format(self._character_db_data["Name"]) + \
+                 "Server: {}\n".format(self._character_db_data["Server"])
+        ship = "Ship: {}".format(self.ship.name if self.ship is not None else "Unknown")
+        if self._configured_flag is True:
+            ship += " (Not fully configured)"
+        ship += "\n\n"
+        return string + ship
