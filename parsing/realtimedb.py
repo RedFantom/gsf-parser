@@ -121,6 +121,8 @@ class RealTimeDB(object):
 
     def write_spawn_data(self):
         """Write the data stored in the current spawn dict to the file"""
+        if None in (self._file, self._match, self._spawn):
+            return
         data = self.data
         with self._lock:
             if self._file not in data:
@@ -144,6 +146,8 @@ class RealTimeDB(object):
 
     def get_for_spawn(self, key: str) -> Any:
         """Get a value from the cached data for the set spawn"""
+        if self._spawn_data is None:
+            return None
         with self._lock:
             return self._spawn_data[key]
 
