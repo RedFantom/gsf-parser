@@ -30,7 +30,7 @@ def get_ship_category(ship_name: str):
     return None
 
 
-def load_ship_data()->dict:
+def load_ship_data() -> dict:
     with open(path.join(get_assets_directory(), "ships.db"), "rb") as f:
         ships_data = pickle.load(f)
     return ships_data
@@ -161,6 +161,17 @@ class Component(object):
     :attribute upgrades: Upgrade dictionary
     """
 
+    UPGRADES = {
+        (0, 0): False,
+        (1, 0): False,
+        (2, 0): False,
+        (2, 1): False,
+        (3, 0): False,
+        (3, 1): False,
+        (4, 0): False,
+        (4, 1): False
+    }
+
     def __init__(self, data, index, category):
         """
         :param data: Component data dictionary
@@ -170,16 +181,7 @@ class Component(object):
         self.index = index
         self.category = category
         self.name = data["Name"]
-        self.upgrades = {
-            (0, 0): False,
-            (1, 0): False,
-            (2, 0): False,
-            (2, 1): False,
-            (3, 0): False,
-            (3, 1): False,
-            (4, 0): False,
-            (4, 1): False
-        }
+        self.upgrades = Component.UPGRADES.copy()
         for category in COMPONENT_TYPES.keys():
             category = category.replace("2", str())
             if self.name in getattr(abilities, SINGULAR_TO_PLURAL[category]):
@@ -193,27 +195,18 @@ class Component(object):
             raise ValueError("Invalid component: {}".format(self.name))
 
     def __setitem__(self, key, value):
-        if isinstance(key, tuple):
-            tier, upgrade = map(int, key)
-            if upgrade is 0:
-                if self[(tier, 1)]:
-                    self.upgrades[(tier, 1)] = False
-                elif self[(tier, 0)]:
-                    return
-                else:
-                    pass
-            elif upgrade is 1:
-                if self[(tier, 0)]:
-                    self.upgrades[(tier, 1)] = False
-                elif self[(tier, 1)]:
-                    return
-                else:
-                    pass
-            else:
-                raise ValueError("Invalid value passed in tuple key: {0}".format(key))
+        if not isinstance(key, tuple):
+            key = (key, 0)
         self.upgrades[key] = value
 
     def __getitem__(self, key):
+        if not isinstance(key, tuple):
+            key = (key, 0)
+        if key not in self.upgrades and isinstance(key, tuple):
+            if key not in Component.UPGRADES:
+                raise KeyError("Invalid upgrade identifier: {}".format(key))
+            self.upgrades[key] = False
+            return False
         return self.upgrades[key]
 
     def __iter__(self):
