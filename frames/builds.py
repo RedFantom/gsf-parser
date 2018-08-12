@@ -252,9 +252,10 @@ class BuildsFrame(ttk.Frame):
 
     def show_ship_stats(self):
         """
-        Callback for the Show Ship Statistics button. Creates a Frame
-        containing a Treeview and showing this Treeview in the place
-        of a ComponentWidget on the right.
+        Callback for self.ship_stats_button: Invoke ShipStatsFrame
+
+        Places a ShipStatsFrame with the statistics of the currently
+        selected ship in the place of the ComponentWidget.
         """
         if self.ship is None:
             return
@@ -265,8 +266,10 @@ class BuildsFrame(ttk.Frame):
 
     def set_faction(self, faction: str):
         """
-        Sets the faction attribute and calls grid_widgets to update the
-        ship widgets that are displayed for the appropriate faction.
+        Set the faction of the Build Calculator Frame and its children
+
+        The faction determines what ships and what crew members are
+        displayed. The widgets states are reset in grid_widgets.
         """
         self.faction = faction
         self.crew_select_frame.set_faction(faction)
@@ -279,8 +282,10 @@ class BuildsFrame(ttk.Frame):
 
     def reset(self):
         """
-        Reset frame to the state it is found in on start-up of the GSF
-        Parser. Unloads the character loaded, resets all ToggledFrames.
+        Reset the Build Calculator Frame state to default
+
+        Unloads the character selected, closes all Frames and removes
+        the ComponentWidget if it is loaded.
         """
         self.ship_select_frame.character.set("Choose character")
         self.ship_select_frame.server.set("Choose network")
