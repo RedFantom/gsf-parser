@@ -14,7 +14,7 @@ from tkinter import ttk
 # Project Modules
 from frames.shipstats import ShipStatsFrame
 from data.ships import companion_indices
-from data.components import COMPONENTS
+from data.components import COMPONENTS, COMPONENT_TYPES
 from parsing.ships import Ship, Component
 from utils.directories import get_assets_directory
 from utils.utilities import open_icon
@@ -191,6 +191,7 @@ class BuildsFrame(ttk.Frame):
         # Create an appropriate ComponentWidget
         self.current_component = ComponentWidget(*args)
         # Create a new Component object
+        category = COMPONENT_TYPES[category]
         new_component = Component(
             self.ships_data[self.ship.ship_name][category][index], index, category)
         # Transfer the upgrades of the currently selected component on the ship to the new Component
@@ -287,6 +288,8 @@ class BuildsFrame(ttk.Frame):
             frame.toggled_frame.toggle_button.config(state=tk.DISABLED)
         for frame in self.crew_select_frame.category_frames.values():
             frame.toggle_button.config(state=tk.DISABLED)
+        if not hasattr(self.current_component, "upgrade_buttons"):
+            return  # CrewAbilitiesFrame
         for button in self.current_component.upgrade_buttons:
             for i in range(len(button)):
                 button[i].config(state=tk.DISABLED)
