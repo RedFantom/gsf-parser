@@ -169,10 +169,11 @@ class ShipStats(object):
                 weapon, "Weapon_Accuracy_{}", base_acc, "{}RangeAccMulti")
         for args in ShipStats.MODE_CORRECTED:
             self.calc_power_mode_corrected_stats(*args)
-        self.calc_engine_stats()
-        self.calc_high_regen_rates()
-        self.calc_turning_rates()
-        self.calc_mine_stats()
+        for func in (self.calc_engine_stats, self.calc_high_regen_rates, self.calc_turning_rates, self.calc_mine_stats):
+            try:
+                func()
+            except KeyError:
+                pass
 
     def calc_mine_stats(self):
         """Calculate Mine statistics"""
