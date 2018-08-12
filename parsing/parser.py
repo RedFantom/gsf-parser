@@ -259,14 +259,16 @@ class Parser(object):
         """
         if "category" in line_dict and line_dict["category"] is not None:
             return line_dict["category"]
+        if "custom" in line_dict and line_dict["custom"] is True:
+            return "death"
+        elif "icon" in line_dict:
+            return "dmgd_pri"
+        if "ability" not in line_dict:
+            return "other"
         # Ability string, stripped and formatted to be compatible with the data structures
         ability = line_dict['ability'].split(' {', 1)[0].strip()
-        if "custom" in line_dict and line_dict["custom"] is True:
-            ctg = "death"
-        elif "icon" in line_dict:
-            ctg = "dmgd_pri"
         # If the ability is empty, this is a Gunship scope activation
-        elif ability == "":
+        if ability == "":
             ctg = "other"
         # Damage events
         elif "Damage" in line_dict['effect']:
@@ -310,7 +312,8 @@ class Parser(object):
         elif "RemoveEffect" in line_dict["effect"] or "ApplyEffect" in line_dict["effect"]:
             ctg = "other"
         else:
-            raise ValueError("Could not determine category of line dictionary: '{}'".format(line_dict))
+            print("[Parser] Failed to determine category of: {}".format(line_dict))
+            ctg = "other"
         line_dict["category"] = ctg
         return ctg
 
