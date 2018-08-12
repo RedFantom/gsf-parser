@@ -24,6 +24,7 @@ from data.keys import keys
 from data.abilities import rep_ships
 from data import abilities
 from data.maps import MAP_TYPE_NAMES, MAP_NAMES
+from data.servers import SERVERS
 # network Modules
 from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
@@ -564,6 +565,9 @@ class RealTimeParser(Thread):
         server, name = self._character_data
         if name != self.player_name:
             self._character_data = (server, self.player_name)
+            if self._character_data not in self._character_db:
+                messagebox.showerror("Error", "The GSF Parser does not know this character yet!")
+                raise KeyError("Unknown character")
             self._character_db_data = self._character_db[self._character_data]
         self.update_presence()
 
@@ -994,7 +998,7 @@ class RealTimeParser(Thread):
         """String of text to set in the Overlay"""
         if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
             return ""
-        string = self.parsing_data_string
+        string = self.notification_string + self.parsing_data_string
         if "Spawn Timer" in self._screen_features:
             string += self.spawn_timer_string
         if "Tracking penalty" not in self._screen_features:
@@ -1040,7 +1044,7 @@ class RealTimeParser(Thread):
     def notification_string(self):
         """String that notifies the user of special situations"""
         string = "Character: {}\n".format(self._character_db_data["Name"]) + \
-                 "Server: {}\n".format(self._character_db_data["Server"])
+                 "Server: {}\n".format(SERVERS[self._character_db_data["Server"]])
         ship = "Ship: {}".format(self.ship.name if self.ship is not None else "Unknown")
         if self._configured_flag is True:
             ship += " (Not fully configured)"

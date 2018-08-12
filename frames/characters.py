@@ -16,7 +16,7 @@ from tkinter import messagebox as mb
 from ttkwidgets.frames import Balloon
 # Project Modules
 from data import ships as ships_data
-from data.servers import servers
+from data.servers import SERVERS
 from network.discord import DiscordClient
 from parsing.ships import Ship
 from parsing.characters import CharacterDatabase
@@ -52,7 +52,7 @@ class CharactersFrame(ttk.Frame):
         self.after_id = None
         self.directory = directories.get_temp_directory()
         # Lists of servers and abbreviations
-        self.servers = servers
+        self.servers = SERVERS
         # Create a dictionary that is the reverse of self.servers
         self.reverse_servers = {value: key for key, value in self.servers.items()}
         self.characters = {}
