@@ -238,9 +238,9 @@ class ShipStats(object):
         :param value: value to update with
         :return: new statistics dictionary
         """
-        if statistic not in statistics:
-            return statistics
-        if multiplicative is True:
+        if statistic not in statistics and not multiplicative:
+            statistics[statistic] = value
+        elif multiplicative is True:
             statistics[statistic] *= value + 1
         else:
             statistics[statistic] += value
