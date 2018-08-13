@@ -17,6 +17,8 @@ from tkinter import messagebox
 # Packages
 import mss
 import pynput
+from pynput.keyboard import Key, KeyCode
+from pynput.mouse import Button
 from PIL import Image
 from pypresence import Presence
 # Data Modules
