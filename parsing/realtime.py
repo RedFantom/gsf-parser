@@ -214,7 +214,7 @@ class RealTimeParser(Thread):
         self._delayed_shots = list()
         self._rof = None
         self._rgb_enabled = self.options["realtime"]["rgb"]
-        self._rgb = RGBController()
+        self._rgb: RGBController = RGBController.build() if self._rgb_enabled else None
         self._active_map = None
         self._timer_parser = None
         if "Power Regeneration Delays" in self._screen_features:
@@ -474,16 +474,16 @@ class RealTimeParser(Thread):
         line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
             self._healing += line["amount"]
-            self._rgb.data_queue.put(("press", "hr"))
+            self.rgb_queue_put(("press", "hr"))
         elif "Damage" in line["effect"]:
             if "Selfdamage" in line["ability"]:
                 self.dmg_s += line["amount"]
             elif line["source"] in self.active_ids:
                 self.dmg_d += line["amount"]
-                self._rgb.data_queue.put(("press", "dd"))
+                self.rgb_queue_put(("press", "dd"))
             else:
                 self.dmg_t += line["amount"]
-                self._rgb.data_queue.put(("press", "dt"))
+                self.rgb_queue_put(("press", "dt"))
 
         if line["ability"] in self.abilities:
             self.abilities[line["ability"]] += 1
@@ -512,13 +512,13 @@ class RealTimeParser(Thread):
         if "AbilityActivate" in line["effect"] and line["source"] in self.active_ids:
             ability = line["ability"]
             if ability in abilities.systems:
-                self._rgb.data_queue.put(("press", "1"))
+                self.rgb_queue_put(("press", "1"))
             elif ability in abilities.shields:
-                self._rgb.data_queue.put(("press", "2"))
+                self.rgb_queue_put(("press", "2"))
             elif ability in abilities.engines:
-                self._rgb.data_queue.put(("press", "3"))
+                self.rgb_queue_put(("press", "3"))
             elif ability in abilities.copilots:
-                self._rgb.data_queue.put(("press", "4"))
+                self.rgb_queue_put(("press", "4"))
 
     def update_ship(self):
         """Update the Ship and ShipStats attributes"""
@@ -903,7 +903,7 @@ class RealTimeParser(Thread):
 
     def run(self):
         """Run the loop and provide error handling, cleanup afterwards"""
-        self._rgb.start()
+        self.rgb_start()
         self.start_listeners()
         if self._timer_parser is not None:
             self._timer_parser.start()
@@ -930,9 +930,7 @@ class RealTimeParser(Thread):
     def cleanup(self):
         """Clean up all the object references"""
         self.lines.clear()
-        if self._rgb is not None and hasattr(self._rgb, "stop"):
-            self._rgb.stop()
-            self._rgb = None
+        self.rgb_stop()
         if self._timer_parser is not None:
             self._timer_parser.stop()
             self._timer_parser = None
@@ -942,12 +940,17 @@ class RealTimeParser(Thread):
         if self._pointer_parser is not None:
             self._pointer_parser.stop()
         self._exit_queue.put(True)
-        if self._rgb.is_alive():
-            self._rgb.stop()
         if self._timer_parser is not None:
             self._timer_parser.stop()
 
-    def _on_kb_press(self, key):
+    def _on_kb_press(self, key: (Key, KeyCode)):
+        """
+        Callback for pynput.keyboard.Listener(on_press)
+
+        Process the press of a key on the keyboard. Only keys that are
+        relevant are processed and stored, and only if a match is
+        active. Provides RGBController interaction.
+        """
         if not self.is_match or key not in keys:
             return
         key = keys[key]
@@ -957,23 +960,61 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("keys", time, (key, True))
         self._key_states[key] = True
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self._rgb.data_queue.put(("press", key))
+            self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
             effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
             self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
-    def _on_kb_release(self, key):
+    def _on_kb_release(self, key: (Key, KeyCode)):
+        """
+        Callback for pynput.Keyboard.Listener(on_release)
+
+        Process the release of a key on the Keyboard. Only keys that are
+        relevant are processed and stored, and only if a match is
+        active. Provides RGBController interaction.
+        """
         if not self.is_match or key not in keys:
             return
         self._key_states[keys[key]] = False
         self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self._rgb.data_queue.put(("release", key))
+            self.rgb_queue_put(("release", key))
 
-    def _on_ms_press(self, x, y, button, pressed):
-        if not self.is_match:
+    def _on_ms_press(self, x: int, y: int, button: Button, pressed: bool):
+        """
+        Callback for pynput.mouse.Listener(on_click)
+
+        Only clicks that occur during a match are saved, and only the
+        mouse button and its state are saved.
+
+        :param x, y: Click coordinates that are used for saving a
+            PrimaryWeapon shot (Button.left pressed)
+        :param button: Button enum type that indicates pressed mouse
+            button. Only Button.left and Button.right are recorded.
+        :param pressed: The new state of the Button. May be True
+            (pressed) or False (released)
+        """
+        if not self.is_match or button not in (Button.left, Button.right):
             return
-        self._realtime_db.set_for_spawn("clicks", datetime.now(), (pressed, button))
+        now = datetime.now()
+        self._realtime_db.set_for_spawn("clicks", now, (pressed, button))
+        if button == Button.left and pressed is True:  # PrimaryWeapon shot
+            self._realtime_db.set_for_spawn("shots", now, (x, y))
+
+    def rgb_queue_put(self, item: Any):
+        """Put an item in the RGBController Queue if RGB is enabled"""
+        if self._rgb_enabled and self._rgb is not None and isinstance(self._rgb, RGBController):
+            self._rgb.data_queue.put(item)
+
+    def rgb_start(self):
+        """Start the RGBController Thread if enabled"""
+        if self._rgb is not None and isinstance(self._rgb, RGBController):
+            self._rgb.start()
+
+    def rgb_stop(self):
+        """Stop the RGBController Thread if enabled"""
+        if self._rgb is not None and isinstance(self._rgb, RGBController) and self._rgb.is_alive():
+            self._rgb.stop()  # Joins itself
 
     @property
     def perf_string(self) -> str:
@@ -1041,7 +1082,7 @@ class RealTimeParser(Thread):
         return "Map: {}\n".format(MAP_TYPE_NAMES[map_type][map_name])
 
     @property
-    def notification_string(self):
+    def notification_string(self) -> str:
         """String that notifies the user of special situations"""
         string = "Character: {}\n".format(self._character_db_data["Name"]) + \
                  "Server: {}\n".format(SERVERS[self._character_db_data["Server"]])
