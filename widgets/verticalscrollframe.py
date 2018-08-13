@@ -24,10 +24,11 @@ class VerticalScrollFrame(ttk.Frame):
 
     def __init__(self, parent, canvaswidth=780, canvasheight=395, **kw):
         ttk.Frame.__init__(self, parent, **kw)
-        vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        self.scroll = vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.grid(column=1, row=0, sticky="nswe", padx=5)
-        canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set, width=canvaswidth,
-                           height=canvasheight)
+        self.canvas = canvas = tk.Canvas(
+            self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set,
+            width=canvaswidth, height=canvasheight)
         canvas.grid(column=0, row=0, sticky="nswe")
         vscrollbar.config(command=canvas.yview)
 
@@ -38,13 +39,13 @@ class VerticalScrollFrame(ttk.Frame):
         canvas.xview_moveto(0)
         canvas.yview_moveto(0)
         self.interior = interior = ttk.Frame(canvas)
-        interior_id = canvas.create_window(0, 0, window=interior, anchor=tk.NW)
+        self.interior_id = canvas.create_window(0, 0, window=interior, anchor=tk.NW)
 
         scroll_area = ScrollingArea(parent)
         scroll_area.add_scrolling(canvas, yscrollbar=vscrollbar)
 
         def _configure_interior(event):
-            if interior.winfo_reqwidth() <= canvaswidth and interior.winfo_reqheight() <= canvasheight:
+            if interior.winfo_reqheight() <= canvasheight:
                 canvas.unbind("<MouseWheel>")
                 scroll_area.mouse_wheel_unbind()
                 canvas.unbind("<Enter>")
@@ -61,9 +62,16 @@ class VerticalScrollFrame(ttk.Frame):
 
         def _configure_canvas(event):
             if interior.winfo_reqwidth() != canvas.winfo_width():
-                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
+                canvas.itemconfigure(self.interior_id, width=canvas.winfo_width())
 
         canvas.bind('<Configure>', _configure_canvas)
+
+    def set_size(self, width: int, height: int):
+        """Configure the size of the Canvas"""
+        width -= self.scroll.winfo_width() + 10
+        self.canvas.config(width=width, height=height)
+        self.interior.config(width=width, height=height)
+        self.columnconfigure(0, minsize=width)
 
 
 # Cross-platform scrollable area class

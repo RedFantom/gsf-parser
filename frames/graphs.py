@@ -5,8 +5,8 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import platform
 import os
+import sys
 # UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -49,6 +49,8 @@ class GraphsFrame(ttk.Frame):
         "deaths": ("Deaths", "Amount of deaths per match", "plot"),
     }
 
+    FACTOR = 67 if sys.platform == "linux" else 66
+
     def __init__(self, root, main_window):
         """
         Set-up the plot, check the back-end and create all widgets necessary to
@@ -63,14 +65,14 @@ class GraphsFrame(ttk.Frame):
         self.graph_label = ttk.Label(
             self, text="Here you can view various types of graphs of your performance over time.", justify=tk.LEFT,
             font=("Calibri", 12))
+        self.frame = ttk.Frame(self)
         self.graph_radios = {
-            type: ttk.Radiobutton(self, variable=self.type_graph, value=type, text=description)
+            type: ttk.Radiobutton(self.frame, variable=self.type_graph, value=type, text=description)
             for type, (description, _, _) in self.graph_options.items()
         }
-        self.update_button = ttk.Button(self, command=self.calculate_graph, text="Calculate Graph")
+        self.update_button = ttk.Button(self.frame, command=self.calculate_graph, text="Calculate Graph")
         self.graph = ttk.Frame(self)
-        size = (6.6, 3.3) if platform.release() in ("7", "8", "8.1", "10") else (6.7, 3.35)
-        self.figure = Figure(figsize=size)
+        self.figure = Figure()
         self.canvas = FigureCanvasTkAgg(self.figure, self)
         self.canvas = FigureCanvasTkAgg(self.figure, self.graph)
         self.canvasw = self.canvas.get_tk_widget()
@@ -196,13 +198,19 @@ class GraphsFrame(ttk.Frame):
 
     def grid_widgets(self):
         """Put all widgets in the right place"""
-        self.graph_label.grid(column=0, row=0, rowspan=1, columnspan=2, sticky="w", pady=5)
+        self.graph_label.grid(column=0, row=0, columnspan=2, sticky="w", pady=5)
+        self.frame.grid(column=0, row=1, sticky="nw", pady=(0, 5))
         row = 1
         for radio in self.graph_radios.values():
-            radio.grid(row=row, column=0, sticky="w")
+            radio.grid(row=row, column=0, sticky="w", padx=5, pady=(0, 5))
             row += 1
         self.update_button.grid(column=0, row=row, sticky="nswe")
         self.canvasw.pack()
         self.tkcanvas.pack()
         self.toolbar.pack()
-        self.graph.grid(column=1, row=1, rowspan=row+1)
+        self.graph.grid(column=1, row=1, rowspan=row+10)
+
+    def config_size(self, width: int, height: int):
+        """Configure the size of the Graphs Canvas"""
+        width, height = width - self.frame.winfo_width() + 10, height - 75
+        self.canvasw.configure(width=width, height=height)

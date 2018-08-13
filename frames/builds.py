@@ -32,6 +32,9 @@ class BuildsFrame(ttk.Frame):
     ships.
     """
 
+    CLF_SIZE = 150 / 560
+    SSF_SIZE = 150 / 560
+
     def __init__(self, master, main_window):
         ttk.Frame.__init__(self, master)
         self.window = main_window
@@ -39,7 +42,6 @@ class BuildsFrame(ttk.Frame):
         self.middle_components = ["Engine", "ShieldProjector"]
         self.minor_components = ["Magazine", "Capacitor", "Reactor", "Armor", "Sensor", "Thruster"]
         # Open all required databases
-        self.icons_path = path.abspath(path.join(path.dirname(path.realpath(__file__)), "..", "assets", "icons"))
         with open(path.join(get_assets_directory(), "ships.db"), "rb") as f:
             # Contains data on the components
             self.ships_data = pickle.load(f)
@@ -50,7 +52,7 @@ class BuildsFrame(ttk.Frame):
             # Contains data on the Crew members
             self.companions_data = pickle.load(f)
         # ScrollFrame to contain the component lists (ToggledFrames) and the CrewSelectFrame
-        self.components_lists_frame = VerticalScrollFrame(self, canvaswidth=260, canvasheight=315)
+        self.components_lists_frame = VerticalScrollFrame(self)
 
         self.ship_select_frame = ShipSelectFrame(self, self.set_ship, self.set_faction)
         self.components_lists = OrderedDict()
@@ -131,7 +133,6 @@ class BuildsFrame(ttk.Frame):
 
         # Remove component list ToggledFrames from the UI
         for widget in self.components_lists_frame.interior.winfo_children():
-            print("[BuildsFrame]", widget)
             widget.grid_forget()
             if isinstance(widget, ToggledFrame):
                 if widget.show.get():
@@ -191,7 +192,8 @@ class BuildsFrame(ttk.Frame):
         # Create an appropriate ComponentWidget
         self.current_component = ComponentWidget(*args)
         # Create a new Component object
-        category = COMPONENT_TYPES[category]
+        if category in COMPONENT_TYPES:
+            category = COMPONENT_TYPES[category]
         new_component = Component(
             self.ships_data[self.ship.ship_name][category][index], index, category)
         # Transfer the upgrades of the currently selected component on the ship to the new Component
@@ -311,6 +313,19 @@ class BuildsFrame(ttk.Frame):
             if component_list_frame.toggled_frame is frame:
                 continue
             if bool(component_list_frame.toggled_frame.show.get()) is True:
-                print("[BuildFrame] Closing open frame for", component_list_frame.category)
                 component_list_frame.toggled_frame.close()
         return
+
+    def config_size(self, width: int, height: int):
+        """Update the size of all the widgets in this Frame"""
+        h = height - self.ship_stats_button.winfo_height()
+        w = int(max(width * BuildsFrame.CLF_SIZE, 5))
+        self.components_lists_frame.set_size(w, h)
+        w = int(max(width * BuildsFrame.SSF_SIZE, 5))
+        self.ship_select_frame.set_size(w, h)
+        for list in self.components_lists.values():
+            clf_w = int(BuildsFrame.CLF_SIZE * width) - 20
+            list.set_width(clf_w)
+            list.toggled_frame.set_width(clf_w)
+        if self.current_component is not None:
+            self.current_component.set_size(int(180 / 560 * width), height)

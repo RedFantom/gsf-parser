@@ -6,9 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 import tkinter.ttk as ttk
 import tkinter as tk
-from PIL import Image, ImageTk
-from utils.directories import get_assets_directory
-import os
+from utils import open_icon
 import sys
 
 
@@ -22,19 +20,19 @@ class ToggledFrame(ttk.Frame):
     Source: http://stackoverflow.com/questions/13141259
     """
 
+    WIDTH = 25 if sys.platform == "win32" else 18
+
     def __init__(self, parent, text="", labelwidth=None, callback=None, **options):
         if labelwidth is None:
-            labelwidth = 25 if sys.platform == "win32" else 18
+            labelwidth = ToggledFrame.WIDTH
         ttk.Frame.__init__(self, parent, **options)
         self.show = tk.BooleanVar()
         self.show.set(False)
         self.title_frame = ttk.Frame(self)
         self.title_frame.grid(sticky="nswe")
         self.callback = callback
-        closed_img = Image.open(os.path.join(get_assets_directory(), "gui", "closed.png"))
-        self._closed = ImageTk.PhotoImage(closed_img)
-        open_img = Image.open(os.path.join(get_assets_directory(), "gui", "open.png"))
-        self._open = ImageTk.PhotoImage(open_img)
+        self._closed = open_icon("closed.png", folder="gui")
+        self._open = open_icon("open.png", folder="gui")
         self.toggle_button = ttk.Checkbutton(
             self.title_frame, width=labelwidth, image=self._closed,
             command=self.toggle, variable=self.show, style='Toolbutton',
@@ -61,3 +59,11 @@ class ToggledFrame(ttk.Frame):
         self.sub_frame.grid_forget()
         self.toggle_button.configure(image=self._closed)
         self.show.set(False)
+
+    def set_width(self, width: int):
+        """Configure the width in pixels of the header Label"""
+        self.toggle_button.config(width=int(ToggledFrame.WIDTH / 152 * width) - 1)
+        for name in self.interior.children:
+            widget = self.interior.nametowidget(name)
+            widget.configure(width=int(ToggledFrame.WIDTH / 152 * width) - 10)
+        self.configure(width=width)

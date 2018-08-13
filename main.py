@@ -62,7 +62,8 @@ def connect_to_sentry() -> RavenClient:
     with open("sentry") as fi:
         link = fi.read().strip()
     raven = RavenClient(link)
-    raven.install_sys_hook()
+    if not exists("development"):
+        raven.install_sys_hook()
     return raven
 
 

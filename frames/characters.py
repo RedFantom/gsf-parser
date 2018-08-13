@@ -409,3 +409,6 @@ class CharactersFrame(ttk.Frame):
             return
         self.character_data["Legacy"] = self.legacy_name_entry.get()
         self.save_character_data()
+
+    def config_size(self, width: int, height: int):
+        pass

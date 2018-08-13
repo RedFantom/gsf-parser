@@ -42,7 +42,10 @@ class StrategiesFrame(ttk.Frame):
         self.in_map = self.map
         # Create the widgets to support the description section on the right of the frame.
         self.description_header = ttk.Label(self, text="Description", font=("default", 12), justify=tk.LEFT)
-        self.description = tk.Text(self, width=20 if sys.platform != "linux" else 30, height=23, wrap=tk.WORD)
+        self._descr_l = 20 if sys.platform != "linux" else 30
+        self.description = tk.Text(
+            self, width=self._descr_l, height=23, wrap=tk.WORD, font=("default", 11))
+        self._descr_w = self.description.winfo_reqwidth()
         # Bind the KeyPress event to a callback. A KeyPress is fired when *any* key is pressed on the keyboard.
         self.description.bind("<KeyPress>", self.set_description_callback)
         self.description_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.description.yview)
@@ -77,7 +80,7 @@ class StrategiesFrame(ttk.Frame):
         self.map.grid(column=1, row=1, sticky="nswe", pady=5, rowspan=2)
         self.description_header.grid(column=3, columnspan=2, sticky="w", pady=(5, 0), padx=5, row=1)
         self.description.grid(column=3, row=2, sticky="nwe", padx=5, pady=(0, 5))
-        self.description_scroll.grid(column=4, row=2, sticky="ns")
+        self.description_scroll.grid(column=4, row=2, sticky="ns", pady=(0, 10))
 
     def _set_phase(self, phase):
         """
@@ -99,6 +102,8 @@ class StrategiesFrame(ttk.Frame):
         immediately saves the database, so the description is
         automatically saved when updated.
         """
+        if self.list.selected_strategy is None:
+            return
         if self.client and self.settings.client_permissions[self.client.name][1] is False:
             self.description.delete("1.0", tk.END)
             self.description.insert("1.0",
@@ -313,3 +318,14 @@ class StrategiesFrame(ttk.Frame):
         if self.in_map is not self.map:
             return [self.map, self.in_map]
         return [self.map]
+
+    def config_size(self, width: int, height: int):
+        """Configure size of child widgets"""
+        list_w, scroll_w = self.list.winfo_width(), self.description_scroll.winfo_width()
+        canvas_w = min(width - self._descr_w - list_w - scroll_w, height)
+        self.in_map.configure(width=canvas_w, height=canvas_w)
+        self.list.configure_height(height)
+
+        text_w = width - canvas_w - list_w - scroll_w
+        self.description.configure(width=int(text_w // 10), height=int(height // 18.5 - 2))
+

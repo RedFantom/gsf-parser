@@ -313,3 +313,15 @@ class StrategiesList(ttk.Frame):
         if phase.endswith(" "):
             phase = phase[:1]
         return phase.replace("{", "").replace("}", "")
+
+    def configure_height(self, height: int):
+        """Configure Treeview widget"""
+        def map_height(name: str):
+            w = self.nametowidget(name)
+            if not isinstance(w, ttk.Button):
+                return 0
+            return w.winfo_height()
+        other_height = sum(map(map_height, self.children))
+        tree_height = height - 50 - other_height
+        self.tree.configure(height=tree_height//22)
+        self.tree.column("#0", width=150)

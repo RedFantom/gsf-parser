@@ -154,3 +154,8 @@ class ComponentWidget(ttk.Frame):
                 pair[i].grid(**kwargs)
             set_row += 1
 
+    def set_size(self, w: int, h: int):
+        """Update the size of this Frame and child widgets"""
+        self.wrapper_frame.config(width=w, height=h)
+        self.description_label.config(wraplength=w)
+

@@ -37,18 +37,19 @@ class ToolsFrame(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.grid_propagate(False)
-        self.interior_frame = VerticalScrollFrame(self, canvasheight=370)
+        self.interior_frame = VerticalScrollFrame(self)
+        self.interior: ttk.Frame = self.interior_frame.interior
         self.description_label = ttk.Label(
             self, text="In this frame you can find various tools to improve your GSF and GSF Parser experience. These "
                        "tools are not actively supported.", font=("Calibri", 11), wraplength=780)
         """
         CartelFix
         """
-        self.separator_one = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
+        self.separator_one = ttk.Separator(self.interior, orient=tk.HORIZONTAL)
         self.cartelfix = None
-        self.cartelfix_heading_label = ttk.Label(self.interior_frame.interior, text="CartelFix", font=("Calibri", 12))
+        self.cartelfix_heading_label = ttk.Label(self.interior, text="CartelFix", font=("Calibri", 12))
         self.cartelfix_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
+            self.interior, justify=tk.LEFT, wraplength=780,
             text="The Cartel Market Gunships do not properly switch the icon of their Railguns, which can be really "
                  "annoying. This utility automatically places an overlay on top of the game, so you can use your "
                  "Railguns as you would with non-Cartel Market ships. Game mode must be set to \"Fullscreen "
@@ -56,37 +57,37 @@ class ToolsFrame(ttk.Frame):
         self.cartelfix_faction = tk.StringVar()
         self.cartelfix_first = tk.StringVar()
         self.cartelfix_second = tk.StringVar()
-        self.cartelfix_faction_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_faction,
+        self.cartelfix_faction_dropdown = ttk.OptionMenu(self.interior, self.cartelfix_faction,
                                                          "Choose faction", "Imperial",
                                                          "Republic")
-        self.cartelfix_first_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_first,
+        self.cartelfix_first_dropdown = ttk.OptionMenu(self.interior, self.cartelfix_first,
                                                        "Choose railgun", "Slug Railgun",
                                                        "Ion Railgun", "Plasma Railgun")
-        self.cartelfix_second_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_second,
+        self.cartelfix_second_dropdown = ttk.OptionMenu(self.interior, self.cartelfix_second,
                                                         "Choose railgun", "Slug Railgun",
                                                         "Ion Railgun", "Plasma Railgun")
         self.cartelfix_gui_profile = tk.StringVar()
-        self.cartelfix_gui_profile_dropdown = ttk.OptionMenu(self.interior_frame.interior, self.cartelfix_gui_profile,
+        self.cartelfix_gui_profile_dropdown = ttk.OptionMenu(self.interior, self.cartelfix_gui_profile,
                                                              *tuple(get_gui_profiles()))
-        self.cartelfix_button = ttk.Button(self.interior_frame.interior, text="Open CartelFix",
+        self.cartelfix_button = ttk.Button(self.interior, text="Open CartelFix",
                                            command=self.open_cartel_fix)
         """
         Simulator
         """
-        self.separator_three = ttk.Separator(self.interior_frame.interior, orient=tk.HORIZONTAL)
-        self.simulator_heading_label = ttk.Label(self.interior_frame.interior, text="CombatLog Creation Simulator",
+        self.separator_three = ttk.Separator(self.interior, orient=tk.HORIZONTAL)
+        self.simulator_heading_label = ttk.Label(self.interior, text="CombatLog Creation Simulator",
                                                  font=("Calibri", 12))
         self.simulator_description_label = ttk.Label(
-            self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
+            self.interior, justify=tk.LEFT, wraplength=780,
             text="Small tool simulate the CombatLog creation. This is used during development to debug real-time "
                  "parsing and runs in its own thread so it can run alongside the GSF Parser. Once you have started it, "
                  "you cannot cancel the process.")
-        self.simulator_file_label = ttk.Label(self.interior_frame.interior, text="No file selected...")
+        self.simulator_file_label = ttk.Label(self.interior, text="No file selected...")
         self.simulator_file_selection_button = ttk.Button(
-            self.interior_frame.interior, text="Select file", command=self.set_simulator_file)
+            self.interior, text="Select file", command=self.set_simulator_file)
         self.simulator_file = None
         self.simulator_button = ttk.Button(
-            self.interior_frame.interior, text="Start simulator", command=self.start_simulator, state=tk.DISABLED)
+            self.interior, text="Start simulator", command=self.start_simulator, state=tk.DISABLED)
         self.simulator_thread = None
 
     def start_simulator(self):
@@ -112,6 +113,7 @@ class ToolsFrame(ttk.Frame):
     def open_cartel_fix(self):
         """
         Open a CartelFix overlay with the data given by the widgets.
+
         Also determines the correct icons to use and calculates the
         correct position for the CartelFix.
         """
@@ -168,3 +170,12 @@ class ToolsFrame(ttk.Frame):
         self.simulator_file_label.grid(row=13, column=0, columnspan=2, sticky="w")
         self.simulator_file_selection_button.grid(row=13, column=2, sticky="we")
         self.simulator_button.grid(row=13, column=3, sticky="we")
+
+    def config_size(self, width: int, height: int):
+        """Configure the size of the ToolsFrame"""
+        self.interior_frame.set_size(width, height)
+        for widget in self.interior.children:
+            widget = self.interior.nametowidget(widget)
+            if not isinstance(widget, ttk.Label):
+                continue
+            widget.configure(wraplength=width-30)

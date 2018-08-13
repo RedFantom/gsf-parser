@@ -86,3 +86,6 @@ class ShipFrame(ttk.Frame):
     def remove_image(self):
         """Set the default image"""
         self.set_image("default")
+
+    def config_size(self, width: int, height: int):
+        pass

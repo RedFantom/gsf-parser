@@ -43,7 +43,7 @@ class ShipSelectFrame(ttk.Frame):
         # Ship properties
         self.faction = "Imperial"
         self.ship = "Bloodmark"
-        self.scroll_frame = VerticalScrollFrame(self, canvaswidth=245, canvasheight=315, width=240, height=315)
+        self.scroll_frame = VerticalScrollFrame(self)
         self.frame = self.scroll_frame.interior
         with open(path.join(get_assets_directory(), "categories.db"), "rb") as db:
             self.data = pickle.load(db)
@@ -194,3 +194,13 @@ class ShipSelectFrame(ttk.Frame):
         """Callback called upon selecting a character in the OptionMenu"""
         variable.set(value)
         self.load_character()
+
+    def set_size(self, w: int, h: int):
+        """Update the size of th inner VerticalScrollFrame"""
+        self.scroll_frame.set_size(w, h)
+        self.scroll_frame.canvas.update()
+        for faction in self.category_frames:
+            for frame in self.category_frames[faction].values():
+                frame.close()
+                frame.set_width(self.scroll_frame.canvas.winfo_width())
+        self.config(width=w)

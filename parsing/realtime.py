@@ -635,6 +635,7 @@ class RealTimeParser(Thread):
                 return
             # Now crop the screenshot, see vision.timer_boxes for details
             source = screenshot.crop(vision.timer_boxes[self._resolution])
+            source.save("timer.png")
             # Attempt to determine the spawn timer status
             status = vision.get_timer_status(source)
             # Now status is a string of format "%M:%S" or None

@@ -150,3 +150,6 @@ class ShipStatsFrame(ttk.Frame):
         else:
             value_string = "{:.1f} {}".format(value, unit)
         return textwrap.fill(value_string, 25)
+
+    def config_size(self, width: int, height: int):
+        pass

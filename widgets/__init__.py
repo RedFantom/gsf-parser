@@ -12,7 +12,7 @@ from widgets.builds.ships import *
 from widgets.builds.component_list import *
 from widgets.builds.component import *
 from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
-
+from widgets.vnotebook import VNotebook
 from ttkwidgets.frames import Balloon as _Balloon
 
 

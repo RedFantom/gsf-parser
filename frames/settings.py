@@ -621,6 +621,12 @@ class SettingsFrame(ttk.Frame):
         if self.sc_multi.get() is not settings["screen"]["multi"]:
             self._restart_required = True
 
+    def config_size(self, width: int, height: int):
+        """Callback for MainWindow <Configure> on_configure size"""
+        height -= self.credits_frame.winfo_reqheight() + 30
+        self.frame.set_size(width, height)
+        self.canvas.config(width=width-10)
+
 
 class OverlayPositionFrame(ttk.Frame):
     """Frame containing the widgets to set an overlay position"""

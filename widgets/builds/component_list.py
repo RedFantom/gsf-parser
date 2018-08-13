@@ -22,6 +22,9 @@ class ComponentListFrame(ttk.Frame):
     given category. Contains a ToggledFrame to support wrapping the different
     Buttes for each of the components in a single, expandable Frame.
     """
+
+    WIDTH = 12
+
     def __init__(self, parent, category, data_list, callback, toggle_callback):
         """
         :param parent: master widget
@@ -46,7 +49,7 @@ class ComponentListFrame(ttk.Frame):
             self.icons[name] = open_icon(component_dictionary["Icon"])
             name = textwrap.fill(component_dictionary["Name"], 16)
             self.buttons[component_dictionary["Name"]] = ttk.Radiobutton(
-                self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT, width=12,
+                self.frame, image=self.icons[component_dictionary["Name"]], text=name, compound=tk.LEFT,
                 command=lambda name=component_dictionary["Name"]: self.set_component(name), variable=self.variable,
                 value=data_list.index(component_dictionary))
             self.hover_infos[component_dictionary["Name"]] = Balloon(
@@ -66,3 +69,12 @@ class ComponentListFrame(ttk.Frame):
         for button in self.buttons.values():
             button.grid(row=set_row, column=0, sticky="nswe")
             set_row += 1
+
+    def set_width(self, w: int):
+        """Update the width of this widget and all children"""
+        print("[ComponentListFrame] {}, {}".format(self.category, w))
+        self.toggled_frame.set_width(w)
+        w = 12 * w / 152 - 8
+        for button in self.buttons.values():
+            text = button.cget("text").replace("\n", " ")
+            button.config(width=w, text=textwrap.fill(text, w))

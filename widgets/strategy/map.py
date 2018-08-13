@@ -49,6 +49,8 @@ class Map(ttk.Frame):
         self._move_item_cb = kwargs.pop("moveitem_callback", None)
         self._del_item_cb = kwargs.pop("delitem_callback", None)
 
+        self._phase = None
+
         ttk.Frame.__init__(self, *args, **kwargs)
 
         # Setup Canvas
@@ -276,6 +278,7 @@ class Map(ttk.Frame):
 
     def update_map(self, phase: Phase):
         """Update the contents of the Map to represent Phase"""
+        self._phase = phase
         self.canvas.delete("all")
         self.items.clear()
         type, map = phase.map
@@ -304,3 +307,15 @@ class Map(ttk.Frame):
         if result is None or len(result) == 0:
             return None
         return result[0]
+
+    def configure(self, **kwargs):
+        """Configure options of this widget"""
+        width, height = kwargs.pop("width", None), kwargs.pop("height", None)
+        if width is not None and height is not None:
+            self.canvas.configure(width=width, height=height)
+            self._canvas_width, self._canvas_height = width, height
+            if self._phase is not None:
+                self.update_map(self._phase)
+            self._max_x = self._canvas_width - 10
+            self._max_y = self._canvas_height - 10
+        ttk.Frame.configure(self, **kwargs)

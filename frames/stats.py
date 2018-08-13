@@ -302,3 +302,6 @@ class StatsFrame(ttk.Frame):
                 # print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
                 #     args[0], args[1], args[2], kwargs["background"]))
         return
+
+    def config_size(self, width: int, height: int):
+        pass

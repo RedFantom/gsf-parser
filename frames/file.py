@@ -395,3 +395,6 @@ class FileFrame(ttk.Frame):
         match_index, spawn_index = int(elements[1]), int(elements[2])
         return (file_cube[match_index][spawn_index], player_list, spawn_timings[match_index][spawn_index],
                 match_timings[match_index])
+
+    def config_size(self, width: int, height: int):
+        pass

@@ -5,9 +5,11 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard library
+from collections import namedtuple
 from datetime import datetime
 import os
 import sys
+from typing import List
 # UI Libraries
 from ttkthemes import ThemedTk
 from tkinter import ttk
@@ -20,6 +22,7 @@ from frames import FileFrame, GraphsFrame, \
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splashscreens import BootSplash
+from widgets import VNotebook
 # Project Modules
 from network.discord import DiscordClient
 from utils.directories import get_temp_directory, get_assets_directory
@@ -42,11 +45,12 @@ class MainWindow(ThemedTk):
     """
 
     def __init__(self, raven: RavenClient):
+        self._configured = False
         self.raven = variables.raven = raven
-        self.width = 800 if sys.platform != "linux" else 825
-        self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
+        self.width, self.height = 900, 500
         ThemedTk.__init__(self)
+        self.wm_minsize(1100, 600)
         self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
@@ -65,21 +69,27 @@ class MainWindow(ThemedTk):
         self.splash.label_var.set("Building widgets...")
         self.protocol("WM_DELETE_WINDOW", self.exit)
         # Add a notebook widget with various tabs for the various functions
-        self.notebook = ttk.Notebook(self, height=420, width=self.width)
+        self.bind("<Configure>", self.on_configure)
+        self.notebook = VNotebook(self, compound=tk.RIGHT, padding=3)
         self.file_tab_frame = ttk.Frame(self.notebook)
-        self.realtime_tab_frame = ttk.Frame(self.notebook)
-        self.settings_tab_frame = ttk.Frame(self.notebook)
         self.characters_frame = CharactersFrame(self.notebook, self)
         self.file_select_frame = FileFrame(self.file_tab_frame, self)
         self.middle_frame = StatsFrame(self.file_tab_frame, self)
         self.ship_frame = ShipFrame(self.middle_frame.notebook)
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
-        self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
-        self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
+        self.realtime_frame = RealTimeFrame(self.notebook, self)
+        self.settings_frame = SettingsFrame(self.notebook, self)
         self.graphs_frame = GraphsFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
-        self.toolsframe = ToolsFrame(self.notebook)
+        self.tools_frame = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
+
+        self.frames = [
+            self.file_select_frame, self.realtime_frame,
+            self.settings_frame, self.characters_frame, self.ship_frame,
+            self.middle_frame, self.graphs_frame, self.builds_frame,
+            self.tools_frame, self.strategies_frame
+        ]
         # Pack the frames and put their widgets into place
         self.grid_widgets()
         self.child_grid_widgets()
@@ -87,7 +97,6 @@ class MainWindow(ThemedTk):
         self.setup_notebook()
         # Update the files in the file_select frame
         self.splash.label_var.set("Parsing files...")
-        self.notebook.grid(column=0, row=0, padx=2, pady=2)
         if not os.path.exists("development"):
             self.file_select_frame.add_files(silent=True)
         self.settings_frame.update_settings()
@@ -116,7 +125,23 @@ class MainWindow(ThemedTk):
         self.finished = True
         self.splash.destroy()
         self.splash = None
-        # Mainloop start (main.py)
+
+    def on_configure(self, event: tk.Event):
+        """Callback for <Configure> event"""
+        if event.widget is not self or not hasattr(event, "width") or not hasattr(event, "height"):
+            return
+        width, height = self.winfo_width(), self.winfo_height()
+        if (width == self.width and height == self.height) or width < 1100 or height < 600:
+            return
+        self.width, self.height = width, height
+        self.notebook.configure(width=width-4, height=height-4)
+        self.frames: List[ttk.Frame]
+        self.notebook: VNotebook
+        width -= self.notebook.size + 20
+        for frame in self.frames:
+            if not hasattr(frame, "config_size"):
+                continue
+            frame.config_size(width, height)
 
     def update_presence(self):
         """Update to the basic GSF Parser presence"""
@@ -127,36 +152,27 @@ class MainWindow(ThemedTk):
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
+        self.notebook.grid(row=0, column=0, sticky="nswe")
         self.file_select_frame.grid(column=1, row=1, sticky="nswe")
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
-        self.realtime_frame.grid()
-        self.settings_frame.grid()
-        self.graphs_frame.grid(column=0, row=0)
 
     def child_grid_widgets(self):
         """Configure the child widgets of the Frames in grid geometry"""
-        self.file_select_frame.grid_widgets()
-        self.middle_frame.grid_widgets()
-        self.realtime_frame.grid_widgets()
-        self.ship_frame.grid_widgets()
-        self.settings_frame.grid_widgets()
-        self.graphs_frame.grid_widgets()
-        self.builds_frame.grid_widgets()
-        self.characters_frame.grid_widgets()
-        self.toolsframe.grid_widgets()
-        self.file_select_frame.clear_data_widgets()
-        self.strategies_frame.grid_widgets()
+        for frame in self.frames:
+            if not hasattr(frame, "grid_widgets"):
+                continue
+            frame.grid_widgets()
 
     def setup_notebook(self):
         """Add all created frames to the notebook widget"""
         self.notebook.add(self.file_tab_frame, text="File parsing")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
+        self.notebook.add(self.realtime_frame, text="Real-time parsing")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
-        self.notebook.add(self.toolsframe, text="Tools")
-        self.notebook.add(self.settings_tab_frame, text="Settings")
+        self.notebook.add(self.tools_frame, text="Tools")
+        self.notebook.add(self.settings_frame, text="Settings")
 
     def set_attributes(self):
         """
@@ -167,10 +183,9 @@ class MainWindow(ThemedTk):
         - DPI scaling
         - Screenshot functionality
         """
-        self.resizable(width=False, height=False)
+        # self.resizable(width=False, height=False)
         self.wm_title("GSF Parser")
         self.protocol("WM_DELETE_WINDOW", self.exit)
-        self.geometry("{}x{}".format(*self.get_window_size()))
         self.bind("<F10>", self.screenshot)
 
     def set_variables(self):
@@ -209,6 +224,7 @@ class MainWindow(ThemedTk):
         self.style.configure('Toolbutton', anchor="w")
         self.style.configure('.', foreground=settings["gui"]["color"])
         self.setup_tk_toplevel_hooks()
+        self.setup_tk_canvas_hooks()
 
     def setup_tk_toplevel_hooks(self):
         """Change the default background color of Tk and Toplevel"""
@@ -221,6 +237,17 @@ class MainWindow(ThemedTk):
             __init__original(*args, **kwargs)
 
         tk.Toplevel.__init__ = __init__toplevel
+
+    def setup_tk_canvas_hooks(self):
+        """Change the default background color of Canvas"""
+        color = self.style.lookup("TFrame", "background")
+        __init_original__ = tk.Canvas.__init__
+
+        def __init_canvas__(*args, **kwargs):
+            kwargs.setdefault("background", color)
+            __init_original__(*args, **kwargs)
+
+        tk.Canvas.__init__ = __init_canvas__
 
     def set_icon(self):
         """Changes the window's icon"""
@@ -278,5 +305,6 @@ class MainWindow(ThemedTk):
 
     def report_callback_exception(self, exc, val, tb):
         """Redirect Exceptions in the mainloop to RavenClient"""
-        self.raven.captureException()
         ThemedTk.report_callback_exception(self, exc, val, tb)
+        if not os.path.exists("development"):
+            self.raven.captureException()
