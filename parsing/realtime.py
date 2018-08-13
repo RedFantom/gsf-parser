@@ -1106,6 +1106,8 @@ class RealTimeParser(Thread):
 
     @property
     def tracking_string(self) -> str:
+        if "Tracking Penalty" not in self._screen_features:
+            return ""
         return "Tracking: {}\n".format(self.screen_data["tracking"])
 
     @property
