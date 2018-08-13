@@ -5,6 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 import os
+from typing import *
 from datetime import datetime, timedelta
 from data import abilities, effects, durations
 from variables import settings, colors
@@ -41,7 +42,7 @@ class Parser(object):
     DATE_FORMAT = ""
 
     @staticmethod
-    def line_to_dictionary(line: str, enemies: dict=None):
+    def line_to_dictionary(line: str, enemies: dict=None) -> Dict[str, Any]:
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
@@ -68,11 +69,16 @@ class Parser(object):
         if len(elements) != 6:
             return log  # Invalid non-GSF CombatLog line
         effect = "{}: {}".format(*tuple(element.split("{")[0].strip() for element in elements[4].split(":")))
+        try:
+            effect_id = elements[4].split(":")[1].split("{")[1].strip("}")
+        except IndexError:
+            effect_id = None
         log.update({
             "ability": elements[3].split("{", 1)[0].strip(),
             "effect": effect,
             "amount": elements[5],
-            "target": log["target"]
+            "target": log["target"],
+            "effect_id": effect_id
         })
         if log["target"] == log["source"] and log["ability"] in abilities.secondaries:
             log["target"] = "Launch Projectile"
@@ -542,7 +548,7 @@ class Parser(object):
         return file_cube, match_timings, spawn_timings
 
     @staticmethod
-    def read_file(file_name: str, sharing_db: dict=None):
+    def read_file(file_name: str, sharing_db: dict=None) -> List[Dict[str, Any]]:
         """
         Read a file with the given filename in a safe and error handled
         manner. All attempts at reading GSF CombatLogs should use this

@@ -7,8 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime, timedelta
 import os
-from queue import PriorityQueue, Queue
-from threading import Thread, Lock
+import sys
 from time import sleep
 import traceback
 from typing import Any, Tuple, Dict
@@ -40,8 +39,11 @@ from parsing.realtimedb import RealTimeDB
 from parsing.rgb import RGBController
 from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
+from parsing.speed import SpeedParser
 from parsing.timer import TimerParser
 from parsing import vision
+# Processes or Threads
+from parsing import Thread, Queue, Lock
 # Utility Modules
 from utils.utilities import get_screen_resolution
 from utils.utilities import get_cursor_position
@@ -90,6 +92,12 @@ def screen_func(feature: str) -> callable:
 
         return inner
     return outer
+
+
+def printf(string: str):
+    """Write a string to stdout and flush"""
+    sys.stdout.write(string + "\n")
+    sys.stdout.flush()
 
 
 class RealTimeParser(Thread):
@@ -153,8 +161,9 @@ class RealTimeParser(Thread):
         self._screen_enabled = self.options["screen"]["enabled"]
         self._screen_features = self.options["screen"]["features"]
         # Queues
-        self.shots_queue = PriorityQueue()
         self._exit_queue = Queue()
+        self._overlay_string_q = Queue()
+        self._perf_string_q = Queue()
         # Data
         self._character_data = character_data
         self._character_db = character_db
@@ -170,7 +179,7 @@ class RealTimeParser(Thread):
         File parsing
         """
         # LogStalker
-        self._stalker = LogStalker(watching_callback=self._file_callback)
+        self._stalker: LogStalker = LogStalker(watching_callback=self._file_callback)
         # Data attributes
         self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
         self.active_id, self.active_ids = "", []
@@ -208,7 +217,7 @@ class RealTimeParser(Thread):
         self._waiting_for_timer = False
         self._spawn_timer_res_flag = False
         self._spawn_time = None
-        self._window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
+        self._window: Window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
         self.setup_screen_parsing()
         self._lock = Lock()
         self._configured_flag = False
@@ -221,6 +230,9 @@ class RealTimeParser(Thread):
         self._timer_parser = None
         if "Power Regeneration Delays" in self._screen_features:
             self._timer_parser = TimerParser()
+        self._speed_parser = None
+        if "Engine Speed" in self._screen_features:
+            self._speed_parser = SpeedParser()
         global screen_perf
         screen_perf.clear()
         screen_perf = {feature: [0, 0.0] for feature in self._screen_features}
@@ -236,6 +248,11 @@ class RealTimeParser(Thread):
             self.setup_minimap_share()
 
         self.update_presence()
+
+    def start(self):
+        """Redirect for Thread.start or Process.start"""
+        print("[RealTimeParser] Starting Thread/Process...")
+        Thread.start(self)
 
     def setup_screen_parsing(self):
         """
@@ -339,6 +356,13 @@ class RealTimeParser(Thread):
             del screenshot
             self.process_screenshot(image, screenshot_time)
             del image
+        # UI Interaction
+        with self._overlay_string_q.mutex:
+            self._overlay_string_q.queue.clear()
+        with self._perf_string_q.mutex:
+            self._perf_string_q.queue.clear()
+        self._overlay_string_q.put(self._overlay_string)
+        self._perf_string_q.put(self._perf_string)
         # RealTimeParser sleep limiting
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
@@ -376,6 +400,8 @@ class RealTimeParser(Thread):
         self.parse_line(line)
         self.update_rgb_keyboard(line)
         self.update_ship()
+        if self._speed_parser is not None and line["target"] == self.active_id:
+            self._speed_parser.process_slowed_event(line)
 
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
@@ -406,6 +432,8 @@ class RealTimeParser(Thread):
         self.update_presence()
         if self._timer_parser is not None:
             self._timer_parser.match_end()
+        if self._speed_parser is not None:
+            self._speed_parser.match_end()
         self._active_map = None
         self._realtime_db.write_spawn_data()
 
@@ -419,20 +447,27 @@ class RealTimeParser(Thread):
         self._match_callback()
         if self._timer_parser is not None:
             self._timer_parser.match_start()
+        if self._speed_parser is not None:
+            self._speed_parser.match_start()
 
     def handle_spawn(self, line: dict):
         """Check for a new spawn and handle it if required"""
-        if line["source"] != self.active_id and line["target"] != self.active_id:
-            self.abilities.clear()
-            self.active_id = ""
-            # Call the spawn callback
-            self.start_spawn = line["time"]
-            self._spawn_callback()
-            self.ship = None
-            self.ship_stats = None
-            self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
-            self.update_presence()
-            self._realtime_db.set_spawn(self._stalker.file, self.start_match, self.start_spawn)
+        if line["source"] == self.active_id or line["target"] == self.active_id:
+            return
+        self.abilities.clear()
+        self.active_id = ""
+        # Call the spawn callback
+        self.start_spawn = line["time"]
+        self._spawn_callback()
+        self.ship = None
+        self.ship_stats = None
+        self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
+        self.update_presence()
+        self._realtime_db.set_spawn(self._stalker.file, self.start_match, self.start_spawn)
+        if self._pointer_parser is not None:
+            self._pointer_parser.new_spawn()
+        if self._speed_parser is not None:
+            self._speed_parser.reset()
 
     def update_player_id(self, line: dict):
         """Update the Player ID if this line allows it"""
@@ -502,6 +537,10 @@ class RealTimeParser(Thread):
         """Determine if a weapon was swapped in this event"""
         if line["ability"] == "Scope Mode":
             self.scope_mode = not self.scope_mode
+            if self._pointer_parser is not None:
+                self._pointer_parser.set_scope_mode(self.scope_mode)
+            if self._speed_parser is not None:
+                self._speed_parser.set_scope_mode(self.scope_mode)
         elif line["ability"] == "Primary Weapon Swap":
             self.primary_weapon = not self.primary_weapon
             if self._timer_parser is not None:
@@ -550,6 +589,8 @@ class RealTimeParser(Thread):
         self.update_presence()
         if self._timer_parser is not None:
             self._timer_parser.set_ship_stats(self.ship_stats)
+        if self._speed_parser is not None:
+            self._speed_parser.update_ship_stats(self.ship_stats)
 
     def update_pointer_parser_ship(self):
         """Update the PointerParser data after the Ship has been set"""
@@ -905,10 +946,17 @@ class RealTimeParser(Thread):
 
     def run(self):
         """Run the loop and provide error handling, cleanup afterwards"""
+        printf("[RealTimeParser] Starting Subprocesses")
         self.rgb_start()
+        printf("[RealTimeParser] RGBController started")
         self.start_listeners()
+        printf("[RealTimeParser] Listeners started")
         if self._timer_parser is not None:
             self._timer_parser.start()
+            printf("[RealTimeParser] TimerParser started")
+        if self._speed_parser is not None:
+            self._speed_parser.start()
+            printf("[RealTimeParser] SpeedParser started")
         while True:
             if not self._exit_queue.empty():
                 break
@@ -944,6 +992,8 @@ class RealTimeParser(Thread):
         self._exit_queue.put(True)
         if self._timer_parser is not None:
             self._timer_parser.stop()
+        if self._speed_parser is not None:
+            self._speed_parser.stop()
 
     def _on_kb_press(self, key: (Key, KeyCode)):
         """
@@ -1019,7 +1069,7 @@ class RealTimeParser(Thread):
             self._rgb.stop()  # Joins itself
 
     @property
-    def perf_string(self) -> str:
+    def _perf_string(self) -> str:
         """Return a string with screen parsing feature performance"""
         if len(self._screen_features) == 0:
             return "No screen parsing features enabled"
@@ -1037,7 +1087,7 @@ class RealTimeParser(Thread):
         return string
 
     @property
-    def overlay_string(self) -> str:
+    def _overlay_string(self) -> str:
         """String of text to set in the Overlay"""
         if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
             return ""
@@ -1050,6 +1100,8 @@ class RealTimeParser(Thread):
             string += self.map_match_type_string
         if self._timer_parser is not None and self._timer_parser.is_alive():
             string += self._timer_parser.string
+        if self._speed_parser is not None:
+            string += self._speed_parser.string
         return string.strip()
 
     @property
@@ -1093,3 +1145,19 @@ class RealTimeParser(Thread):
             ship += " (Not fully configured)"
         ship += "\n\n"
         return string + ship
+
+    @property
+    def perf_string(self) -> str:
+        """Process-safe accessor to _perf_string, see self.update()"""
+        try:
+            return self._perf_string_q.get(False)
+        except:
+            return None
+
+    @property
+    def overlay_string(self) -> str:
+        """Process-safe accessor to _overlay_string, see self.update()"""
+        try:
+            return self._overlay_string_q.get(False)
+        except:
+            return None

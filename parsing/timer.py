@@ -14,12 +14,7 @@ from pynput.mouse import Listener as MSListener, Button
 from parsing import Parser
 from parsing.shipstats import ShipStats
 # Processes or Threads
-from variables import multi
-if multi is True:
-    from multiprocessing import Process as Thread, Queue, Lock
-else:
-    from queue import Queue
-    from threading import Thread, Lock
+from parsing import Thread, Queue, Lock
 
 
 class TimerParser(Thread):
@@ -57,7 +52,7 @@ class TimerParser(Thread):
     def set_ship_stats(self, ship: ShipStats):
         """Update the ship statistics used for delay tracking"""
         self._lock.acquire()
-        self._stats =  {
+        self._stats = {
             p: {k: ship["Ship"][v.format(p)] for k, v in self.STATS.items()}
             for p in self.POOLS
         }
@@ -143,11 +138,7 @@ class TimerParser(Thread):
         if not self.is_alive():
             return
         self._exit_queue.put(True)
-        try:
-            self.join(timeout=1)
-        except Exception as e:
-            print("[TimerParser] Failed to terminate process: {}".format(e))
-            self.terminate()
+        self.join(timeout=1)
 
     def _on_click(self, x: int, y: int, button: Button, state: bool):
         """Process a click to check for weapon power usage"""

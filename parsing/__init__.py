@@ -4,6 +4,8 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
+from parsing.thread import *
+
 from parsing.characters import CharacterDatabase
 from parsing.filehandler import FileHandler
 from parsing.filestats import file_statistics

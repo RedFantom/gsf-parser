@@ -4,9 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-import variables
-from parsing.parser import Parser
+from datetime import datetime
 import os
+from parsing.parser import Parser
+import variables
+
+
+def sort_file(file_name: str) -> int:
+    """Function to convert file name to time """
+    r: datetime = Parser.parse_filename(file_name)
+    if r is not None:
+        return r.timestamp()
+    return 0
 
 
 class LogStalker(object):
@@ -36,7 +45,7 @@ class LogStalker(object):
         files = os.listdir(self._folder)
         if len(files) == 0:
             raise ValueError("No files found in this folder.")
-        recent = sorted(files, key=Parser.parse_filename)[-1]
+        recent = sorted(files, key=sort_file)[-1]
         if self.file is not None and recent == self.file:
             return
         self.file = recent

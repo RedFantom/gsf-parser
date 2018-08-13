@@ -201,11 +201,17 @@ class SettingsFrame(ttk.Frame):
         self.sc_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
             "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing",
-            "Power Regeneration Delays"
+            "Power Regeneration Delays", "Engine Speed"
         ]
         beta = [
             "MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing",
         ]
+        self.sc_requires = {
+            "Tracking penalty": ("Mouse and Keyboard",),
+            "Engine Speed": ("Mouse and Keyboard",),
+            "Pointer Parsing": ("Mouse and Keyboard",),
+            "Power Regeneration Delays": ("Mouse and Keyboard",)
+        }
         self.sc_checkboxes = OrderedDict()
         self.sc_variables = {}
         for feature in self.sc_features:
@@ -461,6 +467,12 @@ class SettingsFrame(ttk.Frame):
         self.sc_perf.set(settings["screen"]["perf"])
         self.sc_disable.set(settings["screen"]["disable"])
         self.sc_multi.set(settings["screen"]["multi"])
+        for feature, requires in self.sc_requires.items():
+            if not all(self.sc_variables[k].get() is True for k in requires):
+                self.sc_variables[feature].set(False)
+                self.sc_checkboxes[feature].config(state=tk.DISABLED)
+                continue
+            self.sc_checkboxes[feature].config(state=tk.NORMAL)
         """
         Widget states
         """
