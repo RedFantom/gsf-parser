@@ -6,9 +6,9 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime, timedelta
+from queue import Queue
 from time import sleep
-# Processes or Threads
-from parsing import Thread, Queue, Lock
+from threading import Thread
 # Project Modules
 from parsing.shipstats import ShipStats
 # Packages
@@ -59,10 +59,8 @@ class SpeedParser(Thread):
         """Initialize attributes and Queues"""
         self._exit_queue = Queue()
         self._string = str()
-        self._string_lock = Lock()
         Thread.__init__(self)
         self._listener = Listener(on_press=self.on_press, on_release=self.on_release)
-        self._lock = Lock()
         # This is not a queue, because the GIL protects it
         self._key_states = {k: False for k in SpeedParser.CONTROL_KEYS.values()}
         self._stopped = False
@@ -85,23 +83,18 @@ class SpeedParser(Thread):
             except:
                 pass
             # Retrieve attributes
-            with self._lock:
-                stats: dict = self._stats.copy() if self._stats else None
-                effects = self._effects.copy()
-                boost = self._boost
-                power = self._power_mode
-                match = self._match
-            if stats is None or match is False:
-                with self._string_lock:
-                    self._string = "Speed: Unknown\n"
+            if self._match is False:
+                continue
+            if self._stats is None:
+                self._string = "Speed: Unknown\n"
                 continue
             # Calculations
             now = datetime.now()
-            base: float = stats["Engine_Base_Speed"] * 100
-            if boost is not None:
-                acceleration = stats["Booster_Acceleration"] * 100
-                boost_multiplier = stats["Booster_Speed_Multiplier"]
-                base = min(base * boost_multiplier, base + (now - boost).total_seconds() * acceleration)
+            base: float = self._stats["Engine_Base_Speed"] * 100
+            if self._boost is not None:
+                acceleration = self._stats["Booster_Acceleration"] * 100
+                boost_multiplier = self._stats["Booster_Speed_Multiplier"]
+                base = min(base * boost_multiplier, base + (now - self._boost).total_seconds() * acceleration)
                 throttle = 1.0
             elif self._stopped is True:
                 throttle = 0.0
@@ -111,22 +104,21 @@ class SpeedParser(Thread):
                 throttle = 0.35
             else:
                 throttle = 0.7
-            if power == "F4":
+            if self._power_mode == "F4":
                 power_multiplier = 1.0
-            elif power == "F3":
-                power_multiplier = stats["Engine_Speed_Modifier_at_Max_Power"]
+            elif self._power_mode == "F3":
+                power_multiplier = self._stats["Engine_Speed_Modifier_at_Max_Power"]
             else:
-                power_multiplier = stats["Engine_Speed_Modifier_at_Min_Power"]
+                power_multiplier = self._stats["Engine_Speed_Modifier_at_Min_Power"]
             effect_multiplier = 1.0
-            for start, (multiplier, duration) in effects:
+            for start, (multiplier, duration) in self._effects.copy():
                 if start + timedelta(seconds=duration) > now:
                     self._effects.remove((start, (multiplier, duration)))
                     continue
                 effect_multiplier *= multiplier
-            multiplier: float = stats["Engine_Speed_Multiplier"]
+            multiplier: float = self._stats["Engine_Speed_Multiplier"]
             speed: float = base * throttle * multiplier * effect_multiplier * power_multiplier
-            with self._string_lock:
-                self._string = "Speed: {:03.01f}m/s\n".format(speed)
+            self._string = "Speed: {:03.01f}m/s\n".format(speed)
         self._listener.stop()
 
     def on_press(self, key: (Key, KeyCode)):
@@ -154,35 +146,30 @@ class SpeedParser(Thread):
             self._boost = datetime.now() if state is True else None
             self._stopped = False
         elif "F" in key:
-            with self._lock:
-                self._power_mode = key
+            self._power_mode = key
 
     @property
     def string(self):
         """Process-safe accessor to _string attribute"""
-        with self._string_lock:
-            return self._string
+        return self._string
 
     def update_ship_stats(self, ship: ShipStats):
         """Update the statistics used in this class Process-safely"""
-        with self._lock:
-            self._stats = dict()
-            for stat in SpeedParser.STATS:
-                self._stats[stat] = ship["Ship"][stat]
+        self._stats = dict()
+        for stat in SpeedParser.STATS:
+            self._stats[stat] = ship["Ship"][stat]
 
     def process_slowed_event(self, event: dict):
         """Process an Engine Slowed event"""
         if event["effect_id"] not in SpeedParser.EFFECTS or not "ApplyEffect" in event["effect"]:
             return
-        with self._lock:
-            self._effects.append((event["time"], SpeedParser.EFFECTS[event["effect_id"]]))
+        self._effects.append((event["time"], SpeedParser.EFFECTS[event["effect_id"]]))
 
     def reset(self):
         """Reset the attributes that contain cached values"""
-        with self._lock:
-            self._stats = None
-            self._effects.clear()
-            self._power_mode = "F4"
+        self._stats = None
+        self._effects.clear()
+        self._power_mode = "F4"
 
     def stop(self):
         """Stop the Thread's activities and join it"""
@@ -191,15 +178,12 @@ class SpeedParser(Thread):
 
     def match_start(self):
         """Set attribute for the start of a match"""
-        with self._lock:
-            self._match = True
+        self._match = True
 
     def match_end(self):
         """Set the attribute for the end of a match"""
-        with self._lock:
-            self._match = False
+        self._match = False
 
     def set_scope_mode(self, state: bool):
         """Set the Scope Mode (engine speed zero)"""
-        with self._lock:
-            self._stopped = state
+        self._stopped = state

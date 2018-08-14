@@ -15,8 +15,9 @@ PERF: Dict[str, Tuple[int, float]] = dict()
 SLOW: Dict[str, float] = dict()
 
 
-def bench(key: str) -> callable:
+def benchmark(key: str) -> callable:
     """Function decorator that records the performance of function"""
+    global PERF, SLOW
 
     def outer(func: callable) -> callable:
         """Enable function performance measurement if enabled"""

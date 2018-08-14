@@ -30,6 +30,7 @@ class LogStalker(object):
         :param folder: Folder to watch CombatLogs in
         :param watching_callback: Callback to be called when the watched file changes
         """
+        self._new_file = False
         self._folder = folder
         self._watching_callback = watching_callback
         self.file = None
@@ -48,6 +49,7 @@ class LogStalker(object):
         recent = sorted(files, key=sort_file)[-1]
         if self.file is not None and recent == self.file:
             return
+        self._new_file = True
         self.file = recent
         self.path = os.path.join(self._folder, self.file)
         self._read_so_far = 0
@@ -80,17 +82,22 @@ class LogStalker(object):
     def get_new_lines(self):
         """Read the new lines in the file and return them as a list"""
         self.update_file()
-        dictionaries = self.read_file(self.path, self._read_so_far)
+        dictionaries = self.read_file(self.path, self._read_so_far, self._new_file)
+        self._new_file = False
         self._read_so_far += len(dictionaries)
         if None in dictionaries:
             raise ValueError()
         return dictionaries
 
     @staticmethod
-    def read_file(path, skip):
+    def read_file(path, skip, include=False):
         """Read the file in UnicodeDecodeError safe method"""
         with open(path, "rb") as fi:
-            lines = fi.readlines()[skip:]
+            lines: list = fi.readlines()
+        first = lines[0]
+        lines = lines[skip:]
+        if include is True:
+            lines.insert(0, first)
         dictionaries = []
         for line in lines:
             try:

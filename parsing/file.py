@@ -16,8 +16,14 @@ from data.abilities import REPUBLIC_SHIPS
 from data.maps import MAP_TYPE_NAMES, MAP_NAMES
 from data.servers import SERVERS
 from network.discord import DiscordClient
-from parsing import LogStalker, Parser, Ship
+from parsing import GSFInterface, LogStalker, Parser, ScreenParser, Ship
+from parsing.guiparsing import get_player_guiname
 import variables
+
+
+class UnhandledException(Exception):
+    """Exception the FileParser does not catch"""
+    pass
 
 
 class FileParser(Process):
@@ -29,7 +35,7 @@ class FileParser(Process):
     manages a ScreenParser that runs in yet another Process.
     """
 
-    def __init__(self, data_pipe, exit_event: Event, char_db: dict, char_i: tuple):
+    def __init__(self, data_pipe, exit_event: Event, char_db: dict, char_i: tuple, **kwargs):
         """
         :param data_pipe: Pipe used for communication with the
             MainThread. Used for sending data, including the overlay
@@ -39,6 +45,8 @@ class FileParser(Process):
         :param char_db, char_i: CharacterDatabase and character
             identifier to retrieve data with
         """
+        self.kwargs = kwargs.copy()
+
         Process.__init__(self)
 
         self.options = variables.settings.dict()
@@ -50,6 +58,7 @@ class FileParser(Process):
         self.char_data = self.char_db[char_i]
 
         self.stalker = LogStalker(watching_callback=self.watching_callback)
+        self.interface: GSFInterface = GSFInterface(get_player_guiname(*reversed(char_i)))
 
         self.dmg_d, self.dmg_t, self.dmg_s, self.healing, self.abilities = 0, 0, 0, 0, dict()
         self.active_id, self.active_ids, self.hold, = "", list(), list()
@@ -59,9 +68,9 @@ class FileParser(Process):
         self.tutorial: bool = False
         self.match_start: datetime = None
 
-        self.screen: object = None
-        self.sc_pipe = None
-        self.sc_string: str = None
+        self.screen: ScreenParser = None
+        self.sc_pipe, self.sc_string = None, None
+
         self.ship: Ship = None
         self.map: Tuple[str, str] = None
         self.ship_config = True
@@ -78,6 +87,10 @@ class FileParser(Process):
             self.rpc = Presence(436173115064713216)
         if self.options["sharing"]["enabled"]:
             self.discord = DiscordClient()
+        if self.options["screen"]["enabled"]:
+            self.sc_pipe, conn = Pipe()
+            self.screen = ScreenParser(conn, self.exit, self.options, self.interface, **self.kwargs)
+            self.screen.start()
 
     def cleanup(self):
         """Clean up the attributes initialized in setup"""
@@ -179,6 +192,8 @@ class FileParser(Process):
             print("[FileParser] Match start not set while event is match event")
             return
         self.pipe.send(("event", (line, self.player_name, self.active_ids, self.match_start)))
+        if self.sc_pipe is not None:
+            self.sc_pipe.send(("event", (line, self.player_name, self.active_ids, self.match_start)))
 
     def process_weapon_swap(self, line: dict):
         """Check if the line includes a weapon swap event"""
@@ -188,6 +203,8 @@ class FileParser(Process):
             weapon_type: str = line["ability"].split(" ", 1)[0]
             attr = "{}_weapon".format(weapon_type.lower())
             setattr(self, attr, not getattr(self, attr))
+            if self.sc_pipe is not None:
+                self.sc_pipe.send(("swap", attr))
 
     def parse_line(self, line: dict):
         """Parse the line for interesting data"""
@@ -228,7 +245,7 @@ class FileParser(Process):
 
     def handle_match_end(self, line: dict):
         """Handle the end of a match: Reset data attributes"""
-        print("[FileParser] Match end")
+        print("[FileParser] Match end: {}".format(line["line"]))
         self.is_match, self.tutorial, self.ship_config = False, False, True
         self.abilities.clear()
         self.dmg_d, self.dmg_t, self.dmg_s, self.healing = 0, 0, 0, 0
@@ -258,6 +275,8 @@ class FileParser(Process):
         if self.active_id != "" or line["source"] != line["target"]:
             return  # Active ID already set or new ID unknown
         self.active_id = line["source"]
+        if self.sc_pipe is not None:
+            self.sc_pipe.send(("id", self.active_id))
         print("[FileParser] Player ID: {}".format(self.active_id))
         self.active_ids.append(line["source"])
         if self.discord is not None:
@@ -281,7 +300,7 @@ class FileParser(Process):
         name = ships[0]
         if self.char_data["Faction"].lower() == "republic":
             name = REPUBLIC_SHIPS[name]
-        ship_obj: Ship = self.char_data["Ship_Objects"][name]
+        ship_obj: Ship = self.char_data["Ship Objects"][name]
         if ship_obj is None:
             self.ship_config = False
 
@@ -301,13 +320,17 @@ class FileParser(Process):
             self.map = data
         elif type == "string":
             self.sc_string = data
+        elif type == "config":
+            self.ship_config = False
+        elif type == "event":
+            self.pipe.send(("event", (data, self.player_name, self.active_ids, self.match_start)))
         else:
             self.pipe.send((type, data))
 
     def error(self, message: str):
         """Exit the Process with an error message"""
         self.pipe.send(("error", message))
-        raise Exception(message)
+        raise UnhandledException(message)
 
     @property
     def string(self) -> str:

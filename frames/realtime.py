@@ -180,7 +180,8 @@ class RealTimeFrame(ttk.Frame):
         """Process the data received from the FileParser pipe"""
         type, data = data
         if type == "string":
-            self.overlay_string.set(data)
+            if self.overlay is not None:
+                self.overlay.update_text(data)
         elif type == "perf":
             self.data.set(data)
         elif type == "error":

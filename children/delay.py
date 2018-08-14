@@ -6,18 +6,17 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
+from queue import Queue
 from time import sleep
 # Packages
-from pynput.keyboard import Listener as KBListener, Key, KeyCode
-from pynput.mouse import Listener as MSListener, Button
+from pynput.keyboard import Key, KeyCode
+from pynput.mouse import Button
 # Project Modules
 from parsing import Parser
 from parsing.shipstats import ShipStats
-# Processes or Threads
-from parsing import Thread, Queue, Lock
 
 
-class TimerParser(Thread):
+class DelayParser(object):
     """Parser that checks Regeneration Delays and controls an overlay"""
 
     DELAYS = {
@@ -33,37 +32,34 @@ class TimerParser(Thread):
         "Recent": "Power_{}_Regen_Rate_(when_Recently_Consumed)"
     }
 
+    INIT_ARGS = []
+
     def __init__(self):
         """Initialize as Thread and create attributes"""
-        Thread.__init__(self)
         self._stats = {p: {k: 0.0 for k in self.STATS} for p in self.POOLS}
-        self._lock = Lock()
-        self._exit_queue = Queue()
         self.primary = "PrimaryWeapon"
         self.__delays = dict()
         self._internal_q = Queue()
         self._match = False
-        self._ms_listener = MSListener(on_click=self._on_click)
-        self._kb_listener = KBListener(on_press=self._on_press)
         self._mouse = False
         self._string = str()
-        print("[TimerParser] Initialized")
+        print("[DelayParser] Initialized")
 
     def set_ship_stats(self, ship: ShipStats):
         """Update the ship statistics used for delay tracking"""
-        self._lock.acquire()
         self._stats = {
             p: {k: ship["Ship"][v.format(p)] for k, v in self.STATS.items()}
             for p in self.POOLS
         }
         self.primary = "PrimaryWeapon"
-        self._lock.release()
-        print("[TimerParser] Updated ship to: {}".format(ship.ship.name))
+        print("[DelayParser] Updated ship to: {}".format(ship.ship.name))
 
-    def primary_weapon_swap(self):
+    def swap_weapon(self, weapon: str):
         """Swap the primary weapon key"""
+        if "primary" not in weapon.lower():
+            return
         self.primary = "PrimaryWeapon2" if self.primary == "PrimaryWeapon" else "PrimaryWeapon"
-        print("[TimerParser] Swapped Primary Weapons")
+        print("[DelayParser] Swapped Primary Weapons")
 
     def match_end(self):
         """Match ended callback"""
@@ -74,10 +70,8 @@ class TimerParser(Thread):
         self._internal_q.put("start")
 
     def update(self):
-        """Update the state of the TimerParser"""
-        self._lock.acquire()
+        """Update the state of the DelayParser"""
         stats, key = self._stats.copy(), self.primary
-        self._lock.release()
 
         while not self._internal_q.empty():
             v = self._internal_q.get()
@@ -100,9 +94,7 @@ class TimerParser(Thread):
             remaining = max(stats[pool]["Delay"] - elapsed, 0.0)
             rate = stats[pool]["Regen"] if remaining == 0.0 else stats[pool]["Recent"]
             string += "{}: {:.1f}s, {:.1f}pps\n".format(pool[0], remaining, rate)
-        self._lock.acquire()
         self._string = string
-        self._lock.release()
         sleep(0.1)
 
     def process_event(self, event: dict, active_ids: list):
@@ -118,42 +110,19 @@ class TimerParser(Thread):
         # event: Damage dealt to self
         self._internal_q.put(("Shield", event["time"]))
 
-    def cleanup(self):
-        """Clean up everything in use"""
-        self._ms_listener.stop()
-        self._kb_listener.stop()
-
-    def run(self):
-        """Run the Thread"""
-        self._ms_listener.start()
-        self._kb_listener.start()
-        while True:
-            if not self._exit_queue.empty():
-                break
-            self.update()
-        self.cleanup()
-
-    def stop(self):
-        """Stop activities and join Thread"""
-        if not self.is_alive():
-            return
-        self._exit_queue.put(True)
-        self.join(timeout=1)
-
-    def _on_click(self, x: int, y: int, button: Button, state: bool):
+    def on_click(self, x: int, y: int, button: Button, state: bool):
         """Process a click to check for weapon power usage"""
         if button == Button.left:
             self._internal_q.put("mouse")
 
-    def _on_press(self, key: (Key, KeyCode)):
+    def on_press(self, key: (Key, KeyCode), state: bool):
         """Process a key press to check for engine power usage"""
+        if state is False:
+            return
         if key == Key.space:
             self._internal_q.put(("Engine", datetime.now()))
 
     @property
     def string(self):
         """String to show in the Overlay"""
-        self._lock.acquire()
-        string = self._string
-        self._lock.release()
-        return string
+        return self._string

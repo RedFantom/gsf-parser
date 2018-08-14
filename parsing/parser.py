@@ -62,7 +62,7 @@ class Parser(object):
         [time] [source] [target] [ability] [effect] (amount)
         """
         log = dict()
-        log["line"] = line
+        log["line"] = line.strip("\n").strip()
         log["time"] = datetime.strptime(elements[0], Parser.TIME_FORMAT)
         log["source"] = elements[1]
         log["target"] = elements[2]
@@ -888,7 +888,7 @@ class Parser(object):
     @staticmethod
     def is_gsf_event(event: dict):
         """Determine whether the event given is valid GSF event"""
-        return event["source"].isdigit() and event["target"].isdigit()
+        return "@" not in event["source"] and "@" not in event["target"]
 
     @staticmethod
     def is_login(line: dict):
@@ -981,7 +981,6 @@ class Parser(object):
         return {
             "time": attack_start["time"] - timedelta(milliseconds=1),
             "source": "Attack",
-            "target": name,
             "target": name,
             "ability": "Attack {}".format(i + 1),
             "amount": sum(e["damage"] for e in attack),

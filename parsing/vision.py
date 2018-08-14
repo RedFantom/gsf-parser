@@ -5,9 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import os
 import math
 import operator
+import os
+from typing import Tuple
 # Packages
 from PIL import Image
 import numpy
@@ -47,15 +48,15 @@ def get_pointer_middle(coordinates, size=(44, 44)):
     return coordinates[0] + size[0] / 2, coordinates[1] + size[1] / 2
 
 
-def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
+def get_distance_from_center(coordinates: Tuple[int, int], rectangle: Tuple[int, int, int, int]):
     """
     Calculates the distance in pixels of the middle of the screen to the middle
     of the targeting pointer
     :param coordinates: coordinates of the **middle** of the targeting pointer
-    :param resolution: tuple of resolution
+    :param rectangle: Tuple of Window rectangle
     :return: distance in pixels from center
     """
-    middle_screen = (resolution[0] / 2, resolution[1] / 2)
+    middle_screen = (rectangle[2] - rectangle[0] // 2), (rectangle[3] - rectangle[1] // 2)
     a_squared = math.pow(abs(coordinates[0] - middle_screen[0]), 2)
     b_squared = math.pow(abs(coordinates[1] - middle_screen[1]), 2)
     c_squared = a_squared + b_squared

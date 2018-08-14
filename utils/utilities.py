@@ -5,8 +5,9 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from sys import platform
 from os import path
+from sys import platform
+from typing import Tuple, List
 # UI Libraries
 from tkinter import messagebox
 import tkinter as tk
@@ -47,7 +48,7 @@ def open_icon(*args, **kwargs) -> Photo:
     return Photo(open_icon_pil(*args, **kwargs))
 
 
-def get_pointer_position_win32():
+def get_pointer_position_win32() -> Tuple[int, int]:
     """
     Gets the position of the targeting pointer with win32gui
     :return: coordinates of pointer
@@ -56,7 +57,7 @@ def get_pointer_position_win32():
     return win32gui.GetCursorPos()
 
 
-def get_pointer_position_linux():
+def get_pointer_position_linux() -> Tuple[int, int]:
     """
     Gets the position of the targeting pointer with xlib
     :return:coordinates of the pointer
@@ -66,7 +67,7 @@ def get_pointer_position_linux():
     return data["root_x"], data["root_y"]
 
 
-def get_cursor_position():
+def get_cursor_position() -> Tuple[int, int]:
     """
     Calls the appropriate function to get the cursor position depending
     on the operating system.
@@ -80,7 +81,7 @@ def get_cursor_position():
     raise ValueError("Unknown platform detected")
 
 
-def get_screen_resolution():
+def get_screen_resolution() -> Tuple[int, int]:
     """
     Uses screeninfo or alternatively Tkinter to determine screen
     resolution as reported by OS. On some Linux window managers the
@@ -101,3 +102,8 @@ def get_screen_resolution():
         width, height = window.winfo_screenwidth(), window.winfo_screenheight()
         window.destroy()
         return width, height
+
+
+def pair_wise(iterable: (list, tuple)) -> List[Tuple]:
+    """Create generator to loop over iterable in pairs"""
+    return list(zip(*tuple(iterable[i::2] for i in range(2))))

@@ -17,6 +17,7 @@ from pynput.mouse import Button, Listener
 # Project Modules
 from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
+from parsing.shipstats import ShipStats
 from utils.directories import get_assets_directory
 from utils.utilities import get_cursor_position
 
@@ -31,12 +32,15 @@ class PointerParser(Thread):
     default pointer indicator).
     """
 
+    INIT_ARGS = [GSFInterface]
+
     def __init__(self, gui_profile: GSFInterface):
         """
         :param gui_profile: GUI Profile selected by the user
         """
         self.rof = None
         self.ship_class = None
+        self._scope_mode = False
         self.interface = gui_profile
         self.mouse_queue = Queue()
         self.exit_queue = Queue()
@@ -105,7 +109,7 @@ class PointerParser(Thread):
         self.join(timeout=2)
         print("[PointerParser] Stopped.")
 
-    def set_rate_of_fire(self, rof: float, ship_class: str):
+    def set_ship_stats(self, stats: ShipStats) -> bool:
         """
         Update the ship in use by this PointerParser
 
@@ -115,3 +119,13 @@ class PointerParser(Thread):
         print("[PointerParser] Rate of Fire updated: {}".format(rof))
         self.rof = 1 / rof
         self.ship_class = ship_class
+
+    def spawn(self):
+        """
+        Callback for new spawn event in RealTimeParser
+
+        Resets all attributes until new information is available.
+        """
+        self.rof = None
+        self.ship_class = None
+        self._scope_mode = False

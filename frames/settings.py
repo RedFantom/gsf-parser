@@ -171,14 +171,6 @@ class SettingsFrame(ttk.Frame):
                      "cycles per second but reduces CPU, Memory and IO usage significantly.\n\n"
                      "Only disable if you need the utmost level of precision and have plenty of computing resources "
                      "to spare.")
-        # RGB Lighting Effects
-        self.rt_rgb = tk.BooleanVar()
-        self.rt_rgb_checkbox = ttk.Checkbutton(
-            self.rt_frame, text="Enable RGB Keyboard Lighting Effects (bèta)",
-            variable=self.rt_rgb)
-        Balloon(self.rt_rgb_checkbox, text="Not all keyboards are supported. Support depends on the "
-                                           "rgbkeyboards package, which may contain bugs and thus"
-                                           "cause errors.")
         # Discord Rich Presence
         self.rt_drp = tk.BooleanVar()
         self.rt_drp_checkbox = ttk.Checkbutton(
@@ -200,11 +192,11 @@ class SettingsFrame(ttk.Frame):
         self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
         self.sc_features = [
             "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
-            "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing",
-            "Power Regeneration Delays", "Engine Speed"
+            "MiniMap Location", "Map and match type", "Pointer Parsing",
+            "Power Regeneration Delays", "Engine Speed", "RGB Keyboard Effects"
         ]
         beta = [
-            "MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing",
+            "MiniMap Location", "Spawn Timer", "Map and match type", "Pointer Parsing",
         ]
         self.sc_requires = {
             "Tracking penalty": ("Mouse and Keyboard",),
@@ -392,8 +384,6 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_position_frame.grid(row=6, column=0, columnspan=4, **padding_label, **sticky_default)
         # RealTimeParser sleep
         self.rt_sleep_checkbox.grid(row=7, column=0, **padding_label, **sticky_button)
-        # RGB Effects
-        self.rt_rgb_checkbox.grid(row=8, column=0, **padding_label, **sticky_button)
         # Rich Presence
         self.rt_drp_checkbox.grid(row=9, column=0, **padding_label, **sticky_button)
 
@@ -455,7 +445,6 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_overlay.set(settings["event"]["enabled"])
         self.rt_event_position_frame.set(settings["event"]["position"])
         self.rt_sleep.set(settings["realtime"]["sleep"])
-        self.rt_rgb.set(settings["realtime"]["rgb"])
         self.rt_drp.set(settings["realtime"]["drp"])
         """
         Screen Parsing settings
@@ -518,7 +507,6 @@ class SettingsFrame(ttk.Frame):
                 "overlay_when_gsf": self.rt_overlay_disable.get(),
                 "overlay_text": self.rt_overlay_text_color.get(),
                 "sleep": self.rt_sleep.get(),
-                "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
             },
             "event": {
