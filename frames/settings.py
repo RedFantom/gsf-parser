@@ -259,9 +259,9 @@ class SettingsFrame(ttk.Frame):
                  "Available under the GNU GPLv3 License\n\n"
                  "Special thanks to everyone who has provided feedback, and to JediPedia for the the clean GSF map "
                  "textures.")
-
+        self.canvas_width: int = self.main_window.width - (10 if sys.platform == "win32" else 25)
         self.canvas = tk.Canvas(
-            self.credits_frame, width=self.main_window.width - 10, height=15,
+            self.credits_frame, width=self.canvas_width, height=15,
             background=self.main_window.style.lookup("TFrame", "background"))
         self._canvas_start = None
         self._saved = False
@@ -575,7 +575,7 @@ class SettingsFrame(ttk.Frame):
             if self._canvas_box is not None:
                 self.canvas.delete(self._canvas_box)
             if elapsed < delay:
-                x = int(elapsed / delay * (self.main_window.width - 20))
+                x = int(elapsed / delay * (self.canvas_width - 10))
                 self._canvas_box = self.canvas.create_rectangle(
                     (5, 5, x, 10), fill=settings["gui"]["color"])
             else:  # elapsed > self.DELAY: settings are saved

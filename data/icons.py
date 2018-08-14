@@ -114,7 +114,7 @@ ICONS = {
     "Player Death": "spvp_aoedamage",
     "Game End": "spvp_combatcloakingdevice",
     "Unknown Primary Weapon": "spvp_blaster_blue",
-    "Hull Cutter": "spvp_hullcutter.png",
+    "Hull Cutter": "spvp_hullcutter",
     # Default
     "default": "republic"
 }
