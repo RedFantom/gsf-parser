@@ -1087,7 +1087,7 @@ class RealTimeParser(Thread):
         string = self.notification_string + self.parsing_data_string
         if "Spawn Timer" in self._screen_features:
             string += self.spawn_timer_string
-        if "Tracking penalty" not in self._screen_features:
+        if "Tracking penalty" in self._screen_features:
             string += self.tracking_string
         if "Map and match type" in self._screen_features:
             string += self.map_match_type_string
