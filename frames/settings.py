@@ -16,9 +16,8 @@ from tkinter import filedialog
 from tkinter import messagebox
 # Project Modules
 from network.discord import DiscordClient
-from parsing.vision import timer_boxes
+from parsing import tesseract
 from toplevels.event_colors import EventColors
-from utils.utilities import get_screen_resolution
 from variables import settings, colors
 from widgets import VerticalScrollFrame, Balloon
 
@@ -464,13 +463,12 @@ class SettingsFrame(ttk.Frame):
         """
         Widget states
         """
-        if get_screen_resolution() not in timer_boxes:
+        if not tesseract.is_installed():
             self.sc_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-            Balloon(
-                self.sc_checkboxes["Spawn Timer"],
-                text="Your monitor resolution is not supported by this feature. If you would like "
-                     "for your resolution to be supported, please send RedFantom a screenshot of the "
-                     "unaltered user interface shown before the start of a match.")
+            Balloon(self.sc_checkboxes["Spawn Timer"],
+                text="The Spawn Timer screen parsing features depends on Tesseract-OCR. Tesseract is "
+                     "an optical character recognition engine. To install Tesseract, visit the GitHub "
+                     "Wiki of Tesseract: https://github.com/tesseract-ocr/tesseract/wiki")
         if self.sc_perf.get() is False:
             self.sc_disable_checkbox.config(state=tk.DISABLED)
         else:

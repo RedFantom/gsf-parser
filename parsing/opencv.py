@@ -6,6 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 import os
+from typing import Tuple
 # Project Modules
 from utils.directories import get_temp_directory
 # Packages
@@ -48,7 +49,7 @@ def feature_match(image: Image.Image, template: Image.Image)->int:
     return result
 
 
-def template_match(image: Image.Image, template: Image.Image)->tuple:
+def template_match(image: Image.Image, template: Image.Image)->Tuple[bool, Tuple[int, int]]:
     """Use template matching and similarity to return template score"""
     image_cv, template_cv = map(image_to_opencv, (image, template))
     result = cv.matchTemplate(image_cv, template_cv, cv.TM_CCOEFF)
