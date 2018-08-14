@@ -375,7 +375,7 @@ class FileHandler(object):
                 power_mode = mode
                 results["power_mgmt"].append((args, kwargs))
         # Screen parsing
-        else:
+        elif "power_mgmt" in screen_dict:
             sub_dict = screen_dict["power_mgmt"]
             for time, value in sorted(sub_dict.items()):
                 if power_mgmt[0] != value:
