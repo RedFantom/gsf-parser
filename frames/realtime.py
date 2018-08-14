@@ -231,7 +231,6 @@ class RealTimeFrame(ttk.Frame):
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
         self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
-        self.overlay.start()
         self.update_overlay()
 
     def open_event_overlay(self):

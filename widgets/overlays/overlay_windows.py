@@ -214,7 +214,5 @@ class WindowsOverlay(object):
         gui.SendMessage(self._window, con.WM_CLOSE, None, None)
 
     def update_text(self, text):
+        """Update text to a specific value"""
         self._text_var.set(text)
-
-    def start(self):
-        pass

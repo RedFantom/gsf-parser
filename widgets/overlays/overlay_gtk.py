@@ -15,7 +15,7 @@ from gi.repository import Gtk  # python3-gi
 from utils.directories import get_assets_directory
 
 
-class GtkOverlay(Gtk.Window, Thread):
+class GtkOverlay(Gtk.Window):
     """Window that represents the actual Overlay and draws the text"""
 
     def __init__(self, position: tuple, string, standard=True, master=None):
@@ -36,10 +36,6 @@ class GtkOverlay(Gtk.Window, Thread):
         self._label = Gtk.Label("Placeholder")
         self._label.set_justify(Gtk.Justification.LEFT)
         self._grid.attach(self._label, 0, 0, 1, 1)
-
-    def run(self):
-        Gtk.main()
-        print("[GtkOverlay] Loop ended")
 
     def init_window_attr(self):
         """Initialize Window attributes"""
@@ -75,6 +71,12 @@ class GtkOverlay(Gtk.Window, Thread):
             raise RuntimeError("This is not a standard GtkOverlay")
         self._label.set_use_markup(True)
         self._label.set_markup("<b><span color=\"yellow\">{}</span></b>".format(string))
+        Gtk.main_iteration()
+
+    def destroy(self):
+        """Destroy and run an interation immediately afterwards"""
+        Gtk.Window.destroy(self)
+        Gtk.main_iteration()
 
     @staticmethod
     def _redraw(_: Gtk.Widget, cr):

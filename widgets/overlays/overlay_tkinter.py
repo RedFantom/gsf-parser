@@ -56,9 +56,3 @@ class TkinterOverlay(tk.Toplevel):
 
     def initialize_window(self):
         self.wm_deiconify()
-
-    def destroy(self):
-        tk.Toplevel.destroy(self)
-
-    def start(self):
-        pass
