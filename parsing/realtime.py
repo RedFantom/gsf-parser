@@ -45,8 +45,8 @@ from parsing.speed import SpeedParser
 from parsing.timer import TimerParser
 from parsing import vision
 # Utility Modules
-from utils.utilities import get_screen_resolution
-from utils.utilities import get_cursor_position
+from utils.directories import get_assets_directory
+from utils.utilities import get_screen_resolution, get_cursor_position
 from utils.window import Window
 import variables
 
@@ -119,8 +119,8 @@ class RealTimeParser(Thread):
 
     def __init__(
             self,
-            character_db,
-            character_data,
+            char_db,
+            char_data,
             ships_db,
             companions_db,
             spawn_callback=None,
@@ -134,12 +134,12 @@ class RealTimeParser(Thread):
             rpc: Presence = None,
     ):
         """
-        :param character_db: Character database
+        :param char_db: Character database
         :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
         :param match_callback: Callback called with match_timing when a new match has been detected
         :param file_callback: Callback called with file_timing when a new file has been detected
         :param event_callback: Callback called with line_dict when a new event has been detected
-        :param character_data: Character tuple with the character name and network to retrieve data with
+        :param char_data: Character tuple with the character name and network to retrieve data with
         :param minimap_share: Whether to share minimap location with a server
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
@@ -165,9 +165,9 @@ class RealTimeParser(Thread):
         self._overlay_string_q = Queue()
         self._perf_string_q = Queue()
         # Data
-        self._character_data = character_data
-        self._character_db = character_db
-        self._character_db_data = self._character_db[self._character_data]
+        self._char_i = char_data
+        self._char_db = char_db
+        self._char_data = self._char_db[self._char_i]
         self._realtime_db = RealTimeDB()
         self.diff = None
         self.ships_db = ships_db
@@ -209,7 +209,7 @@ class RealTimeParser(Thread):
         self.ship_stats = None
         resolution = get_screen_resolution()
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
-        self._interface = None
+        self._interface: GSFInterface = GSFInterface(get_player_guiname(*reversed(char_data)))
         self._coordinates = {}
         self.screen_data = self.SCREEN_DATA_DEF.copy()
         self._resolution = resolution
@@ -262,8 +262,6 @@ class RealTimeParser(Thread):
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
-        file_name = get_player_guiname(self._character_db_data["Name"], self._character_db_data["Server"])
-        self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
             "minimap": self._interface.get_minimap_coordinates(),
@@ -305,7 +303,7 @@ class RealTimeParser(Thread):
             return
         assert isinstance(self._rpc, Presence)
         pid = os.getpid()
-        if self._character_db_data["Discord"] is False:
+        if self._char_data["Discord"] is False:
             state = "Activity Hidden"
             self._rpc.update(pid, state, large_image="logo_green_png")
             return
@@ -324,7 +322,7 @@ class RealTimeParser(Thread):
             large_text = MAP_TYPE_NAMES["dom"]["ls"]
             large_image = MAP_NAMES[large_text]
             small_image, small_text = "sting", "Sting"
-        details = "{}: {}".format(self._character_db_data["Server"], self._character_db_data["Name"])
+        details = "{}: {}".format(self._char_data["Server"], self._char_data["Name"])
         start = None
         if self.start_match is not None and self.is_match:
             assert isinstance(self.start_match, datetime)
@@ -399,7 +397,7 @@ class RealTimeParser(Thread):
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
         print("[RealTimeParser] Match end.")
-        server, date, time = self._character_db_data["Server"], line["time"], line["time"]
+        server, date, time = self._char_data["Server"], line["time"], line["time"]
         id_fmt = self.active_id[:8]
         if not self.tutorial:
             self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
@@ -468,7 +466,7 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
-            server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+            server, date, start = self._char_data["Server"], self.start_match, self.start_match
             self.discord.send_match_start(server, date, start, self.active_id[:8])
             # Parse the lines that are on hold
             if self.hold != 0:
@@ -493,7 +491,7 @@ class RealTimeParser(Thread):
 
         # Perform error handling. Using real-time parsing with a
         # different character name is not possible for screen parsing
-        if self.player_name != self._character_data[1]:
+        if self.player_name != self._char_i[1]:
             print("[RealTimeParser] WARNING: Different character name")
 
     def parse_line(self, line: dict):
@@ -565,11 +563,11 @@ class RealTimeParser(Thread):
             self.abilities.clear()
             return
         ship = ship[0]
-        if self._character_db[self._character_data]["Faction"].lower() == "republic":
+        if self._char_db[self._char_i]["Faction"].lower() == "republic":
             ship = rep_ships[ship]
         if self._screen_enabled is False:
             return
-        ship_objects = self._character_db[self._character_data]["Ship Objects"]
+        ship_objects = self._char_db[self._char_i]["Ship Objects"]
         if ship not in ship_objects:
             self._configured_flag = True
             print("[RealTimeParser] Ship not configured: {}".format(ship))
@@ -598,13 +596,13 @@ class RealTimeParser(Thread):
 
     def process_login(self):
         """Process a Safe Login event"""
-        server, name = self._character_data
+        server, name = self._char_i
         if name != self.player_name:
-            self._character_data = (server, self.player_name)
-            if self._character_data not in self._character_db:
+            self._char_i = (server, self.player_name)
+            if self._char_i not in self._char_db:
                 messagebox.showerror("Error", "The GSF Parser does not know this character yet!")
                 raise KeyError("Unknown character")
-            self._character_db_data = self._character_db[self._character_data]
+            self._char_data = self._char_db[self._char_i]
         self.update_presence()
 
     def process_screenshot(self, screenshot: Image.Image, screenshot_time: datetime):
@@ -764,7 +762,7 @@ class RealTimeParser(Thread):
             self._realtime_db.set_for_spawn("map", match_map)
             self._active_map = match_map
             if self.discord is not None:
-                server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+                server, date, start = self._char_data["Server"], self.start_match, self.start_match
                 if None not in (server, date, start):
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
@@ -799,8 +797,8 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("score", score)
         if self.discord is not None:
             self.discord.send_match_score(
-                self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
-                self._character_db_data["Faction"], score)
+                self._char_data["Server"], self.start_match, self.start_match, self.active_id[:8],
+                self._char_data["Faction"], score)
 
     @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
@@ -910,7 +908,7 @@ class RealTimeParser(Thread):
         return tracking_penalty, upgrade_constant, firing_arc
 
     @property
-    def primary(self)->str:
+    def primary(self) -> str:
         """Return the name of the active primary weapon"""
         if self.ship is None:
             return "Unknown Ship"
@@ -1133,8 +1131,8 @@ class RealTimeParser(Thread):
     @property
     def notification_string(self) -> str:
         """String that notifies the user of special situations"""
-        string = "Character: {}\n".format(self._character_db_data["Name"]) + \
-                 "Server: {}\n".format(SERVERS[self._character_db_data["Server"]])
+        string = "Character: {}\n".format(self._char_data["Name"]) + \
+                 "Server: {}\n".format(SERVERS[self._char_data["Server"]])
         ship = "Ship: {}".format(self.ship.name if self.ship is not None else "Unknown")
         if self._configured_flag is True:
             ship += " (Not fully configured)"
