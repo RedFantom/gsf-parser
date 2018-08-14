@@ -6,6 +6,8 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
+from queue import Queue
+from threading import Thread, Lock
 from time import sleep
 # Packages
 from pynput.keyboard import Listener as KBListener, Key, KeyCode
@@ -13,8 +15,6 @@ from pynput.mouse import Listener as MSListener, Button
 # Project Modules
 from parsing import Parser
 from parsing.shipstats import ShipStats
-# Processes or Threads
-from parsing import Thread, Queue, Lock
 
 
 class TimerParser(Thread):

@@ -7,6 +7,8 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime
 import os
+from queue import Queue
+from threading import Thread
 from time import sleep
 # Packages
 from mss import mss
@@ -17,8 +19,6 @@ from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
 from utils.utilities import get_cursor_position
-# Processes or Threads
-from parsing import Thread, Queue
 
 
 class PointerParser(Thread):

@@ -6,9 +6,9 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime, timedelta
+from queue import Queue
+from threading import Thread, Lock
 from time import sleep
-# Processes or Threads
-from parsing import Thread, Queue, Lock
 # Project Modules
 from parsing.shipstats import ShipStats
 # Packages

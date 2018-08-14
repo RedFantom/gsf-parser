@@ -8,6 +8,8 @@ Copyright (C) 2016-2018 RedFantom
 from datetime import datetime, timedelta
 import os
 import sys
+from queue import Queue
+from threading import Thread, Lock
 from time import sleep
 import traceback
 from typing import Any, Tuple, Dict
@@ -42,8 +44,6 @@ from parsing.shipstats import ShipStats
 from parsing.speed import SpeedParser
 from parsing.timer import TimerParser
 from parsing import vision
-# Processes or Threads
-from parsing import Thread, Queue, Lock
 # Utility Modules
 from utils.utilities import get_screen_resolution
 from utils.utilities import get_cursor_position
@@ -356,13 +356,6 @@ class RealTimeParser(Thread):
             del screenshot
             self.process_screenshot(image, screenshot_time)
             del image
-        # UI Interaction
-        with self._overlay_string_q.mutex:
-            self._overlay_string_q.queue.clear()
-        with self._perf_string_q.mutex:
-            self._perf_string_q.queue.clear()
-        self._overlay_string_q.put(self._overlay_string)
-        self._perf_string_q.put(self._perf_string)
         # RealTimeParser sleep limiting
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
@@ -1069,7 +1062,7 @@ class RealTimeParser(Thread):
             self._rgb.stop()  # Joins itself
 
     @property
-    def _perf_string(self) -> str:
+    def perf_string(self) -> str:
         """Return a string with screen parsing feature performance"""
         if len(self._screen_features) == 0:
             return "No screen parsing features enabled"
@@ -1087,7 +1080,7 @@ class RealTimeParser(Thread):
         return string
 
     @property
-    def _overlay_string(self) -> str:
+    def overlay_string(self) -> str:
         """String of text to set in the Overlay"""
         if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
             return ""
@@ -1147,19 +1140,3 @@ class RealTimeParser(Thread):
             ship += " (Not fully configured)"
         ship += "\n\n"
         return string + ship
-
-    @property
-    def perf_string(self) -> str:
-        """Process-safe accessor to _perf_string, see self.update()"""
-        try:
-            return self._perf_string_q.get(False)
-        except:
-            return None
-
-    @property
-    def overlay_string(self) -> str:
-        """Process-safe accessor to _overlay_string, see self.update()"""
-        try:
-            return self._overlay_string_q.get(False)
-        except:
-            return None
