@@ -37,11 +37,7 @@ class ColorScheme(object):
         try:
             return list(self.current_scheme[key])
         except (TypeError, KeyError, ValueError):
-            messagebox.showerror(
-                "Error", "The requested color for %s was could not be "
-                         "type changed into a list. Did you alter the "
-                         "event_colors.ini file?" % key)
-            return ['#ffffff', '#000000']
+            return pastel_colors[key]
 
     def set_scheme(self, name, custom_file=(os.path.join(directories.get_temp_directory(), "events_colors.ini"))):
         """

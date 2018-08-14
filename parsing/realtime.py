@@ -6,10 +6,9 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime, timedelta
+from multiprocessing import Process, Lock, Event
 import os
 import sys
-from queue import Queue
-from threading import Thread, Lock
 from time import sleep
 import traceback
 from typing import Any, Tuple, Dict
@@ -73,6 +72,8 @@ def screen_func(feature: str) -> callable:
             start = datetime.now()
             r = func(*args)
             elapsed = (datetime.now() - start).total_seconds()
+            if feature not in screen_perf:
+                screen_perf[feature] = [0, 0]
             screen_perf[feature][0] += 1
             screen_perf[feature][1] += elapsed
             return r, elapsed
@@ -91,6 +92,7 @@ def screen_func(feature: str) -> callable:
                 return benchmark(*args)[0]
 
         return inner
+
     return outer
 
 
@@ -100,7 +102,7 @@ def printf(string: str):
     sys.stdout.flush()
 
 
-class RealTimeParser(Thread):
+class RealTimeParser(Process):
     """
     Class to parse Galactic StarFighter in real-time
 
@@ -119,14 +121,12 @@ class RealTimeParser(Thread):
 
     def __init__(
             self,
+            exit_event: Event,
+            pipe,
             character_db,
             character_data,
             ships_db,
             companions_db,
-            spawn_callback=None,
-            match_callback=None,
-            file_callback=None,
-            event_callback=None,
             minimap_share=False,
             minimap_user=None,
             minimap_address: str = None,
@@ -135,51 +135,38 @@ class RealTimeParser(Thread):
     ):
         """
         :param character_db: Character database
-        :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
-        :param match_callback: Callback called with match_timing when a new match has been detected
-        :param file_callback: Callback called with file_timing when a new file has been detected
-        :param event_callback: Callback called with line_dict when a new event has been detected
         :param character_data: Character tuple with the character name and network to retrieve data with
         :param minimap_share: Whether to share minimap location with a server
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
         """
-        Thread.__init__(self)
+        Process.__init__(self)
 
         self.options = variables.settings.dict()
-        self.raven = variables.raven
 
         """
         Attributes
         """
-        # Callbacks
-        self._spawn_callback = spawn_callback
-        self._match_callback = match_callback
-        self._file_callback = file_callback
-        self.event_callback = event_callback
+        self.exit = exit_event
+        self.pipe = pipe
         # Settings
         self._screen_enabled = self.options["screen"]["enabled"]
         self._screen_features = self.options["screen"]["features"]
-        # Queues
-        self._exit_queue = Queue()
-        self._overlay_string_q = Queue()
-        self._perf_string_q = Queue()
         # Data
         self._character_data = character_data
         self._character_db = character_db
         self._character_db_data = self._character_db[self._character_data]
-        self._realtime_db = RealTimeDB()
+        self._realtime_db: RealTimeDB = None
         self.diff = None
         self.ships_db = ships_db
         self.companions_db = companions_db
-        # Discord Rich Presence
-        self._rpc = rpc
+        self._rpc = None
 
         """
         File parsing
         """
         # LogStalker
-        self._stalker: LogStalker = LogStalker(watching_callback=self._file_callback)
+        self._stalker: LogStalker = None
         # Data attributes
         self.dmg_d, self.dmg_t, self.dmg_s, self._healing, self.abilities = 0, 0, 0, 0, {}
         self.active_id, self.active_ids = "", []
@@ -193,7 +180,7 @@ class RealTimeParser(Thread):
         self.primary_weapon = False
         self.secondary_weapon = False
         self.scope_mode = False
-        self.discord = DiscordClient()
+        self.discord: DiscordClient = None
         self.tutorial = False
         self._read_from_file = False
 
@@ -217,22 +204,17 @@ class RealTimeParser(Thread):
         self._waiting_for_timer = False
         self._spawn_timer_res_flag = False
         self._spawn_time = None
-        self._window: Window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
-        self.setup_screen_parsing()
         self._lock = Lock()
         self._configured_flag = False
         self._pointer_parser = None
         self._delayed_shots = list()
         self._rof = None
         self._rgb_enabled = self.options["realtime"]["rgb"]
-        self._rgb: RGBController = RGBController.build() if self._rgb_enabled else None
+        self._window: Window = None
+        self._rgb: RGBController = None
         self._active_map = None
         self._timer_parser = None
-        if "Power Regeneration Delays" in self._screen_features:
-            self._timer_parser = TimerParser()
         self._speed_parser = None
-        if "Engine Speed" in self._screen_features:
-            self._speed_parser = SpeedParser()
         global screen_perf
         screen_perf.clear()
         screen_perf = {feature: [0, 0.0] for feature in self._screen_features}
@@ -249,10 +231,24 @@ class RealTimeParser(Thread):
 
         self.update_presence()
 
+    def setup(self):
+        """Generate objects for the current thread"""
+        self.setup_screen_parsing()
+        self._stalker = LogStalker(watching_callback=self.file_callback)
+        self._rgb = RGBController.build() if self._rgb_enabled else None
+        self._window: Window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
+        self._realtime_db = RealTimeDB()
+        if "Power Regeneration Delays" in self._screen_features:
+            self._timer_parser = TimerParser()
+        if "Engine Speed" in self._screen_features:
+            self._speed_parser = SpeedParser()
+        self.discord = DiscordClient()
+        self.pipe.send(("pid", os.getpid()))
+
     def start(self):
         """Redirect for Thread.start or Process.start"""
-        print("[RealTimeParser] Starting Thread/Process...")
-        Thread.start(self)
+        print("[RealTimeParser] Starting Process...")
+        Process.start(self)
 
     def setup_screen_parsing(self):
         """
@@ -338,6 +334,8 @@ class RealTimeParser(Thread):
         """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
         # File parsing
+        self.pipe.send(("string", self.overlay_string))
+        self.pipe.send(("perf", self.perf_string))
         lines = self._stalker.get_new_lines()
         for line in lines:
             if line is None:
@@ -437,7 +435,7 @@ class RealTimeParser(Thread):
         self.is_match = True
         self.update_presence()
         # Call the new match callback
-        self._match_callback()
+        self.match_callback()
         if self._timer_parser is not None:
             self._timer_parser.match_start()
         if self._speed_parser is not None:
@@ -451,7 +449,7 @@ class RealTimeParser(Thread):
         self.active_id = ""
         # Call the spawn callback
         self.start_spawn = line["time"]
-        self._spawn_callback()
+        self.spawn_callback()
         self.ship = None
         self.ship_stats = None
         self.primary_weapon, self.secondary_weapon, self.scope_mode = False, False, False
@@ -522,7 +520,7 @@ class RealTimeParser(Thread):
         self.lines.append(line)
         if callable(self.event_callback):
             line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
-            self.event_callback(line_effect, self.player_name, self.active_ids, self.start_match)
+            self.event_callback(line_effect)
         self.process_weapon_swap(line)
         self._read_from_file = True
 
@@ -664,7 +662,7 @@ class RealTimeParser(Thread):
             if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
                 # If a certain time has passed, give up on finding the timer
                 print("[TimerParser] Last timer parsing attempt.")
-                self._waiting_for_timer = False
+                self._waiting_for_timer = None
             # Check if the resolution is supported
             if self._resolution not in vision.timer_boxes:
                 self._spawn_timer_res_flag = True
@@ -832,7 +830,7 @@ class RealTimeParser(Thread):
                 event = self.build_shot_event(shot, state)
                 if event is None:
                     continue
-                self.event_callback(event, self.player_name, self.active_ids, self.start_match)
+                self.event_callback(event)
             return
         self._read_from_file = False
         shots = self._delayed_shots.copy()
@@ -856,7 +854,7 @@ class RealTimeParser(Thread):
             event = self.build_shot_event(shot, state)
             if event is None:
                 continue
-            self.event_callback(event, self.player_name, self.active_ids, self.start_match)
+            self.event_callback(event)
 
     def get_coordinates(self, key: str):
         """
@@ -910,7 +908,7 @@ class RealTimeParser(Thread):
         return tracking_penalty, upgrade_constant, firing_arc
 
     @property
-    def primary(self)->str:
+    def primary(self) -> str:
         """Return the name of the active primary weapon"""
         if self.ship is None:
             return "Unknown Ship"
@@ -939,6 +937,7 @@ class RealTimeParser(Thread):
 
     def run(self):
         """Run the loop and provide error handling, cleanup afterwards"""
+        self.setup()
         printf("[RealTimeParser] Starting Subprocesses")
         self.rgb_start()
         printf("[RealTimeParser] RGBController started")
@@ -951,19 +950,14 @@ class RealTimeParser(Thread):
             self._speed_parser.start()
             printf("[RealTimeParser] SpeedParser started")
         while True:
-            if not self._exit_queue.empty():
+            if self.exit.is_set():
                 break
             try:
                 self.update()
             except Exception as e:
                 # Errors are not often handled well in Threads
-                self.raven.captureException()
                 error = traceback.format_exc()
                 print("[RealTimeParser] encountered an error: ", error)
-                messagebox.showerror(
-                    "Error",
-                    "The real-time parsing back-end encountered an error while performing operations. "
-                    "The error has been reported to the developer.")
                 raise
         self._realtime_db.write_spawn_data()
         # Perform closing actions
@@ -974,15 +968,12 @@ class RealTimeParser(Thread):
         """Clean up all the object references"""
         self.lines.clear()
         self.rgb_stop()
-        if self._timer_parser is not None:
-            self._timer_parser.stop()
-            self._timer_parser = None
+        self.stop()
 
     def stop(self):
         """Stop the RealTimeParser activities"""
         if self._pointer_parser is not None:
             self._pointer_parser.stop()
-        self._exit_queue.put(True)
         if self._timer_parser is not None:
             self._timer_parser.stop()
         if self._speed_parser is not None:
@@ -1008,7 +999,7 @@ class RealTimeParser(Thread):
             self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
             effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
-            self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
+            self.event_callback(effect)
 
     def _on_kb_release(self, key: (Key, KeyCode)):
         """
@@ -1140,3 +1131,15 @@ class RealTimeParser(Thread):
             ship += " (Not fully configured)"
         ship += "\n\n"
         return string + ship
+
+    def event_callback(self, event: dict):
+        self.pipe.send(("event", (event, self.player_name, self.active_ids, self.start_match)))
+
+    def file_callback(self, file: str):
+        self.pipe.send(("file", file))
+
+    def match_callback(self):
+        self.pipe.send(("match", None))
+
+    def spawn_callback(self):
+        self.pipe.send(("spawn", None))
