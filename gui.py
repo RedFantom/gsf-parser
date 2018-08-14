@@ -278,5 +278,6 @@ class MainWindow(ThemedTk):
 
     def report_callback_exception(self, exc, val, tb):
         """Redirect Exceptions in the mainloop to RavenClient"""
-        self.raven.captureException()
+        if not os.path.exists("development"):
+            self.raven.captureException()
         ThemedTk.report_callback_exception(self, exc, val, tb)

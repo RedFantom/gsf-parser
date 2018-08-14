@@ -36,7 +36,7 @@ class LogStalker(object):
         files = os.listdir(self._folder)
         if len(files) == 0:
             raise ValueError("No files found in this folder.")
-        recent = sorted(files, key=Parser.parse_filename)[-1]
+        recent = sorted(files, key=self.parse_filename)[-1]
         if self.file is not None and recent == self.file:
             return
         self.file = recent
@@ -44,6 +44,14 @@ class LogStalker(object):
         self._read_so_far = 0
         self._watching_callback(self.file)
         self._process_new_file()
+
+    @staticmethod
+    def parse_filename(file_name)->int:
+        """Safely parse a file name"""
+        datetime = Parser.parse_filename(file_name)
+        if datetime is None:
+            return 0
+        return datetime.timestamp()
 
     def _process_new_file(self):
         """Backlog only the lines of a match that are match lines"""
