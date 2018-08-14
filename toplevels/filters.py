@@ -78,12 +78,12 @@ class Filters(tk.Toplevel):
         self.ships_checkboxes = {}
         self.ships_intvars = {}
         if variables.settings["gui"]["faction"] == "empire":
-            for name in abls.rep_ships.keys():
+            for name in abls.REPUBLIC_SHIPS.keys():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
                                                               variable=self.ships_intvars[name], width=12)
         elif variables.settings["gui"]["faction"] == "republic":
-            for name in abls.rep_ships.values():
+            for name in abls.REPUBLIC_SHIPS.values():
                 self.ships_intvars[name] = tk.IntVar()
                 self.ships_checkboxes[name] = ttk.Checkbutton(self.ships_frame.sub_frame, text=name,
                                                               variable=self.ships_intvars[name], width=12)
@@ -343,7 +343,7 @@ class Filters(tk.Toplevel):
                         if variables.settings["gui"]["faction"] == "empire":
                             pass
                         elif variables.settings["gui"]["faction"] == "republic":
-                            ships_list = [abls.rep_ships[name] for name in ships_list]
+                            ships_list = [abls.REPUBLIC_SHIPS[name] for name in ships_list]
                         else:
                             raise ValueError("faction found not valid")
                         if ship in ships_list:

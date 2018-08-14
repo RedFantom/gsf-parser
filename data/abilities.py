@@ -227,7 +227,7 @@ ships_abilities = {
 
 # A dictionary for converting the names of the ships to the Republic Faction
 # names, for future feature of allowing both faction names
-rep_ships = {
+REPUBLIC_SHIPS = {
     "Legion": "Warcarrier",
     "Razorwire": "Rampart Mark Four",
     "Decimus": "Sledgehammer",

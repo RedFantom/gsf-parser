@@ -22,7 +22,7 @@ from PIL import Image
 from pypresence import Presence
 # Data Modules
 from data.keys import keys
-from data.abilities import rep_ships
+from data.abilities import REPUBLIC_SHIPS
 from data import abilities
 from data.maps import MAP_TYPE_NAMES, MAP_NAMES
 from data.servers import SERVERS
@@ -37,13 +37,12 @@ from parsing.parser import Parser
 from parsing.pointer import PointerParser
 from parsing.realtimedb import RealTimeDB
 from parsing.rgb import RGBController
-from parsing.screen import ScreenParser
+from parsing.post import PostParser
 from parsing.shipstats import ShipStats
 from parsing.speed import SpeedParser
 from parsing.timer import TimerParser
 from parsing import vision
 # Processes or Threads
-from parsing import Thread, Queue, Lock
 # Utility Modules
 from utils.utilities import get_screen_resolution
 from utils.utilities import get_cursor_position
@@ -54,44 +53,6 @@ import variables
 def pair_wise(iterable: (list, tuple)):
     """Create generator to loop over iterable in pairs"""
     return list(zip(*tuple(iterable[i::2] for i in range(2))))
-
-
-screen_perf: Dict[str, Tuple[int, float]] = dict()
-screen_slow: Dict[str, float] = dict()
-
-
-def screen_func(feature: str) -> callable:
-    """Function decorator that records the performance of function"""
-
-    def outer(func: callable) -> callable:
-        """Enable function performance measurement if enabled"""
-        if not variables.settings["screen"]["perf"] is True:
-            return func
-
-        def benchmark(*args) -> Tuple[Any, float]:
-            """Call the function and record its performance"""
-            start = datetime.now()
-            r = func(*args)
-            elapsed = (datetime.now() - start).total_seconds()
-            screen_perf[feature][0] += 1
-            screen_perf[feature][1] += elapsed
-            return r, elapsed
-
-        # Record slow features if disabling them is enabled
-        if variables.settings["screen"]["disable"] is True:
-            def inner(*args) -> Any:
-                r, elapsed = benchmark(*args)
-                v = 1.0 if elapsed > 0.25 else -0.5
-                if feature not in screen_slow:
-                    screen_slow[feature] = 0
-                screen_slow[feature] += v
-                return r
-        else:
-            def inner(*args) -> Any:
-                return benchmark(*args)[0]
-
-        return inner
-    return outer
 
 
 def printf(string: str):
@@ -165,9 +126,9 @@ class RealTimeParser(Thread):
         self._overlay_string_q = Queue()
         self._perf_string_q = Queue()
         # Data
-        self._character_data = character_data
-        self._character_db = character_db
-        self._character_db_data = self._character_db[self._character_data]
+        self._char_i = character_data
+        self._char_db = character_db
+        self._char_data = self._char_db[self._char_i]
         self._realtime_db = RealTimeDB()
         self.diff = None
         self.ships_db = ships_db
@@ -262,7 +223,7 @@ class RealTimeParser(Thread):
         self._mss = mss.mss()
         self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
-        file_name = get_player_guiname(self._character_db_data["Name"], self._character_db_data["Server"])
+        file_name = get_player_guiname(self._char_data["Name"], self._char_data["Server"])
         self._interface = GSFInterface(file_name)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
@@ -305,7 +266,7 @@ class RealTimeParser(Thread):
             return
         assert isinstance(self._rpc, Presence)
         pid = os.getpid()
-        if self._character_db_data["Discord"] is False:
+        if self._char_data["Discord"] is False:
             state = "Activity Hidden"
             self._rpc.update(pid, state, large_image="logo_green_png")
             return
@@ -324,7 +285,7 @@ class RealTimeParser(Thread):
             large_text = MAP_TYPE_NAMES["dom"]["ls"]
             large_image = MAP_NAMES[large_text]
             small_image, small_text = "sting", "Sting"
-        details = "{}: {}".format(self._character_db_data["Server"], self._character_db_data["Name"])
+        details = "{}: {}".format(self._char_data["Server"], self._char_data["Name"])
         start = None
         if self.start_match is not None and self.is_match:
             assert isinstance(self.start_match, datetime)
@@ -337,13 +298,18 @@ class RealTimeParser(Thread):
     def update(self):
         """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
+        # UI Interaction
+        with self._overlay_string_q.mutex:
+            self._overlay_string_q.queue.clear()
+        with self._perf_string_q.mutex:
+            self._perf_string_q.queue.clear()
+        self._overlay_string_q.put(self._overlay_string)
+        self._perf_string_q.put(self._perf_string)
         # File parsing
         lines = self._stalker.get_new_lines()
         for line in lines:
             if line is None:
                 continue
-            if not isinstance(line["line"], str):
-                raise TypeError()
             self.process_line(line)
         if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
@@ -356,13 +322,6 @@ class RealTimeParser(Thread):
             del screenshot
             self.process_screenshot(image, screenshot_time)
             del image
-        # UI Interaction
-        with self._overlay_string_q.mutex:
-            self._overlay_string_q.queue.clear()
-        with self._perf_string_q.mutex:
-            self._perf_string_q.queue.clear()
-        self._overlay_string_q.put(self._overlay_string)
-        self._perf_string_q.put(self._perf_string)
         # RealTimeParser sleep limiting
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
@@ -406,7 +365,7 @@ class RealTimeParser(Thread):
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
         print("[RealTimeParser] Match end.")
-        server, date, time = self._character_db_data["Server"], line["time"], line["time"]
+        server, date, time = self._char_data["Server"], line["time"], line["time"]
         id_fmt = self.active_id[:8]
         if not self.tutorial:
             self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
@@ -475,7 +434,7 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
-            server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+            server, date, start = self._char_data["Server"], self.start_match, self.start_match
             self.discord.send_match_start(server, date, start, self.active_id[:8])
             # Parse the lines that are on hold
             if self.hold != 0:
@@ -500,12 +459,14 @@ class RealTimeParser(Thread):
 
         # Perform error handling. Using real-time parsing with a
         # different character name is not possible for screen parsing
-        if self.player_name != self._character_data[1]:
+        if self.player_name != self._char_i[1]:
             print("[RealTimeParser] WARNING: Different character name")
 
     def parse_line(self, line: dict):
         """Parse an actual GSF event line"""
         Parser.get_event_category(line, self.active_id)
+        if "amount" not in line:
+            return
         if line["amount"] == "":
             line["amount"] = "0"
         line["amount"] = int(line["amount"].replace("*", ""))
@@ -572,11 +533,11 @@ class RealTimeParser(Thread):
             self.abilities.clear()
             return
         ship = ship[0]
-        if self._character_db[self._character_data]["Faction"].lower() == "republic":
-            ship = rep_ships[ship]
+        if self._char_db[self._char_i]["Faction"].lower() == "republic":
+            ship = REPUBLIC_SHIPS[ship]
         if self._screen_enabled is False:
             return
-        ship_objects = self._character_db[self._character_data]["Ship Objects"]
+        ship_objects = self._char_db[self._char_i]["Ship Objects"]
         if ship not in ship_objects:
             self._configured_flag = True
             print("[RealTimeParser] Ship not configured: {}".format(ship))
@@ -605,13 +566,13 @@ class RealTimeParser(Thread):
 
     def process_login(self):
         """Process a Safe Login event"""
-        server, name = self._character_data
+        server, name = self._char_i
         if name != self.player_name:
-            self._character_data = (server, self.player_name)
-            if self._character_data not in self._character_db:
+            self._char_i = (server, self.player_name)
+            if self._char_i not in self._char_db:
                 messagebox.showerror("Error", "The GSF Parser does not know this character yet!")
                 raise KeyError("Unknown character")
-            self._character_db_data = self._character_db[self._character_data]
+            self._char_data = self._char_db[self._char_i]
         self.update_presence()
 
     def process_screenshot(self, screenshot: Image.Image, screenshot_time: datetime):
@@ -771,7 +732,7 @@ class RealTimeParser(Thread):
             self._realtime_db.set_for_spawn("map", match_map)
             self._active_map = match_map
             if self.discord is not None:
-                server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+                server, date, start = self._char_data["Server"], self.start_match, self.start_match
                 if None not in (server, date, start):
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
@@ -806,8 +767,8 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("score", score)
         if self.discord is not None:
             self.discord.send_match_score(
-                self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
-                self._character_db_data["Faction"], score)
+                self._char_data["Server"], self.start_match, self.start_match, self.active_id[:8],
+                self._char_data["Faction"], score)
 
     @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
@@ -1014,7 +975,7 @@ class RealTimeParser(Thread):
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
             self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
-            effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
+            effect = PostParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
             self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
     def _on_kb_release(self, key: (Key, KeyCode)):
@@ -1102,6 +1063,7 @@ class RealTimeParser(Thread):
             string += self._timer_parser.string
         if self._speed_parser is not None:
             string += self._speed_parser.string
+        string += "\nLast updated: {}".format(datetime.now().strftime("%M:%S"))
         return string.strip()
 
     @property
@@ -1140,8 +1102,8 @@ class RealTimeParser(Thread):
     @property
     def notification_string(self) -> str:
         """String that notifies the user of special situations"""
-        string = "Character: {}\n".format(self._character_db_data["Name"]) + \
-                 "Server: {}\n".format(SERVERS[self._character_db_data["Server"]])
+        string = "Character: {}\n".format(self._char_data["Name"]) + \
+                 "Server: {}\n".format(SERVERS[self._char_data["Server"]])
         ship = "Ship: {}".format(self.ship.name if self.ship is not None else "Unknown")
         if self._configured_flag is True:
             ship += " (Not fully configured)"

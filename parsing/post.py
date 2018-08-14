@@ -55,7 +55,7 @@ POWER_MODE_CATEGORIES = {
 }
 
 
-class ScreenParser(object):
+class PostParser(object):
     """
     Parser that can create TimeView events from screen parsing data
 
@@ -75,7 +75,7 @@ class ScreenParser(object):
         if screen_data is not None and not isinstance(screen_data, str):
             print("[ScreenParser] Processing spawn: {}/{}/{}".format(file_name, match, spawn))
             orig = len(events)
-            events = ScreenParser._build_spawn_events(events, screen_data, player_name)
+            events = PostParser._build_spawn_events(events, screen_data, player_name)
             print("[ScreenParser] Built {} new events.".format(len(events) - orig))
         return sorted(events, key=lambda e: e["time"].timestamp())
 
@@ -89,10 +89,10 @@ class ScreenParser(object):
             ship = ShipStats(screen_data["ship"], None, None)
         if "keys" in screen_data and len(screen_data["keys"]) != 0:
             print("[ScreenParser] Building key events")
-            events.extend(ScreenParser._build_key_events(screen_data["keys"], player_name, ship))
+            events.extend(PostParser._build_key_events(screen_data["keys"], player_name, ship))
         if "distance" in screen_data and len(screen_data["distance"]) != 0:
             print("[ScreenParser] Building tracking effects")
-            events = ScreenParser._build_tracking_effects(events, screen_data, ship)
+            events = PostParser._build_tracking_effects(events, screen_data, ship)
         return events
 
     @staticmethod
@@ -134,7 +134,7 @@ class ScreenParser(object):
                     continue
                 states["mode"] = key
                 print("[ScreenParser] Power mode switch: {}".format(key))
-                events.append(ScreenParser.create_power_mode_event(player_name, time, key, ship))
+                events.append(PostParser.create_power_mode_event(player_name, time, key, ship))
                 continue
             elif key == "space":
                 if key not in states:
@@ -145,7 +145,7 @@ class ScreenParser(object):
                     states[key] = (True, time)
                 else:  # state is False and states[key][0] is True
                     start, end = states[key][1], time
-                    events.append(ScreenParser.create_boost_event(player_name, start, end, ship))
+                    events.append(PostParser.create_boost_event(player_name, start, end, ship))
                     states[key] = (False, time)
         while None in events:
             events.remove(None)
@@ -185,10 +185,9 @@ class ScreenParser(object):
             "time": time,
             "source": player_name,
             "target": player_name,
-            "target": player_name,
             "ability": POWER_MODES[power_mode],
             "effect": "ApplyEffect: ChangePowerMode",
-            "effects": ScreenParser._build_power_mode_effects(ship, power_mode),
+            "effects": PostParser._build_power_mode_effects(ship, power_mode),
             "custom": True,
             "self": True,
             "crit": False,
@@ -203,7 +202,7 @@ class ScreenParser(object):
         """Build a tuple of power mode effects to display in TimeView"""
         if ship is None:
             return None
-        get_mod = partial(ScreenParser._get_power_modifier, ship)
+        get_mod = partial(PostParser._get_power_modifier, ship)
         if mode == "F1":
             return (
                 ("", "Power", "Weapons", "Damage Increased", get_mod(DAMAGE_MAX), ICON_WEAPON_INC),

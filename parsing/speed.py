@@ -156,7 +156,6 @@ class SpeedParser(Thread):
         elif "F" in key:
             with self._lock:
                 self._power_mode = key
-        print("[SpeedParser] Processed Key: {}, {}".format(key, state))
 
     @property
     def string(self):

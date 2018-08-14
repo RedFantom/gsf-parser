@@ -14,7 +14,7 @@ from PIL import Image, ImageTk
 # Project Modules
 from variables import settings
 from utils.directories import get_assets_directory
-from data.abilities import rep_ships
+from data.abilities import REPUBLIC_SHIPS
 
 
 class ShipFrame(ttk.Frame):
@@ -64,7 +64,7 @@ class ShipFrame(ttk.Frame):
             self.set_image("default")
             print("[ShipFrame] Invalid ships list retrieved.")
             return
-        name = ships_list[0] if settings["gui"]["faction"] != "republic" else rep_ships[ships_list[0]]
+        name = ships_list[0] if settings["gui"]["faction"] != "republic" else REPUBLIC_SHIPS[ships_list[0]]
         self.set_image(name)
 
     def set_image(self, file: str):

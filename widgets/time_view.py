@@ -81,7 +81,7 @@ class TimeView(ttk.Treeview):
 
     def insert_event(self, line: dict, player_name, active_ids, start_time):
         """Insert a new line into the Treeview"""
-        if line is None or line["type"] == Parser.LINE_EFFECT:
+        if line is None or ("type" in line and line["type"] == Parser.LINE_EFFECT):
             return
         source, target = \
             map(partial(self.process_player, player_name, active_ids), (line["source"], line["target"]))

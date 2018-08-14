@@ -22,7 +22,7 @@ from parsing.parser import Parser
 from toplevels.splashscreens import SplashScreen
 from toplevels.filters import Filters
 from parsing.filehandler import FileHandler
-from parsing.screen import ScreenParser
+from parsing.post import PostParser
 
 
 # Class for the _frame in the fileTab of the parser
@@ -238,7 +238,7 @@ class FileFrame(ttk.Frame):
         ships_string = "Possible ships used:\n"
         for ship in ships_list:
             faction = variables.settings["gui"]["faction"]
-            ship_name = ship if faction == "imperial" else abilities.rep_ships[ship]
+            ship_name = ship if faction == "imperial" else abilities.REPUBLIC_SHIPS[ship]
             ships_string += ship_name + "\n"
         ships_string += "\t\t\t\t\t\t\nWith the components:\n"
         for component in comps:
@@ -343,7 +343,7 @@ class FileFrame(ttk.Frame):
             file_name, spawn, spawn_timings[match_index][spawn_index]))
         results[1] = Parser.parse_player_reaction_time(spawn, player_name)
         orig = len(results[1])
-        results[1] = ScreenParser.build_spawn_events(
+        results[1] = PostParser.build_spawn_events(
             file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index], spawn, player_name)
         print("[FileFrame] ScreenParser built {} events. Total: {}".format(len(results[1]) - orig, len(results[1])))
         self.update_widgets_spawn(*results)

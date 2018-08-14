@@ -5,10 +5,11 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+import multiprocessing as mp
 from os.path import dirname, join, basename, exists
+import platform
 import sys
 import shutil
-import platform
 # Packages
 from raven import Client as RavenClient
 # UI Libraries
@@ -80,5 +81,7 @@ def setup_tkinter():
 
 
 if __name__ == '__main__':
+    mp.freeze_support()
+    mp.set_start_method("spawn")
     setup_tkinter()
     create_window()
