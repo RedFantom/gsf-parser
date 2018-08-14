@@ -7,6 +7,8 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime
 import os
+from queue import Queue
+from threading import Thread
 from time import sleep
 # Packages
 from mss import mss
@@ -17,13 +19,6 @@ from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
 from utils.utilities import get_cursor_position
-# Processes or Threads
-from variables import multi
-if multi is True:
-    from multiprocessing import Process as Thread, Queue
-else:
-    from queue import Queue
-    from threading import Thread
 
 
 class PointerParser(Thread):
@@ -42,6 +37,7 @@ class PointerParser(Thread):
         """
         self.rof = None
         self.ship_class = None
+        self._scope_mode = False
         self.interface = gui_profile
         self.mouse_queue = Queue()
         self.exit_queue = Queue()
@@ -120,3 +116,23 @@ class PointerParser(Thread):
         print("[PointerParser] Rate of Fire updated: {}".format(rof))
         self.rof = 1 / rof
         self.ship_class = ship_class
+
+    def set_scope_mode(self, mode: bool):
+        """
+        Set the Scope Mode to either enabled or disabled
+
+        If the current ship is a Gunship and the player enters Scope
+        Mode, the Pointer Parser should be temporarily disabled because
+        any received keypressed would be invalid.
+        """
+        self._scope_mode = mode
+
+    def new_spawn(self):
+        """
+        Callback for new spawn event in RealTimeParser
+
+        Resets all attributes until new information is available.
+        """
+        self.rof = None
+        self.ship_class = None
+        self._scope_mode = False

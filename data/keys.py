@@ -4,7 +4,7 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from pynput.keyboard import Key
+from pynput.keyboard import Key, KeyCode
 
 keys = {
     Key.esc: "esc",
@@ -48,8 +48,4 @@ keys = {
     Key.menu: "app",
     Key.print_screen: "printscreen",
     Key.pause: "pause",
-    "w": "w",
-    "a": "a",
-    "s": "s",
-    "d": "d",
 }

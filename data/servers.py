@@ -15,7 +15,7 @@ server_keys = {
 
 server_ini = {value: key for key, value in server_keys.items()}
 
-servers = {
+SERVERS = {
     # US servers
     "SF": "Star Forge",
     "SA": "Satele Shan",

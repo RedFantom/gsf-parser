@@ -42,6 +42,7 @@ class RealTimeDB(object):
     >>> "keys": Dict[datetime, Tuple[str, bool]],
     >>> "map": Tuple[str, str],
     >>> "score": float,
+    >>> "shots": Dict[datetime, Tuple[bool, int, int]],
     >>> "ship": Ship,
     >>> "tracking": Dict[datetime, float],
     >>> }
@@ -56,7 +57,8 @@ class RealTimeDB(object):
         "map": None,
         "score": None,
         "ship": None,
-        "tracking": dict()
+        "shots": dict(),
+        "tracking": dict(),
     }
 
     LOCK = None

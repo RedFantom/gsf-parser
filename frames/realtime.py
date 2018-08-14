@@ -231,7 +231,6 @@ class RealTimeFrame(ttk.Frame):
         x, y = int(x[1:]), int(y)
         self.overlay_string = tk.StringVar(self)
         self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
-        self.overlay.start()
         self.update_overlay()
 
     def open_event_overlay(self):
@@ -262,19 +261,23 @@ class RealTimeFrame(ttk.Frame):
             self.data.set(string)
             return
         perf = self.parser.perf_string
-        if len(perf) == 0:
+        self.data_after_id = self.after(1000, self.update_data_string)
+        if perf is None:
+            return
+        elif len(perf) == 0:
             string = self.DATA_STR_BASE.format("No slow screen parsing features\n")
         else:
             string = self.DATA_STR_BASE.format(perf)
         self.data.set(string)
-        self.data_after_id = self.after(1000, self.update_data_string)
 
     def update_overlay(self):
         """Update the Overlay with the text from the RealTimeParser"""
         if self.parser is None or not isinstance(self.parser, RealTimeParser):
             print("[RealTimeFrame] Cancelling Overlay update.")
             return
-        self.overlay.update_text(self.parser.overlay_string)
+        string = self.parser.overlay_string
+        if string is not None:
+            self.overlay.update_text(string)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()

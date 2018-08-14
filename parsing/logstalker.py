@@ -4,9 +4,18 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-import variables
-from parsing.parser import Parser
+from datetime import datetime
 import os
+from parsing.parser import Parser
+import variables
+
+
+def sort_file(file_name: str) -> float:
+    """Function to convert file name to time """
+    r: datetime = Parser.parse_filename(file_name)
+    if r is not None:
+        return r.timestamp()
+    return 0.0
 
 
 class LogStalker(object):
@@ -21,6 +30,7 @@ class LogStalker(object):
         :param folder: Folder to watch CombatLogs in
         :param watching_callback: Callback to be called when the watched file changes
         """
+        self._new_file = False
         self._folder = folder
         self._watching_callback = watching_callback
         self.file = None
@@ -36,7 +46,7 @@ class LogStalker(object):
         files = os.listdir(self._folder)
         if len(files) == 0:
             raise ValueError("No files found in this folder.")
-        recent = sorted(files, key=self.parse_filename)[-1]
+        recent = sorted(files, key=sort_file)[-1]
         if self.file is not None and recent == self.file:
             return
         self.file = recent
@@ -44,14 +54,7 @@ class LogStalker(object):
         self._read_so_far = 0
         self._watching_callback(self.file)
         self._process_new_file()
-
-    @staticmethod
-    def parse_filename(file_name)->int:
-        """Safely parse a file name"""
-        datetime = Parser.parse_filename(file_name)
-        if datetime is None:
-            return 0
-        return datetime.timestamp()
+        self._new_file = True
 
     def _process_new_file(self):
         """Backlog only the lines of a match that are match lines"""
@@ -79,19 +82,23 @@ class LogStalker(object):
     def get_new_lines(self):
         """Read the new lines in the file and return them as a list"""
         self.update_file()
-        dictionaries = self.read_file(self.path, self._read_so_far)
+        dictionaries = self.read_file(self.path, self._read_so_far, self._new_file)
+        self._new_file = False
         self._read_so_far += len(dictionaries)
         if None in dictionaries:
             raise ValueError()
         return dictionaries
 
     @staticmethod
-    def read_file(path, skip):
+    def read_file(path, skip, include=False):
         """Read the file in UnicodeDecodeError safe method"""
         with open(path, "rb") as fi:
-            lines = fi.readlines()[skip:]
+            lines = fi.readlines()
+        read = lines[skip:]
+        if include:
+            read.insert(0, lines[0])
         dictionaries = []
-        for line in lines:
+        for line in read:
             try:
                 line = line.decode()
             except UnicodeDecodeError:

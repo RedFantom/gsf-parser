@@ -163,7 +163,7 @@ class CharacterDatabase(dict):
             server = servers.server_keys[server]
             if (server, player_name) in self:
                 continue
-            name = servers.servers[server]
+            name = servers.SERVERS[server]
             faction = askoption(("Republic", "Imperial"), label="Faction for {} on {}".format(player_name, name))
             ships_dict = {name: Ship(name) for name in ships_data.sorted_ships.values()}
             ships_list = list()

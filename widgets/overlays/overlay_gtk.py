@@ -10,16 +10,17 @@ from threading import Thread
 import cairo
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk  # python3-gi
+from gi.repository import Gtk, GLib  # python3-gi
 # Project Modules
 from utils.directories import get_assets_directory
 
 
-class GtkOverlay(Gtk.Window, Thread):
+class GtkOverlay(Gtk.Window):
     """Window that represents the actual Overlay and draws the text"""
 
     def __init__(self, position: tuple, string, standard=True, master=None):
         """Initialize window and attributes"""
+        GLib.log_set_writer_func(lambda *args: GLib.LogWriterOutput.HANDLED)
         Gtk.Window.__init__(self)
         Thread.__init__(self)
         self._string = string
@@ -36,10 +37,6 @@ class GtkOverlay(Gtk.Window, Thread):
         self._label = Gtk.Label("Placeholder")
         self._label.set_justify(Gtk.Justification.LEFT)
         self._grid.attach(self._label, 0, 0, 1, 1)
-
-    def run(self):
-        Gtk.main()
-        print("[GtkOverlay] Loop ended")
 
     def init_window_attr(self):
         """Initialize Window attributes"""
@@ -75,6 +72,13 @@ class GtkOverlay(Gtk.Window, Thread):
             raise RuntimeError("This is not a standard GtkOverlay")
         self._label.set_use_markup(True)
         self._label.set_markup("<b><span color=\"yellow\">{}</span></b>".format(string))
+        Gtk.main_iteration()
+
+    def destroy(self):
+        """Destroy and run an interation immediately afterwards"""
+        Gtk.Window.destroy(self)
+        Gtk.main_iteration()
+        Gtk.main_iteration_do(False)
 
     @staticmethod
     def _redraw(_: Gtk.Widget, cr):
