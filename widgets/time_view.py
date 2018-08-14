@@ -269,7 +269,7 @@ class TimeView(ttk.Treeview):
         """Search the Treeview for elements that satisfy requirements"""
         self._search_id = None
         self._search_results.clear()
-        self._search_index = 0
+        self._search_index = -1
         self.selection_set()
         search_string: str = self._search_string.get()
         elements = self.parse_search_string(search_string)
@@ -277,9 +277,10 @@ class TimeView(ttk.Treeview):
             values = self.item(child)["values"]
             valid = True
             for e, v in zip(elements, values):
-                if e != "" and e.strip() not in str(v):
-                    valid = False
-                    break
+                r = self.evaluate_condition(e, v)
+                if r is None:
+                    continue
+                valid = r and valid
             if valid:
                 self._search_results.append(child)
         self._search_count.config(text="{} results".format(len(self._search_results)))
@@ -298,12 +299,10 @@ class TimeView(ttk.Treeview):
         """Move down one spot in the search results"""
         if len(self._search_results) == 0:
             return
+        self._search_index = min(self._search_index + 1, len(self._search_results) - 1)
         child = self._search_results[self._search_index]
         self.see(child)
         self.selection_set(child)
-        self._search_index += 1
-        if len(self._search_results) <= self._search_index:
-            self._search_index = 0
 
     @staticmethod
     def parse_search_string(string: str) -> tuple:
@@ -317,5 +316,22 @@ class TimeView(ttk.Treeview):
                 continue
             ends = tuple(i for i in indices if i > index)
             start, end = index + len(keyword), min(ends if len(ends) != 0 else (-1,))
-            results += (string[start:end],)
+            results += (string[start:end] if end != -1 else string[start:],)
         return results
+
+    @staticmethod
+    def evaluate_condition(condition: str, value: str) -> (bool, None):
+        """Evaluate a search condition"""
+        condition, value = map(str, (condition, value))
+        condition, value = map(str.strip, (condition, value))
+        if condition == "":
+            return None
+        if ">" in condition or "<" in condition:
+            value = value.strip("*")
+            if value == "" or not value.isdigit():
+                return False
+            try:
+                return eval(str(int(value)) + condition)
+            except (SyntaxError, ValueError):
+                return False
+        return condition.lower() in value.lower()
