@@ -5,13 +5,10 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from os import path
 from subprocess import Popen, PIPE
 # Packages
-from PIL import Image, ImageFilter
+from PIL import Image
 from pytesseract import pytesseract as tesseract
-# Project Modules
-from utils.directories import get_temp_directory
 
 
 START, END, DIFF = 650, 550, 20

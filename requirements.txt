@@ -19,3 +19,4 @@ opencv-python
 python-dateutil
 raven
 pypresence
+pytesseract
