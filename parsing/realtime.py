@@ -6,13 +6,14 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime, timedelta
+from multiprocessing import Event
 import os
 import sys
 from queue import Queue
 from threading import Thread, Lock
 from time import sleep
 import traceback
-from typing import Any, Tuple, Dict
+from typing import Any, Tuple, Dict, List
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -40,6 +41,7 @@ from parsing.parser import Parser
 from parsing.pointer import PointerParser
 from parsing.realtimedb import RealTimeDB
 from parsing.rgb import RGBController
+from parsing.scoreboards import ScoreboardParser
 from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
 from parsing.speed import SpeedParser
@@ -242,6 +244,11 @@ class RealTimeParser(Thread):
         screen_perf.clear()
         screen_perf = {feature: [0, 0.0] for feature in self._features}
         self._ready_button_img: Image.Image = None
+
+        self._scoreboard_parsers: List[ScoreboardParser] = list()
+        self._scoreboard = False
+        self._scoreboard_parser: ScoreboardParser = None
+        self._mp_exit: Event = Event()
 
         """
         MiniMap Sharing
@@ -627,8 +634,8 @@ class RealTimeParser(Thread):
             self.update_map_match_type(screenshot)
         if "MiniMap Location" in self._features:
             self.update_minimap_location(screenshot)
-        if "Match score" in self._features:
-            self.update_match_score(screenshot)
+        if "Scoreboard Parsing" in self._features:
+            self.update_scoreboard_parser(screenshot)
         if "Pointer Parsing" in self._features:
             self.update_pointer_parser()
 
@@ -802,34 +809,31 @@ class RealTimeParser(Thread):
         if self._active_map is not None and self._realtime_db.get_for_spawn("map") is None:
             self._realtime_db.set_for_spawn("map", self._active_map)
 
-    @screen_func("Match score")
-    def update_match_score(self, screenshot: Image.Image):
+    @screen_func("Scoreboard Parsing")
+    def update_scoreboard_parser(self, screenshot: Image.Image):
         """
-        Match score
+        Scoreboard Parsing
 
-        Continuously attempts to determine the ratio of the team scores
+        Attempt to parse a scoreboard once ctrl_l is pressed
         """
-        # TODO: Implement support for detecting wargames
-        # The starting position of the team (what side of the map)
-        # determines where their score bar is located (top or bottom)
-        # TODO: Implement OCR or some other more accurate technique
-        # Currently, only the ratio of the two scores is calculated,
-        # and it is rather ineffective. White or very light pixels
-        # have a huge impact on the result.
-        # TODO: Implement feature to only detect at match end
-        # The progression of the score of a match is not as interesting
-        # in most cases as the actual end score. Another option is to
-        # only determine it once a minute or some similar technique to
-        # limit the performance impact of this feature.
-        if self.active_id == "":
+        if self._scoreboard_parser is not None and not self._scoreboard_parser.is_alive():
+            self._scoreboard_parsers.remove(self._scoreboard_parser)
+            self._scoreboard_parser = None
+        if self._scoreboard_parser is None and len(self._scoreboard_parsers) > 0:
+            self._scoreboard_parser = self._scoreboard_parsers[0]
+            self._scoreboard_parser.start()
+
+        if self._scoreboard is False:
             return
-        scorecard = screenshot.crop(self.get_coordinates("scorecard"))
-        score = vision.get_score(scorecard)
-        self._realtime_db.set_for_spawn("score", score)
-        if self.discord is not None:
-            self.discord.send_match_score(
-                self._char_data["Server"], self.start_match, self.start_match, self.active_id[:8],
-                self._char_data["Faction"], score)
+        self._scoreboard = False
+        if self.start_match is None:
+            return
+
+        if not ScoreboardParser.is_scoreboard(screenshot, self._interface.global_scale):
+            return
+        print("[RealTimeParser:ScoreboardParser] Activated")
+        parser = ScoreboardParser(self.start_match, screenshot)
+        self._scoreboard_parsers.append(parser)
 
     @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
@@ -1053,6 +1057,8 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
         if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
             self.rgb_queue_put(("release", key))
+        if key == Key.ctrl_l:
+            self._scoreboard = True
 
     def _on_ms_press(self, x: int, y: int, button: Button, pressed: bool):
         """
@@ -1124,6 +1130,8 @@ class RealTimeParser(Thread):
             string += self._timer_parser.string
         if self._speed_parser is not None:
             string += self._speed_parser.string
+        if self._scoreboard_parser is not None:
+            string += self._scoreboard_parser.string
         return string.strip()
 
     @property

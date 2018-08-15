@@ -21,3 +21,4 @@ from parsing.spawnstats import spawn_statistics
 from parsing.strategies import Strategy, StrategyDatabase, Phase
 from parsing.timer import TimerParser
 from parsing.vision import *
+del opencv

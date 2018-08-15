@@ -5,16 +5,27 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+import os
 from subprocess import Popen, PIPE
 # Packages
-from PIL import Image
+from PIL import Image, ImageFilter
 from pytesseract import pytesseract as tesseract
+# Project Modules
+from parsing import opencv
+from utils.directories import get_assets_directory
+
+DIGITS = ["kills", "assists", "deaths", "damage", "hit", "objectives", "score"]
+
+START, END, DIFF = 650, 400, 20
+ROWS = 17.2
+WHITELIST = \
+    "-c tessedit_char_whitelist=\"" \
+    "abcdefghijklmnopqrstuvwxyz" \
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+    "-áàäúùüóòöéèëíìï'\""
 
 
-START, END, DIFF = 650, 550, 20
-
-
-def is_installed()->bool:
+def is_installed() -> bool:
     """Determine whether Tesseract-OCR is installed in PATH"""
     cmd = tesseract.tesseract_cmd
     p = Popen([cmd, "--help"], stdout=PIPE)
@@ -23,7 +34,7 @@ def is_installed()->bool:
     return b"Usage" in out
 
 
-def high_pass_invert(image: Image.Image, treshold: int)->Image.Image:
+def high_pass_invert(image: Image.Image, treshold: int) -> Image.Image:
     """Perform a high-pass filter on an image and invert"""
     result = image.copy()  # Do not modify original image
     pixels = result.load()
@@ -37,7 +48,7 @@ def high_pass_invert(image: Image.Image, treshold: int)->Image.Image:
     return result
 
 
-def perform_ocr(image: Image.Image, is_number: bool = False) -> (None, str, int):
+def perform_ocr(image: Image.Image) -> (None, str):
     """Perform OCR on an Image"""
     if not is_installed():
         print("[Tesseract] Critical error: Tesseract is not installed!")
@@ -46,14 +57,51 @@ def perform_ocr(image: Image.Image, is_number: bool = False) -> (None, str, int)
     for threshold in range(START, END, -DIFF):
         template: Image.Image = high_pass_invert(image, threshold)
         result: str = tesseract.image_to_string(template)
-        if is_number and not result.isdigit():
+        if result == "":
+            continue
+        break
+    if result == "":
+        return None
+    return result
+
+
+def perform_ocr_scoreboard(image: Image.Image, column: str, start=START, end=END, diff=DIFF) -> (str, int, None):
+    """Perform OCR on a part of an image"""
+    result = None
+    is_number = column in DIGITS
+    for treshold in range(start, end, -diff):  # Continue until result is valid
+        template = high_pass_invert(image, treshold)
+        result = tesseract.image_to_string(template, config="" if column in DIGITS else WHITELIST)
+        if is_number and not result.isdigit():  # Try again for numbers
             result = tesseract.image_to_string(template, config="-psm 10")
-        print("[Tesseract] {} -> {}".format(threshold, result))
+        if is_number and not result.isdigit():
+            template = template.filter(ImageFilter.GaussianBlur())
+            result = tesseract.image_to_string(template, config="-psm 10")
         if result == "" or (is_number and not result.isdigit()):
             continue
         break
+    if is_number and not result.isdigit():
+        result = match_digit(high_pass_invert(image, START))
     if result == "" or (is_number and not result.isdigit()):
-        return None
+        return 0 if is_number else None
     if is_number:
         return int(result)
-    return result
+    return result.replace("\n", "").replace("  ", "")
+
+
+def match_digit(image: Image.Image) -> str:
+    """Match the digit in the image to a template in the assets folder"""
+    print("[OpenCV] match_digit image size: {}".format(image.size))
+    image = image.resize((image.width * 2, image.height * 2), Image.ANTIALIAS)
+    folder = os.path.join(get_assets_directory(), "digits")
+    results = dict()
+    for digit in os.listdir(folder):
+        template = Image.open(os.path.join(folder, digit)).resize((100, 100), Image.LANCZOS)
+        digit = digit[:-4]
+        results[digit] = opencv.feature_match(template, image)
+    if all(value == 0 for value in results.values()):
+        print("[OpenCV] match_digit could not determine digit", flush=True)
+        return "0"
+    r = max(results, key=lambda key: results[key])
+    print("[OpenCV] match_digit: {}".format(r), flush=True)
+    return r

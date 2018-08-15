@@ -12,11 +12,12 @@ import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
 from widgets.timeline import TimeLine
 # Project Modules
-from widgets.time_view import TimeView
+from data.patterns import Patterns
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
 from parsing.patterns import PatternParser
-from data.patterns import Patterns
+from widgets.scoreboard import Scoreboard
+from widgets.time_view import TimeView
 
 
 class StatsFrame(ttk.Frame):
@@ -53,6 +54,8 @@ class StatsFrame(ttk.Frame):
     | ability              |||| |
     | ability              |\/| |
     -----------------------------
+
+    Scoreboard tab
     """
 
     def __init__(self, root_frame, main_window):
@@ -146,6 +149,9 @@ class StatsFrame(ttk.Frame):
             zoom_default=1.0,
         )
         self.setup_timeline()
+        # Scoreboard
+        self.scoreboard = Scoreboard(self.notebook)
+        self.notebook.add(self.scoreboard, text="Scoreboard")
 
     def setup_timeline(self):
         """
@@ -295,10 +301,6 @@ class StatsFrame(ttk.Frame):
                     )
                     if isinstance(e, ValueError):
                         pass
-                    elif isinstance(e, TypeError):
-                        raise
                     else:
                         raise
-                # print("[TimeLine] Creating marker: '{}', '{}', '{}', '{}'".format(
-                #     args[0], args[1], args[2], kwargs["background"]))
         return

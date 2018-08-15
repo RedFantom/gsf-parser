@@ -4,16 +4,16 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
 # UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox
 import tkinter.filedialog
 # Standard Library
+from collections import OrderedDict
+from datetime import datetime
 import operator
 import os
-from collections import OrderedDict
 # Project Modules
 import variables
 from parsing import folderstats, filestats, matchstats, spawnstats
@@ -322,6 +322,8 @@ class FileFrame(ttk.Frame):
         self.update_widgets(*results)
         match_list = Parser.build_spawn_from_match(match)
         self.main_window.middle_frame.time_view.insert_spawn(match_list, player_name)
+        match_timing = datetime.combine(Parser.parse_filename(file_name).date(), match_timings[::2][match_index].time())
+        self.main_window.middle_frame.scoreboard.update_match(match_timing)
 
     def parse_spawn(self, elements):
         """
@@ -352,6 +354,8 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.screen_label_var.set(string)
         self.main_window.middle_frame.update_timeline(
             file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube)
+        match_timing = datetime.combine(Parser.parse_filename(file_name).date(), match_timings[::2][match_index].time())
+        self.main_window.middle_frame.scoreboard.update_match(match_timing)
 
     def clear_data_widgets(self):
         """Clear the data widgets for parsing results"""
@@ -365,6 +369,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.time_view.delete(
             *self.main_window.middle_frame.time_view.get_children())
         self.main_window.middle_frame.time_line.delete_marker(tk.ALL)
+        self.main_window.middle_frame.scoreboard.reset()
 
     def insert_enemy_into_treeview(self, enemy, enemydamaged, enemydamaget):
         """

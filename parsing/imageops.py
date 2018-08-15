@@ -4,6 +4,9 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
+# Standard Library
+from typing import Dict, Iterable, Tuple
+# Packages
 from PIL import Image
 
 
@@ -21,7 +24,7 @@ def get_similarity_transparent(template: Image.Image, to_match: Image.Image):
     return 100 - (diff / 255.0 * 100) / n_comps
 
 
-def get_similarity(template, to_match):
+def get_similarity(template: Image.Image, to_match: Image.Image):
     """
     Compares two images and returns the similarity ratio. Based upon
     code of a StackOverflow question that I can't seem to find to put
@@ -49,7 +52,7 @@ def get_brightest_pixel(image, color: int=None):
     return max(image.getdata(), key=lambda pair: sum(pair if color is None else (pair[color],)))
 
 
-def get_brightest_pixel_loc(image, color: int=None):
+def get_brightest_pixel_loc(image: Image.Image, color: int=None):
     """Return the coordinates of the brightest pixel"""
     max_value = 0
     max_coords = None
@@ -64,10 +67,10 @@ def get_brightest_pixel_loc(image, color: int=None):
     return max_coords
 
 
-def get_brightest_pixel_cl(image, color: int=None):
+def get_brightest_pixel_cl(image: Image.Image, color: int=None):
     """Return the coordinates and color tuple for the brightest pixel"""
     max_value = 0
-    max_coords = None
+    max_coords: Tuple[int, int] = None
     pixels = image.load()
     for i in range(image.size[0]):
         for j in range(image.size[1]):
@@ -77,3 +80,10 @@ def get_brightest_pixel_cl(image, color: int=None):
             max_coords = (i, j)
             max_value = total
     return max_coords, image.getpixel(max_coords)
+
+
+def get_dominant_color(image: Image.Image) -> Tuple[int, int, int]:
+    """Return the dominant colour in an image"""
+    colors: Iterable[Tuple[Tuple[int, int, int], int]] = image.getcolors(image.width * image.height)
+    colors: Dict[Tuple[int, int, int], int] = {color: count for count, color in colors}
+    return max(colors, key=lambda e: colors[e])
