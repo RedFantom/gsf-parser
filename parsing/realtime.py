@@ -8,6 +8,7 @@ Copyright (C) 2016-2018 RedFantom
 from datetime import datetime, timedelta
 from multiprocessing import Event
 import os
+import six
 import sys
 from queue import Queue
 from threading import Thread, Lock
@@ -211,7 +212,7 @@ class RealTimeParser(Thread):
         self._mss = None
         self._kb_listener = None
         self._ms_listener = None
-        self._key_states = None
+        self._key_states = dict()
         self.ship = None
         self.ship_stats = None
         resolution = get_screen_resolution()
@@ -221,8 +222,7 @@ class RealTimeParser(Thread):
         self.screen_data = self.SCREEN_DATA_DEF.copy()
         self._resolution = resolution
         self._pixels_per_degree = 10 * self._interface.global_scale
-        self._waiting_for_timer = False
-        self._spawn_timer_res_flag = False
+        self._waiting_for_timer: datetime = None
         self._spawn_time = None
         self._window: Window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
         self.setup_screen_parsing()
@@ -273,8 +273,8 @@ class RealTimeParser(Thread):
         parameters for use in the loop.
         """
         self._mss = mss.mss()
-        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
-        self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
+        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release, catch=False)
+        self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press, catch=False)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
             "minimap": self._interface.get_minimap_coordinates(),
@@ -303,10 +303,13 @@ class RealTimeParser(Thread):
 
     def stop_listeners(self):
         """Stop the keyboard and mouse listeners"""
-        if not self._screen_enabled:
+        if not self._screen_enabled or "Mouse and Keyboard" not in self._features:
             return
+        print("[RealTimeParser] Stopping Listeners")
         self._kb_listener.stop()
         self._ms_listener.stop()
+        self._kb_listener.join()
+        self._ms_listener.join()
         self._kb_listener = None
         self._ms_listener = None
 
@@ -371,6 +374,9 @@ class RealTimeParser(Thread):
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
             sleep(0.5 - self.diff.total_seconds())
+        if not self._kb_listener._queue.empty():
+            exception, value, traceback = self._kb_listener._queue.get()
+            six.reraise(exception, value, traceback)
 
     def process_line(self, line: dict):
         """
@@ -495,7 +501,7 @@ class RealTimeParser(Thread):
         self.process_login()
         # Spawn Timer
         if (self._screen_enabled and "Spawn Timer" in self._features and
-                self._waiting_for_timer is False and self.is_match is False):
+                self._waiting_for_timer is None and self.is_match is False):
             # Only activates if the Spawn Timer screen parsing
             # feature is enabled and there is no match active.
             # If a match is active, then this probably marks the end
@@ -687,6 +693,7 @@ class RealTimeParser(Thread):
             self._waiting_for_timer = None
 
         # Find the Ready Button image in the screenshot
+        screenshot = screenshot.crop((screenshot.width // 2, screenshot.height // 2, *screenshot.size))
         is_match, location = opencv.template_match(screenshot, self._ready_button_img, 80.0)
         if not is_match:
             print("[TimerParser] Ready button not located")
@@ -703,6 +710,7 @@ class RealTimeParser(Thread):
 
         # Perform OCR on this box
         template = screenshot.crop(box)
+        template.save("template.png")
         result: str = tesseract.perform_ocr(template)
         if result is None:  # OCR failed
             return
@@ -816,7 +824,7 @@ class RealTimeParser(Thread):
 
         Attempt to parse a scoreboard once ctrl_l is pressed
         """
-        if self._scoreboard_parser is not None and not self._scoreboard_parser.is_alive():
+        if self._scoreboard_parser is not None and self._scoreboard_parser.is_done():
             self._scoreboard_parsers.remove(self._scoreboard_parser)
             self._scoreboard_parser = None
         if self._scoreboard_parser is None and len(self._scoreboard_parsers) > 0:
@@ -834,6 +842,8 @@ class RealTimeParser(Thread):
         print("[RealTimeParser:ScoreboardParser] Activated")
         parser = ScoreboardParser(self.start_match, screenshot)
         self._scoreboard_parsers.append(parser)
+        self._scoreboard_parser = parser
+        self._scoreboard_parser.start()
 
     @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
@@ -975,8 +985,9 @@ class RealTimeParser(Thread):
         printf("[RealTimeParser] Starting Subprocesses")
         self.rgb_start()
         printf("[RealTimeParser] RGBController started")
-        self.start_listeners()
-        printf("[RealTimeParser] Listeners started")
+        if "Mouse and Keyboard" in self._features:
+            self.start_listeners()
+            printf("[RealTimeParser] Listeners started")
         if self._timer_parser is not None:
             self._timer_parser.start()
             printf("[RealTimeParser] TimerParser started")
@@ -1030,16 +1041,16 @@ class RealTimeParser(Thread):
         active. Provides RGBController interaction.
         """
         if not self.is_match or key not in keys:
-            return
+            return True
         key = keys[key]
         if key in self._key_states and self._key_states[key] is True:
-            return  # Ignore press hold repeat
+                return True  # Ignore press hold repeat
         time = datetime.now()
         self._realtime_db.set_for_spawn("keys", time, (key, True))
         self._key_states[key] = True
-        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self.rgb_queue_put(("press", key))
+        self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
+            print("[RealTimeParser.KeyboardListener] Creating Power Mode event")
             effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
             self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
@@ -1051,13 +1062,17 @@ class RealTimeParser(Thread):
         relevant are processed and stored, and only if a match is
         active. Provides RGBController interaction.
         """
-        if not self.is_match or key not in keys:
+        if not self.is_match:
             return
+        if key not in keys:
+            return
+        print("[RealTimeParser.KeyboardListener] Processing keypress: {}".format(key))
         self._key_states[keys[key]] = False
         self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
-        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self.rgb_queue_put(("release", key))
-        if key == Key.ctrl_l:
+        self.rgb_queue_put(("release", key))
+        print("[RealTimeParser] Processed key: {}".format(key))
+        if key == Key.ctrl_l or key == Key.ctrl:
+            print("[RealTimeParser] ScoreboardParser triggered")
             self._scoreboard = True
 
     def _on_ms_press(self, x: int, y: int, button: Button, pressed: bool):
@@ -1152,10 +1167,8 @@ class RealTimeParser(Thread):
     @property
     def spawn_timer_string(self) -> str:
         """Spawn timer parsing string for the Overlay"""
-        if self._spawn_timer_res_flag:
-            return "Unsupported resolution for Spawn Timer\n"
         if self._spawn_time is None:
-            return ""
+            return "Next spawn unknown\n"
         return "Spawn in {:02d}s\n".format(
             divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
 

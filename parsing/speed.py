@@ -76,6 +76,7 @@ class SpeedParser(Thread):
     def run(self):
         """Run the Thread's tasks"""
         self._listener.start()
+        print("[SpeedParser] Keyboard Listener started")
         while True:
             sleep(0.05)
             # Exit Loop if exit requested

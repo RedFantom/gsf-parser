@@ -6,7 +6,7 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime
-from multiprocessing import Process, Pipe
+from multiprocessing import Process, Pipe, Event
 import os
 from os import path
 import pickle
@@ -115,6 +115,15 @@ class ScoreboardParser(Process):
         self._db: ScoreboardDatabase = None
         self._recv, self._send = Pipe(False)
         self._progress: float = 0.0
+        self._done = Event()
+        self._started = Event()
+
+    def start(self):
+        """Handler to start the Process"""
+        if self._started.is_set():
+            return
+        self._started.set()
+        Process.start(self)
 
     def run(self):
         """Parse the Scoreboard and save its data"""
@@ -122,6 +131,7 @@ class ScoreboardParser(Process):
         with ScoreboardDatabase() as db:
             db.save_scoreboard(self._match, result)
         self._send.send(-1)
+        self._done.set()
 
     def parse_scoreboard(self) -> Dict[str, Any]:
         """Parse the scoreboard"""
@@ -198,7 +208,7 @@ class ScoreboardParser(Process):
                 start = sum([ScoreboardParser.WIDTHS[c] * image.width for c in COLUMNS[:COLUMNS.index(name)]])
                 end = start + ScoreboardParser.WIDTHS[name] * image.width
                 column: Image.Image = row.crop((start, 0, end, row.height))
-                columns.append(column.resize((column.width * 3, column.height * 3), Image.LANCZOS))
+                columns.append(column.resize((int(30 / image.height * image.width), 30), Image.LANCZOS))
             result.append(columns)
         return result
 
@@ -210,3 +220,6 @@ class ScoreboardParser(Process):
         if self._progress == -1:
             return "Scoreboard: Complete\n"
         return "Scoreboard: {:03.1f}%\n".format(self._progress * 100)
+
+    def is_done(self):
+        return self._done.is_set()

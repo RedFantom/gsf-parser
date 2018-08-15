@@ -71,6 +71,7 @@ class PointerParser(Thread):
         """
         print("[PointerParser] Starting...")
         self.mouse.start()
+        print("[PointerParser] Mouse Listener started")
         while self.exit_queue.empty():
             if self.rof is None:
                 sleep(1)  # Reduce performance impact when not active

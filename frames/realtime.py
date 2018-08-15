@@ -179,7 +179,6 @@ class RealTimeFrame(ttk.Frame):
         print("[RealTimeFrame] RealTimeParser reference count: {}".format(sys.getrefcount(self.parser)))
         self.parser = None
         self.close_overlay()
-        self.close_event_overlay()
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
@@ -242,14 +241,6 @@ class RealTimeFrame(ttk.Frame):
         x, y = settings["event"]["position"].split("y")
         x, y = int(x[1:]), int(y)
         self._event_overlay = EventOverlay(self.window, location=(x, y))
-
-    def close_event_overlay(self):
-        """Close the EventOverlay is one is open"""
-        if self._event_overlay is None:
-            return
-        self._event_overlay.match_end()
-        self._event_overlay.destroy()
-        self._event_overlay = None
 
     def update_data_string(self):
         """Update the string in the data label with the parser stats"""

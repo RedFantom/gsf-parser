@@ -127,6 +127,7 @@ class DelayParser(Thread):
         """Run the Thread"""
         self._ms_listener.start()
         self._kb_listener.start()
+        print("[DelayParser] Keyboard and Mouse Listeners started")
         while True:
             if not self._exit_queue.empty():
                 break
