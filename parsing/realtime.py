@@ -701,7 +701,7 @@ class RealTimeParser(Thread):
 
         # Calculate the box of the spawn timer
         (x, y), (w, h) = location, self._ready_button_img.size
-        _x1, _y1, _x2, _y2 = w // 2 - 40, -64, w // 2 + 40, -64 + 20
+        _x1, _y1, _x2, _y2 = w // 2 - 15, -45, w // 2 + 55, -45 + 20
         scale = self._interface.global_scale
         _x1, _y1, _x2, _y2 = map(lambda v: int(round(v * (scale / 1.05))), (_x1, _y1, _x2, _y2))
         x1, y1, x2, y2 = x + _x1, y + _y1, x + _x2, y + _y2
