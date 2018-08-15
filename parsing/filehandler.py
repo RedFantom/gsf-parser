@@ -422,6 +422,7 @@ class FileHandler(object):
                 stats["upgrade_c"] = primary_weapon_data["Weapon_Tracking_Bonus"]
         # Loop over screen parsing cursor position data
         for key, value in sorted(screen_dict["cursor_pos"].items()):
+            # TODO: Save Global UI scale to use it here
             degrees = get_tracking_degrees(get_distance_from_center(value))
             degrees = max(min(degrees, stats["firing_arc"]), 0)
             # If tracking penalty constants are available

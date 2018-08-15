@@ -18,6 +18,7 @@ def mistake_off_center_shot(distance: (int, float), threshold: (int, float)):
     :param threshold: Threshold in degrees constituting and off-center
         shot.
     :return: True when off-center, False if not
+    # TODO: Save global UI scale and get it here
     """
     return vision.get_tracking_degrees(distance) > threshold
 

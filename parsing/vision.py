@@ -63,7 +63,7 @@ def get_distance_from_center(coordinates=(960, 540), resolution=(1920, 1080)):
     return round(c, 2)
 
 
-def get_tracking_degrees(distance: int, pixelsperdegree: float):
+def get_tracking_degrees(distance: int, pixelsperdegree: float = 10.0):
     """
     :param distance: Distance in pixels by get_distance_from_center
     :param pixelsperdegree: The pixels per firing degree (resolution dependent)
