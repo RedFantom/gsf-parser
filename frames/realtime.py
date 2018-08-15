@@ -5,6 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+import threading
 import time
 import psutil
 import os
@@ -157,6 +158,7 @@ class RealTimeFrame(ttk.Frame):
         self._rtp_id = self.after(100, self.check_alive)
         self.data_after_id = self.after(1000, self.update_data_string)
         self.parsing_control_button.config(state=tk.NORMAL)
+        print("[RealTimeFrame] Parsing started. Threads: {}".format(threading.enumerate()))
 
     def stop_parsing(self):
         """Stop the parsing process"""

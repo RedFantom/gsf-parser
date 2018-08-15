@@ -49,14 +49,14 @@ def feature_match(image: Image.Image, template: Image.Image)->int:
     return result
 
 
-def template_match(image: Image.Image, template: Image.Image)->Tuple[bool, Tuple[int, int]]:
+def template_match(image: Image.Image, template: Image.Image, margin: float = 95)->Tuple[bool, Tuple[int, int]]:
     """Use template matching and similarity to return template score"""
     image_cv, template_cv = map(image_to_opencv, (image, template))
     result = cv.matchTemplate(image_cv, template_cv, cv.TM_CCOEFF)
     _, _, _, loc = cv.minMaxLoc(result)
     image = image.copy()  # Do not modify original
     image = image.crop((loc[0], loc[1], loc[0] + template.width, loc[1] + template.height))
-    return get_similarity(image, template) > 95, loc
+    return get_similarity(image, template) > margin, loc
 
 
 def get_similarity(template: Image.Image, to_match: Image.Image)->float:

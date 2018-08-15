@@ -5,8 +5,9 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import xml.etree.cElementTree as et
 import os
+from typing import Tuple, Dict, List
+import xml.etree.cElementTree as et
 # UI Libraries
 from tkinter import messagebox
 # Project Modules
@@ -16,7 +17,7 @@ from utils.swtor import get_swtor_directory
 from data.servers import server_ini
 
 
-def get_gui_profiles():
+def get_gui_profiles() -> List[str]:
     """Return a list of all GUI Profile Names in the SWTOR directory"""
     return [
         item.replace(".xml", "") for item in
@@ -24,7 +25,7 @@ def get_gui_profiles():
     ]
 
 
-def get_player_guiname(player_name, server):
+def get_player_guiname(player_name: str, server: str) -> str:
     """
     Returns the GUI Profile name for a certain player name. Does not
     work if there are multiple characters with the same name on the same
@@ -122,7 +123,7 @@ class GUIParser(object):
 
     debug = True
 
-    def __init__(self, file_name, target_items):
+    def __init__(self, file_name: str, target_items: dict):
         """
         Initializes the class by reading the XML file and setting things
         up for access by the user
@@ -155,11 +156,12 @@ class GUIParser(object):
         self.anchor_dictionary = self.get_anchor_dictionary(resolution)
 
     @property
-    def global_scale(self):
+    def global_scale(self) -> float:
+        """Return the Global UI Scale"""
         obj = self.get_element_object("Global")
         return self.get_item_value(obj, "GlobalScale")
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Tuple[et.Element, et.Element, str]) -> str:
         """
         Returns the requested data to the user
         :param key: (element, item, attribute)
@@ -175,7 +177,7 @@ class GUIParser(object):
         raise ValueError("Manipulating GUI profiles is not supported")
 
     @staticmethod
-    def get_anchor_dictionary(resolution):
+    def get_anchor_dictionary(resolution: Tuple[int, int]) -> Dict[int, Tuple[int, int]]:
         """
         Get a dictionary of the absolute pixel points for each of the
         nine anchor points in the docstring of this class
@@ -203,28 +205,17 @@ class GUIParser(object):
         return anchor_points
 
     @staticmethod
-    def get_element_absolute_coordinates(anchor_points, anchor, x_offset, y_offset):
-        """
-        Get absolute screen pixel coordinates for an element by name
-        :param anchor_points: dictionary anchor_points
-        :param anchor: anchor number (must be in anchor_points dict)
-        :param x_offset: int offset
-        :param y_offset: int offset
-        :return: (x, y) tuple
-        """
+    def get_element_absolute_coordinates(
+            anchor_points: Dict[int, Tuple[int, int]], anchor: int, x_offset: int, y_offset: int) -> Tuple[int, int]:
+        """Get absolute screen pixel coordinates for an element by name"""
         return anchor_points[anchor][0] + x_offset, anchor_points[anchor][1] + y_offset
 
     @staticmethod
-    def get_item_value(element, name):
-        """
-        Get an int value from an element
-        :param element: XML parser element
-        :param name: sub-element name
-        :return: int value
-        """
+    def get_item_value(element: et.Element, name: str) -> int:
+        """Get an int value from an element"""
         return int(round(float(element.find(name).get("Value")), 0))
 
-    def get_element_scale(self, element):
+    def get_element_scale(self, element: et.Element):
         """
         As the scale is a float value, not an int, the normal class
         method can't be used for this item
@@ -234,22 +225,18 @@ class GUIParser(object):
         return round(float(element.find("scale").get("Value")), 3) * self.global_scale
 
     @staticmethod
-    def get_scale_corrected_value(value, scale):
+    def get_scale_corrected_value(value: int, scale: float) -> int:
+        """Correct a value for a float scale value"""
         return int(round(value * scale, 0))
 
-    def get_essential_element_values(self, element):
-        """
-        Get the essential element values for a GSF GUI element (for the
-        position)
-        :param element: XML parser element
-        :return: anchor number, x_offset int, y_offset int, alpha percentage
-        """
+    def get_essential_element_values(self, element: et.Element):
+        """Get the essential element values for a GSF GUI element"""
         x_offset = self.get_item_value(element, "anchorXOffset")
         y_offset = self.get_item_value(element, "anchorYOffset")
         alpha = self.get_item_value(element, "anchorAlignment")
         return x_offset, y_offset, alpha
 
-    def get_element_object(self, element_name):
+    def get_element_object(self, element_name: str) -> et.Element:
         """
         Check the element name passed as argument and return an
         appropriate element object
@@ -257,24 +244,16 @@ class GUIParser(object):
         :return: element object
         """
         if element_name not in self.gui_elements:
-            raise ValueError(
+            raise KeyError(
                 "element requested that was not in target_items initializer argument: {0}".format(element_name))
         return self.gui_elements[element_name]
 
-    def get_element_anchor(self, element):
-        """
-        Get the element anchor number
-        :param element: element object
-        :return: anchor int
-        """
+    def get_element_anchor(self, element: et.Element) -> int:
+        """Get the element anchor number"""
         return self.get_item_value(element, "anchorAlignment")
 
-    def get_box_coordinates(self, element_name):
-        """
-        Get a tuple with the box coordinates for an element
-        :param element_name: name of the element
-        :return: (x, y, x+~, y+~)
-        """
+    def get_box_coordinates(self, element_name: str) -> Tuple[int, int, int, int]:
+        """Get a tuple with the box coordinates for an element"""
         element = self.get_element_object(element_name)
         print("[GUI] Getting data for element: {0}".format(element_name))
         x_offset, y_offset, alpha = self.get_essential_element_values(element)

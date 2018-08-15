@@ -40,7 +40,7 @@ def high_pass_invert(image: Image.Image, treshold: int)->Image.Image:
     return result
 
 
-def perform_ocr(image: Image.Image, is_number: bool = True) -> (None, str, int):
+def perform_ocr(image: Image.Image, is_number: bool = False) -> (None, str, int):
     """Perform OCR on an Image"""
     if not is_installed():
         print("[Tesseract] Critical error: Tesseract is not installed!")
@@ -51,9 +51,10 @@ def perform_ocr(image: Image.Image, is_number: bool = True) -> (None, str, int):
         result: str = tesseract.image_to_string(template)
         if is_number and not result.isdigit():
             result = tesseract.image_to_string(template, config="-psm 10")
+        print("[Tesseract] {} -> {}".format(threshold, result))
         if result == "" or (is_number and not result.isdigit()):
             continue
-    print("[Tesseract] Read: {}".format(result))
+        break
     if result == "" or (is_number and not result.isdigit()):
         return None
     if is_number:

@@ -75,6 +75,8 @@ def screen_func(feature: str) -> callable:
             start = datetime.now()
             r = func(*args)
             elapsed = (datetime.now() - start).total_seconds()
+            if feature not in screen_perf:
+                screen_perf[feature] = [0, 0]
             screen_perf[feature][0] += 1
             screen_perf[feature][1] += elapsed
             return r, elapsed
@@ -216,7 +218,7 @@ class RealTimeParser(Thread):
         self._coordinates = {}
         self.screen_data = self.SCREEN_DATA_DEF.copy()
         self._resolution = resolution
-        self._pixels_per_degree = 10 * self._interface.get_element_scale("Global")
+        self._pixels_per_degree = 10 * self._interface.global_scale
         self._waiting_for_timer = False
         self._spawn_timer_res_flag = False
         self._spawn_time = None
@@ -662,7 +664,7 @@ class RealTimeParser(Thread):
 
         if self._ready_button_img is None:
             img: Image.Image = Image.open(os.path.join(get_assets_directory(), "vision", "ready_button.png"))
-            scale: float = self._interface.get_element_scale("Global")
+            scale: float = self._interface.global_scale
             size = map(lambda s: int(round((s * scale))), img.size)
             self._ready_button_img = img.resize(size, Image.LANCZOS)
             del img
@@ -678,25 +680,34 @@ class RealTimeParser(Thread):
             self._waiting_for_timer = None
 
         # Find the Ready Button image in the screenshot
-        is_match, location = opencv.template_match(screenshot, self._ready_button_img)
+        is_match, location = opencv.template_match(screenshot, self._ready_button_img, 80.0)
         if not is_match:
+            print("[TimerParser] Ready button not located")
             return  # Ready Button not located
 
         # Calculate the box of the spawn timer
         (x, y), (w, h) = location, self._ready_button_img.size
-        _x1, _y1, _x2, _y2 = w // 2 - 40, 64, w // 2 + 40, 64 - 20
-        scale = self._interface.get_element_scale("Global")
+        _x1, _y1, _x2, _y2 = w // 2 - 40, -64, w // 2 + 40, -64 + 20
+        scale = self._interface.global_scale
         _x1, _y1, _x2, _y2 = map(lambda v: int(round(v * (scale / 1.05))), (_x1, _y1, _x2, _y2))
         x1, y1, x2, y2 = x + _x1, y + _y1, x + _x2, y + _y2
+        box: Tuple[int, int, int, int] = (x1, y1, x2, y2)
+        print("[TimerParser] Box: {}".format(box))
 
         # Perform OCR on this box
-        template = screenshot.crop((x1, y1, x2, y2))
-        result: int = tesseract.perform_ocr(template, True)
+        template = screenshot.crop(box)
+        result: str = tesseract.perform_ocr(template)
         if result is None:  # OCR failed
             return
 
-        # Set the spawn timer based on this
-        result: int = (result % 100) % 20  # Remove leading 01: if required
+        # Interpret OCR results
+        elements: Tuple[str, str] = result.split(":", 1)
+        if len(elements) != 2:
+            return
+        minutes, seconds = elements
+        if not seconds.isdigit():
+            return
+        result: int = int(seconds) % 20
         print("[TimerParser] Determined spawn time to be in {} seconds".format(result))
         self._spawn_time = screenshot_time + timedelta(seconds=result)
 

@@ -95,7 +95,7 @@ class LogStalker(object):
         with open(path, "rb") as fi:
             lines = fi.readlines()
         read = lines[skip:]
-        if include:
+        if include and len(lines) > 0 and lines[0] not in read:
             read.insert(0, lines[0])
         dictionaries = []
         for line in read:
