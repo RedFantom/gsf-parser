@@ -17,7 +17,7 @@ from parsing import Parser
 from parsing.shipstats import ShipStats
 
 
-class TimerParser(Thread):
+class DelayParser(Thread):
     """Parser that checks Regeneration Delays and controls an overlay"""
 
     DELAYS = {
@@ -47,7 +47,7 @@ class TimerParser(Thread):
         self._kb_listener = KBListener(on_press=self._on_press)
         self._mouse = False
         self._string = str()
-        print("[TimerParser] Initialized")
+        print("[DelayParser] Initialized")
 
     def set_ship_stats(self, ship: ShipStats):
         """Update the ship statistics used for delay tracking"""
@@ -58,12 +58,12 @@ class TimerParser(Thread):
         }
         self.primary = "PrimaryWeapon"
         self._lock.release()
-        print("[TimerParser] Updated ship to: {}".format(ship.ship.name))
+        print("[DelayParser] Updated ship to: {}".format(ship.ship.name))
 
     def primary_weapon_swap(self):
         """Swap the primary weapon key"""
         self.primary = "PrimaryWeapon2" if self.primary == "PrimaryWeapon" else "PrimaryWeapon"
-        print("[TimerParser] Swapped Primary Weapons")
+        print("[DelayParser] Swapped Primary Weapons")
 
     def match_end(self):
         """Match ended callback"""
@@ -74,7 +74,7 @@ class TimerParser(Thread):
         self._internal_q.put("start")
 
     def update(self):
-        """Update the state of the TimerParser"""
+        """Update the state of the DelayParser"""
         self._lock.acquire()
         stats, key = self._stats.copy(), self.primary
         self._lock.release()

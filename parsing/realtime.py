@@ -46,7 +46,7 @@ from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
 from parsing.speed import SpeedParser
 from parsing import tesseract
-from parsing.timer import TimerParser
+from parsing.delay import DelayParser
 from parsing import vision
 # Utility Modules
 from utils.directories import get_assets_directory
@@ -236,7 +236,7 @@ class RealTimeParser(Thread):
         self._active_map = None
         self._timer_parser = None
         if "Power Regeneration Delays" in self._features:
-            self._timer_parser = TimerParser()
+            self._timer_parser = DelayParser()
         self._speed_parser = None
         if "Engine Speed" in self._features:
             self._speed_parser = SpeedParser()

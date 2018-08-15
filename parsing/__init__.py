@@ -19,6 +19,6 @@ from parsing.ships import Ship, Component
 from parsing.shipstats import ShipStats
 from parsing.spawnstats import spawn_statistics
 from parsing.strategies import Strategy, StrategyDatabase, Phase
-from parsing.timer import TimerParser
+from parsing.delay import DelayParser
 from parsing.vision import *
 del opencv
