@@ -5,9 +5,14 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from typing import Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 # Packages
 from PIL import Image
+
+
+def outer_to_inner(l: List[Any]) -> Iterable[Any]:
+    """Create tuples of (first, last), (second, first-to-last), etc."""
+    return list((list(l)[i], list(reversed(l))[i]) for i in range(len(l) // 2))
 
 
 def get_similarity_transparent(template: Image.Image, to_match: Image.Image):
@@ -40,6 +45,28 @@ def get_similarity(template: Image.Image, to_match: Image.Image):
                for color_one, color_two in zip(pair_one, pair_two) if not pair_two == (255, 255, 255))
     n_comps = template.size[0] * template.size[1] * 3
     return 100 - (diff / 255.0 * 100) / n_comps
+
+
+def get_similarity_monochrome(template: Image.Image, to_match: Image.Image) -> float:
+    """Determine the similarity of two monochrome images"""
+    t_edges, m_edges = detect_edges(template), detect_edges(to_match)
+    return sum(abs(v2 - v1) < 3 for v1, v2 in zip(t_edges, m_edges) if v1 != 0) / template.height
+
+
+def detect_edges(image: Image.Image) -> List[int]:
+    """Detect the edges in an image"""
+    results = list()
+    pixels = image.load()
+    for y in range(image.height):
+        appended = False
+        for x in range(image.width):
+            if sum(pixels[x, y]) < 128:
+                results.append(x)
+                appended = True
+                break
+        if appended is False:
+            results.append(0)
+    return results
 
 
 def get_similarity_pixels(rgb1: tuple, rgb2: tuple):
@@ -87,3 +114,17 @@ def get_dominant_color(image: Image.Image) -> Tuple[int, int, int]:
     colors: Iterable[Tuple[Tuple[int, int, int], int]] = image.getcolors(image.width * image.height)
     colors: Dict[Tuple[int, int, int], int] = {color: count for count, color in colors}
     return max(colors, key=lambda e: colors[e])
+
+
+if __name__ == '__main__':
+    import os
+    from utils.directories import get_assets_directory
+    folder = os.path.join(get_assets_directory(), "digits")
+    x = Image.open(os.path.join(get_assets_directory(), "digits", "1.png"))
+    for digit in os.listdir(folder):
+        if not digit.endswith(".png"):
+            continue
+        image = Image.open(os.path.join(folder, digit))
+        s = get_similarity_monochrome(image, x)
+        print("{}: {}".format(digit, s))
+        # assert s == 1.0
