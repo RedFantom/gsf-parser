@@ -39,3 +39,10 @@ class TestScoreboardParser(TestCase):
         self.assertIsInstance(r, dict)
         self.assertIsInstance(r["allies"], list)
         self.assertIsInstance(r["enemies"], list)
+
+    def test_run_scoreboard(self):
+        if not tesseract.is_installed():
+            return
+        self.parser.start()
+        while self.parser.is_alive():
+            pass

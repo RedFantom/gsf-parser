@@ -17,6 +17,7 @@ from parsing import imageops, opencv, tesseract
 from utils.directories import get_temp_directory, get_assets_directory
 
 FOLDER = path.join(get_assets_directory(), "headers")
+ROWS = 17.2
 
 
 class ScoreboardDatabase(object):
@@ -63,8 +64,8 @@ class ScoreboardDatabase(object):
     def get_scoreboard(match: datetime):
         """Return the scoreboard for a match given the datetime key"""
         with ScoreboardDatabase() as db:
-            if match not in db._shelf:
-                return None
+            if match not in db._shelf and os.path.exists("development"):
+                return db._shelf[list(db._shelf.keys())[0]]
             return db[match]
 
     def __enter__(self):
@@ -110,6 +111,7 @@ class ScoreboardParser(Process):
 
     def __init__(self, match_start: datetime, screenshot: Image.Image):
         """Initialize a scoreboard parsing process"""
+        Process.__init__(self)
         self._match: datetime = match_start
         self._screenshot: Image.Image = screenshot
         self._db: ScoreboardDatabase = None
@@ -144,13 +146,16 @@ class ScoreboardParser(Process):
             columns: List[(str, int)] = list()
             allied = self.is_allied(row[1])
             for name, column in zip(ScoreboardParser.COLUMNS, row):
-                r = tesseract.perform_ocr_scoreboard(column, name)
+                r = tesseract.perform_ocr_scoreboard(column, name, 650, 400, 20)
                 columns.append(r)
                 print("[ScoreboardParser] {}: {} -> {}".format(i, name, r), flush=True)
                 done += 1
                 self._send.send(done / todo)
             scoreboard["allies" if allied else "enemies"].append(columns)
-        scoreboard["score"] = self.get_score(self._screenshot, scale, location)
+        try:
+            scoreboard["score"] = self.get_score(self._screenshot, scale, location)
+        except SystemError:
+            scoreboard["score"]: List[int, int, int] = [0, 0, 0]
         return scoreboard
 
     @staticmethod
@@ -161,6 +166,7 @@ class ScoreboardParser(Process):
         x1_l, x2_l, x1_r, x2_r = x + 50 * scale, x + 75 * scale, x + 180 * scale, 205 * scale
         left: Image.Image = screenshot.crop(tuple(map(int, (x1_l, y1, x2_l, y2))))
         right: Image.Image = screenshot.crop(tuple(map(int, (x1_r, y1, x2_r, y2))))
+        left.save("left.png"), right.save("right.png")
         score_l, score_r = map(lambda i: tesseract.perform_ocr_scoreboard(i, "score", 420, 360), (left, right))
         return score_l, score_r, list(map(ScoreboardParser.is_allied, (left, right))).index(True)
 
@@ -168,7 +174,8 @@ class ScoreboardParser(Process):
     def crop_scoreboard(image: Image.Image, scale: float, location: Tuple[int, int]) -> Image.Image:
         """Crop a screenshot of a scoreboard to only the scoreboard"""
         (w, h), (x, y) = ScoreboardParser.SCALES[scale].size, location
-        return image.crop((x, y + h, x + w, int(y + h + ScoreboardParser.HEIGHT * scale)))
+        box = (x, y + h + int(round(7 * 1.05 / scale)), x + w, int(y + h + ScoreboardParser.HEIGHT * scale))
+        return image.crop(box)
 
     @staticmethod
     def get_scale_location(screenshot: Image.Image) -> Tuple[float, Tuple[int, int]]:
@@ -179,7 +186,6 @@ class ScoreboardParser(Process):
             ratio, location = opencv.template_match(screenshot, template, 0, True)
             ratios[ratio] = scale
             locations[scale] = location
-            print("[ScoreboardParser] Scale: {}, Match ratio: {}, Location: {}".format(scale, ratio, location))
         scale: float = ratios[max(ratios.keys())]
         return scale, locations[scale]
 
@@ -195,21 +201,23 @@ class ScoreboardParser(Process):
         return dominant[1] > dominant[0]  # Green more dominant than red
 
     @staticmethod
-    def split_scoreboard(image: Image.Image, scale: float, location: Tuple[int, int]) -> List[List[Image.Image]]:
-        """Build a matrix of sub-images of the rows of the scoreboard"""
-        COLUMNS = ScoreboardParser.COLUMNS.copy()
-        image = ScoreboardParser.crop_scoreboard(image, scale, location)
-        result: List[List[Image.Image]] = list()
+    def split_scoreboard(image: Image.Image, scale: float, header_loc: tuple) -> list:
+        """Split a scoreboard into different elements"""
+        columns, widths = ScoreboardParser.COLUMNS, ScoreboardParser.WIDTHS
+        image = ScoreboardParser.crop_scoreboard(image, scale, header_loc)
+        result = list()
         for i in range(16):
-            row_box = (0, i * (image.height / 16), image.width, (i + 1) * (image.height / 16))
-            row: Image.Image = image.crop(row_box)
-            columns: List[Image.Image] = list()
-            for name in ScoreboardParser.COLUMNS:
-                start = sum([ScoreboardParser.WIDTHS[c] * image.width for c in COLUMNS[:COLUMNS.index(name)]])
-                end = start + ScoreboardParser.WIDTHS[name] * image.width
-                column: Image.Image = row.crop((start, 0, end, row.height))
-                columns.append(column.resize((int(30 / image.height * image.width), 30), Image.LANCZOS))
-            result.append(columns)
+            row = (0, i * (image.height / ROWS), image.width, (i + 1) * (image.height / ROWS))
+            row_img = image.crop(row)
+            row_elems = list()
+            for name in columns:
+                start = sum([widths[col] * image.width for col in columns[:columns.index(name)]])
+                end = start + widths[name] * image.width
+                crop = (start, 0, end, row_img.height)
+                column = row_img.crop(crop)
+                column = column.resize((column.width * 3, column.height * 3), Image.LANCZOS)
+                row_elems.append(column)
+            result.append(row_elems)
         return result
 
     @property

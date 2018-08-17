@@ -5,9 +5,8 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-from datetime import datetime
+from threading import Lock
 import os
-import sys
 # Project Modules
 from utils.directories import get_temp_directory
 # Packages
@@ -16,11 +15,15 @@ import cv2 as cv
 import numpy
 
 
+OPENCV_IMAGE_LOCK = Lock()
+
+
 def image_to_opencv(image: Image.Image)->numpy.array:
     """Convert a PIL image to a OpenCV compatible array"""
-    path = os.path.join(get_temp_directory(), "temp.png")
-    image.save(path)
-    return cv.imread(path, 0)
+    with OPENCV_IMAGE_LOCK:
+        path = os.path.join(get_temp_directory(), "temp.png")
+        image.save(path)
+        return cv.imread(path, 0)
 
 
 def opencv_to_image(arr: numpy.array)->Image.Image:
@@ -31,14 +34,17 @@ def opencv_to_image(arr: numpy.array)->Image.Image:
 def feature_match(image: Image.Image, template: Image.Image)->int:
     """Return the amount of features matched with ORB"""
     orb = cv.ORB_create()
+    image.show(), template.show()
     matcher = cv.BFMatcher(cv.NORM_L1, crossCheck=False)
     template = image_to_opencv(template.convert("RGB"))
     tp_kp, tp_ds = orb.detectAndCompute(template, None)
     image = image_to_opencv(image.convert("RGB"))
     im_kp, im_ds = orb.detectAndCompute(image, None)
+    assert im_ds is not None and tp_ds is not None
     try:
         matches = matcher.knnMatch(tp_ds, im_ds, k=2)
     except cv.error as e:
+        print("[OpenCV.feature_match] {}".format(e))
         return 0
     result = 0
     for value in matches:

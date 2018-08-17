@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE
 from PIL import Image, ImageFilter
 from pytesseract import pytesseract as tesseract
 # Project Modules
-from parsing import opencv
+from parsing import imageops
 from utils.directories import get_assets_directory
 
 DIGITS = ["kills", "assists", "deaths", "damage", "hit", "objectives", "score"]
@@ -23,6 +23,8 @@ WHITELIST = \
     "abcdefghijklmnopqrstuvwxyz" \
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
     "-áàäúùüóòöéèëíìï'\""
+
+NUMBERS = "-c tessedit_char_whitelist=\"0123456789\""
 
 
 def is_installed() -> bool:
@@ -65,7 +67,7 @@ def perform_ocr(image: Image.Image) -> (None, str):
     return result
 
 
-def perform_ocr_scoreboard(image: Image.Image, column: str, start=START, end=END, diff=DIFF) -> (str, int, None):
+def perform_ocr_scoreboard(image: Image.Image, column: str, start=START, end=END, diff=DIFF)->(str, int, None):
     """Perform OCR on a part of an image"""
     result = None
     is_number = column in DIGITS
@@ -81,7 +83,7 @@ def perform_ocr_scoreboard(image: Image.Image, column: str, start=START, end=END
             continue
         break
     if is_number and not result.isdigit():
-        result = match_digit(high_pass_invert(image, START))
+        result = match_digit(high_pass_invert(image, 650))
     if result == "" or (is_number and not result.isdigit()):
         return 0 if is_number else None
     if is_number:
@@ -89,19 +91,29 @@ def perform_ocr_scoreboard(image: Image.Image, column: str, start=START, end=END
     return result.replace("\n", "").replace("  ", "")
 
 
-def match_digit(image: Image.Image) -> str:
+def match_digit(image: Image.Image)->str:
     """Match the digit in the image to a template in the assets folder"""
-    print("[OpenCV] match_digit image size: {}".format(image.size))
-    image = image.resize((image.width * 2, image.height * 2), Image.ANTIALIAS)
+    image = image.convert("RGB")
     folder = os.path.join(get_assets_directory(), "digits")
+    digits = os.listdir(folder)
     results = dict()
-    for digit in os.listdir(folder):
-        template = Image.open(os.path.join(folder, digit)).resize((100, 100), Image.LANCZOS)
+    pixels = image.load()
+    min_x, min_y = image.width - 1, image.height - 1
+    max_x, max_y = 0, 0
+    for x in range(image.width):
+        for y in range(image.height):
+            if sum(pixels[x, y]) < 128:
+                min_x = min(min_x, x)
+                min_y = min(min_y, y)
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
+    box = (min_x - 3, min_y - 3, max_x + 3, max_y + 3)
+    image = image.crop(box).resize((50, 50), Image.BICUBIC)
+    for digit in sorted(digits):
+        if not digit.endswith(".png"):
+            continue
+        template: Image.Image = Image.open(os.path.join(folder, digit)).convert("RGB")
         digit = digit[:-4]
-        results[digit] = opencv.feature_match(template, image)
-    if all(value == 0 for value in results.values()):
-        print("[OpenCV] match_digit could not determine digit", flush=True)
-        return "0"
-    r = max(results, key=lambda key: results[key])
-    print("[OpenCV] match_digit: {}".format(r), flush=True)
-    return r
+        results[digit] = imageops.get_similarity_monochrome(template, image)
+        print("Rows: {} -> {}".format(digit, results[digit]))
+    return max(results, key=lambda key: results[key])
