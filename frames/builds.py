@@ -191,7 +191,8 @@ class BuildsFrame(ttk.Frame):
         # Create an appropriate ComponentWidget
         self.current_component = ComponentWidget(*args)
         # Create a new Component object
-        category = COMPONENT_TYPES[category]
+        if category in COMPONENT_TYPES:
+            category = COMPONENT_TYPES[category]
         new_component = Component(
             self.ships_data[self.ship.ship_name][category][index], index, category)
         # Transfer the upgrades of the currently selected component on the ship to the new Component

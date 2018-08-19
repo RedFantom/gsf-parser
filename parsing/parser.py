@@ -529,10 +529,6 @@ class Parser(object):
                     current_id = source
                 elif target in player_list:
                     current_id = target
-                else:
-                    print("[Parser] parse_spawn found a line in which neither source or target provide a valid player "
-                          "ID:", line["line"].replace("\n", ""))
-                    # raise ValueError("Neither source nor target contained a valid player ID in line:", line["line"])
             # Add this line to the spawn list and continue
             spawn.append(line)
 

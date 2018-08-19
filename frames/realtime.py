@@ -162,6 +162,9 @@ class RealTimeFrame(ttk.Frame):
 
     def stop_parsing(self):
         """Stop the parsing process"""
+        if self.parser._scoreboard_parser is not None:
+            messagebox.showwarning("Warning", "Parsing cannot be stopped while parsing a scoreboard.")
+            return
         self.parsing_control_button.config(state=tk.DISABLED)
         self.parsing_control_button.update()
         if self.minimap_enabled.get() is True and self.minimap is not None:

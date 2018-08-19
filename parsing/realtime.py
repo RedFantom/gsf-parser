@@ -244,6 +244,7 @@ class RealTimeParser(Thread):
         screen_perf.clear()
         screen_perf = {feature: [0, 0.0] for feature in self._features}
         self._ready_button_img: Image.Image = None
+        self.power_mode = "F4"
 
         self._scoreboard_parsers: List[ScoreboardParser] = list()
         self._scoreboard = False
@@ -273,7 +274,8 @@ class RealTimeParser(Thread):
         parameters for use in the loop.
         """
         self._mss = mss.mss()
-        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release, catch=False)
+        self._kb_listener = pynput.keyboard.Listener(
+            on_press=self._on_kb_press, on_release=self._on_kb_release, catch=False)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press, catch=False)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
@@ -478,6 +480,7 @@ class RealTimeParser(Thread):
             self._pointer_parser.new_spawn()
         if self._speed_parser is not None:
             self._speed_parser.reset()
+        self.power_mode = "F4"
 
     def update_player_id(self, line: dict):
         """Update the Player ID if this line allows it"""
@@ -701,7 +704,7 @@ class RealTimeParser(Thread):
 
         # Calculate the box of the spawn timer
         (x, y), (w, h) = location, self._ready_button_img.size
-        _x1, _y1, _x2, _y2 = w // 2 - 15, -45, w // 2 + 55, -45 + 20
+        _x1, _y1, _x2, _y2 = w // 2 - 15, -50, w // 2 + 55, -50 + 20
         scale = self._interface.global_scale
         _x1, _y1, _x2, _y2 = map(lambda v: int(round(v * (scale / 1.05))), (_x1, _y1, _x2, _y2))
         x1, y1, x2, y2 = x + _x1, y + _y1, x + _x2, y + _y2
@@ -710,7 +713,6 @@ class RealTimeParser(Thread):
 
         # Perform OCR on this box
         template = screenshot.crop(box)
-        template.save("template.png")
         result: str = tesseract.perform_ocr(template)
         if result is None:  # OCR failed
             return
@@ -800,7 +802,7 @@ class RealTimeParser(Thread):
         player is currently engaged in. If the map is determined at one
         point, detection is not attempted again.
         """
-        if self._active_map is not None or self.active_id != "":
+        if self._active_map is not None or self.active_id == "" or self.is_match is False:
             return
         minimap = screenshot.crop(self.get_coordinates("minimap"))
         match_map = vision.get_map(minimap)
@@ -1040,6 +1042,8 @@ class RealTimeParser(Thread):
         relevant are processed and stored, and only if a match is
         active. Provides RGBController interaction.
         """
+        if self._speed_parser is not None:
+            self._speed_parser.on_key(key, True)
         if not self.is_match or key not in keys:
             return True
         key = keys[key]
@@ -1050,7 +1054,9 @@ class RealTimeParser(Thread):
         self._key_states[key] = True
         self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
-            print("[RealTimeParser.KeyboardListener] Creating Power Mode event")
+            if self.power_mode == key:
+                return
+            self.power_mode = key
             effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
             self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
@@ -1062,15 +1068,13 @@ class RealTimeParser(Thread):
         relevant are processed and stored, and only if a match is
         active. Provides RGBController interaction.
         """
-        if not self.is_match:
+        if self._speed_parser is not None:
+            self._speed_parser.on_key(key, False)
+        if not self.is_match or key not in keys:
             return
-        if key not in keys:
-            return
-        print("[RealTimeParser.KeyboardListener] Processing keypress: {}".format(key))
         self._key_states[keys[key]] = False
         self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
         self.rgb_queue_put(("release", key))
-        print("[RealTimeParser] Processed key: {}".format(key))
         if key == Key.ctrl_l or key == Key.ctrl:
             print("[RealTimeParser] ScoreboardParser triggered")
             self._scoreboard = True
@@ -1095,6 +1099,8 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("clicks", now, (pressed, button))
         if button == Button.left and pressed is True:  # PrimaryWeapon shot
             self._realtime_db.set_for_spawn("shots", now, (x, y))
+        if self._pointer_parser is not None and button == Button.left:
+            self._pointer_parser.mouse_queue.put(pressed)
 
     def rgb_queue_put(self, item: Any):
         """Put an item in the RGBController Queue if RGB is enabled"""
@@ -1170,7 +1176,7 @@ class RealTimeParser(Thread):
         if self._spawn_time is None:
             return "Next spawn unknown\n"
         return "Spawn in {:02d}s\n".format(
-            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
+            20 - divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
 
     @property
     def map_match_type_string(self) -> str:

@@ -162,11 +162,10 @@ class ScoreboardParser(Process):
     def get_score(screenshot: Image.Image, scale: float, location: Tuple[int, int]) -> Tuple[int, int, int]:
         """Parse the score on the scoreboard to (left, right, self)"""
         x, y = location
-        y1, y2 = int(y - 35 * scale), int(y - 20 * scale)
-        x1_l, x2_l, x1_r, x2_r = x + 50 * scale, x + 75 * scale, x + 180 * scale, 205 * scale
+        y1, y2 = int(y - 40 * scale), int(y - 20 * scale)
+        x1_l, x2_l, x1_r, x2_r = x + 50 * scale, x + 85 * scale, x + 180 * scale, 205 * scale
         left: Image.Image = screenshot.crop(tuple(map(int, (x1_l, y1, x2_l, y2))))
         right: Image.Image = screenshot.crop(tuple(map(int, (x1_r, y1, x2_r, y2))))
-        left.save("left.png"), right.save("right.png")
         score_l, score_r = map(lambda i: tesseract.perform_ocr_scoreboard(i, "score", 420, 360), (left, right))
         return score_l, score_r, list(map(ScoreboardParser.is_allied, (left, right))).index(True)
 

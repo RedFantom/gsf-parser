@@ -13,7 +13,6 @@ from time import sleep
 # Packages
 from mss import mss
 from PIL import Image
-from pynput.mouse import Button, Listener
 # Project Modules
 from parsing.gsfinterface import GSFInterface
 from parsing.imageops import get_similarity_transparent
@@ -50,13 +49,6 @@ class PointerParser(Thread):
         Thread.__init__(self)
 
         self.mss = mss()
-        self.mouse = Listener(on_click=self.on_click)
-
-    def on_click(self, _: int, __: int, button: Button, pressed: bool):
-        """Process a click of the mouse"""
-        if not button == Button.left:
-            return
-        self.mouse_queue.put(pressed)
 
     def run(self):
         """
@@ -70,8 +62,6 @@ class PointerParser(Thread):
         of this process is passed on to the Thread owner.
         """
         print("[PointerParser] Starting...")
-        self.mouse.start()
-        print("[PointerParser] Mouse Listener started")
         while self.exit_queue.empty():
             if self.rof is None:
                 sleep(1)  # Reduce performance impact when not active
@@ -99,7 +89,6 @@ class PointerParser(Thread):
             screenshot = screenshot.convert("RGBA")
             match = get_similarity_transparent(self.pointer, screenshot)
             self.chance_queue.put((self.last, match > 95))
-        self.mouse.stop()
 
     def stop(self):
         """Stop the Threads activities by notifying it it needs to exit"""

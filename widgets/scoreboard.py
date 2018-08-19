@@ -108,7 +108,6 @@ class Scoreboard(ttk.Frame):
 
     def tree_sort(self, column, reverse, type):
         """Sort a column by its value"""
-        print("Sorting {}".format(column))
         self.tree.heading(column, command=lambda: self.tree_sort(column, not reverse, type))
         if column == "#0":
             children = self.tree.get_children("")

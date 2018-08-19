@@ -33,6 +33,59 @@ class SettingsFrame(ttk.Frame):
 
     DELAY = 3000
 
+    SCREEN_PARSING_FEATURES = {
+        "Engine Speed":
+            "Creates a speed indicator in m/s in the real-time parsing overlay.",
+        "Map and match type":
+            "Determines the map based on the in-game MiniMap. Saves this map "
+            "in the real-time parsing database, shows in the overlay and the "
+            "Discord Rich Presence status indicator.",
+        "MiniMap Location":
+            "Used only in MiniMap Location sharing. The MiniMap Location "
+            "sharing service sends your location on the MiniMap to a server "
+            "of your choosing to enable better cooperation in high-level "
+            "teams.",
+        "Mouse and Keyboard":
+            "Enables listening to mouse and keyboard input events. Requires "
+            "administrator privileges on Windows. A lot of features depend on "
+            "these Listeners.",
+        "Pointer Parsing":
+            "Reads the pointer when firing Primary Weapons to determine if "
+            "shots were made on-target, and thus whether shots missed, evaded "
+            "or hit.",
+        "Power Regeneration Delays":
+            "Creates power delay indicators in the overlay, in a text format. "
+            "Works for Engine, Shield and Weapon power pools. Depends on the "
+            "build calculator for accurate numbers.",
+        "Tracking penalty":
+            "Reads the position of the Mouse in order to determine the amount "
+            "of tracking degrees the pointer is off-center. If the build is "
+            "correctly configured, this number is then converted to a "
+            "percentage in accuracy lost.",
+        "Scoreboard Parsing":
+            "When a match is over, press CTRL while still in the scoreboard "
+            "screen to trigger a ScoreboardParser. Uses OCR and advanced "
+            "matching techniques to read the scoreboard numbers. Saves them "
+            "in a separate database so they can be displayed in the file "
+            "parsing frame.\n"
+            "ScoreboardParsers run in separate Processes. These cannot be "
+            "cancelled once they are started. A progress indicator is "
+            "provided in the overlay.\n"
+            "Depends on Tesseract-OCR. Tesseract-OCR is a very advanced "
+            "OCR engine. If this Checkbox is disabled, please check that "
+            "you have installed Tesseract-OCR into your PATH.",
+        "Ship health":
+            "Read the ship health indicators and determine their color to "
+            "approximate the ship health remaining. Available in the overlay "
+            "and the real-time parsing database.",
+        "Spawn Timer":
+            "Performs OCR on the spawn timer in the pre-spawn interface to "
+            "determine the time until a new spawn wave is triggered.\n"
+            "Depends on Tesseract-OCR. Tesseract-OCR is a very advanced "
+            "OCR engine. If this Checkbox is disabled, please check that "
+            "you have installed Tesseract-OCR into your PATH."
+    }
+
     def __init__(self, root_frame, main_window):
         self.after_id = None
         self.main_window = main_window
@@ -197,11 +250,6 @@ class SettingsFrame(ttk.Frame):
             self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
         # Screen parsing features
         self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
-        self.sc_features = [
-            "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
-            "MiniMap Location", "Map and match type", "Scoreboard Parsing", "Pointer Parsing",
-            "Power Regeneration Delays", "Engine Speed"
-        ]
         beta = [
             "MiniMap Location", "Spawn Timer", "Map and match type", "Scoreboard Parsing", "Pointer Parsing",
         ]
@@ -214,11 +262,12 @@ class SettingsFrame(ttk.Frame):
         }
         self.sc_checkboxes = OrderedDict()
         self.sc_variables = {}
-        for feature in self.sc_features:
+        for feature in self.SCREEN_PARSING_FEATURES:
             self.sc_variables[feature] = tk.BooleanVar()
             text = feature if feature not in beta else "{} (bèta)".format(feature)
             self.sc_checkboxes[feature] = ttk.Checkbutton(
                 self.sc_frame, text=text, variable=self.sc_variables[feature], command=self.save_settings)
+            Balloon(self.sc_checkboxes[feature], text=self.SCREEN_PARSING_FEATURES[feature])
         # Dynamic Window Location Support
         self.sc_dynamic_window = tk.BooleanVar()
         self.sc_dynamic_window_checkbox = ttk.Checkbutton(
@@ -450,7 +499,7 @@ class SettingsFrame(ttk.Frame):
         Screen Parsing settings
         """
         self.sc_enabled.set(settings["screen"]["enabled"])
-        for feature in self.sc_features:
+        for feature in self.SCREEN_PARSING_FEATURES:
             self.sc_variables[feature].set(feature in settings["screen"]["features"])
         self.sc_dynamic_window.set(settings["screen"]["window"])
         self.sc_perf.set(settings["screen"]["perf"])
@@ -466,10 +515,7 @@ class SettingsFrame(ttk.Frame):
         """
         if not tesseract.is_installed():
             self.sc_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-            Balloon(self.sc_checkboxes["Spawn Timer"],
-                text="The Spawn Timer screen parsing features depends on Tesseract-OCR. Tesseract is "
-                     "an optical character recognition engine. To install Tesseract, visit the GitHub "
-                     "Wiki of Tesseract: https://github.com/tesseract-ocr/tesseract/wiki")
+            self.sc_checkboxes["Scoreboard Parsing"].configure(state=tk.DISABLED)
         if self.sc_perf.get() is False:
             self.sc_disable_checkbox.config(state=tk.DISABLED)
         else:

@@ -58,14 +58,14 @@ class TimeView(ttk.Treeview):
         self.setup_columns()
         self.icons = {}
         self._icons = {
-            name[:-4]: PhotoImage(
+            name[:-4].lower(): PhotoImage(
                 Image.open(
                     os.path.join(get_assets_directory(), "icons", name)).
                     resize((24, 24), Image.ANTIALIAS))
             for name in os.listdir(os.path.join(get_assets_directory(), "icons"))
         }
         for icon, file_name in ICONS.items():
-            self.icons[icon] = self._icons[file_name]
+            self.icons[icon.lower()] = self._icons[file_name]
         self.style = ttk.Style(self)
         self.style.configure("TimeView.Treeview", rowheight=32)
         self.config(style="TimeView.Treeview")
@@ -117,14 +117,14 @@ class TimeView(ttk.Treeview):
             line["amount"] if line["amount"] != 0 else ""
         )
         tag = Parser.get_event_category(line, active_ids)
-        if line["ability"] not in self.icons and "icon" not in line:
+        if line["ability"].lower() not in self.icons and "icon" not in line:
             print("[TimeView] {} missing icon".format(line["ability"]))
             image = self.icons["default"]
-        elif line["ability"] in self.icons:
-            image = self.icons[line["ability"]]
+        elif line["ability"].lower() in self.icons:
+            image = self.icons[line["ability"].lower()]
         elif "icon" in line:
             d = self._icons if line["icon"] in self._icons else self.icons
-            image = d[line["icon"]]
+            image = d[line["icon"].lower()]
         else:
             print("[TimeView] Missing Icon for: '{}'".format(line["ability"]))
             return

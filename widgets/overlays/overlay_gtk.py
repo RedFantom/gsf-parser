@@ -5,7 +5,6 @@ Copyright (c) 2018 RedFantom
 """
 # Standard Library
 import os
-from threading import Thread
 # Packages
 import cairo
 import gi
@@ -22,7 +21,6 @@ class GtkOverlay(Gtk.Window):
         """Initialize window and attributes"""
         GLib.log_set_writer_func(lambda *args: GLib.LogWriterOutput.HANDLED)
         Gtk.Window.__init__(self)
-        Thread.__init__(self)
         self._string = string
         self.connect("destroy", Gtk.main_quit)
         self.move(*position)

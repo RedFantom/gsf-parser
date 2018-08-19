@@ -10,6 +10,9 @@ from typing import Any, Dict, Iterable, List, Tuple
 from PIL import Image
 
 
+Color = Tuple[int, int, int]
+
+
 def outer_to_inner(l: List[Any]) -> Iterable[Any]:
     """Create tuples of (first, last), (second, first-to-last), etc."""
     return list((list(l)[i], list(reversed(l))[i]) for i in range(len(l) // 2))
@@ -50,7 +53,7 @@ def get_similarity(template: Image.Image, to_match: Image.Image):
 def get_similarity_monochrome(template: Image.Image, to_match: Image.Image) -> float:
     """Determine the similarity of two monochrome images"""
     t_edges, m_edges = detect_edges(template), detect_edges(to_match)
-    return sum(abs(v2 - v1) < 3 for v1, v2 in zip(t_edges, m_edges) if v1 != 0) / template.height
+    return sum(abs(v2 - v1) < 15 for v1, v2 in zip(t_edges, m_edges) if v1 != 0) / template.height
 
 
 def detect_edges(image: Image.Image) -> List[int]:
@@ -114,6 +117,19 @@ def get_dominant_color(image: Image.Image) -> Tuple[int, int, int]:
     colors: Iterable[Tuple[Tuple[int, int, int], int]] = image.getcolors(image.width * image.height)
     colors: Dict[Tuple[int, int, int], int] = {color: count for count, color in colors}
     return max(colors, key=lambda e: colors[e])
+
+
+def replace_color(image: Image.Image, source: Color, target: Color) -> Image.Image:
+    """Convert a single RGB color with another color"""
+    destination = image.copy().convert("RGB")
+    pixels = destination.load()
+
+    for x in range(destination.width):
+        for y in range(destination.height):
+            if pixels[x, y] == source:
+                pixels[x, y] = target
+
+    return destination
 
 
 if __name__ == '__main__':
