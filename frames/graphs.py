@@ -17,7 +17,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 # Project Modules
 from variables import settings
-from toplevels.splashscreens import SplashScreen
+from toplevels.splash import SplashScreen
 from parsing.parser import Parser
 
 

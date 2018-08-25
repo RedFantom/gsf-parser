@@ -17,7 +17,7 @@ from tkinter import messagebox
 # Project Modules
 from network.discord import DiscordClient
 from parsing import tesseract
-from toplevels.event_colors import EventColors
+from toplevels.colors import EventColors
 from variables import settings, colors
 from widgets import VerticalScrollFrame, Balloon
 
@@ -485,10 +485,10 @@ class SettingsFrame(ttk.Frame):
         """
         Real-time Settings
         """
-        self.rt_overlay_enabled.set(settings["realtime"]["overlay"])
-        self.rt_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
-        self.rt_overlay_position_frame.set(settings["realtime"]["overlay_position"])
-        self.rt_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
+        self.rt_overlay_enabled.set(settings["overlay"]["enabled"])
+        self.rt_overlay_disable.set(settings["overlay"]["when_gsf"])
+        self.rt_overlay_position_frame.set(settings["overlay"]["position"])
+        self.rt_overlay_text_color.set(settings["overlay"]["color"].capitalize())
         self.rt_overlay_experimental.set(settings["screen"]["experimental"])
         self.rt_event_overlay.set(settings["event"]["enabled"])
         self.rt_event_position_frame.set(settings["event"]["position"])
@@ -516,10 +516,10 @@ class SettingsFrame(ttk.Frame):
         if not tesseract.is_installed():
             self.sc_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
             self.sc_checkboxes["Scoreboard Parsing"].configure(state=tk.DISABLED)
-        if self.sc_perf.get() is False:
-            self.sc_disable_checkbox.config(state=tk.DISABLED)
-        else:
-            self.sc_disable_checkbox.config(state=tk.NORMAL)
+        state = tk.NORMAL if self.sc_perf.get() is True else tk.DISABLED
+        self.sc_disable_checkbox.config(state=state)
+        if sys.platform != "linux":
+            self.rt_overlay_experimental_checkbox.config(state=tk.DISABLED)
 
     def save_settings(self, *args):
         """
@@ -546,13 +546,15 @@ class SettingsFrame(ttk.Frame):
                 "path": self.pa_path.get().strip(),
             },
             "realtime": {
-                "overlay": self.rt_overlay_enabled.get(),
-                "overlay_position": self.rt_overlay_position_frame.get(),
-                "overlay_when_gsf": self.rt_overlay_disable.get(),
-                "overlay_text": self.rt_overlay_text_color.get(),
                 "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
+            },
+            "overlay": {
+                "enabled": self.rt_overlay_enabled.get(),
+                "position": self.rt_overlay_position_frame.get(),
+                "when_gsf": self.rt_overlay_disable.get(),
+                "color": self.rt_overlay_text_color.get()
             },
             "event": {
                 "enabled": self.rt_event_overlay.get(),

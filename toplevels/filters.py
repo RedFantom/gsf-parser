@@ -15,7 +15,7 @@ from ttkwidgets import Calendar, ScaleEntry
 import variables
 from parsing.parser import Parser
 from widgets import ToggledFrame, VerticalScrollFrame
-from toplevels import splashscreens
+from toplevels import splash
 from data import abilities as abls
 
 
@@ -159,7 +159,7 @@ class Filters(tk.Toplevel):
         results = []
         files = os.listdir(variables.settings["parsing"]["path"])
         files_done = 0
-        splash = splashscreens.SplashScreen(self, len(files))
+        splash = splash.SplashScreen(self, len(files))
         # Clear the widgets in the file frame
         self.window.file_select_frame.file_string_dict.clear()
         self.window.file_select_frame.clear_data_widgets()

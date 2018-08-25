@@ -5,10 +5,10 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
-import sys
-from queue import Queue
-from collections import OrderedDict
 from datetime import datetime
+from collections import OrderedDict
+from queue import Queue
+import sys
 # UI Libraries
 import tkinter as tk
 # Project Modules
@@ -23,7 +23,7 @@ class EventOverlay(tk.Toplevel):
     Overlay with shifting events view of certain types of events that
     can be observed during the match.
     """
-    def __init__(self, master, timeout=10, bg="darkblue", location=(0, 0), after=100):
+    def __init__(self, master, timeout=10, bg="darkblue", location=(0, 0)):
         """
         :param master: master widget
         :param timeout: Amount of time an event is displayed in seconds
@@ -37,7 +37,6 @@ class EventOverlay(tk.Toplevel):
         self._background = bg
         self._timeout = timeout
         self._location = location
-        self._after = after
         # Attributes
         self._labels = OrderedDict()
         self._queue = Queue()
@@ -118,7 +117,7 @@ class EventOverlay(tk.Toplevel):
         self._labels.clear()
 
     def generate_widget(self, event: dict, event_type: str) -> (tk.Label, None):
-        """Build a abel widget for an event"""
+        """Build a Label widget for an event"""
         now = datetime.now()
         elapsed = (now - datetime.combine(now.date(), event["time"].time())).total_seconds()
         if elapsed > self._timeout:

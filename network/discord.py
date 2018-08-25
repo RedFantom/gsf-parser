@@ -19,7 +19,7 @@ import tkinter as tk
 from data.ships import ship_tiers
 from network.connection import Connection
 from parsing import Parser, FileHandler
-from toplevels.splashscreens import DiscordSplash
+from toplevels.splash import DiscordSplash
 from utils.directories import get_temp_directory
 from variables import settings
 

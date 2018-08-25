@@ -18,7 +18,7 @@ from tkinter import messagebox
 from network.discord import DiscordClient
 from parsing.realtime import RealTimeParser
 from toplevels.minimap import MiniMap
-from toplevels.event_overlay import EventOverlay
+from widgets.events import EventOverlay
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
 from widgets.time_view import TimeView
@@ -44,7 +44,6 @@ class RealTimeFrame(ttk.Frame):
         self.parser = None
         self.overlay = None
         self.overlay_after_id = None
-        self.overlay_string = None
         self.data_after_id = None
         self._event_overlay = None
 
@@ -104,7 +103,7 @@ class RealTimeFrame(ttk.Frame):
         if self.character_data is None:
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return False
-        if settings["realtime"]["overlay"] or settings["screen"]["enabled"]:
+        if settings["overlay"]["enabled"] or settings["screen"]["enabled"]:
             if get_swtor_screen_mode() is False:
                 return False
         if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
@@ -223,18 +222,14 @@ class RealTimeFrame(ttk.Frame):
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
-        if settings["realtime"]["overlay"] is False:
+        if settings["overlay"]["enabled"] is False:
             return
-        if settings["screen"]["experimental"] is True and sys.platform != "linux":
-            from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
-        else:  # Linux or non-experimental
-            from widgets.overlays import Overlay
+        from widgets.overlays import Overlay
         # Generate arguments for Overlay.__init__
-        position = settings["realtime"]["overlay_position"]
+        position = settings["overlay"]["position"]
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
-        self.overlay_string = tk.StringVar(self)
-        self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+        self.overlay = Overlay((x, y), master=self.window)
         self.update_overlay()
 
     def open_event_overlay(self):
@@ -274,6 +269,7 @@ class RealTimeFrame(ttk.Frame):
         string = self.parser.overlay_string
         if string is not None:
             self.overlay.update_text(string)
+        self.overlay.update_disabled(self.parser.disabled_string)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()

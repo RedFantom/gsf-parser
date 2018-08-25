@@ -39,20 +39,18 @@ defaults = {
     },
     # Real-time parsing settings
     "realtime": {
-        # Whether the overlay is enabled
-        "overlay": True,
-        # Overlay text color
-        "overlay_text": "Yellow",
-        # Overlay position string
-        "overlay_position": "x0y0",
-        # Whether the Overlay hides outside of GSF
-        "overlay_when_gsf": True,
         # RealTimeParser sleep
         "sleep": True,
         # RGB Keyboard Lighting Effects
         "rgb": False,
         # Discord Rich Presence
         "drp": True,
+    },
+    "overlay": {
+        "position": "x0y0",
+        "when_gsf": True,
+        "enabled": True,
+        "color": "Yellow"
     },
     # Event Overlay Settings
     "event": {

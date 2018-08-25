@@ -17,24 +17,28 @@ from utils.directories import get_assets_directory
 class GtkOverlay(Gtk.Window):
     """Window that represents the actual Overlay and draws the text"""
 
-    def __init__(self, position: tuple, string, standard=True, master=None):
+    def __init__(self, position: tuple, _=None):
         """Initialize window and attributes"""
         GLib.log_set_writer_func(lambda *args: GLib.LogWriterOutput.HANDLED)
         Gtk.Window.__init__(self)
-        self._string = string
         self.connect("destroy", Gtk.main_quit)
         self.move(*position)
         self._grid = Gtk.Grid()
+        self._init_labels()
         self.add(self._grid)
-        if standard is True:
-            self._init_label()
         self.init_window_attr()
         self.show_all()
 
-    def _init_label(self):
+    def _init_labels(self):
+        """Create Label attributes"""
         self._label = Gtk.Label("Placeholder")
         self._label.set_justify(Gtk.Justification.LEFT)
         self._grid.attach(self._label, 0, 0, 1, 1)
+        self._red = Gtk.Label("Placeholder")
+        self._label.set_justify(Gtk.Justification.LEFT)
+        self._grid.attach(self._label, 0, 1, 1, 1)
+        self._label.set_use_markup(True)
+        self._red.set_use_markup(True)
 
     def init_window_attr(self):
         """Initialize Window attributes"""
@@ -66,10 +70,12 @@ class GtkOverlay(Gtk.Window):
 
     def update_text(self, string: str):
         """Update the text in the Label"""
-        if not hasattr(self, "_label"):
-            raise RuntimeError("This is not a standard GtkOverlay")
-        self._label.set_use_markup(True)
         self._label.set_markup("<b><span color=\"yellow\">{}</span></b>".format(string))
+        Gtk.main_iteration()
+
+    def update_disabled(self, string: str):
+        """Update the text in the red text label"""
+        self._red.set_markup("<b><span color=\"red\">{}</span></b>".format(string))
         Gtk.main_iteration()
 
     def destroy(self):
@@ -87,6 +93,6 @@ class GtkOverlay(Gtk.Window):
 
 
 if __name__ == '__main__':
-    overlay = GtkOverlay((0, 0), None)
+    overlay = GtkOverlay((0, 0))
     overlay.update_text("Hello")
     Gtk.main()

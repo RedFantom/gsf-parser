@@ -204,6 +204,7 @@ class RealTimeParser(Thread):
         self.discord = DiscordClient()
         self.tutorial = False
         self._read_from_file = False
+        self._abilities_disabled = dict()
 
         """
         Screen parsing
@@ -390,7 +391,7 @@ class RealTimeParser(Thread):
         if Parser.is_login(line):
             self.handle_login(line)
         # First check if this is still a match event
-        if self.is_match and ("@" in line["source"] or "@" in line["target"]):
+        if self.is_match and not Parser.is_gsf_event(line):
             self.handle_match_end(line)
             return
         # Handle out-of-match events
@@ -400,8 +401,7 @@ class RealTimeParser(Thread):
                 return
             else:  # Valid match event
                 self.handle_match_start(line)
-        if Parser.is_tutorial_event(line):
-            self.tutorial = True
+        self.tutorial = self.tutorial or Parser.is_tutorial_event(line)
         self.handle_spawn(line)
         self.update_player_id(line)
         if self.active_id == "":
@@ -412,8 +412,9 @@ class RealTimeParser(Thread):
         self.parse_line(line)
         self.update_rgb_keyboard(line)
         self.update_ship()
-        if self._speed_parser is not None and line["target"] == self.active_id:
+        if self._speed_parser is not None and Parser.compare_ids(line["target"], self.active_ids):
             self._speed_parser.process_slowed_event(line)
+        self.update_disabled_parser(line)
 
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
@@ -518,8 +519,10 @@ class RealTimeParser(Thread):
 
     def parse_line(self, line: dict):
         """Parse an actual GSF event line"""
+        if "effect" not in line:
+            print("")
         Parser.get_event_category(line, self.active_id)
-        if line["amount"] == "":
+        if "amount" not in line or line["amount"] == "":
             line["amount"] = "0"
         line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
@@ -594,6 +597,7 @@ class RealTimeParser(Thread):
             self._configured_flag = True
             print("[RealTimeParser] Ship not configured: {}".format(ship))
             return
+        print("[RealTimeParser] Detected new ship: {}".format(ship))
         self._configured_flag = False
         self.ship = ship_objects[ship]
         args = (self.ship, self.ships_db, self.companions_db)
@@ -601,8 +605,10 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("ship", self.ship)
         self.update_presence()
         if self._timer_parser is not None:
+            print("[RealTimeParser] Sending new ship to DelayParser")
             self._timer_parser.set_ship_stats(self.ship_stats)
         if self._speed_parser is not None:
+            print("[RealTimeParser] Sending new ship to SpeedParser")
             self._speed_parser.update_ship_stats(self.ship_stats)
 
     def update_pointer_parser_ship(self):
@@ -626,6 +632,24 @@ class RealTimeParser(Thread):
                 raise KeyError("Unknown character")
             self._char_data = self._char_db[self._char_i]
         self.update_presence()
+
+    def update_disabled_parser(self, line: dict):
+        """Check a line for ability disable events"""
+        if "Ability Disabled" in line["effect"]:
+            applicant, ability, source = line["source"], line["effect"], line["effect_id"]
+            if "ApplyEffect" in line["effect"]:  # Ability now disabled
+                # Together, the applicant and source are considered unique
+                # Multiple effects from the same applicant always overlap
+                self._abilities_disabled[(applicant, source)] = ability
+            elif "RemoveEffect" in line["effect"]:  # Ability no longer disabled
+                # Applicant may have died in the mean-time
+                if applicant == "System":  # Remove all effects of this type
+                    for (applicant, source_id) in self._abilities_disabled.copy().keys():
+                        if source_id != source:
+                            continue
+                        del self._abilities_disabled[(applicant, source_id)]
+                else:  # Applicant still alive
+                    del self._abilities_disabled[(applicant, source)]
 
     def process_screenshot(self, screenshot: Image.Image, screenshot_time: datetime):
         """Analyze a screenshot and take the data to save it"""
@@ -1138,7 +1162,7 @@ class RealTimeParser(Thread):
     @property
     def overlay_string(self) -> str:
         """String of text to set in the Overlay"""
-        if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
+        if self.is_match is False and self.options["overlay"]["when_gsf"] is True:
             return ""
         string = self.notification_string + self.parsing_data_string
         if "Spawn Timer" in self._features:
@@ -1173,6 +1197,8 @@ class RealTimeParser(Thread):
     @property
     def spawn_timer_string(self) -> str:
         """Spawn timer parsing string for the Overlay"""
+        if self.is_match is False:
+            return ""
         if self._spawn_time is None:
             return "Next spawn unknown\n"
         return "Spawn in {:02d}s\n".format(
@@ -1196,3 +1222,9 @@ class RealTimeParser(Thread):
             ship += " (Not fully configured)"
         ship += "\n\n"
         return string + ship
+
+    @property
+    def disabled_string(self):
+        """String containing the disabled abilities for display in red"""
+        disabled: list = list(set(self._abilities_disabled.values()))
+        return "\n".join(disabled)

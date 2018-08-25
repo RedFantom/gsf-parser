@@ -11,7 +11,7 @@ from widgets.builds.crew_list import *
 from widgets.builds.ships import *
 from widgets.builds.component_list import *
 from widgets.builds.component import *
-from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
+from widgets.overlays.tkinter import TkinterOverlay as Overlay
 
 from ttkwidgets.frames import Balloon as _Balloon
 

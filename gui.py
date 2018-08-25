@@ -19,7 +19,7 @@ from frames import FileFrame, GraphsFrame, \
     StatsFrame, StrategiesFrame, ToolsFrame
 # Widgets
 from ttkwidgets import DebugWindow
-from toplevels.splashscreens import BootSplash
+from toplevels.splash import BootSplash
 # Project Modules
 from network.discord import DiscordClient
 from utils.directories import get_temp_directory, get_assets_directory
@@ -46,7 +46,7 @@ class MainWindow(ThemedTk):
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
-        ThemedTk.__init__(self)
+        ThemedTk.__init__(self, gif_override=True)
         self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
@@ -203,7 +203,9 @@ class MainWindow(ThemedTk):
         Update the style of the window. This includes theme and text
         colour, but also font.
         """
+        print("[MainWindow] PNG-based theme: {}".format(self.png_support))
         self.set_theme("arc")
+        print("[MainWindow] ThemedWidget Version: {}".format(getattr(self, "VERSION", None)))
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")

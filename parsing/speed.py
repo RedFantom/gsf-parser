@@ -140,7 +140,6 @@ class SpeedParser(Thread):
             self._stopped = False
         elif "F" in key:
             self._power_mode = key
-        print("[SpeedParser] Processed Key: {}, {}".format(key, state))
 
     @property
     def string(self):
@@ -155,7 +154,7 @@ class SpeedParser(Thread):
 
     def process_slowed_event(self, event: dict):
         """Process an Engine Slowed event"""
-        if event["effect_id"] not in SpeedParser.EFFECTS or not "ApplyEffect" in event["effect"]:
+        if event["effect_id"] not in SpeedParser.EFFECTS or "ApplyEffect" not in event["effect"]:
             return
         self._effects.append((event["time"], SpeedParser.EFFECTS[event["effect_id"]]))
 

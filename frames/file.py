@@ -19,7 +19,7 @@ import variables
 from parsing import folderstats, filestats, matchstats, spawnstats
 from data import abilities
 from parsing.parser import Parser
-from toplevels.splashscreens import SplashScreen
+from toplevels.splash import SplashScreen
 from toplevels.filters import Filters
 from parsing.filehandler import FileHandler
 from parsing.screen import ScreenParser

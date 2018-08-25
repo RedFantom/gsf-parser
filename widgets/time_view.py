@@ -149,11 +149,9 @@ class TimeView(ttk.Treeview):
         for effect in effects:
             image = None
             if len(effect) == 6:
-                image, effect = effect[5], effect[:5]
-                if image in self.icons:
-                    image = self.icons[image]
-                else:
-                    image = self._icons[image]
+                image, effect = effect[5].lower(), effect[:5]
+                d = self.icons if image in self.icons else self._icons
+                image = d[image]
             self.insert(iid, tk.END, values=effect, image=image, tags=(tag,))
 
     def insert_effects_for_event(self, iid: str, line: dict, tag: str):
