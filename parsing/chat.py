@@ -7,10 +7,13 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 import colorsys
 from datetime import datetime
+from functools import partial
 from multiprocessing import Process, Pool
-from time import sleep
+from tblib import pickling_support
 from typing import List, Tuple
+from sys import exc_info
 # Packages
+from mss import mss
 import numpy as np
 from PIL import Image
 from pytesseract import image_to_string
@@ -25,14 +28,15 @@ Color = Tuple[int, int, int]
 class ChatParser(Process):
     """Parser that runs in a separate Process to read chat messages"""
 
-    def __init__(self, player: str, server: str, conn):
+    def __init__(self, player: str, server: str, conn, accuracy: int):
         """Initialize process and retrieve required data"""
         if not is_tesseract_installed():
             raise RuntimeError("Tesseract is not installed")
 
+        pickling_support.install()
         Process.__init__(self)
 
-        self.conn = conn
+        self.conn, self._f = conn, max(accuracy, 1)
         config = gui.get_player_config(player, server)["Settings"]
         self.colors = self.convert_colors(config["ChatColors"])
         ui = gui.GUIParser(config["GUI_Current_Profile"], {"ChatPanel_1": (None, None)})
@@ -41,21 +45,23 @@ class ChatParser(Process):
     def run(self):
         """Run the message reading loop"""
         print("[ChatParser] Started")
-        # screenshotter = mss()
-        # screenshot = screenshotter.grab(self.box)
-        # image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
-        image = Image.open("before.png")
-        results = self.parse_messages(image, self.colors)
+        screenshotter = mss()
+        screenshot = screenshotter.grab(self.box)
+        image = Image.frombytes("RGB", screenshot.size, screenshot.rgb)
+        try:
+            results = self.parse_messages(image, self.colors)
+        except Exception:
+            self.conn.send(tuple(exc_info()))
+            return
         print("[ChatParser] Results: {}".format(results))
         self.conn.send(results)
-        sleep(5)
         print("[ChatParser] Stopped")
 
     @staticmethod
     def compare_colors(color: Color, colors: List[Color]) -> bool:
         """Compare color to colors in HSV format"""
         for template in colors:
-            if sum(abs(v1 - v2) for v1, v2 in zip(color, template)) < 60:
+            if sum(abs(v1 - v2) for v1, v2 in zip(color, template)) < 70:
                 return True
         return False
 
@@ -75,23 +81,29 @@ class ChatParser(Process):
     def prepare_image(self, image: Image.Image, colors: list) -> Image.Image:
         """Prepare an image by filtering its text"""
         self.conn.send("Processing colors...")
+        size = tuple(map(lambda v: int(round(self._f * v)), image.size))
+        image = image.resize(size, Image.NORMAL)
         colors: List[Color] = list(set(map(ChatParser.rgb_to_hsv, colors)))
         pixels = np.array(image)
-        new = Image.new("L", (image.width, image.height), color=255)
-        new_pixels = np.array(new)
         img_colors = image.getcolors(image.width * image.height)
         cmp_colors = list()
         for count, color in img_colors:
             color = ChatParser.rgb_to_hsv(color)
             if count > 1 and ChatParser.compare_colors(color, colors):
                 cmp_colors.append(color)
-        for y in range(image.height):
-            self.conn.send("Pre-processing image... {:.1f}%".format(((y + 1) / image.height) * 100))
-            for x in range(image.width):
-                color = ChatParser.rgb_to_hsv(pixels[y, x])
-                if ChatParser.compare_colors(color, cmp_colors):
-                    new_pixels[y, x] = 0
-        return Image.fromarray(new_pixels, "L")
+        self.conn.send("Pre-processing image...")
+        result = Pool().map(partial(self.process_row, colors), pixels)
+        return Image.fromarray(np.vstack(result), "L")
+
+    @staticmethod
+    def process_row(colors: List[Color], row: np.array):
+        """Map a single row to a new format"""
+        result = np.full([row.shape[0]], 255,  dtype=np.uint8)
+        for x in range(row.shape[0]):
+            color = ChatParser.rgb_to_hsv(row[x])
+            if ChatParser.compare_colors(color, colors):
+                result[x] = 0
+        return result
 
     def perform_ocr(self, image: Image.Image, colors: List[Color]) -> str:
         """Perform OCR on an image"""
@@ -103,6 +115,6 @@ class ChatParser(Process):
 
     def parse_messages(self, image: Image.Image, colors: List[Color]) -> List[tuple]:
         """Return a list of individual messages given an image"""
-        string = self.perform_ocr(image, colors)
+        string = self.perform_ocr(image, colors).replace("\n\n", "\n")
         self.conn.send("Parsing OCR results...")
         return [(datetime.now(), "", "", string)]

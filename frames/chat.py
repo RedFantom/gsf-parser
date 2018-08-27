@@ -6,6 +6,7 @@ Copyright (c) 2018 RedFantom
 # Standard Library
 from datetime import datetime
 from multiprocessing import Pipe
+from six import reraise
 from typing import List, Tuple
 # UI Libraries
 from tkinter import messagebox
@@ -36,7 +37,7 @@ class ChatFrame(ttk.Frame):
         self.window = window
 
         self._scroll = ttk.Scrollbar(self)
-        self._chat = ChatWindow(self, width=785, height=350, scrollbar=self._scroll)
+        self._chat = ChatWindow(self, width=785, height=320, scrollbar=self._scroll)
         self._chars: dict = window.characters_frame.characters.copy()
 
         self.server, self.character = tk.StringVar(), tk.StringVar()
@@ -44,6 +45,11 @@ class ChatFrame(ttk.Frame):
         self.server_dropdown = ttk.OptionMenu(self, self.server, *servers, command=self.update_characters)
         self.character_dropdown = ttk.OptionMenu(self, self.character, *("Choose Character",))
         self.start_button = ttk.Button(self, command=self.start_parsing, text="Start", width=20)
+
+        self._accuracy = tk.DoubleVar()
+        self._accuracy_scale = ttk.Scale(self, variable=self._accuracy, from_=1, to=4, length=200)
+        self._accuracy_start = ttk.Label(self, text="Speed")
+        self._accuracy_end = ttk.Label(self, text="Accuracy")
 
         self.grid_widgets()
 
@@ -55,6 +61,10 @@ class ChatFrame(ttk.Frame):
         self.server_dropdown.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="nswe")
         self.character_dropdown.grid(row=1, column=1, padx=(0, 5), pady=(0, 5), sticky="nswe")
         self.start_button.grid(row=1, column=2, padx=(0, 5), pady=(0, 5), sticky="nswe")
+
+        self._accuracy_start.grid(row=2, column=0, sticky="se", padx=(0, 10))
+        self._accuracy_scale.grid(row=2, column=1, sticky="we")
+        self._accuracy_end.grid(row=2, column=2, sticky="sw", padx=(10, 0))
 
     def highlight(self):
         """Create or remove a red higlight on the missing data attrs"""
@@ -83,12 +93,12 @@ class ChatFrame(ttk.Frame):
         self._pipe, conn = Pipe()
         try:
             server, character = self.selected_character
-            self._parser = ChatParser(character, server, conn)
+            self._parser = ChatParser(character, server, conn, self._accuracy.get())
             self._parser.start()
         except RuntimeError:
             messagebox.showerror("Error", "An error occurred while starting the ChatParser.")
             raise
-        self.start_button.config(state=tk.DISABLED, text="Working")
+        self.start_button.config(state=tk.DISABLED, text="Starting...")
         self._after_id = self.after(1000, self.check_status)
 
     def check_status(self):
@@ -97,24 +107,25 @@ class ChatFrame(ttk.Frame):
         while self._pipe.poll():
             messages = self._pipe.recv()
             if isinstance(messages, str):
-                # self.start_button.config(state=tk.NORMAL)
                 self.start_button.config(text=messages)
-                # self.start_button.config(state=tk.DISABLED)
                 continue
+            elif isinstance(messages, tuple):
+                self.start_button.config(text="An error occurred")
+                reraise(*messages)
             self.insert_messages(messages)
         if not self._parser.is_alive():
             self.stop_parsing()
             return
-        self._after_id = self.after(1000, self.check_status)
+        self._after_id = self.after(100, self.check_status)
 
     def insert_messages(self, messages: List[Tuple[str, str, str, str]]):
         """Insert a list of messages into the ChatWindow"""
+        print("[ChatFrame] Inserting {} messages".format(len(messages)))
         for message in messages:
             time, channel, author, text = message
             if not isinstance(time, datetime):
                 time = datetime.now()
-            self._chat.create_message(time, author, text, "lightblue")
-        self._chat.redraw_messages()
+            self._chat.create_message(time, author, text, "lightblue", redraw=False)
 
     def stop_parsing(self):
         """Stop the active parser"""
@@ -143,7 +154,6 @@ class ChatFrame(ttk.Frame):
         for character in sorted(characters):
             self.character_dropdown["menu"].add_command(
                 label=character, command=lambda value=character: self.character.set(value))
-
     @property
     def selected_character(self) -> Tuple[str, str]:
         """Return the selected character"""

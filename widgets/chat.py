@@ -6,6 +6,7 @@ Copyright (c) 2018 RedFantom
 # Standard Library
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Tuple
+from sys import exc_info
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -77,6 +78,7 @@ class ChatWindow(tk.Canvas):
         """
         time = self.format_time(time)
         y1: int = self.vertical_position
+        print("[ChatWindow] Drawing message at {}".format(y1))
         x1, x2 = self._padx, self._width - self._padx
 
         author_coords: Coords = (x1 + self._padx, y1 + self._pady)
@@ -118,15 +120,23 @@ class ChatWindow(tk.Canvas):
         if time < self._messages[self.most_recent]["time"] and redraw:
             self.redraw_messages()
         self.update_scroll_region()
+        self.yview_moveto(1.0)
 
         return message_id
 
     def redraw_messages(self):
         """Redraw all the messages in the widget"""
-        for key in sorted(self._messages.keys(), key=lambda k: self._messages[k]["time"]):
-            message: Dict[str, Any] = self._messages[key]
-            self._messages[key]["ids"] = self._draw_message(
+        self.delete(tk.ALL)
+        print("[ChatWindow] Redrawing {} messages".format(len(self._messages)))
+        messages = self.messages
+        results = dict()
+        self._messages.clear()
+        for key in reversed(sorted(messages.keys(), key=lambda k: messages[k]["time"])):
+            message: Dict[str, Any] = messages[key]
+            results[key] = message
+            results[key]["ids"] = self._draw_message(
                 message["time"], message["author"], message["text"], message["color"])
+            self._messages = results
 
     def update_scroll_region(self):
         """Update the scrollregion of self with the bounding box of all"""
@@ -153,7 +163,7 @@ class ChatWindow(tk.Canvas):
         if len(self._messages) == 0:
             return None
         key = lambda k: self._messages[k]["time"].timestamp()
-        return list(reversed(sorted(self._messages.keys(), key=key)))[-1]
+        return max(self._messages.keys(), key=key)
 
     @property
     def vertical_position(self) -> int:

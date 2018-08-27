@@ -20,3 +20,4 @@ python-dateutil
 raven
 pypresence
 pytesseract
+tblib

@@ -35,7 +35,7 @@ class TkinterOverlay(tk.Toplevel):
         self.update_geometry()
         self.wm_attributes("-topmost", True)
         self.wm_overrideredirect(True)
-        if sys.platform == "linux" and settings[""]:
+        if sys.platform == "linux":
             print("[TkinterOverlay] Setting special Overlay attributes for Linux.")
             self.wm_attributes("-alpha", 0.75)
             for w in (self, self.text_label, self.disabled_label):
