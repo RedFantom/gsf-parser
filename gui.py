@@ -16,7 +16,7 @@ from tkinter import messagebox
 # Frames
 from frames import FileFrame, GraphsFrame, \
     SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
-    StatsFrame, StrategiesFrame, ToolsFrame
+    StatsFrame, StrategiesFrame, ToolsFrame, ChatFrame
 # Widgets
 from ttkwidgets import DebugWindow
 from toplevels.splash import BootSplash
@@ -80,6 +80,7 @@ class MainWindow(ThemedTk):
         self.builds_frame = BuildsFrame(self.notebook, self)
         self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
+        self.chat_frame = ChatFrame(self.notebook, self)
         # Pack the frames and put their widgets into place
         self.grid_widgets()
         self.child_grid_widgets()
@@ -151,6 +152,7 @@ class MainWindow(ThemedTk):
         """Add all created frames to the notebook widget"""
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
+        self.notebook.add(self.chat_frame, text="Chat Logger")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.graphs_frame, text="Graphs")

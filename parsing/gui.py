@@ -5,6 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+from configparser import ConfigParser
 import os
 from typing import Tuple, Dict, List
 import xml.etree.cElementTree as et
@@ -25,17 +26,8 @@ def get_gui_profiles() -> List[str]:
     ]
 
 
-def get_player_guiname(player_name: str, server: str) -> str:
-    """
-    Returns the GUI Profile name for a certain player name. Does not
-    work if there are multiple characters with the same name on the same
-    account used on the same computer and also doesn't work if the name
-    is misspelled. Credit for finding this reference to the GUI state
-    files in the SWTOR settings files goes to Ion.
-    :param player_name: Name of this character
-    :param server: Server code for this character (DM, TL, etc.)
-    :return: GUI profile name, not XML file
-    """
+def get_player_guistate(player_name: str, server: str) -> str:
+    """Return the file name of the GUI_State file for a player"""
     if not isinstance(player_name, str):
         raise ValueError("player_name is not of str type: {0}".format(player_name))
     if player_name == "":
@@ -54,9 +46,35 @@ def get_player_guiname(player_name: str, server: str) -> str:
                 break
     else:
         correct_file = "{}_{}_PlayerGUIState.ini".format(server_ini[server], player_name)
+    return os.path.join(dir, correct_file)
+
+
+def get_player_config(player_name, server) -> ConfigParser:
+    """Return a config file parser instance for the GUI State file"""
+    path = get_player_guistate(player_name, server)
+    if path is None:
+        raise ValueError("Failed to find config file: {};{}".format(player_name, server))
+    parser = ConfigParser()
+    with open(path) as fi:
+        parser.read_file(fi)
+    return parser
+
+
+def get_player_guiname(player_name: str, server: str) -> str:
+    """
+    Returns the GUI Profile name for a certain player name. Does not
+    work if there are multiple characters with the same name on the same
+    account used on the same computer and also doesn't work if the name
+    is misspelled. Credit for finding this reference to the GUI state
+    files in the SWTOR settings files goes to Ion.
+    :param player_name: Name of this character
+    :param server: Server code for this character (DM, TL, etc.)
+    :return: GUI profile name, not XML file
+    """
+    correct_file = get_player_guistate(player_name, server)
     if not correct_file:
         raise ValueError("Could not find a player settings file with name: {0}".format(player_name))
-    with open(os.path.join(dir, correct_file)) as settings_file:
+    with open(correct_file) as settings_file:
         lines = settings_file.readlines()
     gui_profile = None
     for line in lines:
@@ -211,9 +229,16 @@ class GUIParser(object):
         return anchor_points[anchor][0] + x_offset, anchor_points[anchor][1] + y_offset
 
     @staticmethod
-    def get_item_value(element: et.Element, name: str) -> int:
+    def get_item_value(element: et.Element, *args, default=None) -> int:
         """Get an int value from an element"""
-        return int(round(float(element.find(name).get("Value")), 0))
+        for name in args:
+            try:
+                return int(round(float(element.find(name).get("Value")), 0))
+            except AttributeError:
+                continue
+        if not default:
+            raise ValueError("Failed to find any element matching {} for {}".format(args, element))
+        return default
 
     def get_element_scale(self, element: et.Element):
         """
@@ -222,7 +247,7 @@ class GUIParser(object):
         :param element: element object
         :return: float
         """
-        return round(float(element.find("scale").get("Value")), 3) * self.global_scale
+        return round(float(self.get_item_value(element, "scale", default=1.0)), 3) * self.global_scale
 
     @staticmethod
     def get_scale_corrected_value(value: int, scale: float) -> int:
@@ -231,8 +256,8 @@ class GUIParser(object):
 
     def get_essential_element_values(self, element: et.Element):
         """Get the essential element values for a GSF GUI element"""
-        x_offset = self.get_item_value(element, "anchorXOffset")
-        y_offset = self.get_item_value(element, "anchorYOffset")
+        x_offset = self.get_item_value(element, "anchorXOffset", "anchorOffsetX")
+        y_offset = self.get_item_value(element, "anchorYOffset", "anchorOffsetY")
         alpha = self.get_item_value(element, "anchorAlignment")
         return x_offset, y_offset, alpha
 
@@ -312,6 +337,10 @@ class GUIParser(object):
                 self.target_sizes[element_name][1] * 0.5, scale)
         else:
             raise ValueError("Invalid anchor value found: {0}".format(anchor))
-        x_two = x_one + self.get_scale_corrected_value(self.target_sizes[element_name][0], scale)
-        y_two = y_one + self.get_scale_corrected_value(self.target_sizes[element_name][1], scale)
+        if None not in self.target_sizes[element_name]:
+            w, h = self.target_sizes[element_name]
+        else:
+            w, h = self.get_item_value(element, "width"), self.get_item_value(element, "height")
+        x_two = x_one + self.get_scale_corrected_value(w, scale)
+        y_two = y_one + self.get_scale_corrected_value(h, scale)
         return x_one, y_one, x_two, y_two

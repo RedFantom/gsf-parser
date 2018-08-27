@@ -14,7 +14,7 @@ from time import sleep
 from mss import mss
 from PIL import Image
 # Project Modules
-from parsing.gsfinterface import GSFInterface
+from parsing.gsf import GSFInterface
 from parsing.imageops import get_similarity_transparent
 from utils.directories import get_assets_directory
 from utils.utilities import get_cursor_position

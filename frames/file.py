@@ -261,45 +261,12 @@ class FileFrame(ttk.Frame):
         except IndexError:
             return
         elements = selection.split(" ")
-        if selection == "all":
-            # Whole folder
-            print("[FileFrame] Whole folder selected")
-            self.parse_folder()
-        elif len(elements) is 1:
-            # Single file
-            self.parse_file(elements[0])
-        elif len(elements) is 2:
+        if len(elements) is 2:
             # Match
             self.parse_match(elements)
         elif len(elements) is 3:
             # Spawn
             self.parse_spawn(elements)
-
-    def parse_file(self, file_name):
-        """
-        Function either sets the file and calls add_matches to add the
-        matches found in the file to the matches_listbox, or starts the
-        parsing of all files found in the specified folder and displays
-        the results in the other frames.
-        """
-        self.clear_data_widgets()
-        self.main_window.middle_frame.statistics_numbers_var.set("")
-        self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        lines = Parser.read_file(file_name)
-        player_list = Parser.get_player_id_list(lines)
-        file_cube, _, _ = Parser.split_combatlog(lines, player_list)
-        results = filestats.file_statistics(file_name)
-        self.update_widgets(*results)
-
-    def parse_folder(self):
-        """
-        Function that initiates the parsing of a whole folder by calling
-        the folder_statistics() function and updates the widgets by
-        calling the self.update_widgets function accordingly.
-        """
-        self.clear_data_widgets()
-        results = folderstats.folder_statistics()
-        self.update_widgets(*results)
 
     def parse_match(self, elements: list):
         """

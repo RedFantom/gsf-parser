@@ -5,7 +5,7 @@ License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
 from tkinter import messagebox
-from parsing.guiparsing import GUIParser
+from parsing.gui import GUIParser
 
 
 class GSFInterface(GUIParser):

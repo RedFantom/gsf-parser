@@ -7,7 +7,7 @@ Copyright (C) 2016-2018 RedFantom
 from unittest import TestCase
 from PIL import Image
 from utils.directories import get_assets_directory
-from parsing.gsfinterface import GSFInterface
+from parsing.gsf import GSFInterface
 from parsing import vision
 from os import path, environ
 

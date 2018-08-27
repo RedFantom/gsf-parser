@@ -35,8 +35,8 @@ from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
 # Parsing Modules
 from parsing.logstalker import LogStalker
-from parsing.gsfinterface import GSFInterface
-from parsing.guiparsing import get_player_guiname
+from parsing.gsf import GSFInterface
+from parsing.gui import get_player_guiname
 from parsing import opencv
 from parsing.parser import Parser
 from parsing.pointer import PointerParser
