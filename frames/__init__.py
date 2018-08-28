@@ -8,7 +8,6 @@ from frames.builds import BuildsFrame
 from frames.characters import CharactersFrame
 from frames.chat import ChatFrame
 from frames.file import FileFrame
-from frames.graphs import GraphsFrame
 from frames.realtime import RealTimeFrame
 from frames.settings import SettingsFrame
 from frames.ship import ShipFrame

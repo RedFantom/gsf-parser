@@ -14,7 +14,7 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import messagebox
 # Frames
-from frames import FileFrame, GraphsFrame, \
+from frames import FileFrame, \
     SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
     StatsFrame, StrategiesFrame, ToolsFrame, ChatFrame
 # Widgets
@@ -76,7 +76,6 @@ class MainWindow(ThemedTk):
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
         self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
-        self.graphs_frame = GraphsFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
         self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
@@ -131,7 +130,6 @@ class MainWindow(ThemedTk):
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
         self.settings_frame.grid()
-        self.graphs_frame.grid(column=0, row=0)
 
     def child_grid_widgets(self):
         """Configure the child widgets of the Frames in grid geometry"""
@@ -140,7 +138,6 @@ class MainWindow(ThemedTk):
         self.realtime_frame.grid_widgets()
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
-        self.graphs_frame.grid_widgets()
         self.builds_frame.grid_widgets()
         self.characters_frame.grid_widgets()
         self.toolsframe.grid_widgets()
@@ -149,12 +146,11 @@ class MainWindow(ThemedTk):
 
     def setup_notebook(self):
         """Add all created frames to the notebook widget"""
-        self.notebook.add(self.file_tab_frame, text="File results")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time results")
+        self.notebook.add(self.file_tab_frame, text="File parsing")
+        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
         self.notebook.add(self.chat_frame, text="Chat Logger")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
-        self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
