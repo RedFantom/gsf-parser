@@ -35,10 +35,10 @@ class SettingsFrame(ttk.Frame):
 
     SCREEN_PARSING_FEATURES = {
         "Engine Speed":
-            "Creates a speed indicator in m/s in the real-time parsing overlay.",
+            "Creates a speed indicator in m/s in the real-time results overlay.",
         "Map and match type":
             "Determines the map based on the in-game MiniMap. Saves this map "
-            "in the real-time parsing database, shows in the overlay and the "
+            "in the real-time results database, shows in the overlay and the "
             "Discord Rich Presence status indicator.",
         "MiniMap Location":
             "Used only in MiniMap Location sharing. The MiniMap Location "
@@ -67,7 +67,7 @@ class SettingsFrame(ttk.Frame):
             "screen to trigger a ScoreboardParser. Uses OCR and advanced "
             "matching techniques to read the scoreboard numbers. Saves them "
             "in a separate database so they can be displayed in the file "
-            "parsing frame.\n"
+            "results frame.\n"
             "ScoreboardParsers run in separate Processes. These cannot be "
             "cancelled once they are started. A progress indicator is "
             "provided in the overlay.\n"
@@ -77,7 +77,7 @@ class SettingsFrame(ttk.Frame):
         "Ship health":
             "Read the ship health indicators and determine their color to "
             "approximate the ship health remaining. Available in the overlay "
-            "and the real-time parsing database.",
+            "and the real-time results database.",
         "Spawn Timer":
             "Performs OCR on the spawn timer in the pre-spawn interface to "
             "determine the time until a new spawn wave is triggered.\n"
@@ -182,7 +182,7 @@ class SettingsFrame(ttk.Frame):
         # Enable real-time overlay
         self.rt_overlay_enabled = tk.BooleanVar()
         self.rt_overlay_enabled_checkbox = ttk.Checkbutton(
-            self.rt_frame, text="Enable overlay for real-time parsing", variable=self.rt_overlay_enabled,
+            self.rt_frame, text="Enable overlay for real-time results", variable=self.rt_overlay_enabled,
             command=self.save_settings)
         # Overlay text color
         self.rt_overlay_text_color = tk.StringVar()
@@ -219,7 +219,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_sleep_checkbox = ttk.Checkbutton(
             self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep, command=self.save_settings)
         Balloon(self.rt_sleep_checkbox,
-                text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
+                text="Raises the latency of the RealTimeParser event detection by limiting the parser to two results "
                      "cycles per second but reduces CPU, Memory and IO usage significantly.\n\n"
                      "Only disable if you need the utmost level of precision and have plenty of computing resources "
                      "to spare.")
@@ -240,16 +240,16 @@ class SettingsFrame(ttk.Frame):
                                            "for that character is enabled.")
 
         """
-        Screen parsing settings
+        Screen results settings
         """
         self.sc_label = ttk.Label(
             self.frame.interior, text="Screen Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
-        # Screen parsing enabled
+        # Screen results enabled
         self.sc_enabled = tk.BooleanVar()
         self.sc_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
-        # Screen parsing features
-        self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
+            self.sc_frame, text="Enable screen results", variable=self.sc_enabled, command=self.save_settings)
+        # Screen results features
+        self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen results:")
         beta = [
             "MiniMap Location", "Spawn Timer", "Map and match type", "Scoreboard Parsing", "Pointer Parsing",
         ]
@@ -278,25 +278,25 @@ class SettingsFrame(ttk.Frame):
             text="Dynamic SWTOR Window Location Support enables routines that makes GUI Parsing and thus Screen "
                  "Parsing work when SWTOR runs in Windowed mode. This introduces additional overhead, as the location "
                  "of the SWTOR window is determined every Screen Parsing cycle.")
-        # Screen parsing performance profiling
+        # Screen results performance profiling
         self.sc_perf = tk.BooleanVar()
         self.sc_perf_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Screen parsing feature performance profiling",
+            self.sc_frame, text="Screen results feature performance profiling",
             command=self.save_settings, variable=self.sc_perf)
         Balloon(
             self.sc_perf_checkbox,
-            text="If this setting is enabled, the average amount of time spent on each enabled screen parsing feature "
+            text="If this setting is enabled, the average amount of time spent on each enabled screen results feature "
                  "is recorded. If the feature is taking up a lot of processing time, it will be displayed in the "
-                 "real-time parsing frame.")
-        # Screen parsing feature disable
+                 "real-time results frame.")
+        # Screen results feature disable
         self.sc_disable = tk.BooleanVar()
         self.sc_disable_checkbox = ttk.Checkbutton(
             self.sc_frame, text="Automatically disable features that are slow",
             command=self.save_settings, variable=self.sc_disable)
         Balloon(
             self.sc_disable_checkbox,
-            text="If this setting is enabled, screen parsing features that perform slow on a consistent basis are "
-                 "disabled while real-time parsing continues normally.")
+            text="If this setting is enabled, screen results features that perform slow on a consistent basis are "
+                 "disabled while real-time results continues normally.")
 
         """
         Miscellaneous
@@ -438,14 +438,14 @@ class SettingsFrame(ttk.Frame):
         self.rt_drp_checkbox.grid(row=9, column=0, **padding_label, **sticky_button)
 
         """
-        Screen parsing settings
+        Screen results settings
         """
         # General
         self.sc_label.grid(row=8, column=0, **padding_header, **sticky_default)
         self.sc_frame.grid(row=9, column=0, **padding_frame, **sticky_default)
-        # Screen parsing enabled
+        # Screen results enabled
         self.sc_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
-        # Screen parsing features
+        # Screen results features
         self.sc_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
         row = 3
         for _, feature in sorted(self.sc_checkboxes.items(), key=lambda t: t[0]):
@@ -453,7 +453,7 @@ class SettingsFrame(ttk.Frame):
             row += 1
         # Screen Dynamic Window Location
         self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
-        # Screen parsing performance profiling
+        # Screen results performance profiling
         self.sc_perf_checkbox.grid(row=row+2, column=0, **padding_label, **sticky_default, **checkbox)
         self.sc_disable_checkbox.grid(row=row+3, column=0, **padding_label, **sticky_default, **checkbox)
 
@@ -473,7 +473,7 @@ class SettingsFrame(ttk.Frame):
         """
         Parsing Settings
         """
-        self.pa_path.set(settings["parsing"]["path"])
+        self.pa_path.set(settings["results"]["path"])
         """
         Sharing Settings
         """
@@ -542,7 +542,7 @@ class SettingsFrame(ttk.Frame):
                 "faction": self.gui_faction.get(),
                 "debug": self.gui_debug_window.get()
             },
-            "parsing": {
+            "results": {
                 "path": self.pa_path.get().strip(),
             },
             "realtime": {

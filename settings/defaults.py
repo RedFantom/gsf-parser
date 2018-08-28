@@ -32,12 +32,12 @@ defaults = {
         # Text color
         "color": "#2f77d0"
     },
-    # File parsing settings
-    "parsing": {
+    # File results settings
+    "results": {
         # CombatLogs path
         "path": get_combatlogs_folder(),
     },
-    # Real-time parsing settings
+    # Real-time results settings
     "realtime": {
         # RealTimeParser sleep
         "sleep": True,
@@ -60,9 +60,9 @@ defaults = {
         "position": "x0y0"
     },
     "screen": {
-        # Whether screen parsing is enabled
+        # Whether screen results is enabled
         "enabled": True,
-        # List of enabled screen parsing features
+        # List of enabled screen results features
         "features": ["Tracking penalty", "Ship health", "Power management"],
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
@@ -70,7 +70,7 @@ defaults = {
         "window": False,
         # SWTOR Dynamic window support
         "dynamic": False,
-        # Screen parsing performance monitoring
+        # Screen results performance monitoring
         "perf": True,
         "disable": True,
     },

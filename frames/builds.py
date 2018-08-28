@@ -119,7 +119,7 @@ class BuildsFrame(ttk.Frame):
         :param faction: faction, str
         :param type: ship type (Scout, Strike etc)
         :param ship: Ship name
-        :param ship_object: parsing.ships.Ship instance
+        :param ship_object: results.ships.Ship instance
         """
         # Close all the open ship category ToggledFrames
         if not self.ship_select_frame.category_frames[faction][type].show.get():

@@ -78,7 +78,7 @@ class ToolsFrame(ttk.Frame):
         self.simulator_description_label = ttk.Label(
             self.interior_frame.interior, justify=tk.LEFT, wraplength=780,
             text="Small tool simulate the CombatLog creation. This is used during development to debug real-time "
-                 "parsing and runs in its own thread so it can run alongside the GSF Parser. Once you have started it, "
+                 "results and runs in its own thread so it can run alongside the GSF Parser. Once you have started it, "
                  "you cannot cancel the process.")
         self.simulator_file_label = ttk.Label(self.interior_frame.interior, text="No file selected...")
         self.simulator_file_selection_button = ttk.Button(
@@ -98,7 +98,7 @@ class ToolsFrame(ttk.Frame):
             self.simulator_button.config(text="Start simulator")
             return
         self.simulator_thread = simulator.Simulator(self.simulator_file,
-                                                    output_directory=variables.settings["parsing"]["path"])
+                                                    output_directory=variables.settings["results"]["path"])
         self.simulator_thread.start()
         self.simulator_button.config(text="Stop simulator")
 

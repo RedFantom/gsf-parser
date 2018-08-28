@@ -25,7 +25,7 @@ class LogStalker(object):
     lines that are newly found in the most recent CombatLog. Not
     interchangeable with earlier implementations.
     """
-    def __init__(self, folder=variables.settings["parsing"]["path"], watching_callback=None):
+    def __init__(self, folder=variables.settings["results"]["path"], watching_callback=None):
         """
         :param folder: Folder to watch CombatLogs in
         :param watching_callback: Callback to be called when the watched file changes

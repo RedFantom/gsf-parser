@@ -68,7 +68,7 @@ def template_match(image: Image.Image, template: Image.Image, margin: float = 95
 
 
 def get_similarity(template: Image.Image, to_match: Image.Image)->float:
-    """Compares two images and returns the similarity ratio."""
+    """Compares two images and returns the similarity ratio"""
     if template.size != to_match.size:
         raise ValueError("These images are not the same size. One: {}, Two: {}.".format(template.size, to_match.size))
     diff = sum(abs(color_one - color_two) for pair_one, pair_two in zip(template.getdata(), to_match.getdata())

@@ -9,8 +9,6 @@ import os
 # UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
-# Packages
-from PIL import Image, ImageTk
 # Project Modules
 from utils import directories
 from utils import utilities
@@ -21,7 +19,7 @@ class SplashScreen(tk.Toplevel):
     def __init__(self, window, amount, title="GSF Parser", text="Working..."):
         """
         :param window: GSF Parser MainWindow (tk.Tk)
-        :param amount: Amount of files that need parsing
+        :param amount: Amount of files that need results
         :param title: Window Manager Title
         """
         tk.Toplevel.__init__(self, window)
@@ -31,24 +29,27 @@ class SplashScreen(tk.Toplevel):
         # Widget creation
         self.label = ttk.Label(self, text=text)
         self.label.pack()
-        self.progress_bar = ttk.Progressbar(self, orient="horizontal", length=300, mode="determinate")
+        self.progress_bar = ttk.Progressbar(
+            self, orient="horizontal", length=300, mode="determinate")
         self.progress_bar.pack()
         self.progress_bar["maximum"] = amount
         self.progress_bar["value"] = 0
         self.update()
 
-    def update_progress(self, number):
+    def update_max(self, number):
         """Update ProgressBar indicator with number of file parsed"""
         self.progress_bar["value"] = number
         self.update()
 
-    def increase_progress(self):
+    def increment(self):
+        """Increment the progress of the Progressbar by one"""
         self.progress_bar["value"] += 1
         self.update()
 
 
 class BootSplash(tk.Toplevel):
     """Simple splash screen for starting GSF Parser with logo"""
+
     def __init__(self, window):
         """
         :param window: GSF Parser MainWindow
@@ -56,8 +57,7 @@ class BootSplash(tk.Toplevel):
         tk.Toplevel.__init__(self, window)
         self.title("GSF Parser: Starting...")
         # Icon
-        self.logo = ImageTk.PhotoImage(
-            Image.open(os.path.join(directories.get_assets_directory(), "logos", "logo_green.png")))
+        self.logo = utilities.open_icon("logo_green.png", folder="logos")
         self.panel = ttk.Label(self, image=self.logo)
         self.panel.pack()
         # Progress indication label
@@ -66,23 +66,22 @@ class BootSplash(tk.Toplevel):
         self.label = ttk.Label(self, textvariable=self.label_var)
         self.label.pack()
         # Progress Bar (indicates parsed files)
-        self.amount = tk.IntVar()
         self.progress_bar = ttk.Progressbar(
-            self, orient="horizontal", length=462, mode="determinate", variable=self.amount)
+            self, orient="horizontal", length=462, mode="determinate")
         self.progress_bar.pack()
         self.update_geometry()
-        self.progress_bar["value"] = 0
         self.update()
 
-    def update_progress(self, amount):
+    def update_max(self, amount):
         """Update amount of files parsed for ProgressBar"""
         self.label_var.set("Parsing files...")
-        self.amount.set(amount)
+        self.progress_bar["maximum"] = amount
         self.progress_bar.update_idletasks()
 
-    def update_maximum(self, maximum):
-        """Update the amount of files that need parsing for ProgressBar"""
-        self.progress_bar.config(maximum=maximum)
+    def increment(self):
+        """Increment the progress of Progressbar by one"""
+        self.progress_bar["value"] += 1
+        self.progress_bar.update_idletasks()
 
     def update_geometry(self):
         """Move to the middle of Monitor 0"""
@@ -94,10 +93,7 @@ class BootSplash(tk.Toplevel):
 
 
 class DiscordSplash(tk.Toplevel):
-    """
-    Splash screen to indicate that the GSF Parser is working on sending
-    match data to the GSF Parser Discord Bot Server.
-    """
+    """SplashScreen with indeterminate progress indicator for Discord"""
 
     def __init__(self, master: tk.Tk):
         """Initialize the Toplevel with image"""

@@ -58,7 +58,7 @@ class MainWindow(ThemedTk):
         self.update_style()
         self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings["parsing"]["path"]
+        self.default_path = variables.settings["results"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
         self.splash = BootSplash(self)
@@ -89,8 +89,7 @@ class MainWindow(ThemedTk):
         # Update the files in the file_select frame
         self.splash.label_var.set("Parsing files...")
         self.notebook.grid(column=0, row=0, padx=2, pady=2)
-        if not os.path.exists("development"):
-            self.file_select_frame.add_files(silent=True)
+        self.file_select_frame.update_files()
         self.settings_frame.update_settings()
         # Check for updates
         self.splash.label_var.set("Checking for updates...")
@@ -124,7 +123,7 @@ class MainWindow(ThemedTk):
         if self.rpc is None:
             return
         assert isinstance(self.rpc, Presence)
-        self.rpc.update(state="Not real-time parsing", large_image="logo_green_png")
+        self.rpc.update(state="Not real-time results", large_image="logo_green_png")
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
@@ -150,8 +149,8 @@ class MainWindow(ThemedTk):
 
     def setup_notebook(self):
         """Add all created frames to the notebook widget"""
-        self.notebook.add(self.file_tab_frame, text="File parsing")
-        self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
+        self.notebook.add(self.file_tab_frame, text="File results")
+        self.notebook.add(self.realtime_tab_frame, text="Real-time results")
         self.notebook.add(self.chat_frame, text="Chat Logger")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")

@@ -21,7 +21,7 @@ ROWS = 17.2
 
 
 class ScoreboardDatabase(object):
-    """Shelf that stores the results of Scoreboard parsing"""
+    """Shelf that stores the results of Scoreboard results"""
 
     def __init__(self):
         """Initialize the Shelf and open the file"""
@@ -90,7 +90,7 @@ class ScoreboardParser(Process):
     """
     Parse a Scoreboard in a separate Process and save its results
 
-    Runs the parsing in a separate process to ensure that the main
+    Runs the results in a separate process to ensure that the main
     process is not influenced. Saves the data in the ScoreboardDatabase,
     with the match start time (single datetime) as key.
     """
@@ -110,7 +110,7 @@ class ScoreboardParser(Process):
     }
 
     def __init__(self, match_start: datetime, screenshot: Image.Image):
-        """Initialize a scoreboard parsing process"""
+        """Initialize a scoreboard results process"""
         Process.__init__(self)
         self._match: datetime = match_start
         self._screenshot: Image.Image = screenshot

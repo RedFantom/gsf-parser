@@ -14,7 +14,7 @@ import tkinter as tk
 from tkinter import ttk
 # Project Modules
 from parsing.chat import ChatParser
-from widgets.chat import ChatWindow
+from widgets.results.chat import ChatWindow
 
 
 class ChatFrame(ttk.Frame):

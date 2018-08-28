@@ -4,7 +4,6 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
@@ -18,10 +17,8 @@ from variables import settings, colors as color_scheme
 
 
 class EventColors(tk.Toplevel):
-    """
-    Toplevel that lets the user set their own custom hex colors for
-    GSF CombatLog events in an EventsView.
-    """
+    """Custom color scheme customizer window"""
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("background", "white")
         tk.Toplevel.__init__(self, *args, **kwargs)

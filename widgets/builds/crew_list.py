@@ -11,7 +11,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 # Project Modules
 import variables
-from widgets.toggledframe import ToggledFrame
+from widgets.general.toggledframe import ToggledFrame
 from utils.utilities import open_icon
 
 

@@ -87,7 +87,7 @@ class GraphsFrame(ttk.Frame):
         files_done = 0
         graph_type = self.type_graph.get()
         print("[GraphsFrame] Calculating graph:", graph_type)
-        files = os.listdir(settings["parsing"]["path"])
+        files = os.listdir(settings["results"]["path"])
         value_per_date = {}
         files_per_date = {}
         # Open splash screen
@@ -97,7 +97,7 @@ class GraphsFrame(ttk.Frame):
         for file in files:
             # Update splash screen
             files_done += 1
-            splash_screen.update_progress(files_done)
+            splash_screen.update_max(files_done)
             # Skip non-valid files
             if not Parser.get_gsf_in_file(file):
                 continue

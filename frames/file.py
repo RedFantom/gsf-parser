@@ -6,179 +6,143 @@ Copyright (C) 2016-2018 RedFantom
 """
 # UI Libraries
 import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox
-import tkinter.filedialog
+from tkinter import ttk
 # Standard Library
-from collections import OrderedDict
 from datetime import datetime
 import operator
 import os
+from typing import Dict, List, Tuple
 # Project Modules
 import variables
-from parsing import folderstats, filestats, matchstats, spawnstats
+from parsing import matchstats, spawnstats
 from data import abilities
 from parsing.parser import Parser
 from toplevels.splash import SplashScreen
 from toplevels.filters import Filters
 from parsing.filehandler import FileHandler
 from parsing.screen import ScreenParser
+from widgets.general import Calendar, DateKeyDict
 
 
 # Class for the _frame in the fileTab of the parser
 class FileFrame(ttk.Frame):
-    """
-    Class for a frame that contains three listboxes, one for files, one
-    for matches and one for spawns, and updates them and other widgets
-    after parsing the files using the methods found in the parse.py
-    module accordingly. This frame controls the whole of file parsing,
-    the other frames only display the results.
-
-    --------------------
-    | combatlog_1 | /\ |
-    | combatlog_2 | || |
-    | combatlog_3 | \/ |
-    --------------------
-    | match_1     | /\ |
-    | match_2     | || |
-    | match_3     | \/ |
-    --------------------
-    | spawn_1     | /\ |
-    | spawn_2     | || |
-    | spawn_3     | \/ |
-    --------------------
-    """
+    """Frame containing widgets for file, match and spawn selection"""
 
     # __init__ creates all widgets
     def __init__(self, root_frame, main_window):
         """Create all widgets and make the links between them"""
         ttk.Frame.__init__(self, root_frame, width=200, height=420)
         self.main_window = main_window
-        self.file_tree = ttk.Treeview(self, height=13)
-        self.file_tree.bind("<Double-1>", self.update_parse)
-        self.file_tree["show"] = ("tree", "headings")
-        self.file_tree.heading("#0", text="Files", command=self.flip_sorting)
-        self.ascending = False
-        self.file_tree.column("#0", width=150)
-        self.file_string_dict = OrderedDict()
-        self.match_string_dict = OrderedDict()
-        self.spawn_string_dict = OrderedDict()
-        self.file_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.file_tree.yview)
-        self.file_tree.config(yscrollcommand=self.file_scroll.set)
+        self._splash: SplashScreen = None
 
-        self.match_timing_strings = None
-        self.splash = None
+        self._calendar = Calendar(self, callback=self._select_date, highlight="#4286f4")
+        self._tree = ttk.Treeview(self, show=("tree", "headings"), height=6)
+        self._scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self._tree.yview)
+        self.setup_tree()
 
-        self.refresh_button = ttk.Button(self, text="Refresh", command=self.add_files)
-        self.filters_button = ttk.Button(self, text="Filters", command=self.filters)
+        self._refresh_button = ttk.Button(self, text="Refresh", command=self.update_files)
+        self._filters_button = ttk.Button(self, text="Filters", command=Filters)
 
-    @staticmethod
-    def filters():
-        """
-        Opens Toplevel to enable filters and then adds the filtered
-        CombatLogs to the Listboxes
-        """
-        Filters()
+        self._matches: Dict[str: str] = dict()
+        self._files: Dict[datetime, List[str]] = DateKeyDict()
+
+    def setup_tree(self):
+        """Configure the Treeview options"""
+        self._tree.configure(yscrollcommand=self._scroll.set)
+        self._tree.column("#0", width=150)
+        self._tree.heading("#0", text="Matches")
+        self._tree.bind("<Double-1>", self._parse_item)
+
+    def _select_date(self, date: datetime):
+        """Callback for Calendar widget selection command"""
+        self.clear_data_widgets()
+        self._tree.delete(*self._tree.get_children(""))
+        self._matches.clear()
+        if date not in self._files:
+            return
+        files = self._files[date]
+        entries: Dict[str, List[str]] = dict()
+        for file in files:
+            _, matches, spawns = Parser.split_combatlog_file(file)
+            for i, match in enumerate(matches[::2]):
+                name = Parser.get_player_name_raw(file)
+                match = "{}, {}".format(match.strftime("%H:%M"), name)
+                entries[match] = list()
+                self._matches[i] = file
+                for j, spawn in enumerate(spawns[i]):
+                    spawn = spawn.strftime("%M:%S")
+                    entries[match].append(spawn)
+                    self._matches[(i, j)] = file
+        for i, match in enumerate(sorted(entries.keys())):
+            self._tree.insert("", tk.END, text=match, iid=str(i))
+            for j, spawn in enumerate(entries[match]):
+                self._tree.insert(str(i), tk.END, text=spawn, iid="{},{}".format(i, j))
 
     def grid_widgets(self):
         """Configure widgets in grid geometry manager"""
-        self.file_tree.grid(column=0, row=0, rowspan=16, sticky="nswe", pady=5, padx=(5, 0))
-        self.file_scroll.grid(column=1, row=0, rowspan=16, sticky="ns", pady=5)
-        self.refresh_button.grid(column=0, columnspan=3, row=17, rowspan=1, sticky="nswe", padx=5)
-        self.filters_button.grid(column=0, columnspan=3, row=18, rowspan=1, sticky="nswe", pady=5, padx=5)
+        self._calendar.grid(row=0, column=0, sticky="nswe")
+        self._tree.grid(row=1, column=0, sticky="nswe", padx=5, pady=(0, 5))
+        self._scroll.grid(row=1, column=1, sticky="nswe", pady=(0, 5))
+        self._refresh_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=(0, 5))
+        # self._filters_button.grid(row=3, column=0, sticky="nswe", padx=5, pady=(0, 5))
 
-    def flip_sorting(self):
-        """
-        Flip the sorting of the files in the Treeview (callback for the
-        Treeview header button)
-        """
-        self.ascending = not self.ascending
-        self.add_files()
-
-    def add_files(self, silent=False):
-        """
-        Function that checks files found in the in the settings
-        specified folder for GSF matches and if those are found in a
-        file, it gets added to the listbox. Provides error handling.
-        """
-        self.file_tree.delete(*self.file_tree.get_children())
+    def update_files(self):
+        """Update the Calendar with the new files"""
         self.clear_data_widgets()
-        self.main_window.ship_frame.ship_label_var.set("")
-        try:
-            old_cwd = os.getcwd()
-            os.chdir(variables.settings["parsing"]["path"])
-            os.chdir(old_cwd)
-        except OSError:
-            tkinter.messagebox.showerror("Error",
-                                         "The CombatLogs folder found in the settings file is not valid. Please "
-                                         "choose another folder.")
-            folder = tkinter.filedialog.askdirectory(title="CombatLogs folder")
-            variables.settings.write_settings({'parsing': {'path': folder}})
-            variables.settings.read_settings()
-        combatlogs_folder = variables.settings["parsing"]["path"]
-        file_list = os.listdir(combatlogs_folder)
-        if not silent:
-            splash_screen = SplashScreen(self.main_window, len(file_list), title="Loading files")
-        else:
-            splash_screen = None
-        if len(file_list) > 100:
-            tkinter.messagebox.showinfo("Suggestion", "Your CombatLogs folder contains a lot of CombatLogs, {0} to be "
-                                                      "precise. How about moving them to a nice archive folder? This "
-                                                      "will speed up some processes "
-                                                      "significantly.".format(len(file_list)))
-        self.file_tree.insert("", tk.END, iid="all", text="All CombatLogs")
-        file_list = list(reversed(sorted(file_list)) if not self.ascending else sorted(file_list))
-        if self.main_window.splash is not None and self.main_window.splash.winfo_exists():
-            self.main_window.splash.update_maximum(len(file_list))
-        for number, file in enumerate(file_list):
-            if not Parser.get_gsf_in_file(file):
+        self._files.clear()
+        folder = variables.settings["parsing"]["path"]
+        files = [f for f in os.listdir(folder) if Parser.get_gsf_in_file(f)]
+        self.create_splash(len(files))
+        match_count: Dict[datetime: int] = DateKeyDict()
+        for file in files:
+            date = Parser.parse_filename(file)
+            if date is None:  # Failed to parse
                 continue
-            file_string = Parser.parse_filename(file)
-            if file_string is None:
-                continue
-            self.file_string_dict[file_string] = file
-            number += 1
-            if splash_screen is not None:
-                splash_screen.update_progress(number)
-                splash_screen.update()
-            self.insert_file(file_string)
-            if self.main_window.splash is not None and self.main_window.splash.winfo_exists():
-                self.main_window.splash.update_progress(number)
-        if splash_screen is not None:
-            splash_screen.destroy()
-        return
+            if date not in match_count:
+                match_count[date] = 0
+            match_count[date] += Parser.count_matches(file)
+            if date not in self._files:
+                self._files[date] = list()
+            self._files[date].append(file)
+            self._splash.increment()
+        self._calendar.update_values(match_count)
+        self.destroy_splash()
 
-    def insert_file(self, file_string):
-        """
-        Insert a file into the Treeview list of files and links it to
-        an entry in self.file_string_dict
-        :param file_string: string representing the file in the list
-        """
-        if file_string in self.file_string_dict:
-            file_name = self.file_string_dict[file_string]
-        elif file_string.endswith(".txt"):
-            file_name = file_string
-        else:
-            raise ValueError("Unsupported file_string received: {0}".format(file_string))
-        self.file_tree.insert("", tk.END, iid=file_name, text=file_string)
-        file_cube, match_timings, spawn_timings = Parser.split_combatlog_file(file_name)
-        if len(match_timings) / 2 != len(file_cube):
-            print("[FileFrame] Uneven results for file {}".format(file_name))
+    def _parse_item(self, _: tk.Event):
+        """Parse a match/spawn from a file"""
+        selection = self._tree.selection()
+        if len(selection) == 0:
             return
-        for match_index, match in enumerate(match_timings[::2]):
-            self.file_tree.insert(file_name, tk.END, iid=(file_name, match_index), text=match.strftime("%H:%M"))
-            for spawn_index, spawn in enumerate(spawn_timings[match_index]):
-                self.file_tree.insert(
-                    (file_name, match_index), tk.END,
-                    iid=(file_name, match_index, spawn_index),
-                    text=spawn.strftime("%H:%M:%S"))
+        elements = selection[0].split(",")
+        if len(elements) == 2:  # Spawn
+            i, j = map(int, elements)
+            print(i, j)
+            file = self._matches[(i, j)]
+            self.parse_spawn(file, i, j)
+        else:  # Match
+            i: int = int(elements[0])
+            file: str = self._matches[i]
+            self.parse_match(file, i)
+
+    def create_splash(self, maximum: int):
+        """Update the maximum value of the splash screen"""
+        if self.main_window.splash is not None:
+            self._splash = self.main_window.splash
+            self._splash.update_max(maximum)
+        else:
+            self._splash = SplashScreen(self.main_window, maximum, title="Loading Files")
+
+    def destroy_splash(self):
+        """Destroy the self-created SplashScreen or keep the BootSplash"""
+        if self.main_window.splash is None:
+            self._splash.destroy()
 
     def update_widgets(self, abilities_dict, statistics_string, shipsdict, enemies, enemydamaged,
                        enemydamaget, uncounted):
         """
         This function can update the dta widgets for files, matches and
         folders by updating the widgets of statsframe and shipsframe
-        according to the data received from parsing
+        according to the data received from results
         :param abilities_dict: abilities dictionary with abilities as
             keys and amounts as values
         :param statistics_string: string to set in the statistics tab
@@ -217,7 +181,7 @@ class FileFrame(ttk.Frame):
     def update_widgets_spawn(self, name, spawn, abilitiesdict, statistics_string, ships_list, comps, enemies,
                              enemydamaged, enemydamaget):
         """
-        This function sets the data widgets for the spawn parsing
+        This function sets the data widgets for the spawn results
         results
         :param name: player name
         :param spawn: section of CombatLog
@@ -250,89 +214,68 @@ class FileFrame(ttk.Frame):
         print("[FileFrame] Inserting spawn of {} items.".format(len(spawn)))
         self.main_window.middle_frame.time_view.insert_spawn(spawn, name)
 
-    def update_parse(self, *args):
-        """
-        Callback for the Treeview widget that calls the correct function
-        to load a file, match or spawn depending on which is selected.
-        :param args: Tkinter event
-        """
-        try:
-            selection = self.file_tree.selection()[0]
-        except IndexError:
-            return
-        elements = selection.split(" ")
-        if len(elements) is 2:
-            # Match
-            self.parse_match(elements)
-        elif len(elements) is 3:
-            # Spawn
-            self.parse_spawn(elements)
-
-    def parse_match(self, elements: list):
+    def parse_match(self, file: str, match_i: int):
         """
         Either adds sets the match and calls add_spawns to add the
-        spawns found in the match or starts the parsing of all files
+        spawns found in the match or starts the results of all files
         found in the specified file and displays the results in the
         other frames.
-        :param elements: specifies file and match
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        file_name, match_index = elements[0], int(elements[1])
-        lines = Parser.read_file(file_name)
+        lines = Parser.read_file(file)
         player_list = Parser.get_player_id_list(lines)
         file_cube, match_timings, _ = Parser.split_combatlog(lines, player_list)
         player_name = Parser.get_player_name(lines)
-        match = file_cube[match_index]
-        results = matchstats.match_statistics(file_name, match, match_timings[::2][match_index])
+        match = file_cube[match_i]
+        results = matchstats.match_statistics(file, match, match_timings[::2][match_i])
         self.update_widgets(*results)
         match_list = Parser.build_spawn_from_match(match)
         self.main_window.middle_frame.time_view.insert_spawn(match_list, player_name)
-        match_timing = datetime.combine(Parser.parse_filename(file_name).date(), match_timings[::2][match_index].time())
+        match_timing = datetime.combine(Parser.parse_filename(file).date(), match_timings[::2][match_i].time())
         self.main_window.middle_frame.scoreboard.update_match(match_timing)
 
-    def parse_spawn(self, elements):
+    def parse_spawn(self, file: str, match_i: int, spawn_i: int):
         """
-        Either starts the parsing of ALL spawns found in the specified
+        Either starts the results of ALL spawns found in the specified
         match or just one of them and displays the results in the other
         frames accordingly.
         """
         self.clear_data_widgets()
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
-        file_name, match_index, spawn_index = elements[0], int(elements[1]), int(elements[2])
-        lines = Parser.read_file(file_name)
+        lines = Parser.read_file(file)
         player_list = Parser.get_player_id_list(lines)
         player_name = Parser.get_player_name(lines)
         file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
-        match = file_cube[match_index]
-        spawn = match[spawn_index]
+        match = file_cube[match_i]
+        spawn = match[spawn_i]
         results = list(spawnstats.spawn_statistics(
-            file_name, spawn, spawn_timings[match_index][spawn_index]))
+            file, spawn, spawn_timings[match_i][spawn_i]))
         results[1] = Parser.parse_player_reaction_time(spawn, player_name)
         orig = len(results[1])
         results[1] = ScreenParser.build_spawn_events(
-            file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index], spawn, player_name)
+            file, match_timings[::2][match_i], spawn_timings[match_i][spawn_i], spawn, player_name)
         print("[FileFrame] ScreenParser built {} events. Total: {}".format(len(results[1]) - orig, len(results[1])))
         self.update_widgets_spawn(*results)
-        arguments = (file_name, match_timings[::2][match_index], spawn_timings[match_index][spawn_index])
+        arguments = (file, match_timings[::2][match_i], spawn_timings[match_i][spawn_i])
         string = FileHandler.get_features_string(*arguments)
         self.main_window.middle_frame.screen_label_var.set(string)
         self.main_window.middle_frame.update_timeline(
-            file_name, match_index, spawn_index, match_timings, spawn_timings, file_cube)
-        match_timing = datetime.combine(Parser.parse_filename(file_name).date(), match_timings[::2][match_index].time())
+            file, match_i, spawn_i, match_timings, spawn_timings, file_cube)
+        match_timing = datetime.combine(Parser.parse_filename(file).date(), match_timings[::2][match_i].time())
         self.main_window.middle_frame.scoreboard.update_match(match_timing)
 
     def clear_data_widgets(self):
-        """Clear the data widgets for parsing results"""
+        """Clear the data widgets for results results"""
         self.main_window.middle_frame.abilities_treeview.delete(
             *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
             *self.main_window.middle_frame.enemies_treeview.get_children())
         self.main_window.ship_frame.ship_label_var.set("")
         self.main_window.middle_frame.screen_label_var.set(
-            "Please select an available spawn for screen parsing information")
+            "Please select an available spawn for screen results information")
         self.main_window.middle_frame.time_view.delete(
             *self.main_window.middle_frame.time_view.get_children())
         self.main_window.middle_frame.time_line.delete_marker(tk.ALL)
@@ -349,21 +292,3 @@ class FileFrame(ttk.Frame):
         damage_t = str(enemydamaget[enemy]) if enemy in enemydamaget else 0
         kwargs = {"text": "Enemy" if enemy == "" else enemy, "values": (damage_d, damage_t)}
         self.main_window.middle_frame.enemies_treeview.insert("", tk.END, **kwargs)
-
-    def get_spawn(self):
-        """
-        Get the spawn from the selection in the file_tree
-        :return: list of event strings, player_list, spawn timing and
-            match timing
-        """
-        selection = self.file_tree.selection()[0]
-        elements = selection.split(" ")
-        if len(elements) is not 3:
-            tkinter.messagebox.showinfo("Requirement", "Please select a spawn to view the events of.")
-            return
-        lines = Parser.read_file(elements[0])
-        player_list = Parser.get_player_id_list(lines)
-        file_cube, match_timings, spawn_timings = Parser.split_combatlog(lines, player_list)
-        match_index, spawn_index = int(elements[1]), int(elements[2])
-        return (file_cube[match_index][spawn_index], player_list, spawn_timings[match_index][spawn_index],
-                match_timings[match_index])

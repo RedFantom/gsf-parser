@@ -21,7 +21,7 @@ from toplevels.minimap import MiniMap
 from widgets.events import EventOverlay
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
-from widgets.time_view import TimeView
+from widgets.results.time_view import TimeView
 from variables import settings
 
 
@@ -31,7 +31,7 @@ class RealTimeFrame(ttk.Frame):
     RealTimeParser instance.
     """
 
-    DATA_STR_BASE = "Slow screen parsing features:\n\n{}"
+    DATA_STR_BASE = "Slow screen results features:\n\n{}"
 
     def __init__(self, master, window):
         ttk.Frame.__init__(self, master)
@@ -61,7 +61,7 @@ class RealTimeFrame(ttk.Frame):
         self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
 
         # Data widgets
-        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time parsing\n"))
+        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time results\n"))
         self.data_label = ttk.Label(
             self, textvariable=self.data, font=("default", 9), justify=tk.LEFT,
             wraplength=300)
@@ -109,13 +109,13 @@ class RealTimeFrame(ttk.Frame):
         if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
             if not check_privileges():
                 messagebox.showinfo(
-                    "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
+                    "Info", "Mouse and keyboard results is enabled, but the GSF Parser is not running as "
                             "administrator, which prevents reading input from the SWTOR window. Please restart the "
                             "GSF Parser as administrator for this feature to work.")
         return True
 
     def start_parsing(self):
-        """Start the parsing process and open the Overlay"""
+        """Start the results process and open the Overlay"""
         if self.check_parser_start() is False:
             return
         self.parsing_control_button.config(state=tk.DISABLED)
@@ -160,9 +160,9 @@ class RealTimeFrame(ttk.Frame):
         print("[RealTimeFrame] Parsing started. Threads: {}".format(threading.enumerate()))
 
     def stop_parsing(self):
-        """Stop the parsing process"""
+        """Stop the results process"""
         if self.parser._scoreboard_parser is not None:
-            messagebox.showwarning("Warning", "Parsing cannot be stopped while parsing a scoreboard.")
+            messagebox.showwarning("Warning", "Parsing cannot be stopped while results a scoreboard.")
             return
         self.parsing_control_button.config(state=tk.DISABLED)
         self.parsing_control_button.update()
@@ -175,7 +175,7 @@ class RealTimeFrame(ttk.Frame):
         try:
             self.parser.join(timeout=2)
         except Exception as e:
-            messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
+            messagebox.showerror("Error", "While real-time results, the following error occurred:\n\n{}".format(e))
             raise
         self.watching_stringvar.set("Watching no file...")
         print("[RealTimeFrame] RealTimeParser reference count: {}".format(sys.getrefcount(self.parser)))
@@ -184,7 +184,7 @@ class RealTimeFrame(ttk.Frame):
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
-        self.data.set(self.DATA_STR_BASE.format("Not real-time parsing\n"))
+        self.data.set(self.DATA_STR_BASE.format("Not real-time results\n"))
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
@@ -256,7 +256,7 @@ class RealTimeFrame(ttk.Frame):
         if perf is None:
             return
         elif len(perf) == 0:
-            string = self.DATA_STR_BASE.format("No slow screen parsing features\n")
+            string = self.DATA_STR_BASE.format("No slow screen results features\n")
         else:
             string = self.DATA_STR_BASE.format(perf)
         self.data.set(string)

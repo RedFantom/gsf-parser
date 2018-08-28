@@ -16,33 +16,42 @@ class SnapToplevel(tk.Toplevel):
     """
     A Toplevel window that can be snapped to a side of the Tk instance
 
-    At first glance, the code doesn't allow multiple of these to be opened at the same time (see the second ValueError),
-    but it can be worked around if it is actually the intention of the programmer to have multiple of these. This can be
-    done by unbinding <Configure> from the master instance before opening, and after that rebinding to a function that
-    calls the configure_callback functions of all SnapToplevel instances, and then calling the original <Configure>
+    At first glance, the code doesn't allow multiple of these to be 
+    opened at the same time (see the second ValueError), but it can be 
+    worked around if it is actually the intention of the programmer to 
+    have multiple of these. This can be done by unbinding <Configure> 
+    from the master instance before opening, and after that rebinding 
+    to a function that calls the configure_callback functions of all 
+    SnapToplevel instances, and then calling the original <Configure> 
     callback of the master window, if present.
 
-    Is not guaranteed to work on all platforms due to Tkinter event and window manager restrictions. Functionality
-    depends on whether a <Configure> event is generated upon moving the Tk instance.
+    Is not guaranteed to work on all platforms due to Tkinter event and 
+    window manager restrictions. Functionality depends on whether a 
+    <Configure> event is generated upon moving the Tk instance.
     """
-    # TODO: In spite of the notice above, try to adjust SnapToplevel for the window decorations on at least the most
-    # TODO: used window managers.
+    # TODO: In spite of the notice above, try to adjust SnapToplevel 
+    # TODO:     for the window decorations on at least the most
+    # TODO:     used window managers.
     # TODO: Adjust SnapToplevel based on Windows DPI scaling
 
     def __init__(self, master, **kwargs):
         """
-        :param master: master Tk instance
-        :param kwargs: configure_function - callable object which has to be called upon a <Configure> event of either
-                                            the master Tk instance or this SnapToplevel instance
-                       anchor             - either tk.LEFT, tk.RIGHT, tk.TOP or tk.BOTTOM - Location of the SnapToplevel
-                                            relative to the master Tk instance, defaults to tk.RIGHT
-                       locked             - Whether the user is allowed to move the Toplevel at all
-                       offset_sides       - Override default value
-                       offset_top         - Override default value
-                       allow_change       - Allow the changing of the Toplevel anchor by moving the window
-                       resizable          - Argument to self.resizable()
+        configure_function - callable object which has to be called upon 
+            a <Configure> event of either the master Tk instance or this 
+            SnapToplevel instance
+        anchor             - tk.LEFT, tk.RIGHT, tk.TOP, tk.BOTTOM - 
+            Location of the SnapToplevel relative to the master Tk 
+            instance, defaults to tk.RIGHT
+        locked             - Whether the user is allowed to move the 
+            Toplevel at all
+        offset_sides       - Override default value
+        offset_top         - Override default value
+        allow_change       - Allow the changing of the Toplevel anchor 
+            by moving the window
+        resizable          - Argument to self.resizable()
 
-                       All other keyword arguments, such as width and height, are passed to the Toplevel
+        All other keyword arguments, such as width and height, are 
+        passed to the Toplevel
         """
         # Process given arguments
         if not isinstance(master, tk.Tk) and not isinstance(master, tk.Toplevel):
@@ -257,11 +266,7 @@ class SnapToplevel(tk.Toplevel):
         return master_left, master_right, master_top, master_bottom
 
     def set_geometry_master(self):
-        """
-        Function to set the new geometry of the window if it is snapped
-        to the master and the master was moved.
-        """
-        # If the Toplevel is not snapped to the window, we want to do nothing
+        """Update the geometry of window when the master was moved"""
         if not self.snapped:
             return
         try:

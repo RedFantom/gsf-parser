@@ -16,6 +16,7 @@ class ChoiceDialog(tk.Toplevel):
     options using a ttk.OptionMenu widget. Use the askoption() function
     later in this file to use the ChoiceDialog.
     """
+
     def __init__(self, options=tuple(), label=""):
         """
         :param options: A tuple of string options

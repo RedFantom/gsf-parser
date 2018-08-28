@@ -10,14 +10,14 @@ from collections import OrderedDict
 import tkinter as tk
 import tkinter.ttk as ttk
 from ttkwidgets.frames import Balloon
-from widgets.timeline import TimeLine
+from widgets.results.timeline import TimeLine
 # Project Modules
 from data.patterns import Patterns
 from parsing.filehandler import FileHandler
 from parsing.parser import Parser
 from parsing.patterns import PatternParser
-from widgets.scoreboard import Scoreboard
-from widgets.time_view import TimeView
+from widgets.results.scoreboard import Scoreboard
+from widgets.results.time_view import TimeView
 
 
 class StatsFrame(ttk.Frame):
@@ -119,7 +119,7 @@ class StatsFrame(ttk.Frame):
                  "the amount of times it was activated. This list may include abilities triggered by the GSF system, "
                  "which you have no control over."
         )
-        # Create widgets for screen parsing frame
+        # Create widgets for screen results frame
         self.screen_label_var = tk.StringVar()
         self.screen_label = ttk.Label(self.timeline_frame, textvariable=self.screen_label_var, justify=tk.LEFT,
                                       wraplength=550)
@@ -270,8 +270,8 @@ class StatsFrame(ttk.Frame):
 
     def update_timeline(self, file, match, spawn, match_timings, spawn_timings, file_cube):
         """
-        Update the TimeLine with the results of parsing the file and
-        the screen parsing data
+        Update the TimeLine with the results of results the file and
+        the screen results data
         """
         # Get start and end times of the spawn
         start = FileHandler.datetime_to_float(Parser.line_to_dictionary(file_cube[match][spawn][0])["time"])

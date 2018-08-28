@@ -73,8 +73,8 @@ class Scoreboard(ttk.Frame):
             self.tree.heading(c, text=t, command=lambda c=c: self.tree_sort(c, False, Scoreboard.TYPES[c]))
 
         self.tree.configure(height=13)
-        self.tree.tag_configure("ally", background="#266731", foreground="white")
-        self.tree.tag_configure("enemy", background="#3f1313", foreground="white")
+        self.tree.tag_configure("ally", background="#b8ffad", foreground="black")
+        self.tree.tag_configure("enemy", background="#f9b7a7", foreground="black")
 
     def update_match(self, match: datetime):
         """Update the Widget with the scoreboard of a match"""

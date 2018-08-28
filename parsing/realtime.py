@@ -115,8 +115,8 @@ class RealTimeParser(Thread):
     Runs a LogStalker to monitor the log files and parse the lines in
     the CombatLogs.
     Additionally, Python-MSS is used to capture screenshots of the
-    game if screen parsing is enabled. Those screenshots are used for
-    additional advanced parsing purposes, for which the functions can
+    game if screen results is enabled. Those screenshots are used for
+    additional advanced results purposes, for which the functions can
     be identified with update_*feature_name*.
     """
 
@@ -184,7 +184,7 @@ class RealTimeParser(Thread):
         self._rpc = rpc
 
         """
-        File parsing
+        File results
         """
         # LogStalker
         self._stalker: LogStalker = LogStalker(watching_callback=self._file_callback)
@@ -207,7 +207,7 @@ class RealTimeParser(Thread):
         self._abilities_disabled = dict()
 
         """
-        Screen parsing
+        Screen results
         """
         self._screen_parsing_setup = False
         self._mss = None
@@ -290,7 +290,7 @@ class RealTimeParser(Thread):
     def setup_minimap_share(self):
         """Create a MiniMapClient and setup everything to share location"""
         if "MiniMap Location" not in self._features:
-            raise ValueError("MiniMap Location parsing not enabled.")
+            raise ValueError("MiniMap Location results not enabled.")
         print("[RealTimeParser: MiniMap]", self._address)
         addr, port = self._address.split(":")
         self._client = MiniMapClient(addr, int(port), self._username)
@@ -300,7 +300,7 @@ class RealTimeParser(Thread):
         """Start the keyboard and mouse listeners"""
         if not self._screen_enabled or "Mouse and Keyboard" not in self._features:
             return
-        print("[RealTimeParser] Mouse and Keyboard parsing enabled.")
+        print("[RealTimeParser] Mouse and Keyboard results enabled.")
         self._kb_listener.start()
         self._ms_listener.start()
 
@@ -354,7 +354,7 @@ class RealTimeParser(Thread):
     def update(self):
         """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
-        # File parsing
+        # File results
         lines = self._stalker.get_new_lines()
         for line in lines:
             if line is None:
@@ -365,7 +365,7 @@ class RealTimeParser(Thread):
         if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
             return
-        # Screen parsing
+        # Screen results
         if self._screen_enabled:
             screenshot = self._mss.grab(self._monitor)
             screenshot_time = datetime.now()
@@ -506,14 +506,14 @@ class RealTimeParser(Thread):
         # Spawn Timer
         if (self._screen_enabled and "Spawn Timer" in self._features and
                 self._waiting_for_timer is None and self.is_match is False):
-            # Only activates if the Spawn Timer screen parsing
+            # Only activates if the Spawn Timer screen results
             # feature is enabled and there is no match active.
             # If a match is active, then this probably marks the end
             # of a match instead of the start of one.
             self._waiting_for_timer = datetime.now()
 
-        # Perform error handling. Using real-time parsing with a
-        # different character name is not possible for screen parsing
+        # Perform error handling. Using real-time results with a
+        # different character name is not possible for screen results
         if self.player_name != self._char_i[1]:
             print("[RealTimeParser] WARNING: Different character name")
 
@@ -679,7 +679,7 @@ class RealTimeParser(Thread):
         """
         Remove slow performing features from the screen feature list
 
-        Screen parsing features have their performance recorded by the
+        Screen results features have their performance recorded by the
         @screen_func decorator. For each fast run, a feature has their
         slow count reduced by 0.5, for each slow run it is increased by
         1. If a feature consistently performs slow and their count
@@ -709,14 +709,14 @@ class RealTimeParser(Thread):
             self._ready_button_img = img.resize(size, Image.LANCZOS)
             del img
 
-        print("[TimerParser] Spawn timer parsing activating.")
+        print("[TimerParser] Spawn timer results activating.")
         # Only activates after a login event was detected and no
         # match is active and no time was already determined.
 
         # self._waiting_for_timer is a datetime instance, or False.
         if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
             # If a certain time has passed, give up on finding the timer
-            print("[TimerParser] Last timer parsing attempt.")
+            print("[TimerParser] Last timer results attempt.")
             self._waiting_for_timer = None
 
         # Find the Ready Button image in the screenshot
@@ -876,7 +876,7 @@ class RealTimeParser(Thread):
         """
         Pointer Parsing
 
-        Pointer parsing is capable of matching shots fired with a
+        Pointer results is capable of matching shots fired with a
         PrimaryWeapon
         """
         if self._pointer_parser is None:
@@ -1032,7 +1032,7 @@ class RealTimeParser(Thread):
                 print("[RealTimeParser] encountered an error: ", error)
                 messagebox.showerror(
                     "Error",
-                    "The real-time parsing back-end encountered an error while performing operations. "
+                    "The real-time results back-end encountered an error while performing operations. "
                     "The error has been reported to the developer.")
                 raise
         self._realtime_db.write_spawn_data()
@@ -1143,9 +1143,9 @@ class RealTimeParser(Thread):
 
     @property
     def perf_string(self) -> str:
-        """Return a string with screen parsing feature performance"""
+        """Return a string with screen results feature performance"""
         if len(self._features) == 0:
-            return "No screen parsing features enabled"
+            return "No screen results features enabled"
         string = str()
         global screen_perf
         for feature, (count, time) in screen_perf.items():
@@ -1187,7 +1187,7 @@ class RealTimeParser(Thread):
 
     @property
     def parsing_data_string(self) -> str:
-        """Simple normal parsing data string"""
+        """Simple normal results data string"""
         return "Damage Dealt: {}\n" \
                "Damage Taken: {}\n" \
                "Selfdamage: {}\n" \
@@ -1196,7 +1196,7 @@ class RealTimeParser(Thread):
 
     @property
     def spawn_timer_string(self) -> str:
-        """Spawn timer parsing string for the Overlay"""
+        """Spawn timer results string for the Overlay"""
         if self.is_match is False:
             return ""
         if self._spawn_time is None:
