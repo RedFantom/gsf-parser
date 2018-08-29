@@ -90,7 +90,7 @@ class RealTimeFrame(ttk.Frame):
 
         self.minimap_checkbox.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
         self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
-        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
+        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=5)
 
         self.data_label.grid(row=0, column=2, rowspan=3, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
         self.time_view.grid(row=3, column=0, columnspan=4, sticky="nswe", padx=5, pady=5)

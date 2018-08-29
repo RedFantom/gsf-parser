@@ -30,7 +30,9 @@ defaults = {
         # Whether DebugWindow is enabled
         "debug": False,
         # Text color
-        "color": "#2f77d0"
+        "color": "#2f77d0",
+        # New FileFrame
+        "fileframe": True,
     },
     # File results settings
     "results": {

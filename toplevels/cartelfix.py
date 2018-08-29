@@ -28,11 +28,15 @@ railguns = {
 
 
 class CartelFix(tk.Toplevel):
-    """
-    Provide a teensy overlay for Cartel Market Gunships secondary
-    weapon icons.
-    """
+    """Tiny overlay to display secondary weapon icons for Cartel GS"""
+
     def __init__(self, master: tk.Tk, first: tk.PhotoImage, second: tk.PhotoImage, coordinates: tuple):
+        """
+        :param master: Master MainWindow
+        :param first: PhotoImage of first SecondaryWeapon
+        :param second: PhotoImage of second SecondaryWeapon
+        :param coordinates: Coordinates to create overlay in
+        """
         if not admin.check_privileges() and sys.platform == "win32":
                 variables.main_window.destroy()
                 admin.escalate_privileges()
@@ -50,9 +54,10 @@ class CartelFix(tk.Toplevel):
 
     def switch(self, key: keyboard.Key):
         """
-        Callback for the keyboard press Listener. Only if the pressed
-        key is `1` on the keyboard (either NumPad or numeric row)
-        will the icon switch status.
+        Callback for the keyboard press Listener
+
+        Only if the pressed key is `1` on the keyboard (either NumPad
+        or numeric row) will the icon switch status.
         """
         try:
             if int(key.char) != 1:

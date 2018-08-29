@@ -999,7 +999,6 @@ class Parser(object):
             "time": attack_start["time"] - timedelta(milliseconds=1),
             "source": "Attack",
             "target": name,
-            "target": name,
             "ability": "Attack {}".format(i + 1),
             "amount": sum(e["damage"] for e in attack),
             "effect": "Attack",

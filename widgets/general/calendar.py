@@ -132,10 +132,11 @@ class Calendar(ttk.Frame):
 
         self._image_next, self._image_prev = map(
             lambda i: open_icon(i, folder="gui"), ("right.png", "left.png"))
+        ttk.Style(self).configure("Cal.Toolbutton", anchor=tk.CENTER)
         self._button_next = ttk.Button(
-            self, command=self.next_month, image=self._image_next, style="Toolbutton")
+            self, command=self.next_month, image=self._image_next, style="Cal.Toolbutton")
         self._button_prev = ttk.Button(
-            self, command=self.prev_month, image=self._image_prev, style="Toolbutton")
+            self, command=self.prev_month, image=self._image_prev, style="Cal.Toolbutton")
 
         self._select = tk.BooleanVar(self, value=False)
         ttk.Style(self).configure("Header.Toolbutton", anchor=tk.CENTER)
@@ -331,12 +332,15 @@ class Calendar(ttk.Frame):
         x = (self._width - self._frame.winfo_reqwidth()) // 2
         self._frame.place(x=x, y=2, anchor=tk.NW)
 
+        self._select.set(True)
+
     def _destroy_month_selector(self):
         """Destroy the small month selection window"""
         if self._frame is not None:
             self._frame.destroy()
             self._frame = None
         self._header.config(command=self._create_month_selector)
+        self._select.set(False)
 
     def set_month(self, year: int, month: int):
         """Set the displayed month to the given value"""

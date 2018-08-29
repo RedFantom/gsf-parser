@@ -137,6 +137,11 @@ class SettingsFrame(ttk.Frame):
         self.gui_debug_window_checkbox = ttk.Checkbutton(
             self.gui_frame, text="Show window with debug output", variable=self.gui_debug_window,
             command=self.save_settings)
+        # New FileFrame setting
+        self.gui_fileframe = tk.BooleanVar()
+        self.gui_fileframe_checkbox = ttk.Checkbutton(
+            self.gui_frame, text="Modern FileSelectFrame layout", variable=self.gui_fileframe, command=self.save_settings)
+
         """
         Sharing settings
         """
@@ -308,7 +313,7 @@ class SettingsFrame(ttk.Frame):
                  "Available under the GNU GPLv3 License\n\n"
                  "Special thanks to everyone who has provided feedback, and to JediPedia for the the clean GSF map "
                  "textures.")
-        self.canvas_width: int = self.main_window.width - (10 if sys.platform == "win32" else 25)
+        self.canvas_width: int = self.main_window.width - (10 if sys.platform == "win32" else 35)
         self.canvas = tk.Canvas(
             self.credits_frame, width=self.canvas_width, height=15,
             background=self.main_window.style.lookup("TFrame", "background"))
@@ -353,7 +358,7 @@ class SettingsFrame(ttk.Frame):
         """
         Parent widgets
         """
-        self.frame.grid(row=0, column=0, **padding_frame)
+        self.frame.grid(row=0, column=0, padx=(5, 0), pady=5)
         self.separator.grid(row=1, column=0, **padding_default, sticky="we")
         self.credits_frame.grid(row=2, column=0, **padding_default, **sticky_default)
         self.credits_label.grid(row=0, column=0, **padding_default, **sticky_default)
@@ -378,6 +383,8 @@ class SettingsFrame(ttk.Frame):
         self.gui_check_updates_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Debug Window
         self.gui_debug_window_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
+        # New FileFrame implementation
+        self.gui_fileframe_checkbox.grid(row=5, column=0, **padding_label, **sticky_default)
 
         """
         Parsing settings
@@ -470,6 +477,7 @@ class SettingsFrame(ttk.Frame):
         self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
         self.gui_faction.set(settings["gui"]["faction"].capitalize())
         self.gui_debug_window.set(settings["gui"]["debug"])
+        self.gui_fileframe.set(settings["gui"]["fileframe"])
         """
         Parsing Settings
         """
@@ -540,7 +548,8 @@ class SettingsFrame(ttk.Frame):
                 "event_colors": self.gui_event_colors_type.get(),
                 "event_scheme": self.gui_event_colors_scheme.get(),
                 "faction": self.gui_faction.get(),
-                "debug": self.gui_debug_window.get()
+                "debug": self.gui_debug_window.get(),
+                "fileframe": self.gui_fileframe.get(),
             },
             "results": {
                 "path": self.pa_path.get().strip(),
@@ -663,6 +672,8 @@ class SettingsFrame(ttk.Frame):
         if self.gui_debug_window.get() is not settings["gui"]["debug"]:
             self._restart_required = True
         if self.sc_perf.get() is not settings["screen"]["perf"]:
+            self._restart_required = True
+        if self.gui_fileframe.get() is not settings["gui"]["fileframe"]:
             self._restart_required = True
 
 

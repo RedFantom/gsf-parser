@@ -9,10 +9,7 @@ import sys
 
 
 def get_temp_directory():
-    """
-    Returns the absolute path to the directory that is to be used by the
-    GSF Parser for the temporary files.
-    """
+    """Return an abspath to a directory to put temporary files in"""
     if sys.platform == "win32":
         import tempfile
         folder = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "GSF Parser"))
@@ -31,10 +28,7 @@ def get_assets_directory():
 
 
 def get_combatlogs_folder():
-    """
-    Returns absolute path to the CombatLogs folder in the user's
-    Documents folder. Works on both Windows or Linux.
-    """
+    """Return the absolute path to the default CombatLogs folder"""
     relative_path = os.path.join("Documents", "Star Wars - The Old Republic", "CombatLogs")
     user_path = os.path.expanduser("~")
     return os.path.realpath(os.path.join(user_path, relative_path))

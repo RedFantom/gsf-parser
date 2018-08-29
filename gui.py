@@ -55,7 +55,7 @@ class MainWindow(ThemedTk):
         self.style = ttk.Style()
         self.set_icon()
         self.set_variables()
-        self.update_style()
+        self.config_style()
         self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings["results"]["path"]
@@ -170,7 +170,8 @@ class MainWindow(ThemedTk):
         self.geometry("{}x{}".format(*self.get_window_size()))
         self.bind("<F10>", self.screenshot)
 
-    def set_variables(self):
+    @staticmethod
+    def set_variables():
         """Set program global variables in the shared variables module"""
         variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
 
@@ -195,11 +196,8 @@ class MainWindow(ThemedTk):
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         return
 
-    def update_style(self):
-        """
-        Update the style of the window. This includes theme and text
-        colour, but also font.
-        """
+    def config_style(self):
+        """Configure the style: theme, font and foreground color"""
         print("[MainWindow] PNG-based theme: {}".format(self.png_support))
         self.set_theme("arc")
         print("[MainWindow] ThemedWidget Version: {}".format(getattr(self, "VERSION", None)))

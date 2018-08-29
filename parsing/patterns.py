@@ -319,6 +319,9 @@ class PatternParser(object):
             category = PatternParser.get_component_category(ability)
         if ship[category] is None:  # Not correctly configured
             return False
+        elif isinstance(ship[category], tuple):
+            print("[PatternParser] Unexpected ship data: {}".format(ship[category]))
+            return False
         elif ship[category].name in ability:  # list/str __contains__
             return False
         if "Weapon" in ability:  # PrimaryWeapon, SecondaryWeapon
