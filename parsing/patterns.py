@@ -175,7 +175,10 @@ class PatternParser(object):
             return PatternParser.parse_ability_availability(line, lines, event, ship)
         # Parse ship type selected
         elif event_type == "type":
-            ship_name = ship.name if ship is None else Parser.get_ship_for_dict(Parser.get_abilities_dict(lines))
+            # TODO: Optimize usage
+            player = Parser.get_player_id_list(lines)
+            abs_dict = Parser.get_abilities_dict(lines, player)
+            ship_name = ship.name if ship is None else Parser.get_ship_for_dict(abs_dict)
             ship_type, = args
             return get_ship_category(ship_name) == ship_type
         raise InvalidDescriptor(event)
@@ -243,7 +246,8 @@ class PatternParser(object):
         else:  # str
             name = component
             category = PatternParser.get_component_category(component)
-        abilities = Parser.get_abilities_dict(lines)
+        player = Parser.get_player_id_list(lines)
+        abilities = Parser.get_abilities_dict(lines, player)
         if name in abilities:
             return True
         if ship is None:

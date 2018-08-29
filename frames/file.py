@@ -11,14 +11,13 @@ from tkinter import ttk
 from datetime import datetime
 import operator
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List
 # Project Modules
 import variables
 from parsing import matchstats, spawnstats
 from data import abilities
 from parsing.parser import Parser
 from toplevels.splash import SplashScreen
-from toplevels.filters import Filters
 from parsing.filehandler import FileHandler
 from parsing.screen import ScreenParser
 from widgets.general import Calendar, DateKeyDict
@@ -38,13 +37,12 @@ class FileFrame(ttk.Frame):
         self._calendar = Calendar(self, callback=self._select_date, highlight="#4286f4")
         self._tree = ttk.Treeview(self, show=("tree", "headings"), height=6)
         self._scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self._tree.yview)
-        self.setup_tree()
-
         self._refresh_button = ttk.Button(self, text="Refresh", command=self.update_files)
-        self._filters_button = ttk.Button(self, text="Filters", command=Filters)
 
-        self._matches: Dict[str: str] = dict()
-        self._files: Dict[datetime, List[str]] = DateKeyDict()
+        self._files: List[str] = list()
+        self._dates: Dict[datetime: List[str]] = DateKeyDict()
+
+        self.setup_tree()
 
     def setup_tree(self):
         """Configure the Treeview options"""
@@ -53,43 +51,17 @@ class FileFrame(ttk.Frame):
         self._tree.heading("#0", text="Matches")
         self._tree.bind("<Double-1>", self._parse_item)
 
-    def _select_date(self, date: datetime):
-        """Callback for Calendar widget selection command"""
-        self.clear_data_widgets()
-        self._tree.delete(*self._tree.get_children(""))
-        self._matches.clear()
-        if date not in self._files:
-            return
-        files = self._files[date]
-        entries: Dict[str, List[str]] = dict()
-        for file in files:
-            _, matches, spawns = Parser.split_combatlog_file(file)
-            for i, match in enumerate(matches[::2]):
-                name = Parser.get_player_name_raw(file)
-                match = "{}, {}".format(match.strftime("%H:%M"), name)
-                entries[match] = list()
-                self._matches[i] = file
-                for j, spawn in enumerate(spawns[i]):
-                    spawn = spawn.strftime("%M:%S")
-                    entries[match].append(spawn)
-                    self._matches[(i, j)] = file
-        for i, match in enumerate(sorted(entries.keys())):
-            self._tree.insert("", tk.END, text=match, iid=str(i))
-            for j, spawn in enumerate(entries[match]):
-                self._tree.insert(str(i), tk.END, text=spawn, iid="{},{}".format(i, j))
-
     def grid_widgets(self):
         """Configure widgets in grid geometry manager"""
         self._calendar.grid(row=0, column=0, sticky="nswe")
         self._tree.grid(row=1, column=0, sticky="nswe", padx=5, pady=(0, 5))
         self._scroll.grid(row=1, column=1, sticky="nswe", pady=(0, 5))
         self._refresh_button.grid(row=2, column=0, sticky="nswe", padx=5, pady=(0, 5))
-        # self._filters_button.grid(row=3, column=0, sticky="nswe", padx=5, pady=(0, 5))
 
     def update_files(self):
         """Update the Calendar with the new files"""
         self.clear_data_widgets()
-        self._files.clear()
+        self._dates.clear()
         folder = variables.settings["parsing"]["path"]
         files = [f for f in os.listdir(folder) if Parser.get_gsf_in_file(f)]
         self.create_splash(len(files))
@@ -101,28 +73,50 @@ class FileFrame(ttk.Frame):
             if date not in match_count:
                 match_count[date] = 0
             match_count[date] += Parser.count_matches(file)
-            if date not in self._files:
-                self._files[date] = list()
-            self._files[date].append(file)
+            if date not in self._dates:
+                self._dates[date] = list()
+            self._dates[date].append(file)
             self._splash.increment()
         self._calendar.update_values(match_count)
         self.destroy_splash()
 
+    def _select_date(self, date: datetime):
+        """Callback for Calendar widget selection command"""
+        self.clear_data_widgets()
+        self._tree.delete(*self._tree.get_children(""))
+        if date not in self._dates:
+            return
+        self._files: List[str] = self._dates[date]
+        for f, file in enumerate(sorted(self._files)):
+            name = Parser.get_player_name_raw(file)
+            cube, matches, spawns = Parser.split_combatlog_file(file)
+            for m, match in enumerate(sorted(matches[::2])):
+                match = datetime.strftime(match, "%H:%M, {}".format(name))
+                match_iid = "{},{}".format(f, m)
+                self._tree.insert("", tk.END, text=match, iid=match_iid)
+                for s, spawn in enumerate(sorted(spawns[m])):
+                    spawn = datetime.strftime(spawn, "%H:%M:%S")
+                    player_list: List[str] = Parser.get_player_id_list(cube[m][s])
+                    abs_dict: Dict[str: int] = Parser.get_abilities_dict(cube[m][s], player_list)
+                    ships: List[str] = Parser.get_ship_for_dict(abs_dict)
+                    ship = self.format_ships_list(ships)
+                    spawn = "{}{}".format(spawn, ship)
+                    spawn_iid = "{},{},{}".format(f, m, s)
+                    self._tree.insert(match_iid, tk.END, text=spawn, iid=spawn_iid)
+
     def _parse_item(self, _: tk.Event):
         """Parse a match/spawn from a file"""
+        self.clear_data_widgets()
         selection = self._tree.selection()
         if len(selection) == 0:
             return
         elements = selection[0].split(",")
-        if len(elements) == 2:  # Spawn
-            i, j = map(int, elements)
-            print(i, j)
-            file = self._matches[(i, j)]
-            self.parse_spawn(file, i, j)
-        else:  # Match
-            i: int = int(elements[0])
-            file: str = self._matches[i]
-            self.parse_match(file, i)
+        if len(elements) == 3:  # Spawns
+            f, m, s = map(int, elements)
+            self.parse_spawn(self._files[f], m, s)
+        else:  # Matches
+            f, m = map(int, elements)
+            self.parse_match(self._files[f], m)
 
     def create_splash(self, maximum: int):
         """Update the maximum value of the splash screen"""
@@ -221,7 +215,7 @@ class FileFrame(ttk.Frame):
         found in the specified file and displays the results in the
         other frames.
         """
-        self.clear_data_widgets()
+        print("[FileFrame] Parsing file '{}', match {}".format(file, match_i))
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         lines = Parser.read_file(file)
@@ -242,7 +236,7 @@ class FileFrame(ttk.Frame):
         match or just one of them and displays the results in the other
         frames accordingly.
         """
-        self.clear_data_widgets()
+        print("[FileFrame] Parsing '{}', match {}, spawn {}".format(file, match_i, spawn_i))
         self.main_window.middle_frame.statistics_numbers_var.set("")
         self.main_window.ship_frame.ship_label_var.set("No match or spawn selected yet.")
         lines = Parser.read_file(file)
@@ -292,3 +286,13 @@ class FileFrame(ttk.Frame):
         damage_t = str(enemydamaget[enemy]) if enemy in enemydamaget else 0
         kwargs = {"text": "Enemy" if enemy == "" else enemy, "values": (damage_d, damage_t)}
         self.main_window.middle_frame.enemies_treeview.insert("", tk.END, **kwargs)
+
+    @staticmethod
+    def format_ships_list(ships: List[str]):
+        """Format a list of ship possibilities"""
+        if len(ships) == 0:
+            return ", Unknown"
+        elif len(ships) == 1:
+            return ", {}".format(ships[0])
+        else:
+            return ""

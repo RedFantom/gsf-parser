@@ -538,10 +538,11 @@ class RealTimeParser(Thread):
                 self.dmg_t += line["amount"]
                 self.rgb_queue_put(("press", "dt"))
 
-        if line["ability"] in self.abilities:
+        if line["source"] in self.active_ids:
+            if line["ability"] not in self.abilities:
+                self.abilities[line["ability"]] = 0
             self.abilities[line["ability"]] += 1
-        else:  # line["ability"] not in self.abilities:
-            self.abilities[line["ability"]] = 1
+        
         self.lines.append(line)
         if callable(self.event_callback):
             line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)

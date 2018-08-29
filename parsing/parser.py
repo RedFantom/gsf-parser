@@ -145,12 +145,14 @@ class Parser(object):
         return line_dict
 
     @staticmethod
-    def get_abilities_dict(lines: list):
+    def get_abilities_dict(lines: List[Any], player_list: List[str]):
         """Get the abilities dict for a list of lines"""
         abilities = {}
         for line in lines:
             if not isinstance(line, dict):
                 line = Parser.line_to_dictionary(line)
+            if not Parser.compare_ids(line["source"], player_list):
+                continue
             if line["ability"] not in abilities:
                 abilities[line["ability"]] = 1
             else:
