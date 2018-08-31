@@ -64,8 +64,8 @@ class ScoreboardDatabase(object):
     def get_scoreboard(match: datetime):
         """Return the scoreboard for a match given the datetime key"""
         with ScoreboardDatabase() as db:
-            if match not in db._shelf and os.path.exists("development"):
-                return db._shelf[list(db._shelf.keys())[0]]
+            if match not in db._shelf:
+                return None
             return db[match]
 
     def __enter__(self):

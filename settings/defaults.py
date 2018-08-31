@@ -34,8 +34,8 @@ defaults = {
         # New FileFrame
         "fileframe": True,
     },
-    # File results settings
-    "results": {
+    # File parsing settings
+    "parsing": {
         # CombatLogs path
         "path": get_combatlogs_folder(),
     },

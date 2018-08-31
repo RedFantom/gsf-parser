@@ -360,7 +360,7 @@ class Parser(object):
         an optional player id number list
         """
         # Check if file exists, else add the combatlogs folder to it
-        combatlogs_path = settings["results"]["path"]
+        combatlogs_path = settings["parsing"]["path"]
         file_name = file_name if os.path.exists(file_name) else os.path.join(combatlogs_path, file_name)
         # Execute the splitting
         lines = Parser.read_file(file_name)
@@ -566,7 +566,7 @@ class Parser(object):
         # If the file does not exist in CWD, then attempt to find it in
         # the CombatLogs folder
         if not os.path.exists(file_name):
-            file_name = os.path.join(settings["results"]["path"], os.path.basename(file_name))
+            file_name = os.path.join(settings["parsing"]["path"], os.path.basename(file_name))
         if not os.path.exists(file_name):
             raise FileNotFoundError("File '{}' not found in absolute path, cwd or CombatLogs folder".format(file_name))
         # Attempt to read the file as bytes
@@ -811,7 +811,7 @@ class Parser(object):
         uncounted = 0
         deaths = 0
         time = 0
-        file_list = os.listdir(settings["results"]["path"])
+        file_list = os.listdir(settings["parsing"]["path"])
         for file in file_list:
             if not Parser.get_gsf_in_file(file):
                 continue
@@ -883,11 +883,11 @@ class Parser(object):
     @staticmethod
     def gsf_combatlogs():
         """Return a list of absolute paths to all files with GSF matches"""
-        files = os.listdir(settings["results"]["path"])
+        files = os.listdir(settings["parsing"]["path"])
         for file in files:
             if not Parser.get_gsf_in_file(file):
                 continue
-            path = os.path.join(settings["results"]["path"], file)
+            path = os.path.join(settings["parsing"]["path"], file)
             yield path
 
     @staticmethod

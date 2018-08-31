@@ -157,7 +157,7 @@ class Filters(tk.Toplevel):
         """
         # logs, matches or spawns
         results = []
-        files = os.listdir(variables.settings["results"]["path"])
+        files = os.listdir(variables.settings["parsing"]["path"])
         files_done = 0
         splash = SplashScreen(self, len(files))
         # Clear the widgets in the file frame

@@ -22,3 +22,4 @@ pypresence
 pytesseract
 tblib
 humanize
+six

@@ -481,7 +481,7 @@ class SettingsFrame(ttk.Frame):
         """
         Parsing Settings
         """
-        self.pa_path.set(settings["results"]["path"])
+        self.pa_path.set(settings["parsing"]["path"])
         """
         Sharing Settings
         """
@@ -551,7 +551,7 @@ class SettingsFrame(ttk.Frame):
                 "debug": self.gui_debug_window.get(),
                 "fileframe": self.gui_fileframe.get(),
             },
-            "results": {
+            "parsing": {
                 "path": self.pa_path.get().strip(),
             },
             "realtime": {

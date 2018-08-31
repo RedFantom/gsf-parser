@@ -115,7 +115,7 @@ class RealTimeParser(Thread):
     Runs a LogStalker to monitor the log files and parse the lines in
     the CombatLogs.
     Additionally, Python-MSS is used to capture screenshots of the
-    game if screen results is enabled. Those screenshots are used for
+    game if screen parsing is enabled. Those screenshots are used for
     additional advanced results purposes, for which the functions can
     be identified with update_*feature_name*.
     """

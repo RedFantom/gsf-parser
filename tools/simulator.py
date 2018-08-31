@@ -58,7 +58,7 @@ class Simulator(threading.Thread):
 
 if __name__ == '__main__':
     import variables
-    folder = variables.settings["results"]["cl_path"]
+    folder = variables.settings["parsing"]["path"]
     most_recent = list(sorted(os.listdir(folder), reverse=True))[0]
     simulator = Simulator(most_recent, folder)
     try:

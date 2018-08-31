@@ -58,7 +58,7 @@ class MainWindow(ThemedTk):
         self.config_style()
         self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
-        self.default_path = variables.settings["results"]["path"]
+        self.default_path = variables.settings["parsing"]["path"]
         # Set window properties and create a splash screen from the splash_screen class
         self.withdraw()
         self.splash = BootSplash(self)

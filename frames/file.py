@@ -77,7 +77,7 @@ class FileFrame(ttk.Frame):
                 self._dates[date] = list()
             self._dates[date].append(file)
             self._splash.increment()
-        self._calendar.update_values(match_count)
+        self._calendar.update_heatmap(match_count)
         self.destroy_splash()
 
     def _select_date(self, date: datetime):
@@ -262,7 +262,7 @@ class FileFrame(ttk.Frame):
         self.main_window.middle_frame.scoreboard.update_match(match_timing)
 
     def clear_data_widgets(self):
-        """Clear the data widgets for results results"""
+        """Clear the data widgets for results parsing"""
         self.main_window.middle_frame.abilities_treeview.delete(
             *self.main_window.middle_frame.abilities_treeview.get_children())
         self.main_window.middle_frame.enemies_treeview.delete(
