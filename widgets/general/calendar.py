@@ -147,6 +147,7 @@ class Calendar(ttk.Frame):
         self._canvas.bind("<Button-1>", self._on_click)
 
         self._values: Dict[datetime, int] = DateKeyDict()
+        self._markers: Dict[datetime, str] = DateKeyDict()
         self._columns: List[int] = list()
         self._rows: List[int] = list()
         self._numbers: Dict[int, str] = dict()
@@ -229,16 +230,28 @@ class Calendar(ttk.Frame):
             return
         x1, y1, x2, y2 = self._canvas.bbox(id)
         date = datetime(year=self._date.year, month=self._date.month, day=number)
-        value = self._values[date] if date in self._values else 0
-        color = self.scale_color_saturation(
-            self._highlight, value, max(tuple(self._values.values()) + (1,)))
+        if date not in self._markers:
+            value = self._values[date] if date in self._values else 0
+            color = self.scale_color_saturation(
+                self._highlight, value, max(tuple(self._values.values()) + (1,)))
+        else:
+            color = self._markers[date]
         id = self._canvas.create_rectangle(
             (self._columns[j] - 3, y1 - 1, x2 + 4, y2 + 1), width=0, fill=color, tags=("bg",))
         self._boxes[number] = id
 
-    def update_values(self, values: Dict[datetime, int]):
+    def update_heatmap(self, values: Dict[datetime, int]=None, **kwargs):
         """Update the values of each day"""
-        self._values.update(values)
+        if values is not None:
+            kwargs.update(values)
+        self._values.update(kwargs)
+        self.redraw_calendar()
+
+    def update_markers(self, markers: Dict[datetime, str]=None, **kwargs):
+        """Update the marker colors that override the heatmap"""
+        if markers is not None:
+            kwargs.update(markers)
+        self._markers.update(kwargs)
         self.redraw_calendar()
 
     def clear_values(self):
@@ -286,7 +299,7 @@ class Calendar(ttk.Frame):
         """Return a scaled RGB color"""
         r, g, b = hex_to_rgb(target)
         h, s, v = rgb_to_hsv(r, g, b)
-        s *= value / maximum
+        s = max(s * value / maximum, s / 10) if value != 0 else 0
         c: Tuple[int, int, int] = map(int, hsv_to_rgb(h, s, 255))
         return "#{:02x}{:02x}{:02x}".format(*c)
 
@@ -370,6 +383,6 @@ if __name__ == '__main__':
     c = Calendar(w)
     now = datetime.now()
     year, month = now.year, now.month
-    c.update_values({datetime(year=year, month=month, day=i): i % 4 for i in range(1, 28)})
+    c.update_heatmap({datetime(year=year, month=month, day=i): i % 4 for i in range(1, 28)})
     c.grid()
     w.mainloop()
