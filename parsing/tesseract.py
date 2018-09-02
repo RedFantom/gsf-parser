@@ -29,11 +29,14 @@ NUMBERS = "-c tessedit_char_whitelist=\"0123456789\""
 
 def is_installed() -> bool:
     """Determine whether Tesseract-OCR is installed in PATH"""
-    cmd = tesseract.tesseract_cmd
-    p = Popen([cmd, "--help"], stdout=PIPE)
-    p.wait()
-    out, err = p.communicate()
-    return b"Usage" in out
+    try:
+        cmd = tesseract.tesseract_cmd
+        p = Popen([cmd, "--help"], stdout=PIPE)
+        p.wait()
+        out, err = p.communicate()
+        return b"Usage" in out
+    except OSError:
+        return False
 
 
 def high_pass_invert(image: Image.Image, treshold: int) -> Image.Image:
