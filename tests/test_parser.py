@@ -51,7 +51,8 @@ class TestParser(TestCase):
 
     def test_get_abilities_dict(self):
         lines = Parser.read_file(self.FILE)
-        abilities = Parser.get_abilities_dict(lines)
+        player = Parser.get_player_id_list(lines)
+        abilities = Parser.get_abilities_dict(lines, player)
         self.assertIsInstance(abilities, dict)
 
     def test_get_effects_ability_eligible(self):
