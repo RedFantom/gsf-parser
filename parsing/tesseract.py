@@ -31,10 +31,10 @@ def is_installed() -> bool:
     """Determine whether Tesseract-OCR is installed in PATH"""
     try:
         cmd = tesseract.tesseract_cmd
-        p = Popen([cmd, "--help"], stdout=PIPE)
+        p = Popen([cmd, "--version"], stdout=PIPE, stderr=PIPE)
         p.wait()
         out, err = p.communicate()
-        return b"Usage" in out
+        return b"4.0" in out
     except OSError:
         return False
 

@@ -17,7 +17,7 @@ from utils.directories import get_assets_directory
 class GtkOverlay(Gtk.Window):
     """Window that represents the actual Overlay and draws the text"""
 
-    def __init__(self, position: tuple, _=None):
+    def __init__(self, position: tuple, master=None):
         """Initialize window and attributes"""
         GLib.log_set_writer_func(lambda *args: GLib.LogWriterOutput.HANDLED)
         Gtk.Window.__init__(self)

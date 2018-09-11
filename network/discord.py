@@ -233,7 +233,10 @@ class DiscordClient(Connection):
         files = list(Parser.gsf_combatlogs())
         result = list()
         for file in files:
-            file_date = Parser.parse_filename(file).date()
+            file_date = Parser.parse_filename(file)
+            if file_date is None:
+                continue
+            file_date = file_date.date()
             if file_date == datetime.now().date():
                 result.append(file)
         self.send_files(window, result)

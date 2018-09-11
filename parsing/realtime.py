@@ -524,7 +524,8 @@ class RealTimeParser(Thread):
         Parser.get_event_category(line, self.active_id)
         if "amount" not in line or line["amount"] == "":
             line["amount"] = "0"
-        line["amount"] = int(line["amount"].replace("*", ""))
+        if not isinstance(line["amount"], int):
+            line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
             self._healing += line["amount"]
             self.rgb_queue_put(("press", "hr"))

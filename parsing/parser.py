@@ -907,7 +907,7 @@ class Parser(object):
     @staticmethod
     def is_gsf_event(event: dict):
         """Determine whether the event given is valid GSF event"""
-        return event["source"].isdigit() and event["target"].isdigit()
+        return "@" not in event["source"] and "@" not in event["target"]
 
     @staticmethod
     def is_login(line: dict):

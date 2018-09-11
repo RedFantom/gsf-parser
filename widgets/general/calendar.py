@@ -12,6 +12,7 @@ GNU GPLv3.
 import calendar
 from colorsys import rgb_to_hsv, hsv_to_rgb
 from datetime import datetime
+import locale
 from typing import Any, Dict, List, Tuple
 # UI Libraries
 import tkinter as tk
@@ -91,13 +92,13 @@ class Calendar(ttk.Frame):
     }
 
     ORDER = [
-        calendar.SUNDAY,
         calendar.MONDAY,
         calendar.TUESDAY,
         calendar.WEDNESDAY,
         calendar.THURSDAY,
         calendar.FRIDAY,
-        calendar.SATURDAY
+        calendar.SATURDAY,
+        calendar.SUNDAY,
     ]
 
     def __init__(self, master=None, **kwargs):
@@ -210,7 +211,7 @@ class Calendar(ttk.Frame):
     def _draw_days(self):
         """Draw the days in the Canvas"""
         year, month = self._date.year, self._date.month
-        self._header.configure(text=self._calendar.formatmonthname(year, month, 0, True))
+        self._header.configure(text=self._calendar.formatmonthname(year, month, 0, True).capitalize())
         for i, week in enumerate(self.calendar):
             y = self._rows[i] + 2
             for j, number in enumerate(week):

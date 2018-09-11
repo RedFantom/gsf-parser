@@ -11,7 +11,7 @@ from unittest import TestCase
 # Packages
 from PIL import Image
 # Project Modules
-from parsing.scoreboards import ScoreboardParser, ScoreboardDatabase
+from parsing.scoreboards import ScoreboardParser
 from parsing import tesseract
 from utils.directories import get_assets_directory
 
