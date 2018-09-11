@@ -26,6 +26,7 @@ keys = {
     Key.space: "space",
     Key.ctrl_l: "lctrl",
     Key.ctrl_r: "rctrl",
+    Key.ctrl: "ctrl",
     Key.caps_lock: "capslock",
     Key.delete: "delete",
     Key.insert: "insert",

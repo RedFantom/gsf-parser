@@ -30,29 +30,29 @@ defaults = {
         # Whether DebugWindow is enabled
         "debug": False,
         # Text color
-        "color": "#2f77d0"
+        "color": "#2f77d0",
+        # New FileFrame
+        "fileframe": True,
     },
     # File parsing settings
     "parsing": {
         # CombatLogs path
         "path": get_combatlogs_folder(),
     },
-    # Real-time parsing settings
+    # Real-time results settings
     "realtime": {
-        # Whether the overlay is enabled
-        "overlay": True,
-        # Overlay text color
-        "overlay_text": "Yellow",
-        # Overlay position string
-        "overlay_position": "x0y0",
-        # Whether the Overlay hides outside of GSF
-        "overlay_when_gsf": True,
         # RealTimeParser sleep
         "sleep": True,
         # RGB Keyboard Lighting Effects
         "rgb": False,
         # Discord Rich Presence
         "drp": True,
+    },
+    "overlay": {
+        "position": "x0y0",
+        "when_gsf": True,
+        "enabled": True,
+        "color": "Yellow"
     },
     # Event Overlay Settings
     "event": {
@@ -62,9 +62,9 @@ defaults = {
         "position": "x0y0"
     },
     "screen": {
-        # Whether screen parsing is enabled
+        # Whether screen results is enabled
         "enabled": True,
-        # List of enabled screen parsing features
+        # List of enabled screen results features
         "features": ["Tracking penalty", "Ship health", "Power management"],
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
@@ -72,7 +72,7 @@ defaults = {
         "window": False,
         # SWTOR Dynamic window support
         "dynamic": False,
-        # Screen parsing performance monitoring
+        # Screen results performance monitoring
         "perf": True,
         "disable": True,
     },

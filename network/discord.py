@@ -19,7 +19,7 @@ import tkinter as tk
 from data.ships import ship_tiers
 from network.connection import Connection
 from parsing import Parser, FileHandler
-from toplevels.splashscreens import DiscordSplash
+from toplevels.splash import DiscordSplash
 from utils.directories import get_temp_directory
 from variables import settings
 
@@ -233,7 +233,10 @@ class DiscordClient(Connection):
         files = list(Parser.gsf_combatlogs())
         result = list()
         for file in files:
-            file_date = Parser.parse_filename(file).date()
+            file_date = Parser.parse_filename(file)
+            if file_date is None:
+                continue
+            file_date = file_date.date()
             if file_date == datetime.now().date():
                 result.append(file)
         self.send_files(window, result)

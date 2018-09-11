@@ -191,7 +191,7 @@ quellAbilities = [
     "Quick-Charge Shield", "Directional Shield", "Charged Plating"
 ]
 
-# Abilities that are excluded from parsing
+# Abilities that are excluded from results
 excluded_abilities = [
     "Wingman", "Hydro Spanner", "In Your Sights", "Slicer's Loop",
     "Servo Jammer", "Lockdown", "Concentrated Fire", "Lingering Effect",

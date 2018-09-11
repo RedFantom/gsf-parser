@@ -92,10 +92,12 @@ class Settings(object):
         Returns a SettingsDictionary for a section key. Also provides
         error handling for when the section is not found.
         """
-        if section not in self.settings:
+        try:
+            return self.settings[section]
+        except configparser.NoSectionError:
             self.write_defaults()
             self.read_settings()
-        return self.settings[section]
+            return self[section]
 
     def __contains__(self, item):
         return item in self.settings

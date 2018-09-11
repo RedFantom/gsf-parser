@@ -16,9 +16,8 @@ from tkinter import filedialog
 from tkinter import messagebox
 # Project Modules
 from network.discord import DiscordClient
-from parsing.vision import timer_boxes
-from toplevels.event_colors import EventColors
-from utils.utilities import get_screen_resolution
+from parsing import tesseract
+from toplevels.colors import EventColors
 from variables import settings, colors
 from widgets import VerticalScrollFrame, Balloon
 
@@ -33,6 +32,59 @@ class SettingsFrame(ttk.Frame):
     """
 
     DELAY = 3000
+
+    SCREEN_PARSING_FEATURES = {
+        "Engine Speed":
+            "Creates a speed indicator in m/s in the real-time results overlay.",
+        "Map and match type":
+            "Determines the map based on the in-game MiniMap. Saves this map "
+            "in the real-time results database, shows in the overlay and the "
+            "Discord Rich Presence status indicator.",
+        "MiniMap Location":
+            "Used only in MiniMap Location sharing. The MiniMap Location "
+            "sharing service sends your location on the MiniMap to a server "
+            "of your choosing to enable better cooperation in high-level "
+            "teams.",
+        "Mouse and Keyboard":
+            "Enables listening to mouse and keyboard input events. Requires "
+            "administrator privileges on Windows. A lot of features depend on "
+            "these Listeners.",
+        "Pointer Parsing":
+            "Reads the pointer when firing Primary Weapons to determine if "
+            "shots were made on-target, and thus whether shots missed, evaded "
+            "or hit.",
+        "Power Regeneration Delays":
+            "Creates power delay indicators in the overlay, in a text format. "
+            "Works for Engine, Shield and Weapon power pools. Depends on the "
+            "build calculator for accurate numbers.",
+        "Tracking penalty":
+            "Reads the position of the Mouse in order to determine the amount "
+            "of tracking degrees the pointer is off-center. If the build is "
+            "correctly configured, this number is then converted to a "
+            "percentage in accuracy lost.",
+        "Scoreboard Parsing":
+            "When a match is over, press CTRL while still in the scoreboard "
+            "screen to trigger a ScoreboardParser. Uses OCR and advanced "
+            "matching techniques to read the scoreboard numbers. Saves them "
+            "in a separate database so they can be displayed in the file "
+            "results frame.\n"
+            "ScoreboardParsers run in separate Processes. These cannot be "
+            "cancelled once they are started. A progress indicator is "
+            "provided in the overlay.\n"
+            "Depends on Tesseract-OCR. Tesseract-OCR is a very advanced "
+            "OCR engine. If this Checkbox is disabled, please check that "
+            "you have installed Tesseract-OCR into your PATH.",
+        "Ship health":
+            "Read the ship health indicators and determine their color to "
+            "approximate the ship health remaining. Available in the overlay "
+            "and the real-time results database.",
+        "Spawn Timer":
+            "Performs OCR on the spawn timer in the pre-spawn interface to "
+            "determine the time until a new spawn wave is triggered.\n"
+            "Depends on Tesseract-OCR. Tesseract-OCR is a very advanced "
+            "OCR engine. If this Checkbox is disabled, please check that "
+            "you have installed Tesseract-OCR into your PATH."
+    }
 
     def __init__(self, root_frame, main_window):
         self.after_id = None
@@ -85,6 +137,11 @@ class SettingsFrame(ttk.Frame):
         self.gui_debug_window_checkbox = ttk.Checkbutton(
             self.gui_frame, text="Show window with debug output", variable=self.gui_debug_window,
             command=self.save_settings)
+        # New FileFrame setting
+        self.gui_fileframe = tk.BooleanVar()
+        self.gui_fileframe_checkbox = ttk.Checkbutton(
+            self.gui_frame, text="Modern FileSelectFrame layout", variable=self.gui_fileframe, command=self.save_settings)
+
         """
         Sharing settings
         """
@@ -130,7 +187,7 @@ class SettingsFrame(ttk.Frame):
         # Enable real-time overlay
         self.rt_overlay_enabled = tk.BooleanVar()
         self.rt_overlay_enabled_checkbox = ttk.Checkbutton(
-            self.rt_frame, text="Enable overlay for real-time parsing", variable=self.rt_overlay_enabled,
+            self.rt_frame, text="Enable overlay for real-time results", variable=self.rt_overlay_enabled,
             command=self.save_settings)
         # Overlay text color
         self.rt_overlay_text_color = tk.StringVar()
@@ -167,7 +224,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_sleep_checkbox = ttk.Checkbutton(
             self.rt_frame, text="RealTimeParser sleep", variable=self.rt_sleep, command=self.save_settings)
         Balloon(self.rt_sleep_checkbox,
-                text="Raises the latency of the RealTimeParser event detection by limiting the parser to two parsing "
+                text="Raises the latency of the RealTimeParser event detection by limiting the parser to two results "
                      "cycles per second but reduces CPU, Memory and IO usage significantly.\n\n"
                      "Only disable if you need the utmost level of precision and have plenty of computing resources "
                      "to spare.")
@@ -188,37 +245,34 @@ class SettingsFrame(ttk.Frame):
                                            "for that character is enabled.")
 
         """
-        Screen parsing settings
+        Screen results settings
         """
         self.sc_label = ttk.Label(
             self.frame.interior, text="Screen Parsing", font=("default", 13, "bold"), justify=tk.LEFT)
-        # Screen parsing enabled
+        # Screen results enabled
         self.sc_enabled = tk.BooleanVar()
         self.sc_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
-        # Screen parsing features
-        self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen parsing:")
-        self.sc_features = [
-            "Tracking penalty", "Ship health", "Mouse and Keyboard", "Spawn Timer",
-            "MiniMap Location", "Map and match type", "Match score", "Pointer Parsing",
-            "Power Regeneration Delays", "Engine Speed"
-        ]
+            self.sc_frame, text="Enable screen results", variable=self.sc_enabled, command=self.save_settings)
+        # Screen results features
+        self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen results:")
         beta = [
-            "MiniMap Location", "Spawn Timer", "Map and match type", "Match score", "Pointer Parsing",
+            "MiniMap Location", "Spawn Timer", "Map and match type", "Scoreboard Parsing", "Pointer Parsing",
         ]
         self.sc_requires = {
             "Tracking penalty": ("Mouse and Keyboard",),
             "Engine Speed": ("Mouse and Keyboard",),
             "Pointer Parsing": ("Mouse and Keyboard",),
-            "Power Regeneration Delays": ("Mouse and Keyboard",)
+            "Power Regeneration Delays": ("Mouse and Keyboard",),
+            "Scoreboard Parsing": ("Mouse and Keyboard",),
         }
         self.sc_checkboxes = OrderedDict()
         self.sc_variables = {}
-        for feature in self.sc_features:
+        for feature in self.SCREEN_PARSING_FEATURES:
             self.sc_variables[feature] = tk.BooleanVar()
             text = feature if feature not in beta else "{} (bèta)".format(feature)
             self.sc_checkboxes[feature] = ttk.Checkbutton(
                 self.sc_frame, text=text, variable=self.sc_variables[feature], command=self.save_settings)
+            Balloon(self.sc_checkboxes[feature], text=self.SCREEN_PARSING_FEATURES[feature])
         # Dynamic Window Location Support
         self.sc_dynamic_window = tk.BooleanVar()
         self.sc_dynamic_window_checkbox = ttk.Checkbutton(
@@ -229,25 +283,25 @@ class SettingsFrame(ttk.Frame):
             text="Dynamic SWTOR Window Location Support enables routines that makes GUI Parsing and thus Screen "
                  "Parsing work when SWTOR runs in Windowed mode. This introduces additional overhead, as the location "
                  "of the SWTOR window is determined every Screen Parsing cycle.")
-        # Screen parsing performance profiling
+        # Screen results performance profiling
         self.sc_perf = tk.BooleanVar()
         self.sc_perf_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Screen parsing feature performance profiling",
+            self.sc_frame, text="Screen results feature performance profiling",
             command=self.save_settings, variable=self.sc_perf)
         Balloon(
             self.sc_perf_checkbox,
-            text="If this setting is enabled, the average amount of time spent on each enabled screen parsing feature "
+            text="If this setting is enabled, the average amount of time spent on each enabled screen results feature "
                  "is recorded. If the feature is taking up a lot of processing time, it will be displayed in the "
-                 "real-time parsing frame.")
-        # Screen parsing feature disable
+                 "real-time results frame.")
+        # Screen results feature disable
         self.sc_disable = tk.BooleanVar()
         self.sc_disable_checkbox = ttk.Checkbutton(
             self.sc_frame, text="Automatically disable features that are slow",
             command=self.save_settings, variable=self.sc_disable)
         Balloon(
             self.sc_disable_checkbox,
-            text="If this setting is enabled, screen parsing features that perform slow on a consistent basis are "
-                 "disabled while real-time parsing continues normally.")
+            text="If this setting is enabled, screen results features that perform slow on a consistent basis are "
+                 "disabled while real-time results continues normally.")
 
         """
         Miscellaneous
@@ -259,7 +313,7 @@ class SettingsFrame(ttk.Frame):
                  "Available under the GNU GPLv3 License\n\n"
                  "Special thanks to everyone who has provided feedback, and to JediPedia for the the clean GSF map "
                  "textures.")
-        self.canvas_width: int = self.main_window.width - (10 if sys.platform == "win32" else 25)
+        self.canvas_width: int = self.main_window.width - (10 if sys.platform == "win32" else 35)
         self.canvas = tk.Canvas(
             self.credits_frame, width=self.canvas_width, height=15,
             background=self.main_window.style.lookup("TFrame", "background"))
@@ -304,7 +358,7 @@ class SettingsFrame(ttk.Frame):
         """
         Parent widgets
         """
-        self.frame.grid(row=0, column=0, **padding_frame)
+        self.frame.grid(row=0, column=0, padx=(5, 0), pady=5)
         self.separator.grid(row=1, column=0, **padding_default, sticky="we")
         self.credits_frame.grid(row=2, column=0, **padding_default, **sticky_default)
         self.credits_label.grid(row=0, column=0, **padding_default, **sticky_default)
@@ -329,6 +383,8 @@ class SettingsFrame(ttk.Frame):
         self.gui_check_updates_checkbox.grid(row=3, column=0, **padding_label, **sticky_default, **checkbox)
         # Debug Window
         self.gui_debug_window_checkbox.grid(row=4, column=0, **padding_label, **sticky_default, **checkbox)
+        # New FileFrame implementation
+        self.gui_fileframe_checkbox.grid(row=5, column=0, **padding_label, **sticky_default)
 
         """
         Parsing settings
@@ -389,14 +445,14 @@ class SettingsFrame(ttk.Frame):
         self.rt_drp_checkbox.grid(row=9, column=0, **padding_label, **sticky_button)
 
         """
-        Screen parsing settings
+        Screen results settings
         """
         # General
         self.sc_label.grid(row=8, column=0, **padding_header, **sticky_default)
         self.sc_frame.grid(row=9, column=0, **padding_frame, **sticky_default)
-        # Screen parsing enabled
+        # Screen results enabled
         self.sc_checkbox.grid(row=0, column=0, **padding_label, **sticky_default, **checkbox)
-        # Screen parsing features
+        # Screen results features
         self.sc_features_label.grid(row=2, column=0, **padding_label, **sticky_default)
         row = 3
         for _, feature in sorted(self.sc_checkboxes.items(), key=lambda t: t[0]):
@@ -404,7 +460,7 @@ class SettingsFrame(ttk.Frame):
             row += 1
         # Screen Dynamic Window Location
         self.sc_dynamic_window_checkbox.grid(row=row+1, column=0, **padding_label, **sticky_default, **checkbox)
-        # Screen parsing performance profiling
+        # Screen results performance profiling
         self.sc_perf_checkbox.grid(row=row+2, column=0, **padding_label, **sticky_default, **checkbox)
         self.sc_disable_checkbox.grid(row=row+3, column=0, **padding_label, **sticky_default, **checkbox)
 
@@ -421,6 +477,7 @@ class SettingsFrame(ttk.Frame):
         self.gui_event_colors_scheme.set(settings["gui"]["event_scheme"].capitalize())
         self.gui_faction.set(settings["gui"]["faction"].capitalize())
         self.gui_debug_window.set(settings["gui"]["debug"])
+        self.gui_fileframe.set(settings["gui"]["fileframe"])
         """
         Parsing Settings
         """
@@ -436,10 +493,10 @@ class SettingsFrame(ttk.Frame):
         """
         Real-time Settings
         """
-        self.rt_overlay_enabled.set(settings["realtime"]["overlay"])
-        self.rt_overlay_disable.set(settings["realtime"]["overlay_when_gsf"])
-        self.rt_overlay_position_frame.set(settings["realtime"]["overlay_position"])
-        self.rt_overlay_text_color.set(settings["realtime"]["overlay_text"].capitalize())
+        self.rt_overlay_enabled.set(settings["overlay"]["enabled"])
+        self.rt_overlay_disable.set(settings["overlay"]["when_gsf"])
+        self.rt_overlay_position_frame.set(settings["overlay"]["position"])
+        self.rt_overlay_text_color.set(settings["overlay"]["color"].capitalize())
         self.rt_overlay_experimental.set(settings["screen"]["experimental"])
         self.rt_event_overlay.set(settings["event"]["enabled"])
         self.rt_event_position_frame.set(settings["event"]["position"])
@@ -450,7 +507,7 @@ class SettingsFrame(ttk.Frame):
         Screen Parsing settings
         """
         self.sc_enabled.set(settings["screen"]["enabled"])
-        for feature in self.sc_features:
+        for feature in self.SCREEN_PARSING_FEATURES:
             self.sc_variables[feature].set(feature in settings["screen"]["features"])
         self.sc_dynamic_window.set(settings["screen"]["window"])
         self.sc_perf.set(settings["screen"]["perf"])
@@ -464,17 +521,13 @@ class SettingsFrame(ttk.Frame):
         """
         Widget states
         """
-        if get_screen_resolution() not in timer_boxes:
+        if not tesseract.is_installed():
             self.sc_checkboxes["Spawn Timer"].configure(state=tk.DISABLED)
-            Balloon(
-                self.sc_checkboxes["Spawn Timer"],
-                text="Your monitor resolution is not supported by this feature. If you would like "
-                     "for your resolution to be supported, please send RedFantom a screenshot of the "
-                     "unaltered user interface shown before the start of a match.")
-        if self.sc_perf.get() is False:
-            self.sc_disable_checkbox.config(state=tk.DISABLED)
-        else:
-            self.sc_disable_checkbox.config(state=tk.NORMAL)
+            self.sc_checkboxes["Scoreboard Parsing"].configure(state=tk.DISABLED)
+        state = tk.NORMAL if self.sc_perf.get() is True else tk.DISABLED
+        self.sc_disable_checkbox.config(state=state)
+        if sys.platform != "linux":
+            self.rt_overlay_experimental_checkbox.config(state=tk.DISABLED)
 
     def save_settings(self, *args):
         """
@@ -495,19 +548,22 @@ class SettingsFrame(ttk.Frame):
                 "event_colors": self.gui_event_colors_type.get(),
                 "event_scheme": self.gui_event_colors_scheme.get(),
                 "faction": self.gui_faction.get(),
-                "debug": self.gui_debug_window.get()
+                "debug": self.gui_debug_window.get(),
+                "fileframe": self.gui_fileframe.get(),
             },
             "parsing": {
                 "path": self.pa_path.get().strip(),
             },
             "realtime": {
-                "overlay": self.rt_overlay_enabled.get(),
-                "overlay_position": self.rt_overlay_position_frame.get(),
-                "overlay_when_gsf": self.rt_overlay_disable.get(),
-                "overlay_text": self.rt_overlay_text_color.get(),
                 "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
                 "drp": self.rt_drp.get(),
+            },
+            "overlay": {
+                "enabled": self.rt_overlay_enabled.get(),
+                "position": self.rt_overlay_position_frame.get(),
+                "when_gsf": self.rt_overlay_disable.get(),
+                "color": self.rt_overlay_text_color.get()
             },
             "event": {
                 "enabled": self.rt_event_overlay.get(),
@@ -616,6 +672,8 @@ class SettingsFrame(ttk.Frame):
         if self.gui_debug_window.get() is not settings["gui"]["debug"]:
             self._restart_required = True
         if self.sc_perf.get() is not settings["screen"]["perf"]:
+            self._restart_required = True
+        if self.gui_fileframe.get() is not settings["gui"]["fileframe"]:
             self._restart_required = True
 
 

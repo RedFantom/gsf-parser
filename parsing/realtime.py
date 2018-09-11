@@ -6,13 +6,15 @@ Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
 from datetime import datetime, timedelta
+from multiprocessing import Event
 import os
+import six
 import sys
 from queue import Queue
 from threading import Thread, Lock
 from time import sleep
 import traceback
-from typing import Any, Tuple, Dict
+from typing import Any, Tuple, Dict, List
 # UI Libraries
 from tkinter import messagebox
 # Packages
@@ -33,20 +35,23 @@ from network.minimap.client import MiniMapClient
 from network.discord import DiscordClient
 # Parsing Modules
 from parsing.logstalker import LogStalker
-from parsing.gsfinterface import GSFInterface
-from parsing.guiparsing import get_player_guiname
+from parsing.gsf import GSFInterface
+from parsing.gui import get_player_guiname
+from parsing import opencv
 from parsing.parser import Parser
 from parsing.pointer import PointerParser
 from parsing.realtimedb import RealTimeDB
 from parsing.rgb import RGBController
+from parsing.scoreboards import ScoreboardParser
 from parsing.screen import ScreenParser
 from parsing.shipstats import ShipStats
 from parsing.speed import SpeedParser
-from parsing.timer import TimerParser
+from parsing import tesseract
+from parsing.delay import DelayParser
 from parsing import vision
 # Utility Modules
-from utils.utilities import get_screen_resolution
-from utils.utilities import get_cursor_position
+from utils.directories import get_assets_directory
+from utils.utilities import get_screen_resolution, get_cursor_position
 from utils.window import Window
 import variables
 
@@ -73,6 +78,8 @@ def screen_func(feature: str) -> callable:
             start = datetime.now()
             r = func(*args)
             elapsed = (datetime.now() - start).total_seconds()
+            if feature not in screen_perf:
+                screen_perf[feature] = [0, 0]
             screen_perf[feature][0] += 1
             screen_perf[feature][1] += elapsed
             return r, elapsed
@@ -91,6 +98,7 @@ def screen_func(feature: str) -> callable:
                 return benchmark(*args)[0]
 
         return inner
+
     return outer
 
 
@@ -108,19 +116,19 @@ class RealTimeParser(Thread):
     the CombatLogs.
     Additionally, Python-MSS is used to capture screenshots of the
     game if screen parsing is enabled. Those screenshots are used for
-    additional advanced parsing purposes, for which the functions can
+    additional advanced results purposes, for which the functions can
     be identified with update_*feature_name*.
     """
 
-    TIMER_MARGIN = 10
+    TIMER_MARGIN = 20
 
     SCREEN_DATA_DEF = {
         "tracking": "", "health": (None, None, None), "map": None}
 
     def __init__(
             self,
-            character_db,
-            character_data,
+            char_db,
+            char_data,
             ships_db,
             companions_db,
             spawn_callback=None,
@@ -134,12 +142,12 @@ class RealTimeParser(Thread):
             rpc: Presence = None,
     ):
         """
-        :param character_db: Character database
+        :param char_db: Character database
         :param spawn_callback: Callback called with spawn_timing when a new spawn has been detected
         :param match_callback: Callback called with match_timing when a new match has been detected
         :param file_callback: Callback called with file_timing when a new file has been detected
         :param event_callback: Callback called with line_dict when a new event has been detected
-        :param character_data: Character tuple with the character name and network to retrieve data with
+        :param char_data: Character tuple with the character name and network to retrieve data with
         :param minimap_share: Whether to share minimap location with a server
         :param minimap_address: Address of the MiniMap sharing server
         :param minimap_user: Username for the MiniMap sharing server
@@ -159,15 +167,15 @@ class RealTimeParser(Thread):
         self.event_callback = event_callback
         # Settings
         self._screen_enabled = self.options["screen"]["enabled"]
-        self._screen_features = self.options["screen"]["features"]
+        self._features = self.options["screen"]["features"]
         # Queues
         self._exit_queue = Queue()
         self._overlay_string_q = Queue()
         self._perf_string_q = Queue()
         # Data
-        self._character_data = character_data
-        self._character_db = character_db
-        self._character_db_data = self._character_db[self._character_data]
+        self._char_i = char_data
+        self._char_db = char_db
+        self._char_data = self._char_db[self._char_i]
         self._realtime_db = RealTimeDB()
         self.diff = None
         self.ships_db = ships_db
@@ -176,7 +184,7 @@ class RealTimeParser(Thread):
         self._rpc = rpc
 
         """
-        File parsing
+        File results
         """
         # LogStalker
         self._stalker: LogStalker = LogStalker(watching_callback=self._file_callback)
@@ -196,26 +204,26 @@ class RealTimeParser(Thread):
         self.discord = DiscordClient()
         self.tutorial = False
         self._read_from_file = False
+        self._abilities_disabled = dict()
 
         """
-        Screen parsing
+        Screen results
         """
         self._screen_parsing_setup = False
         self._mss = None
         self._kb_listener = None
         self._ms_listener = None
-        self._key_states = None
+        self._key_states = dict()
         self.ship = None
         self.ship_stats = None
         resolution = get_screen_resolution()
         self._monitor = {"top": 0, "left": 0, "width": resolution[0], "height": resolution[1]}
-        self._interface = None
+        self._interface: GSFInterface = GSFInterface(get_player_guiname(*reversed(char_data)))
         self._coordinates = {}
         self.screen_data = self.SCREEN_DATA_DEF.copy()
         self._resolution = resolution
-        self._pixels_per_degree = 10
-        self._waiting_for_timer = False
-        self._spawn_timer_res_flag = False
+        self._pixels_per_degree = 10 * self._interface.global_scale
+        self._waiting_for_timer: datetime = None
         self._spawn_time = None
         self._window: Window = Window("swtor.exe") if self.options["screen"]["dynamic"] else None
         self.setup_screen_parsing()
@@ -228,14 +236,21 @@ class RealTimeParser(Thread):
         self._rgb: RGBController = RGBController.build() if self._rgb_enabled else None
         self._active_map = None
         self._timer_parser = None
-        if "Power Regeneration Delays" in self._screen_features:
-            self._timer_parser = TimerParser()
+        if "Power Regeneration Delays" in self._features:
+            self._timer_parser = DelayParser()
         self._speed_parser = None
-        if "Engine Speed" in self._screen_features:
+        if "Engine Speed" in self._features:
             self._speed_parser = SpeedParser()
         global screen_perf
         screen_perf.clear()
-        screen_perf = {feature: [0, 0.0] for feature in self._screen_features}
+        screen_perf = {feature: [0, 0.0] for feature in self._features}
+        self._ready_button_img: Image.Image = None
+        self.power_mode = "F4"
+
+        self._scoreboard_parsers: List[ScoreboardParser] = list()
+        self._scoreboard = False
+        self._scoreboard_parser: ScoreboardParser = None
+        self._mp_exit: Event = Event()
 
         """
         MiniMap Sharing
@@ -260,10 +275,9 @@ class RealTimeParser(Thread):
         parameters for use in the loop.
         """
         self._mss = mss.mss()
-        self._kb_listener = pynput.keyboard.Listener(on_press=self._on_kb_press, on_release=self._on_kb_release)
-        self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press)
-        file_name = get_player_guiname(self._character_db_data["Name"], self._character_db_data["Server"])
-        self._interface = GSFInterface(file_name)
+        self._kb_listener = pynput.keyboard.Listener(
+            on_press=self._on_kb_press, on_release=self._on_kb_release, catch=False)
+        self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press, catch=False)
         self._coordinates = {
             "health": self._interface.get_ship_health_coordinates(),
             "minimap": self._interface.get_minimap_coordinates(),
@@ -275,8 +289,8 @@ class RealTimeParser(Thread):
 
     def setup_minimap_share(self):
         """Create a MiniMapClient and setup everything to share location"""
-        if "MiniMap Location" not in self._screen_features:
-            raise ValueError("MiniMap Location parsing not enabled.")
+        if "MiniMap Location" not in self._features:
+            raise ValueError("MiniMap Location results not enabled.")
         print("[RealTimeParser: MiniMap]", self._address)
         addr, port = self._address.split(":")
         self._client = MiniMapClient(addr, int(port), self._username)
@@ -284,18 +298,21 @@ class RealTimeParser(Thread):
 
     def start_listeners(self):
         """Start the keyboard and mouse listeners"""
-        if not self._screen_enabled or "Mouse and Keyboard" not in self._screen_features:
+        if not self._screen_enabled or "Mouse and Keyboard" not in self._features:
             return
-        print("[RealTimeParser] Mouse and Keyboard parsing enabled.")
+        print("[RealTimeParser] Mouse and Keyboard results enabled.")
         self._kb_listener.start()
         self._ms_listener.start()
 
     def stop_listeners(self):
         """Stop the keyboard and mouse listeners"""
-        if not self._screen_enabled:
+        if not self._screen_enabled or "Mouse and Keyboard" not in self._features:
             return
+        print("[RealTimeParser] Stopping Listeners")
         self._kb_listener.stop()
         self._ms_listener.stop()
+        self._kb_listener.join()
+        self._ms_listener.join()
         self._kb_listener = None
         self._ms_listener = None
 
@@ -305,7 +322,7 @@ class RealTimeParser(Thread):
             return
         assert isinstance(self._rpc, Presence)
         pid = os.getpid()
-        if self._character_db_data["Discord"] is False:
+        if self._char_data["Discord"] is False:
             state = "Activity Hidden"
             self._rpc.update(pid, state, large_image="logo_green_png")
             return
@@ -324,7 +341,7 @@ class RealTimeParser(Thread):
             large_text = MAP_TYPE_NAMES["dom"]["ls"]
             large_image = MAP_NAMES[large_text]
             small_image, small_text = "sting", "Sting"
-        details = "{}: {}".format(self._character_db_data["Server"], self._character_db_data["Name"])
+        details = "{}: {}".format(self._char_data["Server"], self._char_data["Name"])
         start = None
         if self.start_match is not None and self.is_match:
             assert isinstance(self.start_match, datetime)
@@ -337,7 +354,7 @@ class RealTimeParser(Thread):
     def update(self):
         """Perform all the actions required for a single loop cycle"""
         now = datetime.now()
-        # File parsing
+        # File results
         lines = self._stalker.get_new_lines()
         for line in lines:
             if line is None:
@@ -348,7 +365,7 @@ class RealTimeParser(Thread):
         if not self.is_match and not self._waiting_for_timer:
             self.diff = datetime.now() - now
             return
-        # Screen parsing
+        # Screen results
         if self._screen_enabled:
             screenshot = self._mss.grab(self._monitor)
             screenshot_time = datetime.now()
@@ -360,6 +377,9 @@ class RealTimeParser(Thread):
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
             sleep(0.5 - self.diff.total_seconds())
+        if not self._kb_listener._queue.empty():
+            exception, value, traceback = self._kb_listener._queue.get()
+            six.reraise(exception, value, traceback)
 
     def process_line(self, line: dict):
         """
@@ -371,7 +391,7 @@ class RealTimeParser(Thread):
         if Parser.is_login(line):
             self.handle_login(line)
         # First check if this is still a match event
-        if self.is_match and ("@" in line["source"] or "@" in line["target"]):
+        if self.is_match and not Parser.is_gsf_event(line):
             self.handle_match_end(line)
             return
         # Handle out-of-match events
@@ -381,8 +401,7 @@ class RealTimeParser(Thread):
                 return
             else:  # Valid match event
                 self.handle_match_start(line)
-        if Parser.is_tutorial_event(line):
-            self.tutorial = True
+        self.tutorial = self.tutorial or Parser.is_tutorial_event(line)
         self.handle_spawn(line)
         self.update_player_id(line)
         if self.active_id == "":
@@ -393,13 +412,14 @@ class RealTimeParser(Thread):
         self.parse_line(line)
         self.update_rgb_keyboard(line)
         self.update_ship()
-        if self._speed_parser is not None and line["target"] == self.active_id:
+        if self._speed_parser is not None and Parser.compare_ids(line["target"], self.active_ids):
             self._speed_parser.process_slowed_event(line)
+        self.update_disabled_parser(line)
 
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
         print("[RealTimeParser] Match end.")
-        server, date, time = self._character_db_data["Server"], line["time"], line["time"]
+        server, date, time = self._char_data["Server"], line["time"], line["time"]
         id_fmt = self.active_id[:8]
         if not self.tutorial:
             self.discord.send_match_end(server, date, self.start_match, id_fmt, time)
@@ -461,6 +481,7 @@ class RealTimeParser(Thread):
             self._pointer_parser.new_spawn()
         if self._speed_parser is not None:
             self._speed_parser.reset()
+        self.power_mode = "F4"
 
     def update_player_id(self, line: dict):
         """Update the Player ID if this line allows it"""
@@ -468,7 +489,7 @@ class RealTimeParser(Thread):
             print("[RealTimeParser] New player ID: {}".format(line["source"]))
             self.active_id = line["source"]
             self.active_ids.append(line["source"])
-            server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+            server, date, start = self._char_data["Server"], self.start_match, self.start_match
             self.discord.send_match_start(server, date, start, self.active_id[:8])
             # Parse the lines that are on hold
             if self.hold != 0:
@@ -483,25 +504,28 @@ class RealTimeParser(Thread):
         print("[RealTimeParser] Login: {}".format(self.player_name))
         self.process_login()
         # Spawn Timer
-        if (self._screen_enabled and "Spawn Timer" in self._screen_features and
-                self._waiting_for_timer is False and self.is_match is False):
-            # Only activates if the Spawn Timer screen parsing
+        if (self._screen_enabled and "Spawn Timer" in self._features and
+                self._waiting_for_timer is None and self.is_match is False):
+            # Only activates if the Spawn Timer screen results
             # feature is enabled and there is no match active.
             # If a match is active, then this probably marks the end
             # of a match instead of the start of one.
             self._waiting_for_timer = datetime.now()
 
-        # Perform error handling. Using real-time parsing with a
-        # different character name is not possible for screen parsing
-        if self.player_name != self._character_data[1]:
+        # Perform error handling. Using real-time results with a
+        # different character name is not possible for screen results
+        if self.player_name != self._char_i[1]:
             print("[RealTimeParser] WARNING: Different character name")
 
     def parse_line(self, line: dict):
         """Parse an actual GSF event line"""
+        if "effect" not in line:
+            print("")
         Parser.get_event_category(line, self.active_id)
-        if line["amount"] == "":
+        if "amount" not in line or line["amount"] == "":
             line["amount"] = "0"
-        line["amount"] = int(line["amount"].replace("*", ""))
+        if not isinstance(line["amount"], int):
+            line["amount"] = int(line["amount"].replace("*", ""))
         if "Heal" in line["effect"]:
             self._healing += line["amount"]
             self.rgb_queue_put(("press", "hr"))
@@ -515,10 +539,11 @@ class RealTimeParser(Thread):
                 self.dmg_t += line["amount"]
                 self.rgb_queue_put(("press", "dt"))
 
-        if line["ability"] in self.abilities:
+        if line["source"] in self.active_ids:
+            if line["ability"] not in self.abilities:
+                self.abilities[line["ability"]] = 0
             self.abilities[line["ability"]] += 1
-        else:  # line["ability"] not in self.abilities:
-            self.abilities[line["ability"]] = 1
+        
         self.lines.append(line)
         if callable(self.event_callback):
             line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
@@ -565,15 +590,16 @@ class RealTimeParser(Thread):
             self.abilities.clear()
             return
         ship = ship[0]
-        if self._character_db[self._character_data]["Faction"].lower() == "republic":
+        if self._char_db[self._char_i]["Faction"].lower() == "republic":
             ship = rep_ships[ship]
         if self._screen_enabled is False:
             return
-        ship_objects = self._character_db[self._character_data]["Ship Objects"]
+        ship_objects = self._char_db[self._char_i]["Ship Objects"]
         if ship not in ship_objects:
             self._configured_flag = True
             print("[RealTimeParser] Ship not configured: {}".format(ship))
             return
+        print("[RealTimeParser] Detected new ship: {}".format(ship))
         self._configured_flag = False
         self.ship = ship_objects[ship]
         args = (self.ship, self.ships_db, self.companions_db)
@@ -581,8 +607,10 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("ship", self.ship)
         self.update_presence()
         if self._timer_parser is not None:
+            print("[RealTimeParser] Sending new ship to DelayParser")
             self._timer_parser.set_ship_stats(self.ship_stats)
         if self._speed_parser is not None:
+            print("[RealTimeParser] Sending new ship to SpeedParser")
             self._speed_parser.update_ship_stats(self.ship_stats)
 
     def update_pointer_parser_ship(self):
@@ -598,14 +626,32 @@ class RealTimeParser(Thread):
 
     def process_login(self):
         """Process a Safe Login event"""
-        server, name = self._character_data
+        server, name = self._char_i
         if name != self.player_name:
-            self._character_data = (server, self.player_name)
-            if self._character_data not in self._character_db:
+            self._char_i = (server, self.player_name)
+            if self._char_i not in self._char_db:
                 messagebox.showerror("Error", "The GSF Parser does not know this character yet!")
                 raise KeyError("Unknown character")
-            self._character_db_data = self._character_db[self._character_data]
+            self._char_data = self._char_db[self._char_i]
         self.update_presence()
+
+    def update_disabled_parser(self, line: dict):
+        """Check a line for ability disable events"""
+        if "Ability Disabled" in line["effect"]:
+            applicant, ability, source = line["source"], line["effect"], line["effect_id"]
+            if "ApplyEffect" in line["effect"]:  # Ability now disabled
+                # Together, the applicant and source are considered unique
+                # Multiple effects from the same applicant always overlap
+                self._abilities_disabled[(applicant, source)] = ability
+            elif "RemoveEffect" in line["effect"]:  # Ability no longer disabled
+                # Applicant may have died in the mean-time
+                if applicant == "System":  # Remove all effects of this type
+                    for (applicant, source_id) in self._abilities_disabled.copy().keys():
+                        if source_id != source:
+                            continue
+                        del self._abilities_disabled[(applicant, source_id)]
+                else:  # Applicant still alive
+                    del self._abilities_disabled[(applicant, source)]
 
     def process_screenshot(self, screenshot: Image.Image, screenshot_time: datetime):
         """Analyze a screenshot and take the data to save it"""
@@ -613,19 +659,19 @@ class RealTimeParser(Thread):
             self.setup_screen_parsing()
         now = datetime.now()
 
-        if "Spawn Timer" in self._screen_features:
+        if "Spawn Timer" in self._features:
             self.update_timer_parser(screenshot, screenshot_time)
-        if "Tracking penalty" in self._screen_features:
+        if "Tracking penalty" in self._features:
             self.update_tracking_penalty(now)
-        if "Ship health" in self._screen_features:
+        if "Ship health" in self._features:
             self.update_ship_health(screenshot, now)
-        if "Map and match type" in self._screen_features:
+        if "Map and match type" in self._features:
             self.update_map_match_type(screenshot)
-        if "MiniMap Location" in self._screen_features:
+        if "MiniMap Location" in self._features:
             self.update_minimap_location(screenshot)
-        if "Match score" in self._screen_features:
-            self.update_match_score(screenshot)
-        if "Pointer Parsing" in self._screen_features:
+        if "Scoreboard Parsing" in self._features:
+            self.update_scoreboard_parser(screenshot)
+        if "Pointer Parsing" in self._features:
             self.update_pointer_parser()
 
         if self.options["screen"]["perf"] is True and self.options["screen"]["disable"] is True:
@@ -635,7 +681,7 @@ class RealTimeParser(Thread):
         """
         Remove slow performing features from the screen feature list
 
-        Screen parsing features have their performance recorded by the
+        Screen results features have their performance recorded by the
         @screen_func decorator. For each fast run, a feature has their
         slow count reduced by 0.5, for each slow run it is increased by
         1. If a feature consistently performs slow and their count
@@ -643,8 +689,8 @@ class RealTimeParser(Thread):
         """
         global screen_slow
         for feature, count in screen_slow.items():
-            if count > 10 and feature in self._screen_features:
-                self._screen_features.remove(feature)
+            if count > 10 and feature in self._features:
+                self._features.remove(feature)
                 print("[RealTimeParser] Disabled feature {}".format(feature))
 
     @screen_func("Spawn Timer")
@@ -655,32 +701,58 @@ class RealTimeParser(Thread):
         Attempts to parse a screenshot that is expected to show the
         GSF pre-match interface with a spawn timer.
         """
-        if self._waiting_for_timer and not self.is_match and self._spawn_time is None:
-            print("[TimerParser] Spawn timer parsing activating.")
-            # Only activates after a login event was detected and no
-            # match is active and no time was already determined.
+        if self._waiting_for_timer is None or self._spawn_time is not None or self.is_match is True:
+            return
 
-            # self._waiting_for_timer is a datetime instance, or False.
-            if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
-                # If a certain time has passed, give up on finding the timer
-                print("[TimerParser] Last timer parsing attempt.")
-                self._waiting_for_timer = False
-            # Check if the resolution is supported
-            if self._resolution not in vision.timer_boxes:
-                self._spawn_timer_res_flag = True
-                return
-            # Now crop the screenshot, see vision.timer_boxes for details
-            source = screenshot.crop(vision.timer_boxes[self._resolution])
-            # Attempt to determine the spawn timer status
-            status = vision.get_timer_status(source)
-            # Now status is a string of format "%M:%S" or None
-            if status is not None:
-                print("[TimerParser] Successfully determined timer status as:", status)
-                # Spawn timer was successfully determined. Now parse the string
-                minutes, seconds = (int(elem) for elem in status.split(":"))
-                delta = timedelta(minutes=minutes, seconds=seconds)
-                # Now delta contains the amount of time left until the spawn starts
-                self._spawn_time = screenshot_time + delta
+        if self._ready_button_img is None:
+            img: Image.Image = Image.open(os.path.join(get_assets_directory(), "vision", "ready_button.png"))
+            scale: float = self._interface.global_scale
+            size = map(lambda s: int(round((s * scale))), img.size)
+            self._ready_button_img = img.resize(size, Image.LANCZOS)
+            del img
+
+        print("[TimerParser] Spawn timer results activating.")
+        # Only activates after a login event was detected and no
+        # match is active and no time was already determined.
+
+        # self._waiting_for_timer is a datetime instance, or False.
+        if (datetime.now() - self._waiting_for_timer).total_seconds() > self.TIMER_MARGIN:
+            # If a certain time has passed, give up on finding the timer
+            print("[TimerParser] Last timer results attempt.")
+            self._waiting_for_timer = None
+
+        # Find the Ready Button image in the screenshot
+        screenshot = screenshot.crop((screenshot.width // 2, screenshot.height // 2, *screenshot.size))
+        is_match, location = opencv.template_match(screenshot, self._ready_button_img, 80.0)
+        if not is_match:
+            print("[TimerParser] Ready button not located")
+            return  # Ready Button not located
+
+        # Calculate the box of the spawn timer
+        (x, y), (w, h) = location, self._ready_button_img.size
+        _x1, _y1, _x2, _y2 = w // 2 - 15, -50, w // 2 + 55, -50 + 20
+        scale = self._interface.global_scale
+        _x1, _y1, _x2, _y2 = map(lambda v: int(round(v * (scale / 1.05))), (_x1, _y1, _x2, _y2))
+        x1, y1, x2, y2 = x + _x1, y + _y1, x + _x2, y + _y2
+        box: Tuple[int, int, int, int] = (x1, y1, x2, y2)
+        print("[TimerParser] Box: {}".format(box))
+
+        # Perform OCR on this box
+        template = screenshot.crop(box)
+        result: str = tesseract.perform_ocr(template)
+        if result is None:  # OCR failed
+            return
+
+        # Interpret OCR results
+        elements: Tuple[str, str] = result.split(":", 1)
+        if len(elements) != 2:
+            return
+        minutes, seconds = elements
+        if not seconds.isdigit():
+            return
+        result: int = int(seconds) % 20
+        print("[TimerParser] Determined spawn time to be in {} seconds".format(result))
+        self._spawn_time = screenshot_time + timedelta(seconds=result)
 
     @screen_func("Tracking penalty")
     def update_tracking_penalty(self, now: datetime):
@@ -728,7 +800,7 @@ class RealTimeParser(Thread):
         if None in (health_hull, health_shields_f, health_shields_r):
             return
         self._realtime_db.set_for_spawn("health", now, (health_hull, health_shields_f, health_shields_r))
-        if "minimap" in self._screen_features and self._client is not None:
+        if "minimap" in self._features and self._client is not None:
             self._client.send_health(int(health_hull))
 
     @screen_func("MiniMap Location")
@@ -756,7 +828,7 @@ class RealTimeParser(Thread):
         player is currently engaged in. If the map is determined at one
         point, detection is not attempted again.
         """
-        if self._active_map is not None or self.active_id != "":
+        if self._active_map is not None or self.active_id == "" or self.is_match is False:
             return
         minimap = screenshot.crop(self.get_coordinates("minimap"))
         match_map = vision.get_map(minimap)
@@ -764,7 +836,7 @@ class RealTimeParser(Thread):
             self._realtime_db.set_for_spawn("map", match_map)
             self._active_map = match_map
             if self.discord is not None:
-                server, date, start = self._character_db_data["Server"], self.start_match, self.start_match
+                server, date, start = self._char_data["Server"], self.start_match, self.start_match
                 if None not in (server, date, start):
                     id_fmt = self.active_id[:8]
                     self.discord.send_match_map(server, date, start, id_fmt, match_map)
@@ -773,41 +845,40 @@ class RealTimeParser(Thread):
         if self._active_map is not None and self._realtime_db.get_for_spawn("map") is None:
             self._realtime_db.set_for_spawn("map", self._active_map)
 
-    @screen_func("Match score")
-    def update_match_score(self, screenshot: Image.Image):
+    @screen_func("Scoreboard Parsing")
+    def update_scoreboard_parser(self, screenshot: Image.Image):
         """
-        Match score
+        Scoreboard Parsing
 
-        Continuously attempts to determine the ratio of the team scores
+        Attempt to parse a scoreboard once ctrl_l is pressed
         """
-        # TODO: Implement support for detecting wargames
-        # The starting position of the team (what side of the map)
-        # determines where their score bar is located (top or bottom)
-        # TODO: Implement OCR or some other more accurate technique
-        # Currently, only the ratio of the two scores is calculated,
-        # and it is rather ineffective. White or very light pixels
-        # have a huge impact on the result.
-        # TODO: Implement feature to only detect at match end
-        # The progression of the score of a match is not as interesting
-        # in most cases as the actual end score. Another option is to
-        # only determine it once a minute or some similar technique to
-        # limit the performance impact of this feature.
-        if self.active_id == "":
+        if self._scoreboard_parser is not None and self._scoreboard_parser.is_done():
+            self._scoreboard_parsers.remove(self._scoreboard_parser)
+            self._scoreboard_parser = None
+        if self._scoreboard_parser is None and len(self._scoreboard_parsers) > 0:
+            self._scoreboard_parser = self._scoreboard_parsers[0]
+            self._scoreboard_parser.start()
+
+        if self._scoreboard is False:
             return
-        scorecard = screenshot.crop(self.get_coordinates("scorecard"))
-        score = vision.get_score(scorecard)
-        self._realtime_db.set_for_spawn("score", score)
-        if self.discord is not None:
-            self.discord.send_match_score(
-                self._character_db_data["Server"], self.start_match, self.start_match, self.active_id[:8],
-                self._character_db_data["Faction"], score)
+        self._scoreboard = False
+        if self.start_match is None:
+            return
+
+        if not ScoreboardParser.is_scoreboard(screenshot, self._interface.global_scale):
+            return
+        print("[RealTimeParser:ScoreboardParser] Activated")
+        parser = ScoreboardParser(self.start_match, screenshot)
+        self._scoreboard_parsers.append(parser)
+        self._scoreboard_parser = parser
+        self._scoreboard_parser.start()
 
     @screen_func("Pointer Parsing")
     def update_pointer_parser(self):
         """
         Pointer Parsing
 
-        Pointer parsing is capable of matching shots fired with a
+        Pointer results is capable of matching shots fired with a
         PrimaryWeapon
         """
         if self._pointer_parser is None:
@@ -910,7 +981,7 @@ class RealTimeParser(Thread):
         return tracking_penalty, upgrade_constant, firing_arc
 
     @property
-    def primary(self)->str:
+    def primary(self) -> str:
         """Return the name of the active primary weapon"""
         if self.ship is None:
             return "Unknown Ship"
@@ -942,8 +1013,9 @@ class RealTimeParser(Thread):
         printf("[RealTimeParser] Starting Subprocesses")
         self.rgb_start()
         printf("[RealTimeParser] RGBController started")
-        self.start_listeners()
-        printf("[RealTimeParser] Listeners started")
+        if "Mouse and Keyboard" in self._features:
+            self.start_listeners()
+            printf("[RealTimeParser] Listeners started")
         if self._timer_parser is not None:
             self._timer_parser.start()
             printf("[RealTimeParser] TimerParser started")
@@ -962,7 +1034,7 @@ class RealTimeParser(Thread):
                 print("[RealTimeParser] encountered an error: ", error)
                 messagebox.showerror(
                     "Error",
-                    "The real-time parsing back-end encountered an error while performing operations. "
+                    "The real-time results back-end encountered an error while performing operations. "
                     "The error has been reported to the developer.")
                 raise
         self._realtime_db.write_spawn_data()
@@ -996,17 +1068,21 @@ class RealTimeParser(Thread):
         relevant are processed and stored, and only if a match is
         active. Provides RGBController interaction.
         """
+        if self._speed_parser is not None:
+            self._speed_parser.on_key(key, True)
         if not self.is_match or key not in keys:
-            return
+            return True
         key = keys[key]
         if key in self._key_states and self._key_states[key] is True:
-            return  # Ignore press hold repeat
+                return True  # Ignore press hold repeat
         time = datetime.now()
         self._realtime_db.set_for_spawn("keys", time, (key, True))
         self._key_states[key] = True
-        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self.rgb_queue_put(("press", key))
+        self.rgb_queue_put(("press", key))
         if "F" in key and len(key) == 2:
+            if self.power_mode == key:
+                return
+            self.power_mode = key
             effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
             self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
 
@@ -1018,12 +1094,16 @@ class RealTimeParser(Thread):
         relevant are processed and stored, and only if a match is
         active. Provides RGBController interaction.
         """
+        if self._speed_parser is not None:
+            self._speed_parser.on_key(key, False)
         if not self.is_match or key not in keys:
             return
         self._key_states[keys[key]] = False
         self._realtime_db.set_for_spawn("keys", datetime.now(), (keys[key], False))
-        if self._rgb.enabled and self._rgb_enabled and key in self._rgb.WANTS:
-            self.rgb_queue_put(("release", key))
+        self.rgb_queue_put(("release", key))
+        if key == Key.ctrl_l or key == Key.ctrl:
+            print("[RealTimeParser] ScoreboardParser triggered")
+            self._scoreboard = True
 
     def _on_ms_press(self, x: int, y: int, button: Button, pressed: bool):
         """
@@ -1045,6 +1125,8 @@ class RealTimeParser(Thread):
         self._realtime_db.set_for_spawn("clicks", now, (pressed, button))
         if button == Button.left and pressed is True:  # PrimaryWeapon shot
             self._realtime_db.set_for_spawn("shots", now, (x, y))
+        if self._pointer_parser is not None and button == Button.left:
+            self._pointer_parser.mouse_queue.put(pressed)
 
     def rgb_queue_put(self, item: Any):
         """Put an item in the RGBController Queue if RGB is enabled"""
@@ -1063,16 +1145,16 @@ class RealTimeParser(Thread):
 
     @property
     def perf_string(self) -> str:
-        """Return a string with screen parsing feature performance"""
-        if len(self._screen_features) == 0:
-            return "No screen parsing features enabled"
+        """Return a string with screen results feature performance"""
+        if len(self._features) == 0:
+            return "No screen results features enabled"
         string = str()
         global screen_perf
         for feature, (count, time) in screen_perf.items():
             if count == 0 or time / count < 0.25:
                 continue
             avg = time / count
-            if feature not in self._screen_features:
+            if feature not in self._features:
                 # Feature has been disabled by perf profiler
                 string += "{}: {:.3f}s, disabled\n".format(feature, avg)
             else:
@@ -1082,30 +1164,32 @@ class RealTimeParser(Thread):
     @property
     def overlay_string(self) -> str:
         """String of text to set in the Overlay"""
-        if self.is_match is False and self.options["realtime"]["overlay_when_gsf"] is True:
+        if self.is_match is False and self.options["overlay"]["when_gsf"] is True:
             return ""
         string = self.notification_string + self.parsing_data_string
-        if "Spawn Timer" in self._screen_features:
+        if "Spawn Timer" in self._features:
             string += self.spawn_timer_string
-        if "Tracking penalty" not in self._screen_features:
+        if "Tracking penalty" in self._features:
             string += self.tracking_string
-        if "Map and match type" in self._screen_features:
+        if "Map and match type" in self._features:
             string += self.map_match_type_string
         if self._timer_parser is not None and self._timer_parser.is_alive():
             string += self._timer_parser.string
         if self._speed_parser is not None:
             string += self._speed_parser.string
+        if self._scoreboard_parser is not None:
+            string += self._scoreboard_parser.string
         return string.strip()
 
     @property
     def tracking_string(self) -> str:
-        if "Tracking Penalty" not in self._screen_features:
+        if "Tracking Penalty" not in self._features:
             return ""
         return "Tracking: {}\n".format(self.screen_data["tracking"])
 
     @property
     def parsing_data_string(self) -> str:
-        """Simple normal parsing data string"""
+        """Simple normal results data string"""
         return "Damage Dealt: {}\n" \
                "Damage Taken: {}\n" \
                "Selfdamage: {}\n" \
@@ -1114,13 +1198,13 @@ class RealTimeParser(Thread):
 
     @property
     def spawn_timer_string(self) -> str:
-        """Spawn timer parsing string for the Overlay"""
-        if self._spawn_timer_res_flag:
-            return "Unsupported resolution for Spawn Timer\n"
-        if self._spawn_time is None:
+        """Spawn timer results string for the Overlay"""
+        if self.is_match is False:
             return ""
+        if self._spawn_time is None:
+            return "Next spawn unknown\n"
         return "Spawn in {:02d}s\n".format(
-            divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
+            20 - divmod(int((datetime.now() - self._spawn_time).total_seconds()), 20)[1])
 
     @property
     def map_match_type_string(self) -> str:
@@ -1133,10 +1217,16 @@ class RealTimeParser(Thread):
     @property
     def notification_string(self) -> str:
         """String that notifies the user of special situations"""
-        string = "Character: {}\n".format(self._character_db_data["Name"]) + \
-                 "Server: {}\n".format(SERVERS[self._character_db_data["Server"]])
+        string = "Character: {}\n".format(self._char_data["Name"]) + \
+                 "Server: {}\n".format(SERVERS[self._char_data["Server"]])
         ship = "Ship: {}".format(self.ship.name if self.ship is not None else "Unknown")
         if self._configured_flag is True:
             ship += " (Not fully configured)"
         ship += "\n\n"
         return string + ship
+
+    @property
+    def disabled_string(self):
+        """String containing the disabled abilities for display in red"""
+        disabled: list = list(set(self._abilities_disabled.values()))
+        return "\n".join(disabled)

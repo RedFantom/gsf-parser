@@ -9,15 +9,16 @@ from parsing import vision
 
 def mistake_off_center_shot(distance: (int, float), threshold: (int, float)):
     """
-    Pattern match function for screen parsing data for the
+    Pattern match function for screen results data for the
     MISTAKE_OFF_CENTER_SHOT pattern. Compares the tracking distance
-    found in the subsection of the screen parsing data dictionary
+    found in the subsection of the screen results data dictionary
     {datetime: distance_from_center_pixels} to the given treshold,
     which is in tracking degrees.
     :param distance: Distance value in the screen dictionary
     :param threshold: Threshold in degrees constituting and off-center
         shot.
     :return: True when off-center, False if not
+    # TODO: Save global UI scale and get it here
     """
     return vision.get_tracking_degrees(distance) > threshold
 
@@ -25,7 +26,7 @@ def mistake_off_center_shot(distance: (int, float), threshold: (int, float)):
 class Patterns:
     """
     Data class that contains all the patterns that can be parsed by
-    parsing/patterns.py/PatternParser. Pattern dictionary description:
+    results/patterns.py/PatternParser. Pattern dictionary description:
 
     {
         "name": pattern name,

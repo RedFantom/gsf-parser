@@ -15,7 +15,7 @@ from ttkwidgets import Calendar, ScaleEntry
 import variables
 from parsing.parser import Parser
 from widgets import ToggledFrame, VerticalScrollFrame
-from toplevels import splashscreens
+from toplevels.splash import SplashScreen
 from data import abilities as abls
 
 
@@ -159,7 +159,7 @@ class Filters(tk.Toplevel):
         results = []
         files = os.listdir(variables.settings["parsing"]["path"])
         files_done = 0
-        splash = splashscreens.SplashScreen(self, len(files))
+        splash = SplashScreen(self, len(files))
         # Clear the widgets in the file frame
         self.window.file_select_frame.file_string_dict.clear()
         self.window.file_select_frame.clear_data_widgets()
@@ -170,7 +170,7 @@ class Filters(tk.Toplevel):
             passed = True
             # Update the SplashScreen progress bar
             files_done += 1
-            splash.update_progress(files_done)
+            splash.update_max(files_done)
             # If the file does not end with .txt, it's not a CombatLog
             if not file_name.endswith(".txt") or not Parser.get_gsf_in_file(file_name):
                 continue

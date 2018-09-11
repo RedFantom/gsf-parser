@@ -4,7 +4,6 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
-
 # UI Libraries
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -12,8 +11,8 @@ import tkinter.messagebox as mb
 from tkinter.filedialog import askopenfilename
 from widgets import VerticalScrollFrame
 # Tools
-from parsing.guiparsing import get_gui_profiles
-from parsing.gsfinterface import GSFInterface
+from parsing.gui import get_gui_profiles
+from parsing.gsf import GSFInterface
 from toplevels.cartelfix import CartelFix
 from tools import simulator
 from utils.utilities import open_icon_pil

@@ -57,10 +57,10 @@ POWER_MODE_CATEGORIES = {
 
 class ScreenParser(object):
     """
-    Parser that can create TimeView events from screen parsing data
+    Parser that can create TimeView events from screen results data
 
-    These events are built from specific screen parsing events that are
-    recorded in the screen parsing data dictionary.
+    These events are built from specific screen results events that are
+    recorded in the screen results data dictionary.
     """
 
     @staticmethod
@@ -68,7 +68,7 @@ class ScreenParser(object):
         """
         Build a new set of events to insert into a TimeView
 
-        This new set of events includes all the screen parsing data that
+        This new set of events includes all the screen results data that
         can be represented in a TimeView.
         """
         screen_data = FileHandler.get_spawn_dictionary(None, file_name, match, spawn)
@@ -81,7 +81,7 @@ class ScreenParser(object):
 
     @staticmethod
     def _build_spawn_events(events: list, screen_data: dict, player_name: str) -> list:
-        """Extend the given events list with new screen parsing events"""
+        """Extend the given events list with new screen results events"""
         if "ship" not in screen_data or screen_data["ship"] is None:
             print("[ScreenParser] Failed to fetch ship for this spawn")
             ship = None

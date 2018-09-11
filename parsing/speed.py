@@ -7,12 +7,12 @@ Copyright (C) 2016-2018 RedFantom
 # Standard Library
 from datetime import datetime, timedelta
 from queue import Queue
-from threading import Thread, Lock
+from threading import Thread
 from time import sleep
 # Project Modules
 from parsing.shipstats import ShipStats
 # Packages
-from pynput.keyboard import Listener, Key, KeyCode
+from pynput.keyboard import Key, KeyCode
 
 
 class SpeedParser(Thread):
@@ -59,10 +59,7 @@ class SpeedParser(Thread):
         """Initialize attributes and Queues"""
         self._exit_queue = Queue()
         self._string = str()
-        self._string_lock = Lock()
         Thread.__init__(self)
-        self._listener = Listener(on_press=self.on_press, on_release=self.on_release)
-        self._lock = Lock()
         # This is not a queue, because the GIL protects it
         self._key_states = {k: False for k in SpeedParser.CONTROL_KEYS.values()}
         self._stopped = False
@@ -75,7 +72,7 @@ class SpeedParser(Thread):
 
     def run(self):
         """Run the Thread's tasks"""
-        self._listener.start()
+        print("[SpeedParser] Started")
         while True:
             sleep(0.05)
             # Exit Loop if exit requested
@@ -85,15 +82,13 @@ class SpeedParser(Thread):
             except:
                 pass
             # Retrieve attributes
-            with self._lock:
-                stats: dict = self._stats.copy() if self._stats else None
-                effects = self._effects.copy()
-                boost = self._boost
-                power = self._power_mode
-                match = self._match
+            stats: dict = self._stats.copy() if self._stats else None
+            effects = self._effects.copy()
+            boost = self._boost
+            power = self._power_mode
+            match = self._match
             if stats is None or match is False:
-                with self._string_lock:
-                    self._string = "Speed: Unknown\n"
+                self._string = "Speed: Unknown\n"
                 continue
             # Calculations
             now = datetime.now()
@@ -125,17 +120,7 @@ class SpeedParser(Thread):
                 effect_multiplier *= multiplier
             multiplier: float = stats["Engine_Speed_Multiplier"]
             speed: float = base * throttle * multiplier * effect_multiplier * power_multiplier
-            with self._string_lock:
-                self._string = "Speed: {:03.01f}m/s\n".format(speed)
-        self._listener.stop()
-
-    def on_press(self, key: (Key, KeyCode)):
-        """Callback for Listener(on_press)"""
-        self.on_key(key, True)
-
-    def on_release(self, key: (Key, KeyCode)):
-        """Callback for Listener(on_release)"""
-        self.on_key(key, False)
+            self._string = "Speed: {:03.01f}m/s\n".format(speed)
 
     def on_key(self, key: (Key, KeyCode), state: bool):
         """Process the press or release of a key"""
@@ -154,36 +139,30 @@ class SpeedParser(Thread):
             self._boost = datetime.now() if state is True else None
             self._stopped = False
         elif "F" in key:
-            with self._lock:
-                self._power_mode = key
-        print("[SpeedParser] Processed Key: {}, {}".format(key, state))
+            self._power_mode = key
 
     @property
     def string(self):
         """Process-safe accessor to _string attribute"""
-        with self._string_lock:
-            return self._string
+        return self._string
 
     def update_ship_stats(self, ship: ShipStats):
         """Update the statistics used in this class Process-safely"""
-        with self._lock:
-            self._stats = dict()
-            for stat in SpeedParser.STATS:
-                self._stats[stat] = ship["Ship"][stat]
+        self._stats = dict()
+        for stat in SpeedParser.STATS:
+            self._stats[stat] = ship["Ship"][stat]
 
     def process_slowed_event(self, event: dict):
         """Process an Engine Slowed event"""
-        if event["effect_id"] not in SpeedParser.EFFECTS or not "ApplyEffect" in event["effect"]:
+        if event["effect_id"] not in SpeedParser.EFFECTS or "ApplyEffect" not in event["effect"]:
             return
-        with self._lock:
-            self._effects.append((event["time"], SpeedParser.EFFECTS[event["effect_id"]]))
+        self._effects.append((event["time"], SpeedParser.EFFECTS[event["effect_id"]]))
 
     def reset(self):
         """Reset the attributes that contain cached values"""
-        with self._lock:
-            self._stats = None
-            self._effects.clear()
-            self._power_mode = "F4"
+        self._stats = None
+        self._effects.clear()
+        self._power_mode = "F4"
 
     def stop(self):
         """Stop the Thread's activities and join it"""
@@ -192,15 +171,12 @@ class SpeedParser(Thread):
 
     def match_start(self):
         """Set attribute for the start of a match"""
-        with self._lock:
-            self._match = True
+        self._match = True
 
     def match_end(self):
         """Set the attribute for the end of a match"""
-        with self._lock:
-            self._match = False
+        self._match = False
 
     def set_scope_mode(self, state: bool):
         """Set the Scope Mode (engine speed zero)"""
-        with self._lock:
-            self._stopped = state
+        self._stopped = state

@@ -12,7 +12,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from ttkwidgets import CheckboxTreeview
 # Project Modules
-from widgets.snaptoplevel import SnapToplevel
+from widgets.general.snaptoplevel import SnapToplevel
 
 Parent = SnapToplevel if sys.platform == "win32" else tk.Toplevel
 
@@ -26,7 +26,7 @@ class StrategyShareToplevel(Parent):
         """
         :param master: master widget
         :param client: network.strategy.client.StrategyClient
-        :param database: parsing.strategies.StrategyDataBase
+        :param database: results.strategies.StrategyDataBase
         :param strategy_frame: frames.strategy.StrategyFrame
         :param kwargs: SnapToplevel keyword arguments
         """

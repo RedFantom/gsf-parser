@@ -19,3 +19,8 @@ opencv-python
 python-dateutil
 raven
 pypresence
+pytesseract
+tblib
+humanize
+six
+asyncio

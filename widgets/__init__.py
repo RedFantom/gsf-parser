@@ -4,15 +4,14 @@ Contributors: Daethyra (Naiii) and Sprigellania (Zarainia)
 License: GNU GPLv3 as in LICENSE
 Copyright (C) 2016-2018 RedFantom
 """
-from .toggledframe import *
-from .verticalscrollframe import *
+from widgets.general.toggledframe import *
+from widgets.general.scrollframe import *
 from widgets.builds.crew import *
 from widgets.builds.crew_list import *
 from widgets.builds.ships import *
 from widgets.builds.component_list import *
 from widgets.builds.component import *
-from widgets.overlays.overlay_tkinter import TkinterOverlay as Overlay
-
+from widgets.overlays.tkinter import TkinterOverlay as Overlay
 from ttkwidgets.frames import Balloon as _Balloon
 
 

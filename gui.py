@@ -14,12 +14,12 @@ from tkinter import ttk
 import tkinter as tk
 from tkinter import messagebox
 # Frames
-from frames import FileFrame, GraphsFrame, \
+from frames import FileFrame, \
     SettingsFrame, RealTimeFrame, BuildsFrame, CharactersFrame, ShipFrame, \
-    StatsFrame, StrategiesFrame, ToolsFrame
+    StatsFrame, StrategiesFrame, ToolsFrame, ChatFrame
 # Widgets
 from ttkwidgets import DebugWindow
-from toplevels.splashscreens import BootSplash
+from toplevels.splash import BootSplash
 # Project Modules
 from network.discord import DiscordClient
 from utils.directories import get_temp_directory, get_assets_directory
@@ -46,7 +46,7 @@ class MainWindow(ThemedTk):
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
-        ThemedTk.__init__(self)
+        ThemedTk.__init__(self, gif_override=True)
         self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
@@ -55,7 +55,7 @@ class MainWindow(ThemedTk):
         self.style = ttk.Style()
         self.set_icon()
         self.set_variables()
-        self.update_style()
+        self.config_style()
         self.discord = DiscordClient()
         # Get the default path for CombatLogs and the Installation path
         self.default_path = variables.settings["parsing"]["path"]
@@ -76,10 +76,10 @@ class MainWindow(ThemedTk):
         self.middle_frame.notebook.add(self.ship_frame, text="Ship")
         self.realtime_frame = RealTimeFrame(self.realtime_tab_frame, self)
         self.settings_frame = SettingsFrame(self.settings_tab_frame, self)
-        self.graphs_frame = GraphsFrame(self.notebook, self)
         self.builds_frame = BuildsFrame(self.notebook, self)
         self.toolsframe = ToolsFrame(self.notebook)
         self.strategies_frame = StrategiesFrame(self.notebook)
+        self.chat_frame = ChatFrame(self.notebook, self)
         # Pack the frames and put their widgets into place
         self.grid_widgets()
         self.child_grid_widgets()
@@ -88,8 +88,7 @@ class MainWindow(ThemedTk):
         # Update the files in the file_select frame
         self.splash.label_var.set("Parsing files...")
         self.notebook.grid(column=0, row=0, padx=2, pady=2)
-        if not os.path.exists("development"):
-            self.file_select_frame.add_files(silent=True)
+        self.file_select_frame.update_files()
         self.settings_frame.update_settings()
         # Check for updates
         self.splash.label_var.set("Checking for updates...")
@@ -123,7 +122,7 @@ class MainWindow(ThemedTk):
         if self.rpc is None:
             return
         assert isinstance(self.rpc, Presence)
-        self.rpc.update(state="Not real-time parsing", large_image="logo_green_png")
+        self.rpc.update(state="Not real-time results", large_image="logo_green_png")
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""
@@ -131,7 +130,6 @@ class MainWindow(ThemedTk):
         self.middle_frame.grid(column=2, row=1, sticky="nswe", padx=5, pady=5)
         self.realtime_frame.grid()
         self.settings_frame.grid()
-        self.graphs_frame.grid(column=0, row=0)
 
     def child_grid_widgets(self):
         """Configure the child widgets of the Frames in grid geometry"""
@@ -140,7 +138,6 @@ class MainWindow(ThemedTk):
         self.realtime_frame.grid_widgets()
         self.ship_frame.grid_widgets()
         self.settings_frame.grid_widgets()
-        self.graphs_frame.grid_widgets()
         self.builds_frame.grid_widgets()
         self.characters_frame.grid_widgets()
         self.toolsframe.grid_widgets()
@@ -151,9 +148,9 @@ class MainWindow(ThemedTk):
         """Add all created frames to the notebook widget"""
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
+        self.notebook.add(self.chat_frame, text="Chat Logger")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
-        self.notebook.add(self.graphs_frame, text="Graphs")
         self.notebook.add(self.strategies_frame, text="Strategies")
         self.notebook.add(self.toolsframe, text="Tools")
         self.notebook.add(self.settings_tab_frame, text="Settings")
@@ -173,7 +170,8 @@ class MainWindow(ThemedTk):
         self.geometry("{}x{}".format(*self.get_window_size()))
         self.bind("<F10>", self.screenshot)
 
-    def set_variables(self):
+    @staticmethod
+    def set_variables():
         """Set program global variables in the shared variables module"""
         variables.colors.set_scheme(variables.settings["gui"]["event_scheme"])
 
@@ -198,12 +196,11 @@ class MainWindow(ThemedTk):
             DebugWindow(self, title="GSF Parser Debug Window", stdout=True, stderr=True)
         return
 
-    def update_style(self):
-        """
-        Update the style of the window. This includes theme and text
-        colour, but also font.
-        """
+    def config_style(self):
+        """Configure the style: theme, font and foreground color"""
+        print("[MainWindow] PNG-based theme: {}".format(self.png_support))
         self.set_theme("arc")
+        print("[MainWindow] ThemedWidget Version: {}".format(getattr(self, "VERSION", None)))
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")

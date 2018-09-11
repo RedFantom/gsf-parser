@@ -27,7 +27,7 @@ class ComponentWidget(ttk.Frame):
         :param parent: BuildsFrame instance
         :param data_dictionary: The data dictionary of this component.
             Specifically: ships.db[faction][ship][type][index] -> this
-        :param ship: parsing.ships.Ship instance to modify upgrades in
+        :param ship: results.ships.Ship instance to modify upgrades in
         :param category: Component category name
         """
         ttk.Frame.__init__(self, parent)

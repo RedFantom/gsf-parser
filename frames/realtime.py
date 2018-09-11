@@ -5,6 +5,7 @@ License: GNU GPLv3 as in LICENSE.md
 Copyright (C) 2016-2018 RedFantom
 """
 # Standard Library
+import threading
 import time
 import psutil
 import os
@@ -17,10 +18,10 @@ from tkinter import messagebox
 from network.discord import DiscordClient
 from parsing.realtime import RealTimeParser
 from toplevels.minimap import MiniMap
-from toplevels.event_overlay import EventOverlay
+from widgets.events import EventOverlay
 from utils.swtor import get_swtor_screen_mode
 from utils.admin import check_privileges
-from widgets.time_view import TimeView
+from widgets.results.time_view import TimeView
 from variables import settings
 
 
@@ -30,7 +31,7 @@ class RealTimeFrame(ttk.Frame):
     RealTimeParser instance.
     """
 
-    DATA_STR_BASE = "Slow screen parsing features:\n\n{}"
+    DATA_STR_BASE = "Slow screen results features:\n\n{}"
 
     def __init__(self, master, window):
         ttk.Frame.__init__(self, master)
@@ -43,7 +44,6 @@ class RealTimeFrame(ttk.Frame):
         self.parser = None
         self.overlay = None
         self.overlay_after_id = None
-        self.overlay_string = None
         self.data_after_id = None
         self._event_overlay = None
 
@@ -61,7 +61,7 @@ class RealTimeFrame(ttk.Frame):
         self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
 
         # Data widgets
-        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time parsing\n"))
+        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time results\n"))
         self.data_label = ttk.Label(
             self, textvariable=self.data, font=("default", 9), justify=tk.LEFT,
             wraplength=300)
@@ -90,7 +90,7 @@ class RealTimeFrame(ttk.Frame):
 
         self.minimap_checkbox.grid(row=0, column=1, sticky="nsw", padx=5, pady=5)
         self.minimap_name_entry.grid(row=1, column=1, sticky="nsw", padx=5, pady=(0, 5))
-        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=(0, 5))
+        self.minimap_address_entry.grid(row=2, column=1, sticky="nsw", padx=5, pady=5)
 
         self.data_label.grid(row=0, column=2, rowspan=3, columnspan=2, sticky="nwe", padx=(0, 5), pady=5)
         self.time_view.grid(row=3, column=0, columnspan=4, sticky="nswe", padx=5, pady=5)
@@ -103,19 +103,19 @@ class RealTimeFrame(ttk.Frame):
         if self.character_data is None:
             messagebox.showinfo("Info", "Please select a valid character using the dropdowns.")
             return False
-        if settings["realtime"]["overlay"] or settings["screen"]["enabled"]:
+        if settings["overlay"]["enabled"] or settings["screen"]["enabled"]:
             if get_swtor_screen_mode() is False:
                 return False
         if "Mouse and Keyboard" in settings["screen"]["features"] and sys.platform != "linux":
             if not check_privileges():
                 messagebox.showinfo(
-                    "Info", "Mouse and keyboard parsing is enabled, but the GSF Parser is not running as "
+                    "Info", "Mouse and keyboard results is enabled, but the GSF Parser is not running as "
                             "administrator, which prevents reading input from the SWTOR window. Please restart the "
                             "GSF Parser as administrator for this feature to work.")
         return True
 
     def start_parsing(self):
-        """Start the parsing process and open the Overlay"""
+        """Start the results process and open the Overlay"""
         if self.check_parser_start() is False:
             return
         self.parsing_control_button.config(state=tk.DISABLED)
@@ -157,9 +157,13 @@ class RealTimeFrame(ttk.Frame):
         self._rtp_id = self.after(100, self.check_alive)
         self.data_after_id = self.after(1000, self.update_data_string)
         self.parsing_control_button.config(state=tk.NORMAL)
+        print("[RealTimeFrame] Parsing started. Threads: {}".format(threading.enumerate()))
 
     def stop_parsing(self):
-        """Stop the parsing process"""
+        """Stop the results process"""
+        if self.parser._scoreboard_parser is not None:
+            messagebox.showwarning("Warning", "Parsing cannot be stopped while results a scoreboard.")
+            return
         self.parsing_control_button.config(state=tk.DISABLED)
         self.parsing_control_button.update()
         if self.minimap_enabled.get() is True and self.minimap is not None:
@@ -171,17 +175,16 @@ class RealTimeFrame(ttk.Frame):
         try:
             self.parser.join(timeout=2)
         except Exception as e:
-            messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
+            messagebox.showerror("Error", "While real-time results, the following error occurred:\n\n{}".format(e))
             raise
         self.watching_stringvar.set("Watching no file...")
         print("[RealTimeFrame] RealTimeParser reference count: {}".format(sys.getrefcount(self.parser)))
         self.parser = None
         self.close_overlay()
-        self.close_event_overlay()
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
-        self.data.set(self.DATA_STR_BASE.format("Not real-time parsing\n"))
+        self.data.set(self.DATA_STR_BASE.format("Not real-time results\n"))
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
@@ -219,18 +222,14 @@ class RealTimeFrame(ttk.Frame):
 
     def open_overlay(self):
         """Open an overlay if the settings given by the user allow for it"""
-        if settings["realtime"]["overlay"] is False:
+        if settings["overlay"]["enabled"] is False:
             return
-        if settings["screen"]["experimental"] is True and sys.platform != "linux":
-            from widgets.overlays.overlay_windows import WindowsOverlay as Overlay
-        else:  # Linux or non-experimental
-            from widgets.overlays import Overlay
+        from widgets.overlays import Overlay
         # Generate arguments for Overlay.__init__
-        position = settings["realtime"]["overlay_position"]
+        position = settings["overlay"]["position"]
         x, y = position.split("y")
         x, y = int(x[1:]), int(y)
-        self.overlay_string = tk.StringVar(self)
-        self.overlay = Overlay((x, y), self.overlay_string, master=self.window)
+        self.overlay = Overlay((x, y), master=self.window)
         self.update_overlay()
 
     def open_event_overlay(self):
@@ -240,14 +239,6 @@ class RealTimeFrame(ttk.Frame):
         x, y = settings["event"]["position"].split("y")
         x, y = int(x[1:]), int(y)
         self._event_overlay = EventOverlay(self.window, location=(x, y))
-
-    def close_event_overlay(self):
-        """Close the EventOverlay is one is open"""
-        if self._event_overlay is None:
-            return
-        self._event_overlay.match_end()
-        self._event_overlay.destroy()
-        self._event_overlay = None
 
     def update_data_string(self):
         """Update the string in the data label with the parser stats"""
@@ -265,7 +256,7 @@ class RealTimeFrame(ttk.Frame):
         if perf is None:
             return
         elif len(perf) == 0:
-            string = self.DATA_STR_BASE.format("No slow screen parsing features\n")
+            string = self.DATA_STR_BASE.format("No slow screen results features\n")
         else:
             string = self.DATA_STR_BASE.format(perf)
         self.data.set(string)
@@ -278,6 +269,7 @@ class RealTimeFrame(ttk.Frame):
         string = self.parser.overlay_string
         if string is not None:
             self.overlay.update_text(string)
+        self.overlay.update_disabled(self.parser.disabled_string)
         if self._event_overlay is not None:
             assert isinstance(self._event_overlay, EventOverlay)
             self._event_overlay.update_events()

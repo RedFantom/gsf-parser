@@ -119,7 +119,7 @@ class BuildsFrame(ttk.Frame):
         :param faction: faction, str
         :param type: ship type (Scout, Strike etc)
         :param ship: Ship name
-        :param ship_object: parsing.ships.Ship instance
+        :param ship_object: results.ships.Ship instance
         """
         # Close all the open ship category ToggledFrames
         if not self.ship_select_frame.category_frames[faction][type].show.get():
@@ -191,7 +191,8 @@ class BuildsFrame(ttk.Frame):
         # Create an appropriate ComponentWidget
         self.current_component = ComponentWidget(*args)
         # Create a new Component object
-        category = COMPONENT_TYPES[category]
+        if category in COMPONENT_TYPES:
+            category = COMPONENT_TYPES[category]
         new_component = Component(
             self.ships_data[self.ship.ship_name][category][index], index, category)
         # Transfer the upgrades of the currently selected component on the ship to the new Component

@@ -97,3 +97,7 @@ parser.db
 # Release Files
 release/setup.iss
 release/Setups/
+
+# C Extensions
+*.c
+/extensions

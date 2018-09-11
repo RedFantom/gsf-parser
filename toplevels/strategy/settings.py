@@ -19,8 +19,8 @@ from network.strategy.client import StrategyClient
 from network.strategy.server import StrategyServer
 from utils.admin import escalate_privileges, check_privileges
 from toplevels.strategy.share import StrategyShareToplevel
-from widgets.snaptoplevel import SnapToplevel
-from widgets.verticalscrollframe import VerticalScrollFrame as ScrolledFrame
+from widgets.general.snaptoplevel import SnapToplevel
+from widgets.general.scrollframe import VerticalScrollFrame as ScrolledFrame
 
 
 Parent = SnapToplevel if sys.platform == "win32" else tk.Toplevel

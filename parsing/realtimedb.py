@@ -91,7 +91,7 @@ class RealTimeDB(object):
                 return pickle.load(fi).copy()
         except EOFError:
             messagebox.showerror(
-                "Error", "The GSF Parser real-time parsing database has been corrupted. "
+                "Error", "The GSF Parser real-time results database has been corrupted. "
                          "A new one will be created, discarding all your old data.")
             self.save_data(dict())
             return dict()

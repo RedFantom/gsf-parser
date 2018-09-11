@@ -14,7 +14,7 @@ from variables import settings, colors
 class Parser(object):
     """
     A Parsing engine that can sequentially parse CombatLog lines and
-    supports staticmethods for parsing individual spawns and matches to
+    supports staticmethods for results individual spawns and matches to
     keep some backwards compatibility with the functions found in
     parse.py. Replaces the Parsing engine found in realtime_alt.py.
 
@@ -145,12 +145,14 @@ class Parser(object):
         return line_dict
 
     @staticmethod
-    def get_abilities_dict(lines: list):
+    def get_abilities_dict(lines: List[Any], player_list: List[str]):
         """Get the abilities dict for a list of lines"""
         abilities = {}
         for line in lines:
             if not isinstance(line, dict):
                 line = Parser.line_to_dictionary(line)
+            if not Parser.compare_ids(line["source"], player_list):
+                continue
             if line["ability"] not in abilities:
                 abilities[line["ability"]] = 1
             else:
@@ -347,7 +349,7 @@ class Parser(object):
         return ability in effects.allied_effects
 
     """
-    This section contains mostly legacy code that might or might not be re-used in the new Parser parsing engine. Treat
+    This section contains mostly legacy code that might or might not be re-used in the new Parser results engine. Treat
     with care, might not be suitable for the most up-to-date CombatLogs (if GSF ever got updated).
     """
 
@@ -388,6 +390,16 @@ class Parser(object):
             if line["source"] == line["target"]:
                 return line["source"].replace("@", "")
         return None
+
+    @staticmethod
+    def get_player_name_raw(file: str) -> str:
+        """Return the player name from the raw lines"""
+        if not os.path.exists(file):
+            file = os.path.join(settings["parsing"]["path"], file)
+        with open(file) as fi:
+            line = fi.readline()
+        lines = [Parser.line_to_dictionary(line)]
+        return Parser.get_player_name(lines)
 
     @staticmethod
     def get_enemy_id_list(lines: list, player_list: list):
@@ -438,15 +450,11 @@ class Parser(object):
     @staticmethod
     def get_gsf_in_file(file_name):
         """Get a boolean of whether there are GSF matches in a file"""
-        combatlogs_path = settings["parsing"]["path"]
-        abs_path = os.path.join(combatlogs_path, file_name)
-        if not os.path.exists(abs_path):
-            return None
-        lines = Parser.read_file(file_name)
-        for line in lines:
-            if "@" in line["line"]:
-                continue
-            return True
+        path = os.path.join(settings["parsing"]["path"], file_name)
+        with open(path, "rb") as fi:
+            for line in fi:
+                if b"@" not in line:
+                    return True
         return False
 
     @staticmethod
@@ -529,10 +537,6 @@ class Parser(object):
                     current_id = source
                 elif target in player_list:
                     current_id = target
-                else:
-                    print("[Parser] parse_spawn found a line in which neither source or target provide a valid player "
-                          "ID:", line["line"].replace("\n", ""))
-                    # raise ValueError("Neither source nor target contained a valid player ID in line:", line["line"])
             # Add this line to the spawn list and continue
             spawn.append(line)
 
@@ -552,6 +556,13 @@ class Parser(object):
         manner. All attempts at reading GSF CombatLogs should use this
         function.
         """
+        lines = Parser.read_file_raw(file_name)
+        enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
+        return [Parser.line_to_dictionary(line, enemies) for line in lines if "Invulnerable" not in line]
+
+    @staticmethod
+    def read_file_raw(file_name) -> List[str]:
+        """Safely read the contents of a CombatLog"""
         # If the file does not exist in CWD, then attempt to find it in
         # the CombatLogs folder
         if not os.path.exists(file_name):
@@ -559,22 +570,30 @@ class Parser(object):
         if not os.path.exists(file_name):
             raise FileNotFoundError("File '{}' not found in absolute path, cwd or CombatLogs folder".format(file_name))
         # Attempt to read the file as bytes
-        try:
-            with open(file_name, "rb") as fi:
-                lines = fi.readlines()
-        except OSError:
-            print("[Parser] Failed to read file: {}".format(os.path.basename(file_name)))
-            raise
+        with open(file_name, "rb") as fi:
+            lines = fi.readlines()
         lines_decoded = []
         # Convert each line into str (utf-8) separately
         for index, line in enumerate(lines):
             try:
-                line = line.decode()
+                line = line.decode().strip()
             except UnicodeDecodeError:  # Mostly occurs on Unix systems
                 continue
             lines_decoded.append(line)
-        enemies = sharing_db[file_name]["enemies"] if sharing_db is not None and file_name in sharing_db else None
-        return [Parser.line_to_dictionary(line, enemies) for line in lines_decoded if "Invulnerable" not in line]
+        return lines_decoded
+
+    @staticmethod
+    def count_matches(file_name) -> int:
+        """Count the amount of matches in a crude but faster manner"""
+        lines = Parser.read_file_raw(file_name)
+        match, n = False, 0
+        for line in lines:
+            if match is True and "@" in line:
+                match = False
+                n += 1
+            elif "@" not in line:
+                match = True
+        return n
 
     @staticmethod
     def parse_spawn(spawn: list, player_list: list):
@@ -583,7 +602,7 @@ class Parser(object):
         this spawn with the same interface as parse.parse_spawn()
         """
         if not isinstance(spawn[0], dict):
-            print("[Parser] Unoptimized parsing of spawn")
+            print("[Parser] Unoptimized results of spawn")
         # Data variables
         abilities_dict = {}
         dmg_d, dmg_t, dmg_s, healing = 0, 0, 0, 0
@@ -650,11 +669,11 @@ class Parser(object):
         # Determine the ship used
         ships_list = abilities.ships.copy()
         # This list keeps track of the secondary weapons. If there are two, it might
-        # be possible to eliminate more ships after parsing all abilities
+        # be possible to eliminate more ships after results all abilities
         primaries, secondaries = [], []
         # Check all abilities
         for ability in abilities_dict.keys():
-            # Some abilities are excluded from the ship parsing
+            # Some abilities are excluded from the ship results
             if ability in abilities.excluded_abilities:
                 continue
             # If this is a secondary, then add the ability to the secondaries list
@@ -888,7 +907,7 @@ class Parser(object):
     @staticmethod
     def is_gsf_event(event: dict):
         """Determine whether the event given is valid GSF event"""
-        return event["source"].isdigit() and event["target"].isdigit()
+        return "@" not in event["source"] and "@" not in event["target"]
 
     @staticmethod
     def is_login(line: dict):
@@ -981,7 +1000,6 @@ class Parser(object):
         return {
             "time": attack_start["time"] - timedelta(milliseconds=1),
             "source": "Attack",
-            "target": name,
             "target": name,
             "ability": "Attack {}".format(i + 1),
             "amount": sum(e["damage"] for e in attack),

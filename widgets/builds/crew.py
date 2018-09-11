@@ -9,7 +9,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 # Project Modules
 from utils.utilities import open_icon
-from widgets.verticalscrollframe import VerticalScrollFrame
+from widgets.general.scrollframe import VerticalScrollFrame
 
 
 class CrewAbilitiesFrame(ttk.Frame):

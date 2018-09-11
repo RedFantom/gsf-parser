@@ -24,7 +24,7 @@ class InvalidDescriptor(ValueError):
 class PatternParser(object):
     """
     Parses patterns that are predefined in data/patterns.py to gather
-    more data from CombatLogs and screen parsing to aggregate data and
+    more data from CombatLogs and screen results to aggregate data and
     synthesize more useful information for the user.
     """
 
@@ -156,7 +156,7 @@ class PatternParser(object):
         :param line: Trigger line dictionary
         :param lines: List of lines in this spawn
         :param event: Event descriptor tuple (PatternParser docstring)
-        :return: The result of parsing this SHIP event descriptor
+        :return: The result of results this SHIP event descriptor
         """
         if event[0] != Patterns.SHIP:
             raise InvalidDescriptor(event)
@@ -175,7 +175,10 @@ class PatternParser(object):
             return PatternParser.parse_ability_availability(line, lines, event, ship)
         # Parse ship type selected
         elif event_type == "type":
-            ship_name = ship.name if ship is None else Parser.get_ship_for_dict(Parser.get_abilities_dict(lines))
+            # TODO: Optimize usage
+            player = Parser.get_player_id_list(lines)
+            abs_dict = Parser.get_abilities_dict(lines, player)
+            ship_name = ship.name if ship is None else Parser.get_ship_for_dict(abs_dict)
             ship_type, = args
             return get_ship_category(ship_name) == ship_type
         raise InvalidDescriptor(event)
@@ -243,13 +246,14 @@ class PatternParser(object):
         else:  # str
             name = component
             category = PatternParser.get_component_category(component)
-        abilities = Parser.get_abilities_dict(lines)
+        player = Parser.get_player_id_list(lines)
+        abilities = Parser.get_abilities_dict(lines, player)
         if name in abilities:
             return True
         if ship is None:
-            return False  # Ship option not available at parsing time
+            return False  # Ship option not available at results time
         if category not in ship:
-            return False  # Configured improperly at parsing time
+            return False  # Configured improperly at results time
         categories = (category,)
         if "Weapon" in category:  # Extend to double primaries/secondaries
             categories += (category[0] + "2",)
@@ -272,7 +276,7 @@ class PatternParser(object):
     def get_crew_in_ship(ship: Ship, crew: str):
         """Return whether a Crew member is found within a Ship instance"""
         if ship is None:
-            return False  # Ship option not available at parsing time
+            return False  # Ship option not available at results time
         return crew in ship.crew.values()
 
     @staticmethod
@@ -309,7 +313,7 @@ class PatternParser(object):
             the availability described by the SHIP-Ability event
             descriptor
         """
-        if ship is None:  # Ship option not available at parsing time
+        if ship is None:  # Ship option not available at results time
             return False
         _, event_type, (ability, available) = descriptor
         if ability in dir(abilities):
@@ -318,6 +322,9 @@ class PatternParser(object):
         else:
             category = PatternParser.get_component_category(ability)
         if ship[category] is None:  # Not correctly configured
+            return False
+        elif isinstance(ship[category], tuple):
+            print("[PatternParser] Unexpected ship data: {}".format(ship[category]))
             return False
         elif ship[category].name in ability:  # list/str __contains__
             return False
