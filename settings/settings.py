@@ -94,7 +94,7 @@ class Settings(object):
         """
         try:
             return self.settings[section]
-        except configparser.NoSectionError:
+        except (configparser.NoSectionError, KeyError):
             self.write_defaults()
             self.read_settings()
             return self[section]
