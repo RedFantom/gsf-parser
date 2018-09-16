@@ -86,6 +86,9 @@ class RealTimeDB(object):
     @property
     def data(self) -> (DATABASE, None):
         """Return a full copy of the data in the file"""
+        if not os.path.exists(self._path):
+            with open(self._path, "wb") as fo:
+                pickle.dump(dict, fo)
         try:
             with self._lock and open(self._path, "rb") as fi:
                 return pickle.load(fi).copy()

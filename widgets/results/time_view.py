@@ -238,7 +238,13 @@ class TimeView(ttk.Treeview):
     @staticmethod
     def format_id(id: str):
         """Return a nicely formatted string for an ID number"""
-        return id if not id.isdigit() else id[8:]
+        if id is None:
+            return "Unknown"
+        try:
+            int(id)
+            return id[8:]
+        except ValueError:
+            return id
 
     def search_button_callback(self):
         """Place or remove a Search Entry"""
