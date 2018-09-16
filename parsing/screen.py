@@ -77,7 +77,7 @@ class ScreenParser(object):
             orig = len(events)
             events = ScreenParser._build_spawn_events(events, screen_data, player_name)
             print("[ScreenParser] Built {} new events.".format(len(events) - orig))
-        return sorted(events, key=lambda e: e["time"].timestamp())
+        return sorted(events, key=lambda e: e["time"])
 
     @staticmethod
     def _build_spawn_events(events: list, screen_data: dict, player_name: str) -> list:
