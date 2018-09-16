@@ -46,7 +46,7 @@ class MainWindow(ThemedTk):
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
-        ThemedTk.__init__(self, gif_override=True)
+        ThemedTk.__init__(self)
         self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
@@ -198,9 +198,9 @@ class MainWindow(ThemedTk):
 
     def config_style(self):
         """Configure the style: theme, font and foreground color"""
-        print("[MainWindow] PNG-based theme: {}".format(self.png_support))
+        # print("[MainWindow] PNG-based theme: {}".format(self.png_support))
         self.set_theme("arc")
-        print("[MainWindow] ThemedWidget Version: {}".format(getattr(self, "VERSION", None)))
+        # print("[MainWindow] ThemedWidget Version: {}".format(getattr(self, "VERSION", None)))
         self.style.configure('.', font=("Calibri", 10))
         self.style.configure('TButton', anchor="w")
         self.style.configure('Toolbutton', anchor="w")
