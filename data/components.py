@@ -45,6 +45,7 @@ COMPONENTS = [
     "SecondaryWeapon",
     "SecondaryWeapon2",
     "Systems",
+    "ShieldProjector",
     "Engine",
     "Armor",
     "Capacitor",
