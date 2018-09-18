@@ -7,6 +7,8 @@ Copyright (C) 2016-2018 RedFantom
 # UI Libraries
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
+from tkinter import filedialog
 # Standard Library
 from datetime import datetime
 import operator
@@ -63,6 +65,13 @@ class FileFrame(ttk.Frame):
         self.clear_data_widgets()
         self._dates.clear()
         folder = variables.settings["parsing"]["path"]
+        if not os.path.exists(folder):
+            messagebox.showerror("Error",
+                "The specified CombatLogs folder does not exist. Please "
+                "choose a different folder.")
+            folder = filedialog.askdirectory()
+            variables.settings.write_settings({"parsing": {"path": folder}})
+            return self.update_files()
         files = [f for f in os.listdir(folder) if Parser.get_gsf_in_file(f)]
         self.create_splash(len(files))
         match_count: Dict[datetime: int] = DateKeyDict()
