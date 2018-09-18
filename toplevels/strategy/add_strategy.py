@@ -46,7 +46,8 @@ class AddStrategy(tk.Toplevel):
                                                              "Lost Shipyards DOM",
                                                              "Denon Exosphere DOM",
                                                              "Kuat Mesas TDM",
-                                                             "Lost Shipyards TDM"))
+                                                             "Lost Shipyards TDM",
+                                                             "Battle over Iokath TDM"))
         self.add_button = ttk.Button(self, text="Add", command=self.add)
         self.cancel_button = ttk.Button(self, text="Cancel", command=self.destroy)
         self.grid_widgets()
