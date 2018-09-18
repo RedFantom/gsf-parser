@@ -46,8 +46,8 @@ class ShipFrame(ttk.Frame):
 
     def grid_widgets(self):
         """Put the widgets in the right place"""
-        self.ship_image.grid(column=0, row=0, sticky="nswe")
-        self.ship_label.grid(column=0, row=1, sticky="nswe", padx=5)
+        self.ship_image.grid(column=0, row=0, sticky="nw", pady=5)
+        self.ship_label.grid(column=1, row=0, sticky="nswe", pady=5, padx=5)
         self.remove_image()
 
     def update_ship(self, ships_list: list):
