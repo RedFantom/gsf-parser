@@ -107,9 +107,9 @@ class ChatParser(Process):
 
     def perform_ocr(self, image: Image.Image, colors: List[Color]) -> str:
         """Perform OCR on an image"""
-        image.save("before.png")
+        # image.save("before.png")
         image = self.prepare_image(image, colors)
-        image.save("after.png")
+        # image.save("after.png")
         self.conn.send("Performing OCR...")
         return image_to_string(image)
 
