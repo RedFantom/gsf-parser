@@ -93,8 +93,7 @@ class ToolsFrame(ttk.Frame):
         Start a CombatLog Simulator file for the file found in the widget
         """
         if self.simulator_thread is not None:
-            self.simulator_thread.exit_queue.put(True)
-            self.simulator_thread = None
+            self.simulator_thread.stop()
             self.simulator_button.config(text="Start simulator")
             return
         self.simulator_thread = simulator.Simulator(self.simulator_file,
