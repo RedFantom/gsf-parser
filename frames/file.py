@@ -95,8 +95,9 @@ class FileFrame(ttk.Frame):
         self._tree.delete(*self._tree.get_children(""))
         if date not in self._dates:
             return
-        self._files: List[str] = self._dates[date]
-        for f, file in enumerate(sorted(self._files)):
+        self._files: List[str] = list(sorted(self._dates[date]))
+        print("Inserting files into Treeview: ", self._files)
+        for f, file in enumerate(self._files):
             name = Parser.get_player_name_raw(file)
             cube, matches, spawns = Parser.split_combatlog_file(file)
             for m, match in enumerate(sorted(matches[::2])):
@@ -120,6 +121,7 @@ class FileFrame(ttk.Frame):
         if len(selection) == 0:
             return
         elements = selection[0].split(",")
+        print("[FileFrame] Selected: {}".format(elements))
         if len(elements) == 3:  # Spawns
             f, m, s = map(int, elements)
             self.parse_spawn(self._files[f], m, s)
