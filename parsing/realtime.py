@@ -274,7 +274,14 @@ class RealTimeParser(Thread):
         If it is enabled, set up the attribute objects with the correct
         parameters for use in the loop.
         """
-        self._mss = mss.mss()
+        if not self._screen_enabled:
+            return
+        try:
+            self._mss = mss.mss()
+        except Exception as e:
+            print("Could not open MSS")
+            messagebox.showerror("Error", "Could not initialize screenshot subsystem.")
+            return
         self._kb_listener = pynput.keyboard.Listener(
             on_press=self._on_kb_press, on_release=self._on_kb_release, catch=False)
         self._ms_listener = pynput.mouse.Listener(on_click=self._on_ms_press, catch=False)
