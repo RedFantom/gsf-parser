@@ -103,7 +103,12 @@ class LogStalker(object):
                 line = line.decode()
             except UnicodeDecodeError:
                 continue
-            line = Parser.line_to_dictionary(line)
+            try:
+                line = Parser.line_to_dictionary(line)
+            except Exception as e:
+                print("[LogStalker] '{}' encountered while parsing '{}'".format(e, line))
+                variables.raven.captureException()
+                continue
             if line is None:
                 continue
             dictionaries.append(line)
