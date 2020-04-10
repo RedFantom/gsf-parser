@@ -43,14 +43,6 @@ class Parser(object):
 
     @staticmethod
     def line_to_dictionary(line: str, enemies: dict=None) -> Dict[str, Any]:
-        try:
-            return Parser._line_to_dictionary(line, enemies)
-        except:
-            print("Failed to parse line:", line)
-            return None
-
-    @staticmethod
-    def _line_to_dictionary(line: str, enemies: dict=None) -> Dict[str, Any]:
         """
         Turn a line into a dictionary that makes it easier to parse
         :param line: A GSF CombatLog line
