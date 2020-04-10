@@ -528,10 +528,7 @@ class RealTimeParser(Thread):
     def parse_line(self, line: dict):
         """Parse an actual GSF event line"""
         if "effect" not in line:
-            try:
-                raise ValueError("Effect element not present in line dictionary: {}".format(line))
-            except ValueError:
-                variables.raven.captureException()
+            variables.raven.captureMessage("Effect element not present in line dictionary: {}".format(line))
             return
         Parser.get_event_category(line, self.active_id)
         if "amount" not in line or line["amount"] == "":
