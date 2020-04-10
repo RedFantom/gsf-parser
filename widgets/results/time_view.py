@@ -44,6 +44,7 @@ class TimeView(ttk.Treeview):
             "show": ("headings", "tree")
         })
         self._width = kwargs.pop("width", 1.0)
+        rowheight = kwargs.pop("rowheight", 32)
         ttk.Treeview.__init__(self, *args, **kwargs)
         color_scheme = variables.colors.current_scheme
         self._header_images = {
@@ -67,7 +68,7 @@ class TimeView(ttk.Treeview):
         for icon, file_name in ICONS.items():
             self.icons[icon.lower()] = self._icons[file_name]
         self.style = ttk.Style(self)
-        self.style.configure("TimeView.Treeview", rowheight=32)
+        self.style.configure("TimeView.Treeview", rowheight=rowheight)
         self.config(style="TimeView.Treeview")
         self.index = 0
         self._contents = list()
