@@ -63,9 +63,9 @@ defaults = {
     },
     "screen": {
         # Whether screen results is enabled
-        "enabled": True,
+        "enabled": False,
         # List of enabled screen results features
-        "features": ["Tracking penalty", "Ship health", "Power management"],
+        "features": [],
         # Whether to use the experimental WindowsOverlay
         "experimental": False,
         # Whether to enable experimental Dynamic Window Location
@@ -77,10 +77,10 @@ defaults = {
         "disable": True,
     },
     "sharing": {
-        "enabled": True,
+        "enabled": False,
         "discord": "",
         "auth": "",
-        "host": "discord.gsfparser.tk",
+        "host": "discord.redfantom.nl",
         "port": 64731,
         "version": "0.0.2"
     }
