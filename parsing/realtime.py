@@ -417,7 +417,8 @@ class RealTimeParser(Thread):
             self.hold += 1
             return
         self.parse_line(line)
-        self.update_rgb_keyboard(line)
+        if self._rgb_enabled is True:
+            self.update_rgb_keyboard(line)
         self.update_ship()
         if self._speed_parser is not None and Parser.compare_ids(line["target"], self.active_ids):
             self._speed_parser.process_slowed_event(line)
