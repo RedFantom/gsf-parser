@@ -122,7 +122,7 @@ class MainWindow(ThemedTk):
         if self.rpc is None:
             return
         assert isinstance(self.rpc, Presence)
-        self.rpc.update(state="Not real-time results", large_image="logo_green_png")
+        self.rpc.update(state="Not real-time parsing", large_image="logo_green_png")
 
     def grid_widgets(self):
         """Grid all widgets in the frames"""

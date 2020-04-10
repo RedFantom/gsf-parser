@@ -175,7 +175,7 @@ class RealTimeFrame(ttk.Frame):
         try:
             self.parser.join(timeout=2)
         except Exception as e:
-            messagebox.showerror("Error", "While real-time results, the following error occurred:\n\n{}".format(e))
+            messagebox.showerror("Error", "While real-time parsing, the following error occurred:\n\n{}".format(e))
             raise
         self.watching_stringvar.set("Watching no file...")
         print("[RealTimeFrame] RealTimeParser reference count: {}".format(sys.getrefcount(self.parser)))
@@ -184,7 +184,7 @@ class RealTimeFrame(ttk.Frame):
         DiscordClient().send_recent_files(self.window)
         self.window.update_presence()
         self.parsing_control_button.config(state=tk.NORMAL)
-        self.data.set(self.DATA_STR_BASE.format("Not real-time results\n"))
+        self.data.set(self.DATA_STR_BASE.format("Not real-time parsing\n"))
 
     def file_callback(self, file_name):
         """LogStalker new file callback to set file name in label"""
