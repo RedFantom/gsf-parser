@@ -17,11 +17,14 @@ from tkinter import messagebox
 
 def handle_exception(raven: RavenClient):
     """Handle an occurred exception"""
-    try:
-        from settings import Settings
-        Settings().write_defaults()
-        written = True
-    except Exception:
+    if not exists("development"):
+        try:
+            from settings import Settings
+            Settings().write_defaults()
+            written = True
+        except Exception:
+            written = False
+    else:
         written = False
     raven.captureException()
     messagebox.showerror(
