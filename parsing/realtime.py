@@ -577,6 +577,9 @@ class RealTimeParser(Thread):
 
     def update_rgb_keyboard(self, line: dict):
         """Pass data to the RGB Keyboard Handler"""
+        if "effect" not in line or "source" not in line:
+            print("[RealTimeParser] Invalid RGB line: {}".format(line))
+            return
         if "AbilityActivate" in line["effect"] and line["source"] in self.active_ids:
             ability = line["ability"]
             if ability in abilities.systems:
@@ -1037,15 +1040,25 @@ class RealTimeParser(Thread):
             try:
                 self.update()
             except Exception as e:
-                # Errors are not often handled well in Threads
                 self.raven.captureException()
                 error = traceback.format_exc()
                 print("[RealTimeParser] encountered an error: ", error)
-                messagebox.showerror(
-                    "Error",
-                    "The real-time results back-end encountered an error while performing operations. "
-                    "The error has been reported to the developer.")
-                raise
+                event = {
+                    "time": datetime.now(),
+                    "source": "GSF Parser",
+                    "target": type(e),
+                    "ability": e.args,
+                    "effect": "",
+                    "effects": (),
+                    "custom": True,
+                    "self": True,
+                    "crit": False,
+                    "type": Parser.LINE_ABILITY,
+                    "icon": "spvp_iffmimic",
+                    "amount": 0,
+                    "category": "other"
+                }
+                self.event_callback(event, self.player_name, self.active_ids, self.start_match)
         self._realtime_db.write_spawn_data()
         # Perform closing actions
         self.stop_listeners()
@@ -1092,8 +1105,8 @@ class RealTimeParser(Thread):
             if self.power_mode == key:
                 return
             self.power_mode = key
-            effect = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
-            self.event_callback(effect, self.player_name, self.active_ids, self.start_match)
+            event = ScreenParser.create_power_mode_event(self.player_name, time, key, self.ship_stats)
+            self.event_callback(event, self.player_name, self.active_ids, self.start_match)
 
     def _on_kb_release(self, key: (Key, KeyCode)):
         """
