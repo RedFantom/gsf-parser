@@ -185,7 +185,6 @@ class ScreenParser(object):
             "time": time,
             "source": player_name,
             "target": player_name,
-            "target": player_name,
             "ability": POWER_MODES[power_mode],
             "effect": "ApplyEffect: ChangePowerMode",
             "effects": ScreenParser._build_power_mode_effects(ship, power_mode),

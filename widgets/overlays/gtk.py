@@ -79,7 +79,7 @@ class GtkOverlay(Gtk.Window):
         Gtk.main_iteration()
 
     def destroy(self):
-        """Destroy and run an interation immediately afterwards"""
+        """Destroy and run an iteration immediately afterwards"""
         Gtk.Window.close(self)
         Gtk.main_iteration_do(False)
 

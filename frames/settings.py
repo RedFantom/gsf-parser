@@ -234,7 +234,7 @@ class SettingsFrame(ttk.Frame):
             self.rt_frame, text="Enable RGB Keyboard Lighting Effects (bèta)",
             variable=self.rt_rgb)
         Balloon(self.rt_rgb_checkbox, text="Not all keyboards are supported. Support depends on the "
-                                           "rgbkeyboards package, which may contain bugs and thus"
+                                           "rgbkeyboards package, which may contain bugs and thus "
                                            "cause errors.")
         # Discord Rich Presence
         self.rt_drp = tk.BooleanVar()
@@ -252,7 +252,9 @@ class SettingsFrame(ttk.Frame):
         # Screen results enabled
         self.sc_enabled = tk.BooleanVar()
         self.sc_checkbox = ttk.Checkbutton(
-            self.sc_frame, text="Enable screen results", variable=self.sc_enabled, command=self.save_settings)
+            self.sc_frame, text="Enable screen parsing", variable=self.sc_enabled, command=self.save_settings)
+        Balloon(self.sc_checkbox, text="Screen parsing automatically captures your screen every parsing"
+                                       "cycle and parses various UI elements in a GSF match.")
         # Screen results features
         self.sc_features_label = ttk.Label(self.sc_frame, text="Features enabled for screen results:")
         beta = [
