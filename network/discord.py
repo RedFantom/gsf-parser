@@ -275,26 +275,28 @@ class DiscordClient(Connection):
         """
         if os.path.exists("development"):
             return
-        splash = DiscordSplash(window.splash if window.splash is not None else window)
-        splash.update_state()
-        if settings["sharing"]["enabled"] is False or self.validate_tag(settings["sharing"]["discord"]) is False:
+        if settings["sharing"]["enabled"] is not True or self.validate_tag(settings["sharing"]["discord"]) is not True:
             return
-        files = list(Parser.gsf_combatlogs()) if files is None else files
-        if len(self.db) == 0:
-            mb.showinfo("Notice", "This is the first time data is being synchronized with the Discord Bot Server. "
-                                  "This may take a while.")
-        elif len(files) - len(self.db) > 10:
-            mb.showinfo("Notice", "There are quite many files to synchronize. Please stand by.")
-        print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
-        for file_name in files:
-            try:
-                self.send_file(file_name, window)
-            except Exception:
-                mb.showerror("Error", "There was an error processing {}.".format(file_name))
+        splash = DiscordSplash(window.splash if window.splash is not None else window)
+        try:
             splash.update_state()
-            if self.failed > 5:
-                break
-        splash.destroy()
+            files = files or list(Parser.gsf_combatlogs())
+            if len(self.db) == 0:
+                mb.showinfo("Notice", "This is the first time data is being synchronized with the Discord Bot Server. "
+                                      "This may take a while.")
+            elif len(files) - len(self.db) > 10:
+                mb.showinfo("Notice", "There are quite many files to synchronize. Please stand by.")
+            print("[DiscordClient] Initiating sending of match data of {} CombatLogs".format(len(files)))
+            for file_name in files:
+                try:
+                    self.send_file(file_name, window)
+                except Exception:
+                    mb.showerror("Error", "There was an error processing {}.".format(file_name))
+                splash.update_state()
+                if self.failed > 5:
+                    break
+        finally:
+            splash.destroy()
         print("[DiscordClient] Done sending files.")
 
     def send_file(self, file_name, window):
