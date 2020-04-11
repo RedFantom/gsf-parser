@@ -61,9 +61,9 @@ class RealTimeFrame(ttk.Frame):
         self.parsing_control_button = ttk.Button(self, text="Start Parsing", command=self.start_parsing, width=20)
 
         # Data widgets
-        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time results\n"))
+        self.data = tk.StringVar(value=self.DATA_STR_BASE.format("Not real-time parsing\n"))
         self.data_label = ttk.Label(
-            self, textvariable=self.data, font=("default", 9), justify=tk.LEFT,
+            self, textvariable=self.data, font=("Consolas", 9), justify=tk.LEFT,
             wraplength=300)
         self.time_view = TimeView(self, height=6, width=1.5)
         self.time_scroll = ttk.Scrollbar(self, command=self.time_view.yview)

@@ -244,7 +244,7 @@ class TimeView(ttk.Treeview):
         try:
             int(id)
             return id[8:]
-        except ValueError:
+        except (ValueError, TypeError):
             return id
 
     def search_button_callback(self):

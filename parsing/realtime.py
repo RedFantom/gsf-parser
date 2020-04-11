@@ -384,7 +384,7 @@ class RealTimeParser(Thread):
         self.diff = datetime.now() - now
         if self.options["realtime"]["sleep"] is True and self.diff.total_seconds() < 0.5:
             sleep(0.5 - self.diff.total_seconds())
-        if not self._kb_listener._queue.empty():
+        if self._kb_listener is not None and not self._kb_listener._queue.empty():
             exception, value, traceback = self._kb_listener._queue.get()
             six.reraise(exception, value, traceback)
 
@@ -1048,8 +1048,8 @@ class RealTimeParser(Thread):
                 event = {
                     "time": datetime.now(),
                     "source": "GSF Parser",
-                    "target": type(e),
-                    "ability": e.args,
+                    "target": str(type(e)),
+                    "ability": str(e.args),
                     "effect": "",
                     "effects": (),
                     "custom": True,
