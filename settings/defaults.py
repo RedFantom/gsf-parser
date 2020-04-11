@@ -45,8 +45,6 @@ defaults = {
         "sleep": True,
         # RGB Keyboard Lighting Effects
         "rgb": False,
-        # Discord Rich Presence
-        "drp": True,
     },
     "overlay": {
         "position": "x0y0",
@@ -82,6 +80,8 @@ defaults = {
         "auth": "",
         "host": "discord.redfantom.nl",
         "port": 64731,
-        "version": "0.0.2"
+        "version": "0.0.2",
+        # Discord Rich Presence
+        "presence": False
     }
 }

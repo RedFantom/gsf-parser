@@ -504,7 +504,7 @@ class SettingsFrame(ttk.Frame):
         self.rt_event_position_frame.set(settings["event"]["position"])
         self.rt_sleep.set(settings["realtime"]["sleep"])
         self.rt_rgb.set(settings["realtime"]["rgb"])
-        self.rt_drp.set(settings["realtime"]["drp"])
+        self.rt_drp.set(settings["sharing"]["presence"])
         """
         Screen Parsing settings
         """
@@ -559,7 +559,6 @@ class SettingsFrame(ttk.Frame):
             "realtime": {
                 "sleep": self.rt_sleep.get(),
                 "rgb": self.rt_rgb.get(),
-                "drp": self.rt_drp.get(),
             },
             "overlay": {
                 "enabled": self.rt_overlay_enabled.get(),
@@ -584,7 +583,8 @@ class SettingsFrame(ttk.Frame):
                 "host": self.sh_host.get(),
                 "port": int(self.sh_port.get()),
                 "discord": self.sh_tag.get(),
-                "auth": self.sh_auth.get()
+                "auth": self.sh_auth.get(),
+                "presence": self.rt_drp.get()
             }
         }
         settings.write_settings(dictionary)

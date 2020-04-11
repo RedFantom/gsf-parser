@@ -325,7 +325,7 @@ class RealTimeParser(Thread):
 
     def update_presence(self):
         """Update the Discord Rich Presence with new data"""
-        if self._rpc is None:
+        if variables.settings["sharing"]["presence"] is not True or self._rpc is None:
             return
         assert isinstance(self._rpc, Presence)
         pid = os.getpid()
@@ -397,6 +397,8 @@ class RealTimeParser(Thread):
             return
         if Parser.is_login(line):
             self.handle_login(line)
+        if "effect" not in line:
+            print("[RealTimeParser] Event missung 'effect', issues expected: {}".format(line))
         # First check if this is still a match event
         if self.is_match and not Parser.is_gsf_event(line):
             self.handle_match_end(line)

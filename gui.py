@@ -100,7 +100,7 @@ class MainWindow(ThemedTk):
             self.update()
             self.discord.send_files(self)
         # Discord Rich Presence
-        if settings["realtime"]["drp"] is True:
+        if settings["sharing"]["presence"] is True:
             self.rpc = Presence(436173115064713216)
             try:
                 self.rpc.connect()
@@ -148,7 +148,7 @@ class MainWindow(ThemedTk):
         """Add all created frames to the notebook widget"""
         self.notebook.add(self.file_tab_frame, text="File parsing")
         self.notebook.add(self.realtime_tab_frame, text="Real-time parsing")
-        self.notebook.add(self.chat_frame, text="Chat Logger")
+        # self.notebook.add(self.chat_frame, text="Chat Logger")
         self.notebook.add(self.characters_frame, text="Characters")
         self.notebook.add(self.builds_frame, text="Builds")
         self.notebook.add(self.strategies_frame, text="Strategies")
