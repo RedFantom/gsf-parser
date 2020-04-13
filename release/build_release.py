@@ -107,7 +107,8 @@ if __name__ == '__main__':
     version = defaults["misc"]["version"]
     # Install all required packages using pip
     printw("Installing packages if required...")
-    pipmain(["install", "-r", "../requirements.txt", "-q"])
+    p = subprocess.Popen(["python", "-m", "pip", "install", "-r", "../requirements.txt", "-q"])
+    p.wait()
     printw("  Done.\n")
     dist_dir = os.path.join(os.getcwd(), "dist")
     build_dir = os.path.join(dist_dir, os.path.splitext(filename)[0] + "\\")
@@ -149,8 +150,6 @@ if __name__ == '__main__':
     # Copy files to the generated directory
     printw("Copying asset files to build directory... ")
     site_packages = os.path.join(os.path.dirname(sys.executable), "Lib", "site-packages")
-    copytree(os.path.join(site_packages, "ttkthemes"), os.path.join(build_dir, "ttkthemes"))
-    copytree(os.path.join(site_packages, "ttkwidgets"), os.path.join(build_dir, "ttkwidgets"))
     copytree(os.path.join(site_packages, "pypresence"), os.path.join(build_dir, "pypresence"))
     copytree(os.path.join(site_packages, "asyncio"), os.path.join(build_dir, "asyncio"))
     copyfile(os.path.join(os.path.dirname(sys.executable), "DLLs", "_overlapped.pyd"), os.path.join(build_dir, "_overlapped.pyd"))
