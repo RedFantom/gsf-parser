@@ -22,7 +22,7 @@ def get_gui_profiles() -> List[str]:
     """Return a list of all GUI Profile Names in the SWTOR directory"""
     return [
         item.replace(".xml", "") for item in
-        os.listdir(os.path.join(get_swtor_directory(), "swtor", "settings", "GUIProfiles"))
+        os.listdir(get_swtor_directory("swtor", "settings", "GUIProfiles"))
     ]
 
 

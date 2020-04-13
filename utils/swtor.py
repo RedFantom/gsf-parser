@@ -18,9 +18,9 @@ def get_swtor_directory_win32():
     import tempfile
     path = os.path.abspath(os.path.join(tempfile.gettempdir(), "..", "SWTOR"))
     if not os.path.exists(path):
-        messagebox.showerror("Error",
-                             "Could not determine the SWTOR temporary files directory. Is SWTOR installed?")
-        raise ValueError("SWTOR directory not found. Is SWTOR installed?")
+        messagebox.showerror("Error", "Could not determine the SWTOR temporary files directory. Is SWTOR installed?")
+        print("[Utils/SWTOR] Creating directory: {}".format(os.path.join(path, "swtor", "settings")))
+        os.makedirs(os.path.join(path, "swtor", "settings"), exist_ok=True)
     return path
 
 
@@ -76,14 +76,19 @@ def get_swtor_directory_linux():
     return variables.settings["misc"]["temp_dir"]
 
 
-def get_swtor_directory():
+def get_swtor_directory(*args):
     """
     Returns the absolute path to the directory that contains the SWTOR
     temporary files
     """
     if sys.platform == "win32":
-        return get_swtor_directory_win32()
-    return get_swtor_directory_linux()
+        base = get_swtor_directory_win32()
+    else:
+        base = get_swtor_directory_linux()
+    path = os.path.join(base, *args)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
 
 
 def get_swtor_screen_mode():
