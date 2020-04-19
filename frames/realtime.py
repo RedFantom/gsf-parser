@@ -191,7 +191,7 @@ class RealTimeFrame(ttk.Frame):
         print("[RealTimeParser] New file {}".format(file_name))
         self.watching_stringvar.set("Watching: {}".format(file_name))
 
-    def match_callback(self):
+    def match_callback(self, match: bool=False):
         """Callback for the RealTimeParser to clear the TimeView"""
         self.time_view.delete_all()
 

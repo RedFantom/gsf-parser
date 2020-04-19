@@ -429,6 +429,7 @@ class RealTimeParser(Thread):
     def handle_match_end(self, line: dict):
         """Handle the end of a GSF match"""
         print("[RealTimeParser] Match end.")
+        self._match_callback(False)
         server, date, time = self._char_data["Server"], line["time"], line["time"]
         id_fmt = self.active_id[:8]
         if not self.tutorial:
@@ -467,7 +468,7 @@ class RealTimeParser(Thread):
         self.is_match = True
         self.update_presence()
         # Call the new match callback
-        self._match_callback()
+        self._match_callback(True)
         if self._timer_parser is not None:
             self._timer_parser.match_start()
         if self._speed_parser is not None:
