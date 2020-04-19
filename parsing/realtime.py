@@ -559,9 +559,17 @@ class RealTimeParser(Thread):
         self.lines.append(line)
         if callable(self.event_callback):
             line_effect = Parser.line_to_event_dictionary(line, self.active_id, self.lines)
-            self.event_callback(line_effect, self.player_name, self.active_ids, self.start_match)
+            if self.event_callback_filter(line_effect):
+                self.event_callback(line_effect, self.player_name, self.active_ids, self.start_match)
         self.process_weapon_swap(line)
         self._read_from_file = True
+
+    @staticmethod
+    def event_callback_filter(line: dict) -> bool:
+        """Filter the events that are passed to the event callback"""
+        if line["ability"] == "Hydro Spanner" and "Activate" not in line["effect"]:
+            return False
+        return True
 
     def process_weapon_swap(self, line: dict):
         """Determine if a weapon was swapped in this event"""
