@@ -46,7 +46,7 @@ class MainWindow(ThemedTk):
         self.width = 800 if sys.platform != "linux" else 825
         self.height = 425 if sys.platform != "linux" else 450
         # Initialize window
-        ThemedTk.__init__(self)
+        ThemedTk.__init__(self, gif_override=True)
         self.set_attributes()
         self.update_scaling()
         self.open_debug_window()
