@@ -567,6 +567,8 @@ class RealTimeParser(Thread):
     @staticmethod
     def event_callback_filter(line: dict) -> bool:
         """Filter the events that are passed to the event callback"""
+        if line is None:
+            return False
         if line["ability"] == "Hydro Spanner" and "Activate" not in line["effect"]:
             return False
         return True
