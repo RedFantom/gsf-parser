@@ -248,7 +248,7 @@ class RealTimeFrame(ttk.Frame):
                 self.data_after_id = None
             return
         if settings["screen"]["perf"] is False:
-            string = self.DATA_STR_BASE.format("Screen feature performance profiling disabled\n")
+            string = self.DATA_STR_BASE.format("Screen parsing performance profiling disabled\n")
             self.data.set(string)
             return
         perf = self.parser.perf_string
@@ -256,7 +256,7 @@ class RealTimeFrame(ttk.Frame):
         if perf is None:
             return
         elif len(perf) == 0:
-            string = self.DATA_STR_BASE.format("No slow screen results features\n")
+            string = self.DATA_STR_BASE.format("No slow screen parsing features\n")
         else:
             string = self.DATA_STR_BASE.format(perf)
         self.data.set(string)
