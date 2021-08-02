@@ -12,12 +12,12 @@ from widgets.builds.ships import *
 from widgets.builds.component_list import *
 from widgets.builds.component import *
 from widgets.overlays.tkinter import TkinterOverlay as Overlay
-from ttkwidgets.frames import Balloon as _Balloon
+from ttkwidgets.frames import Tooltip
 
 
-class Balloon(_Balloon):
+class Balloon(Tooltip):
     """Balloon widget override with default kwargs"""
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("width", 400)
         kwargs.setdefault("timeout", 0.5)
-        _Balloon.__init__(self, *args, **kwargs)
+        Tooltip.__init__(self, *args, **kwargs)
