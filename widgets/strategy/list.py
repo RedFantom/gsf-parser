@@ -154,14 +154,14 @@ class StrategiesList(ttk.Frame):
         Callback for the Tkinter Button-3 event, shows the strategy menu
         """
         selection = self.tree.selection()
-        if len(selection) is 0:
+        if len(selection) == 0:
             print("No item in the tree is selected")
             return
         value = selection[0]
         elements = value.split("..")
-        if len(elements) is 1:
+        if len(elements) == 1:
             self._strategy_menu.post(event.x_root, event.y_root)
-        elif len(elements) is 2:
+        elif len(elements) == 2:
             self._phase_menu.post(event.x_root, event.y_root)
         else:
             raise ValueError("Invalid elements value found: ", elements)
@@ -185,7 +185,7 @@ class StrategiesList(ttk.Frame):
     def del_strategy(self):
         """Delete the selected strategy from the StrategyDatabase"""
         selection = self.tree.selection()
-        if len(selection) is 0:
+        if len(selection) == 0:
             return
         selection = selection[0]
         if selection not in self.db.keys():
@@ -283,7 +283,7 @@ class StrategiesList(ttk.Frame):
     def selection(self):
         """Return selection str instead of Treeview tuple"""
         selection = self.tree.selection()
-        if len(selection) is 0:
+        if len(selection) == 0:
             return None
         return selection[0]
 
@@ -305,7 +305,7 @@ class StrategiesList(ttk.Frame):
         if not selection:
             return None
         elements = selection.split("..")
-        if len(elements) is not 2:
+        if len(elements) != 2:
             return None
         phase = elements[1]
         if phase.startswith(" "):

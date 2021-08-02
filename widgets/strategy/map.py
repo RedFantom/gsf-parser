@@ -118,7 +118,7 @@ class Map(ttk.Frame):
             return
         # Select a new one if one is pressed
         results = self.canvas.find_withtag(tk.CURRENT)
-        if len(results) is 0:
+        if len(results) == 0:
             return
         self.current = results[0]
         self.canvas.itemconfigure(self.current, fill="blue")
