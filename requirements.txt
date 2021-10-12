@@ -15,7 +15,7 @@ semantic-version>=2.6.0
 ttkthemes>=1.5.2
 ttkwidgets>=0.8.0
 screeninfo
-opencv-python==3.2.0
+opencv-python==3.3.1.11
 python-dateutil
 raven
 pypresence
