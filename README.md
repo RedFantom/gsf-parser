@@ -3,6 +3,26 @@
 [![Wiki](https://img.shields.io/badge/GitHub%20Wiki-Available-2f77d0.svg)](https://github.com/RedFantom/gsf-parser/wiki)
 [![Build Status](https://travis-ci.org/RedFantom/gsf-parser.svg?branch=master)](https://travis-ci.org/RedFantom/gsf-parser)
 
+## Deprecation Notice
+```diff
+- Deprecation Notice
+@@ Unfortunately, since SWTOR Game Update 7.0, this parser no longer works properly. @@
+```
+SWTOR Game Update 7.0 was released in February of 2022. Since then the CombatLogs that SWTOR creates are of a 
+slightly different format. Updating the GSF Parser to support this format would take more time and effort than
+I can spend on it.
+
+Not only do the new CombatLogs provide more information (location information, specifically), they also break
+the capability of the GSF Parser to easily determine who the _player_ is in the CombatLogs (by ID number). This
+has substantial implications for the parser, as it was never built with the idea of not having this information
+being a possibility. While updating to support the new format is possible, without a substantial rewrite of
+the core parsing code and adjustment of the UI to match, a lot less useful information would be displayed.
+
+This repository remains available in case anyone finds it interesting. The build calculator, while a little
+buggy, is unaffected by this change. This parser also provides an example of the possibilities of using 
+information other than text to infer game information. Unfortunately, it does not serve any other purposes
+at this time.
+
 ## Features
 - CombatLog parsing with various statistics
 - Real-time CombatLog parsing with overlays
